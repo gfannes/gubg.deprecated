@@ -1,0 +1,4 @@
+The following guidelines for modifying and extending this software package should be followed:
+ * For function arguments, the variable(s) that will hold the result at the end of the call will come first
+
+If you have any comments or suggestions with respect to these guidelines, do not hesitate to contact geert_dot_fannes_at_gmail_dot_com.

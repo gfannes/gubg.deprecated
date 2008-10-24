@@ -1,0 +1,888 @@
+Module:
+         ModuleDeclaration DeclDefs
+         DeclDefs
+DeclDefs:
+         DeclDef DeclDefs
+	          DeclDef
+DeclDef:
+         ConditionalDeclaration
+         AttributeSpecifier
+         ImportDeclaration
+         EnumDeclaration
+         ClassDeclaration
+         InterfaceDeclaration
+         AggregateDeclaration
+         Declaration
+         Constructor
+         Destructor
+         ClassInvariant
+         UnitTest
+         StaticConstructor
+         StaticDestructor
+         DebugSpecification
+         VersionSpecification
+         ;
+ModuleDeclaration:
+        module ModuleName ;
+ModuleName:
+        Identifier . ModuleName
+        Identifier
+ImportDeclaration:
+        import ImportList ;
+        static import ImportList ;
+ImportList:
+        Import
+        ImportBindings
+        Import , ImportList
+Import:
+        ModuleName
+        ModuleAliasIdentifier = ModuleName
+ImportBindings:
+        Import : ImportBindList
+ImportBindList:
+        ImportBind
+        ImportBind , ImportBindList
+ImportBind:
+        Identifier
+        Identifier =
+Declaration:
+        typedef Decl
+        alias Decl
+        Decl
+Decl:
+        StorageClasses Decl
+        BasicType Declarators ;
+        BasicType Declarator FunctionBody
+        AutoDeclaration
+Declarators:
+        DeclaratorInitializer
+        DeclaratorInitializer , DeclaratorIdentifierList
+DeclaratorInitializer:
+        Declarator
+        Declarator = Initializer
+DeclaratorIdentifierList:
+        DeclaratorIdentifier
+        DeclaratorIdentifier , DeclaratorIdentifierList
+DeclaratorIdentifier:
+        Identifier
+        Identifier = Initializer
+BasicType:
+        bool
+        byte
+        ubyte
+        short
+        ushort
+        int
+        uint
+        long
+        ulong
+        char
+        wchar
+        dchar
+        float
+        double
+        real
+        ifloat
+        idouble
+        ireal
+        cfloat
+        cdouble
+        creal
+        void
+        .IdentifierList
+        IdentifierList
+        Typeof
+        Typeof . IdentifierList
+BasicType2:
+        *
+        [ ]
+         [ Expression ]
+         [ Type ]
+         delegate Parameters
+         function Parameters
+Declarator:
+         BasicType2 Declarator
+         Identifier
+         () Declarator
+         Identifier DeclaratorSuffixes
+         () Declarator DeclaratorSuffixes
+DeclaratorSuffixes:
+         DeclaratorSuffix
+         DeclaratorSuffix DeclaratorSuffixes
+DeclaratorSuffix:
+         [ ]
+         [ Expression ]
+         [ Type ]
+         Parameters
+IdentifierList:
+         Identifier
+         Identifier . IdentifierList
+         TemplateInstance
+         TemplateInstance . IdentifierList
+Typeof:
+         typeof ( Expression )
+StorageClasses:
+         StorageClass
+         StorageClass StorageClasses
+StorageClass:
+         abstract
+         auto
+         const
+         deprecated
+         extern
+         final
+         override
+         scope
+         static
+         synchronized
+Type:
+         BasicType
+         BasicType Declarator2
+Declarator2:
+         BasicType2 Declarator2
+         ( Declarator2 )
+         ( Declarator2 ) DeclaratorSuffixes
+Parameters:
+         ( ParameterList )
+         ( )
+ParameterList:
+        Parameter
+        Parameter , ParameterList
+        Parameter ...
+        ...
+Parameter:
+        Declarator
+        Declarator = AssignExpression
+        InOut Declarator
+        InOut Declarator = AssignExpression
+InOut:
+        in
+        out
+        inout
+        lazy
+Initializer:
+        void
+        NonVoidInitializer
+NonVoidInitializer:
+        AssignExpression
+        ArrayInitializer
+        StructInitializer
+ArrayInitializer:
+        [ ]
+        [ ArrayMemberInitializations ]
+ArrayMemberInitializations:
+        ArrayMemberInitialization
+        ArrayMemberInitialization ,
+        ArrayMemberInitialization , ArrayMemberInitialization
+ArrayMemberInitialization:
+        NonVoidInitializer
+        AssignExpression : NonVoidInitializer
+StructInitializer:
+        { }
+        { StructMemberInitializers }
+StructMemberInitializers:
+        StructMemberInitializer
+        StructMemberInitializer ,
+        StructMemberInitializer , StructMemberInitializers
+StructMemberInitializer:
+        NonVoidInitializer
+        Identifier : NonVoidInitializer
+AutoDeclaration:
+        StorageClasses Identifier = AssignExpression ;
+AttributeSpecifier:
+    Attribute :
+    Attribute DeclarationBlock
+Attribute:
+    LinkageAttribute
+    AlignAttribute
+    Pragma
+    deprecated
+    private
+    package
+    protected
+    public
+    export
+    static
+    final
+    override
+    abstract
+    const
+    auto
+    scope
+DeclarationBlock:
+    DeclDef
+    { }
+    { DeclDefs }
+LinkageAttribute:
+        extern
+        extern ( LinkageType )
+LinkageType:
+        C
+        C++
+        D
+        Windows
+        Pascal
+AlignAttribute:
+        align
+        align ( Integer )
+Pragma:
+    pragma ( Identifier )
+    pragma ( Identifier , ExpressionList )
+StringLiterals:
+        StringLiteral
+        StringLiterals StringLiteral
+ArgumentList:
+        AssignExpression
+        AssignExpression , ArgumentList
+Expression:
+        AssignExpression
+        AssignExpression , Expression
+AssignExpression:
+        ConditionalExpression
+        ConditionalExpression = AssignExpression
+        ConditionalExpression += AssignExpression
+        ConditionalExpression -= AssignExpression
+        ConditionalExpression *= AssignExpression
+        ConditionalExpression /= AssignExpression
+        ConditionalExpression %= AssignExpression
+        ConditionalExpression &= AssignExpression
+        ConditionalExpression |= AssignExpression
+        ConditionalExpression ^= AssignExpression
+        ConditionalExpression ~= AssignExpression
+        ConditionalExpression <<= AssignExpression
+        ConditionalExpression >>= AssignExpression
+        ConditionalExpression >>>= AssignExpression
+ConditionalExpression:
+        OrOrExpression
+        OrOrExpression ? Expression : ConditionalExpression
+OrOrExpression:
+        AndAndExpression
+        OrOrExpression || AndAndExpression
+AndAndExpression:
+        OrExpression
+        AndAndExpression && OrExpression
+OrExpression:
+        XorExpression
+        OrExpression | XorExpression
+XorExpression:
+        AndExpression
+        XorExpression ^ AndExpression
+AndExpression:
+        EqualExpression
+        AndExpression & EqualExpression
+EqualExpression:
+        RelExpression
+        EqualExpression == RelExpression
+        EqualExpression != RelExpression
+        EqualExpression is RelExpression
+        EqualExpression !is RelExpression
+RelExpression:
+        ShiftExpression
+        InExpression
+        RelExpression < ShiftExpression
+        RelExpression <= ShiftExpression
+        RelExpression > ShiftExpression
+        RelExpression >= ShiftExpression
+        RelExpression !<>= ShiftExpression
+        RelExpression !<> ShiftExpression
+        RelExpression <> ShiftExpression
+        RelExpression <>= ShiftExpression
+        RelExpression !> ShiftExpression
+        RelExpression !>= ShiftExpression
+        RelExpression !< ShiftExpression
+        RelExpression !<= ShiftExpression
+InExpression:
+        RelExpression in ShiftExpression
+ShiftExpression:
+        AddExpression
+        ShiftExpression << AddExpression
+        ShiftExpression >> AddExpression
+        ShiftExpression >>> AddExpression
+AddExpression:
+        MulExpression
+        AddExpression + MulExpression
+        AddExpression - MulExpression
+        CatExpression
+CatExpression:
+        AddExpression ~ MulExpression
+MulExpression:
+        UnaryExpression
+        MulExpression * UnaryExpression
+        MulExpression / UnaryExpression
+        MulExpression % UnaryExpression
+UnaryExpression:
+        PostfixExpression
+        & UnaryExpression
+        ++ UnaryExpression
+        -- UnaryExpression
+        * UnaryExpression
+        - UnaryExpression
+        + UnaryExpression
+        ! UnaryExpression
+        ~ UnaryExpression
+        ( Type ) . Identifier
+        NewExpression
+        DeleteExpression
+        CastExpression
+        NewAnonClassExpression
+NewExpression:
+        NewArguments Type [ AssignExpression ]
+        NewArguments Type ( ArgumentList )
+        NewArguments Type
+        NewArguments ClassArguments { DeclDefs }
+        NewArguments ClassArguments BaseClassList { DeclDefs }
+NewArguments:
+        new ( ArgumentList )
+        new ( )
+        new
+ClassArguments:
+        class ( ArgumentList )
+        class ( )
+        class
+DeleteExpression:
+        delete UnaryExpression
+CastExpression:
+        cast ( Type ) UnaryExpression
+PostfixExpression:
+        PrimaryExpression
+        PostfixExpression . Identifier
+        PostfixExpression . NewExpression
+        PostfixExpression ++
+        PostfixExpression --
+        PostfixExpression ( )
+        PostfixExpression ( ArgumentList )
+        IndexExpression
+        SliceExpression
+IndexExpression:
+        PostfixExpression [ ArgumentList ]
+SliceExpression:
+        PostfixExpression [ ]
+        PostfixExpression [ AssignExpression .. AssignExpression ]
+PrimaryExpression:
+        Identifier
+        .Identifier
+        this
+        super
+        null
+        true
+        false
+        NumericLiteral
+        CharacterLiteral
+        StringLiterals
+        ArrayLiteral
+        FunctionLiteral
+        AssertExpression
+        BasicType . Identifier
+        typeid ( Type )
+        IsExpression
+        ( Expression )
+ArrayLiteral:
+        [ ArgumentList ]
+FunctionLiteral:
+        function FunctionBody
+        function ( ArgumentList ) FunctionBody
+        function Type FunctionBody
+        function Type ( ArgumentList ) FunctionBody
+        delegate  FunctionBody
+        delegate ( ArgumentList ) FunctionBody
+        delegate Type FunctionBody
+        delegate Type ( ArgumentList ) FunctionBody
+        ( ArgumentList ) FunctionBody
+        FunctionBody
+AssertExpression:
+        assert ( Expression )
+        assert ( Expression , Expression )
+TypeidExpression:
+    typeid ( Type )
+IsExpression:
+        is ( Type )
+        is ( Type : TypeSpecialization )
+        is ( Type == TypeSpecialization )
+        is ( Type Identifier )
+        is ( Type Identifier : TypeSpecialization )
+        is ( Type Identifier == TypeSpecialization )
+TypeSpecialization:
+        Type
+        typedef
+        struct
+        union
+        class
+        interface
+        enum
+        function
+        delegate
+        super
+Statement:
+    ;
+    NonEmptyStatement
+    ScopeBlockStatement
+NoScopeNonEmptyStatement:
+    NonEmptyStatement
+    BlockStatement
+NoScopeStatement:
+    ;
+    NonEmptyStatement
+    BlockStatement
+NonEmptyOrScopeBlockStatement:
+    NonEmptyStatement
+    ScopeBlockStatement
+NonEmptyStatement:
+    LabeledStatement
+    ExpressionStatement
+    DeclarationStatement
+    IfStatement
+    ConditionalStatement
+    WhileStatement
+    DoStatement
+    ForStatement
+    ForeachStatement
+    SwitchStatement
+    CaseStatement
+    DefaultStatement
+    ContinueStatement
+    BreakStatement
+    ReturnStatement
+    GotoStatement
+    WithStatement
+    SynchronizedStatement
+    TryStatement
+    ScopeGuardStatement
+    ThrowStatement
+    VolatileStatement
+    AsmStatement
+    PragmaStatement
+ScopeStatement:
+    NonEmptyStatement
+    BlockStatement
+ScopeBlockStatement:
+    BlockStatement
+LabeledStatement:
+    Identifier ':' NoScopeStatement
+BlockStatement:
+    { }
+    { StatementList }
+StatementList:
+    Statement
+    Statement StatementList
+ExpressionStatement:
+    Expression ;
+DeclarationStatement:
+    Declaration
+IfStatement:
+        if ( IfCondition ) ThenStatement
+        if ( IfCondition ) ThenStatement else ElseStatement
+IfCondition:
+        Expression
+        auto Identifier = Expression
+        Declarator = Expression
+ThenStatement:
+        ScopeStatement
+ElseStatement:
+        ScopeStatement
+WhileStatement:
+    while ( Expression ) ScopeStatement
+DoStatement:
+    do ScopeStatement while ( Expression )
+ForStatement:
+        for (Initialize Test; Increment) ScopeStatement
+Initialize:
+        ;
+        NoScopeNonEmptyStatement
+Test:
+        empty
+        Expression
+Increment:
+        empty
+        Expression
+ForeachStatement:
+    Foreach (ForeachTypeList; Aggregate) ScopeStatement
+Foreach:
+    foreach
+    foreach_reverse
+ForeachTypeList:
+    ForeachType
+    ForeachType , ForeachTypeList
+ForeachType:
+    inout Type Identifier
+    Type Identifier
+    inout Identifier
+    Identifier
+Aggregate:
+    Expression
+    Tuple
+SwitchStatement:
+        switch ( Expression ) ScopeStatement
+CaseStatement:
+        case Expression : Statement
+DefaultStatement:
+        default: Statement
+ContinueStatement:
+    continue;
+    continue Identifier ;
+BreakStatement:
+    break;
+    break Identifier ;
+ReturnStatement:
+    return;
+    return Expression ;
+GotoStatement:
+    goto Identifier ;
+    goto default ;
+    goto case ;
+    goto case Expression ;
+WithStatement:
+        with ( Expression ) ScopeStatement
+        with ( Identifier ) ScopeStatement
+        with ( TemplateInstance ) ScopeStatement
+SynchronizedStatement:
+    synchronized ScopeStatement
+    synchronized ( Expression ) ScopeStatement
+TryStatement:
+         try ScopeStatement Catches
+         try ScopeStatement Catches FinallyStatement
+         try ScopeStatement FinallyStatement
+Catches:
+         LastCatch
+         Catch
+         Catch Catches
+LastCatch:
+         catch NoScopeNonEmptyStatement
+Catch:
+         catch ( CatchParameter ) NoScopeNonEmptyStatement
+FinallyStatement:
+         finally NoScopeNonEmptyStatement
+ThrowStatement:
+        throw Expression ;
+ScopeGuardStatement:
+        scope(exit) #NonEmptyOrScopeBlockStatement
+        scope(success) #NonEmptyOrScopeBlockStatement
+        scope(failure) #NonEmptyOrScopeBlockStatement
+VolatileStatement:
+        volatile Statement
+        volatile ;
+AsmStatement:
+        asm { }
+        asm { AsmInstructionList }
+AsmInstructionList:
+        AsmInstruction ;
+        AsmInstruction ; AsmInstructionList
+PragmaStatement:
+    Pragma NoScopeStatement
+AggregateDeclaration:
+        Tag { DeclDefs }
+         Tag Identifier StructBody
+         Tag Identifier ;
+Tag:
+         struct
+         union
+StructBody:
+         { }
+         { StructBodyDeclarations }
+StructBodyDeclarations:
+         StructBodyDeclaration
+         StructBodyDeclaration StructBodyDeclarations
+StructBodyDeclaration:
+         Declaration
+         StaticConstructor
+         StaticDestructor
+         ClassInvariant
+         UnitTest
+         StructAllocator
+         StructDeallocator
+StructAllocator:
+         ClassAllocator
+StructDeallocator:
+         ClassDeallocator
+ClassDeclaration:
+        class Identifier ClassBody
+        class Identifier BaseClassList ClassBody
+BaseClassList:
+        : SuperClass
+        : SuperClass InterfaceClasses
+        : InterfaceClass
+SuperClass:
+        Identifier
+        Protection Identifier
+InterfaceClasses:
+        InterfaceClass
+        InterfaceClass InterfaceClasses
+InterfaceClass:
+        Identifier
+        Protection Identifier
+Protection:
+        private
+        package
+        public
+        export
+ClassBody:
+        { }
+        { ClassBodyDeclarations }
+ClassBodyDeclarations:
+        ClassBodyDeclaration
+        ClassBodyDeclaration ClassBodyDeclarations
+ClassBodyDeclaration:
+        Declaration
+        Constructor
+        Destructor
+        StaticConstructor
+        StaticDestructor
+        ClassInvariant
+        UnitTest
+        ClassAllocator
+    ClassDeallocator
+Constructor:
+        this Parameters FunctionBody
+Destructor:
+        ~this() FunctionBody
+StaticConstructor:
+        static this() FunctionBody
+StaticDestructor:
+        static ~this() FunctionBody
+ClassInvariant:
+        invariant BlockStatement
+UnitTest:
+        unittest FunctionBody
+ClassAllocator:
+        new Parameters FunctionBody
+ClassDeallocator:
+        delete Parameters FunctionBody
+NewAnonClassExpression:
+    new class ClassBody
+    new class InterfaceClasses ClassBody
+    new class SuperClass ClassBody
+    new class SuperClass InterfaceClasses ClassBody
+    new ( ArgumentList ) class ( ArgumentList ) ClassBody
+    new ( ArgumentList ) class ( ArgumentList ) InterfaceClasses ClassBody
+    new ( ArgumentList ) class ( ArgumentList ) SuperClass ClassBody
+    new ( ArgumentList ) class ( ArgumentList ) SuperClass InterfaceClasses ClassBody
+InterfaceDeclaration:
+        interface Identifier InterfaceBody
+        interface Identifier : SuperInterfaces InterfaceBody
+SuperInterfaces:
+        Identifier
+        Identifier , SuperInterfaces
+InterfaceBody:
+        { DeclDefs }
+EnumDeclaration:
+        enum Identifier EnumBody
+        enum EnumBody
+        enum Identifier : EnumBaseType EnumBody
+        enum : EnumBaseType EnumBody
+EnumBaseType:
+        Type
+EnumBody:
+        ;
+        { EnumMembers }
+EnumMembers:
+        EnumMember
+        EnumMember ,
+        EnumMember , EnumMembers
+EnumMember:
+        Identifier
+        Identifier = AssignExpression
+FunctionBody:
+        BlockStatement
+        BodyStatement
+        InStatement BodyStatement
+        OutStatement BodyStatement
+        InStatement OutStatement BodyStatement
+        OutStatement InStatement BodyStatement
+InStatement:
+        in BlockStatement
+OutStatement:
+        out BlockStatement
+        out ( Identifier ) BlockStatement
+BodyStatement:
+        body BlockStatement
+TemplateDeclaration:
+        template TemplateIdentifier ( TemplateParameterList ) { DeclDefs }
+TemplateIdentifier:
+        Identifier
+TemplateParameterList:	
+        TemplateParameter
+        TemplateParameter , TemplateParameterList
+TemplateParameter:
+        TemplateTypeParameter
+        TemplateValueParameter
+        TemplateAliasParameter
+        TemplateTupleParameter
+TemplateTypeParameter:
+        Identifier
+        Identifier TemplateTypeParameterSpecialization
+        Identifier TemplateTypeParameterDefault
+        Identifier TemplateTypeParameterSpecialization TemplateTypeParameterDefault
+TemplateTypeParameterSpecialization:
+         : Type
+TemplateTypeParameterDefault:
+         = Type
+TemplateValueParameter:
+        Declaration
+        Declaration TemplateValueParameterSpecialization
+        Declaration TemplateValueParameterDefault
+        Declaration TemplateValueParameterSpecialization TemplateValueParameterDefault
+TemplateValueParameterSpecialization:
+         : ConditionalExpression
+TemplateValueParameterDefault:
+         = ConditionalExpression
+TemplateAliasParameter:
+        alias Identifier
+        alias Identifier TemplateAliasParameterSpecialization
+        alias Identifier TemplateAliasParameterDefault
+        alias Identifier TemplateAliasParameterSpecialization TemplateAliasParameterDefault
+TemplateAliasParameterSpecialization:
+         : Type
+TemplateAliasParameterDefault:
+         = Type
+TemplateTupleParameter:
+        Identifier ...
+TemplateInstance:
+        TemplateIdentifier !( TemplateArgumentList )
+TemplateArgumentList:
+        TemplateArgument
+        TemplateArgument , TemplateArgumentList
+TemplateArgument:
+        Type
+        AssignExpression
+        Identifier
+ClassTemplateDeclaration:
+    class Identifier ( TemplateParameterList ) ClassBody
+    class Identifier ( TemplateParameterList ) SuperClass ClassBody
+FunctionTemplateDeclaration:
+    Type Identifier ( TemplateParameterList ) ( ParameterList ) FunctionBody
+TemplateMixin:
+        mixin TemplateIdentifier ;
+        mixin TemplateIdentifier MixinIdentifier ;
+        mixin TemplateIdentifier !( TemplateArgumentList ) ;
+        mixin TemplateIdentifier !( TemplateArgumentList ) MixinIdentifier ;
+MixinIdentifier:
+        Identifier
+ConditionalDeclaration:
+    Condition DeclarationBlock
+    Condition DeclarationBlock else DeclarationBlock
+    Condition : Declarations
+DeclarationBlock:
+    Declaration
+    { Declarations }
+    { }
+Declarations:
+    Declaration
+    Declaration Declarations
+ConditionalStatement:
+    Condition NoScopeNonEmptyStatement
+    Condition NoScopeNonEmptyStatement else NoScopeNonEmptyStatement
+Condition:
+    VersionCondition
+    DebugCondition
+    StaticIfCondition
+VersionCondition:
+        version ( Integer )
+        version ( Identifier )
+VersionSpecification:
+    version = Identifier ;
+    version = Integer ;
+DebugCondition:
+    debug
+    debug ( Integer )
+    debug ( Identifier )
+DebugSpecification:
+    debug = Identifier ;
+    debug = Integer ;
+StaticIfCondition:
+    static if ( AssignExpression )
+StaticAssert:
+    static assert ( AssignExpression );
+    static assert ( AssignExpression , AssignExpression );
+AsmInstruction:
+         Identifier : AsmInstruction
+         align IntegerExpression
+         even
+         naked
+         db Operands
+         ds Operands
+         di Operands
+         dl Operands
+         df Operands
+         dd Operands
+         de Operands
+         Opcode
+         Opcode Operands
+Operands:
+         Operand
+         Operand , Operands
+Operand:
+    AsmExp
+AsmExp:
+    AsmLogOrExp
+    AsmLogOrExp ? AsmExp : AsmExp
+AsmLogOrExp:
+    AsmLogAndExp
+    AsmLogAndExp || AsmLogAndExp
+AsmLogAndExp:
+    AsmOrExp
+    AsmOrExp && AsmOrExp
+AsmOrExp:
+    AsmXorExp
+    AsmXorExp | AsmXorExp
+AsmXorExp:
+    AsmAndExp
+    AsmAndExp ^ AsmAndExp
+AsmAndExp:
+    AsmEqualExp
+    AsmEqualExp & AsmEqualExp
+AsmEqualExp:
+    AsmRelExp
+    AsmRelExp == AsmRelExp
+    AsmRelExp != AsmRelExp
+AsmRelExp:
+    AsmShiftExp
+    AsmShiftExp  < AsmShiftExp
+    AsmShiftExp  <= AsmShiftExp
+    AsmShiftExp  > AsmShiftExp
+    AsmShiftExp  >= AsmShiftExp
+AsmShiftExp:
+    AsmAddExp
+    AsmAddExp << AsmAddExp
+    AsmAddExp >> AsmAddExp
+    AsmAddExp >>> AsmAddExp
+AsmAddExp:
+    AsmMulExp
+    AsmMulExp + AsmMulExp
+    AsmMulExp - AsmMulExp
+AsmMulExp:
+    AsmBrExp
+    AsmBrExp * AsmBrExp
+    AsmBrExp / AsmBrExp
+    AsmBrExp % AsmBrExp
+AsmBrExp:
+    AsmUnaExp
+    AsmBrExp [ AsmExp ]
+AsmUnaExp:
+    AsmTypePrefix AsmExp
+    offset AsmExp
+    seg AsmExp
+    + AsmUnaExp
+    - AsmUnaExp
+    ! AsmUnaExp
+    ~ AsmUnaExp
+    AsmPrimaryExp
+AsmPrimaryExp:
+    IntegerConstant
+    FloatConstant
+    __LOCAL_SIZE
+    $
+    Register
+    DotIdentifier
+DotIdentifier:
+    Identifier
+    Identifier . DotIdentifier
+AsmTypePrefix:
+        near ptr
+        far ptr
+        byte ptr
+        short ptr
+        int ptr
+        word ptr
+        dword ptr
+        float ptr
+        double ptr
+        real ptr

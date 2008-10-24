@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+
+require("tools/allTools")
+require("fileutils")
+
+arguments = ARGV.dup
+
+if arguments.empty? or !(arguments & %w[--help -h -- -help]).empty?
+  puts(%Q@#{File.basename($0)} [-f] [-d] [-r] <pattern>
+\t-f\t\tThe <pattern> will be used to match files. Matching files will be removed.
+\t-d\t\tThe <pattern> will be used to match directories. Matching dirs will be removed recusively.
+\t-r\t\tWithout this option, nothing will happen, except for a simulation
+\t<patternt>\tRuby pattern that will be used for matching.
+@)
+  exit 0
+end
+
+bFile = arguments.include?("-f")
+bDir = arguments.include?("-d")
+bReal = arguments.include?("-r")
+arguments.delete("-f")
+arguments.delete("-d")
+arguments.delete("-r")
+
+raise "You can only specify either \"-f\" or \"-d\"" if bDir and bFile
+raise "You should specify either \"-f\" or \"-d\"" if !(bDir or bFile)
+raise "You can specify one and only one pattern" if arguments.length != 1
+
+pattern = Regexp.compile(arguments[0])
+
+if bFile
+  nr = 0
+  prevDir = nil
+  Dir.each("./") do |dir,fn|
+    if prevDir != dir
+#      puts("Going into #{dir}")
+      prevDir = dir
+    end
+    if fn[pattern]
+      fileName = File.expand_path(fn,dir)
+      puts(fileName)
+      File.delete(fileName) if bReal
+      nr += 1
+    end
+    nil
+  end
+  if bReal
+    puts("#{nr} files are removed")
+  else
+    puts("I used the pattern \"#{pattern}\"")
+    puts("#{nr} files are targetted to be removed")
+  end
+end
+
+if bDir
+  nr = 0
+  Dir.eachDir('./') do |dir|
+    if dir[pattern]
+      puts(dir)
+      if File.exist?(dir)
+        FileUtils.remove_entry(dir,true) if bReal
+        nr += 1
+      else
+        puts("#{dir} does not exist anymore")
+      end
+    end
+    nil
+  end
+  if bReal
+    puts("#{nr} directories are removed recursively")
+  else
+    puts("I used the pattern \"#{pattern}\"")
+    puts("#{nr} directories are targetted to be removed recursively (might be less if they are nested)")
+  end
+end

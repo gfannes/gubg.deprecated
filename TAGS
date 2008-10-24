@@ -1,0 +1,1468 @@
+
+source/neural/mlp/test/test.cpp,101
+int main(8,85
+    typedef MLP<vector<double> > MLPTV;18,369
+    typedef MLP<double> MLPTD;36,1179
+
+source/neural/neuron/test/test.cpp,15
+int main(7,66
+
+source/common/serialization/serialize.cpp,191
+namespace Serialize7,69
+    bool getAllocator(Serialize::getAllocator13,227
+    bool getSerialize(Serialize::getSerialize23,573
+    bool getUnserialize(Serialize::getUnserialize33,879
+
+source/common/serialization/test/test.cpp,17
+int main(12,184
+
+source/common/visualization/visualization.cpp,145
+void Visualization::initialize(7,73
+void Visualization::start(14,196
+void Visualization::handleInput(41,676
+void Visualization::draw(56,1012
+
+source/common/visualization/treeview/test/test.cpp,15
+int main(7,67
+
+source/common/visualization/test/test.cpp,214
+} StuffT;14,178
+void func(16,189
+class VisualizationH:VisualizationH23,347
+    VisualizationH(VisualizationH::VisualizationH26,400
+    virtual bool dynamics(VisualizationH::dynamics29,497
+int main(48,1131
+
+source/common/visualization/datavisu/test/test.cpp,115
+class FunctionH:FunctionH11,169
+    virtual bool computeOutput(FunctionH::computeOutput14,224
+int main(22,433
+
+source/common/grid/test/test.cpp,118
+class BlockH:BlockH9,112
+    bool yield(BlockH::yield12,155
+    bool yield(BlockH::yield17,299
+int main(24,419
+
+source/common/function/test/test.cpp,314
+enum TestCaseT12,185
+    eAll TestCaseT::eAll14,202
+    eFunction,TestCaseT::eFunction15,216
+    eFunctionLayer,TestCaseT::eFunctionLayer16,231
+    eFunctionChain,TestCaseT::eFunctionChain17,251
+int main(20,275
+        typedef FunctionLayerFromClass<Neuron<eNeuronTanh>,double,0,1> NeuronLayerT;85,2201
+
+source/common/function/optimalization/test/test.cpp,323
+class Sine:Sine10,136
+    Sine(Sine::Sine13,187
+    virtual bool computeOutput(Sine::computeOutput15,222
+    virtual bool clone(Sine::clone24,444
+    void setFactor(Sine::setFactor25,505
+class BlockH:BlockH34,680
+    bool preYield(BlockH::preYield37,735
+    bool yield(BlockH::yield41,805
+int main(52,1089
+
+source/common/clock/clock.cpp,154
+Clock *Clock::sLocalClock Clock::sLocalClock7,65
+Clock &Clock::local(Clock::local9,100
+bool Clock::now(16,209
+ostream &operator<<(operator<<21,291
+
+source/common/clock/timestamp.cpp,74
+bool TimeStamp::breakDown(10,183
+ostream &operator<<(operator<<51,1318
+
+source/common/clock/test/test.cpp,15
+int main(8,90
+
+source/common/matrix/test/test.cpp,15
+int main(6,70
+
+source/common/reporting/test/test.cpp,16
+int main(9,109
+
+source/common/region/test/test.cpp,61
+int main(6,104
+    typedef ConvexRegion::Point Point;8,139
+
+source/common/bayesian/test/test.cpp,376
+enum TestT15,257
+    eClassification,TestT::eClassification17,270
+    eRegressionTestT::eRegression18,291
+int main(21,311
+        typedef FunctionFromClass<Neuron<eNeuronSigmoid>,double,0,1> NeuronF;39,879
+        typedef MLP<double> MLPT;64,1836
+        typedef MLP<double> MLPT;120,3567
+        typedef PosteriorLogProb<MLPT, vector<double>, double> PLPT;130,3890
+
+source/common/vectar/test/test.cpp,154
+class FunctionH:FunctionH9,112
+    bool computeOutput(FunctionH::computeOutput12,167
+    virtual bool clone(FunctionH::clone17,308
+int main(23,436
+
+source/common/file/test/test.cpp,15
+int main(8,83
+
+source/common/communication/comPoint.cpp,30
+string ComPoint::toStr(9,105
+
+source/common/communication/comStation.cpp,728
+ComStation::~ComStation(12,158
+bool ComStation::start(19,256
+bool ComStation::finish(61,1439
+class Add2MessageList72,1664
+    Add2MessageList(Add2MessageList::Add2MessageList75,1696
+    bool execute4Mutex(Add2MessageList::execute4Mutex77,1764
+bool AcceptThread::execute(87,2033
+    typedef int socklen_t;91,2113
+bool ComStation::write(151,3913
+bool ComStation::writeBuffer(193,4925
+bool ComStation::write(208,5318
+bool ComStation::readBuffer(214,5520
+bool ComStation::read(230,5960
+class MoveStaging2Messages242,6303
+    MoveStaging2Messages(MoveStaging2Messages::MoveStaging2Messages245,6340
+    bool execute4Mutex(MoveStaging2Messages::execute4Mutex247,6440
+bool ComStation::moveStaging2Messages(263,6877
+
+source/common/communication/socket.cpp,106
+Socket Socket::sInstance;3,25
+Socket &gSocket gSocket4,52
+Socket::Socket(6,93
+Socket::~Socket(16,251
+
+source/common/communication/test/test.cpp,91
+class Checker9,119
+    bool execute4Mutex(Checker::execute4Mutex12,143
+int main(19,314
+
+source/common/mask/test/test.cpp,16
+int main(9,145
+
+source/common/regex/test/test.cpp,15
+int main(7,65
+
+source/common/sequence/test/test.cpp,122
+class P:P9,108
+    bool yield(P::yield12,162
+class Sqr:Sqr19,281
+    bool yield(Sqr::yield22,344
+int main(29,447
+
+source/common/vector/test/test.cpp,17
+int main(10,133
+
+source/common/cube/test/test.cpp,16
+int main(9,104
+
+source/common/data/data.cpp,182
+Data::Data(9,102
+Data::Data(30,647
+Data::~Data(62,1709
+bool Data::loadAsStrings(68,1779
+bool Data::convertStringsToDatums(122,3257
+FieldTypeT Data::determineFieldType(171,4969
+
+source/common/data/datum.cpp,62
+string Datum::fieldTypeToString(3,22
+int Datum::size(20,397
+
+source/common/data/test/test.cpp,260
+class CollectRecord:CollectRecord9,107
+    bool yield(CollectRecord::yield12,181
+class Printer:Printer19,307
+    bool preYield(Printer::preYield22,355
+    bool yield(Printer::yield28,509
+    bool postYield(Printer::postYield36,768
+int main(46,956
+
+source/common/network/test/test.cpp,179
+class VisualizationH:VisualizationH12,184
+    VisualizationH(VisualizationH::VisualizationH15,237
+    virtual bool dynamics(VisualizationH::dynamics20,390
+int main(51,1315
+
+source/common/image/test/test.cpp,16
+int main(9,117
+
+source/common/math/math.cpp,116
+namespace Math7,64
+    bool computeLinTrans(Math::computeLinTrans11,291
+    bool linTrans(Math::linTrans22,597
+
+source/common/math/distribution/random.cpp,32
+bool Random::mInitialized 3,23
+
+source/common/math/distribution/test/test.cpp,17
+int main(11,133
+
+source/common/math/sampling/test/test.cpp,134
+double rosenBrock(7,128
+class RosenBrockD:RosenBrockD12,217
+    double logDensity(RosenBrockD::logDensity15,283
+int main(21,397
+
+source/common/sleep/test/test.cpp,15
+int main(3,24
+
+source/common/array/test/test.cpp,408
+class Printer:Printer8,83
+    bool preYield(Printer::preYield11,137
+    bool yield(Printer::yield16,301
+class Printer2:Printer223,444
+    bool yield(Printer2::yield26,499
+class Collector:Collector35,704
+    bool yield(Collector::yield38,768
+class Each2:Each245,878
+    bool yield(Each2::yield48,934
+class Collect2:Collect255,1081
+    bool yield(Collect2::yield58,1148
+int main(65,1263
+
+source/common/threading/thread.cpp,105
+int Thread::start(3,23
+void *Thread::staticDummy(Thread::staticDummy9,140
+void Thread::finish(16,275
+
+source/common/threading/test/test.cpp,305
+class Printer:Printer9,105
+    Printer(Printer::Printer12,144
+    virtual bool execute(Printer::execute15,205
+class Grabber:Grabber28,452
+    Grabber(Grabber::Grabber31,491
+    bool execute4Mutex(Grabber::execute4Mutex34,575
+    virtual bool execute(Grabber::execute41,789
+int main(55,1041
+
+source/global/initialization.cpp,44
+bool initialize(4,46
+bool finalize(13,244
+
+source/nn/test/test.cpp,714
+enum eTask23,463
+    eCreateData,eTask::eCreateData25,476
+    eCreateTestData,eTask::eCreateTestData26,493
+    eTrainNN,eTask::eTrainNN27,514
+    eTrainMaskedNN,eTask::eTrainMaskedNN28,528
+    eTrainMetropoliseTask::eTrainMetropolis29,548
+typedef MLP<double> MLPT;32,573
+class Model:Model34,600
+    Model(Model::Model37,660
+    virtual ~Model(Model::~Model42,749
+    void set(Model::set50,891
+    void show(Model::show74,1801
+    double logDensity(Model::logDensity80,2037
+vector<vector<vector<double> > > *Model::sParameter Model::sParameter103,2749
+int main(105,2810
+#define dirRaw 113,3017
+#define fnData 114,3060
+        typedef MaskedFunction<double,0,2,3,MLPT> MaskFT;311,10298
+
+source/nn/test/testCreateImageData.cpp,39
+#define dirRaw 9,106
+int main(12,148
+
+source/nn/test/testLearnNN.cpp,37
+#define fnBeans 3,26
+int main(5,74
+
+source/physics/test/test.cpp,17
+int main(10,113
+
+source/burst/test/test.cpp,223
+class VisualizationH:VisualizationH9,114
+    VisualizationH(VisualizationH::VisualizationH12,167
+    virtual bool dynamics(VisualizationH::dynamics14,235
+int main(20,329
+    typedef MLP<vector<double> > MLPT;34,658
+
+source/neural/mlp/mlp.hpp,2056
+#define mlp_h2,14
+struct MLP_Traits16,243
+    typedef FunctionLayerFromClass<Neuron<eNeuronTanh>, double, 0, 1> NeuronLayerTanhT;MLP_Traits::NeuronLayerTanhT18,263
+    typedef FunctionLayerFromClass<Neuron<eNeuronSigmoid>, double, 0, 1> NeuronLayerSigmoidT;MLP_Traits::NeuronLayerSigmoidT19,351
+    typedef FunctionLayerFromClass<Neuron<eNeuronLinear>, double, 0, 1> NeuronLayerLinearT;MLP_Traits::NeuronLayerLinearT20,445
+    static T& convertOutput(MLP_Traits::convertOutput22,538
+    static FunctionWithParameter<double, 1, 1, 2>* createLayer(MLP_Traits::createLayer23,606
+struct MLP_Traits<MLP_Traits59,1941
+    typedef FunctionFromClass<Neuron<eNeuronTanh, 2>, double, 0, 1, 2> NeuronTanhT;MLP_Traits::NeuronTanhT61,1969
+    typedef FunctionFromClass<Neuron<eNeuronSigmoid, 2>, double, 0, 1, 2> NeuronSigmoidT;MLP_Traits::NeuronSigmoidT62,2053
+    typedef FunctionFromClass<Neuron<eNeuronLinear, 2>, double, 0, 1, 2> NeuronLinearT;MLP_Traits::NeuronLinearT63,2143
+    static double& convertOutput(MLP_Traits::convertOutput65,2232
+    static FunctionWithParameter<double, 0, 1, 2>* createLayer(MLP_Traits::createLayer66,2313
+class MLP:MLP112,3969
+    typedef typename Dimension<double, 3>::type ParameterType;MLP::ParameterType115,4064
+    typedef typename Dimension<double, 1 + OutputDim>::type InputDerivativeType;MLP::InputDerivativeType118,4192
+    typedef typename Dimension<double, 3 + OutputDim>::type ParameterDerivativeType;MLP::ParameterDerivativeType119,4273
+    typedef FunctionWithParameter<double, 1, 1, 2> InputLayerType;MLP::InputLayerType121,4359
+    typedef FunctionWithParameter<double, OutputDim, 1, 2> OutputLayerType;MLP::OutputLayerType122,4426
+    MLP(MLP::MLP124,4503
+    MLP(MLP::MLP125,4534
+    virtual bool clone(MLP::clone129,4710
+    bool setStructure(MLP::setStructure133,4836
+    bool computeOutput(MLP::computeOutput169,6124
+    bool computeDerivativeParameter(MLP::computeDerivativeParameter186,6815
+    ParameterType *generateParameter(MLP::generateParameter201,7399
+
+source/neural/neuron/neuron.hpp,836
+#define neuron_h2,17
+enum NeuronE13,169
+    eNeuronTanh,NeuronE::eNeuronTanh15,184
+    eNeuronSigmoid,NeuronE::eNeuronSigmoid16,201
+    eNeuronLinearNeuronE::eNeuronLinear17,221
+struct Neuron_Traits22,269
+    typedef vector<double> WeightType;Neuron_Traits::WeightType24,292
+    static vector<double>& getWeights(Neuron_Traits::getWeights25,331
+    static bool setWeights(Neuron_Traits::setWeights26,397
+struct Neuron_Traits<Neuron_Traits33,551
+    typedef vector<vector<double> > WeightType;Neuron_Traits::WeightType35,577
+    static vector<double>& getWeights(Neuron_Traits::getWeights36,625
+    static bool setWeights(Neuron_Traits::setWeights42,787
+template< NeuronE type 52,1060
+    typedef typename Neuron_Traits<Neuron_Traits56,1141
+    Neuron& operator=(operator=78,1928
+namespace Serialize199,6147
+
+source/common/serialization/serialize.hpp,1320
+#define serialize_h2,20
+namespace Serialize10,121
+    typedef int TypeID;Serialize::TypeID12,143
+    typedef void* (*FuncptrAllocator)Serialize::FuncptrAllocator15,233
+    typedef bool (*FuncptrSerialize)Serialize::FuncptrSerialize17,340
+    typedef bool (*FuncptrUnserialize)Serialize::FuncptrUnserialize19,462
+    struct MethodsSerialize::Methods34,1179
+        static T* allocate(Serialize::Methods::allocate37,1240
+        static bool serialize(Serialize::Methods::serialize41,1346
+        static bool unserialize(Serialize::Methods::unserialize45,1481
+        static bool serializeUsingPtr(Serialize::Methods::serializeUsingPtr49,1618
+        static bool unserializeUsingPtr(Serialize::Methods::unserializeUsingPtr53,1762
+#define SetType(61,2039
+#define SetTypeAndFunctions(90,4001
+    inline TypeID typeID(Serialize::typeID118,6064
+    inline bool allocate(Serialize::allocate124,6166
+    inline bool serialize(Serialize::serialize131,6307
+    inline bool serializeWithType(Serialize::serializeWithType136,6442
+    inline bool unserialize(Serialize::unserialize144,6669
+    inline bool unserializeWithType(Serialize::unserializeWithType149,6806
+    inline bool unserializeWithType(Serialize::unserializeWithType165,7249
+    bool registerType(Serialize::registerType182,7905
+
+source/common/visualization/basis.hpp,414
+#define basis_h2,16
+class Basis10,97
+    Basis(Basis::Basis13,119
+    Basis(Basis::Basis16,265
+    bool setBasis(Basis::setBasis18,363
+    void screen2Virtual(Basis::screen2Virtual27,765
+    void virtual2Screen(Basis::virtual2Screen32,945
+    void screenWH2VirtualWH(Basis::screenWH2VirtualWH37,1121
+    void virtualWH2ScreenWH(Basis::virtualWH2ScreenWH42,1268
+    void print(Basis::print47,1413
+
+source/common/visualization/canvas.hpp,1555
+#define canvas_h2,17
+class Canvas14,200
+        OX_Center,Canvas::OX_Center19,246
+        OX_Left,Canvas::OX_Left20,265
+        OX_Baseline,Canvas::OX_Baseline21,282
+        OX_Right,Canvas::OX_Right22,303
+    } OutlineX;Canvas::OutlineX23,321
+        OY_Center,Canvas::OY_Center26,360
+        OY_Top,Canvas::OY_Top27,379
+        OY_Baseline,Canvas::OY_Baseline28,395
+        OY_Bottom,Canvas::OY_Bottom29,416
+    } OutlineY;Canvas::OutlineY30,435
+    Canvas(Canvas::Canvas32,452
+    ~Canvas(Canvas::~Canvas44,771
+    bool initialize(Canvas::initialize46,800
+    bool initialized(Canvas::initialized65,1556
+    long width(Canvas::width67,1602
+    long height(Canvas::height68,1635
+    void clear(Canvas::clear70,1671
+    void flip(Canvas::flip71,1755
+    void setColor(Canvas::setColor73,1796
+    void setLineWidth(Canvas::setLineWidth77,1939
+    void drawLine(Canvas::drawLine81,2054
+    void drawCircle(Canvas::drawCircle91,2599
+    void fillCircle(Canvas::fillCircle105,3265
+    void drawRectangle(Canvas::drawRectangle119,3929
+    void fillRectangle(Canvas::fillRectangle126,4205
+    void drawPixel(Canvas::drawPixel133,4479
+    bool setFontSize(Canvas::setFontSize183,6272
+    double getFontSize(Canvas::getFontSize195,6676
+    void drawText(Canvas::drawText200,6977
+    int createBasis(Canvas::createBasis250,8599
+    bool setBasis(Canvas::setBasis258,8834
+    void getScreenLocation(Canvas::getScreenLocation272,9246
+    void getVirtualLocation(Canvas::getVirtualLocation278,9431
+
+source/common/visualization/color.hpp,509
+#define color_h2,16
+class Color8,76
+    Color(Color::Color11,98
+    Color(Color::Color17,204
+    Color(Color::Color23,348
+    bool valid(Color::valid29,496
+    void setValid(Color::setValid30,529
+    void print(Color::print31,577
+    static Color Invalid(Color::Invalid32,683
+    static Color Black(Color::Black38,819
+    static Color White(Color::White43,924
+    static Color Red(Color::Red48,1029
+    static Color Green(Color::Green53,1128
+    static Color Blue(Color::Blue58,1233
+
+source/common/visualization/drawable.hpp,1044
+#define drawable_h2,19
+class Drawable7,86
+    Drawable(Drawable::Drawable10,111
+    void setBasis(Drawable::setBasis11,139
+    int getBasis(Drawable::getBasis12,186
+    bool draw(Drawable::draw13,222
+class Line:Line23,473
+    Line(Line::Line26,511
+    virtual bool drawLocal(Line::drawLocal33,727
+    void setCoordinates(Line::setCoordinates43,1011
+class Circle:Circle56,1264
+    Circle(Circle::Circle59,1304
+    virtual bool drawLocal(Circle::drawLocal66,1571
+    void setCentre(Circle::setCentre81,2030
+    void setRadius(Circle::setRadius82,2081
+class Rectangle:Rectangle92,2240
+    Rectangle(Rectangle::Rectangle95,2283
+    virtual bool drawLocal(Rectangle::drawLocal104,2596
+class CRectangle:CRectangle130,3229
+    CRectangle(CRectangle::CRectangle133,3274
+class Surface:Surface138,3553
+    Surface(Surface::Surface141,3594
+    Surface(Surface::Surface150,3878
+    Surface(Surface::Surface159,4165
+    Surface(Surface::Surface168,4425
+    virtual bool drawLocal(Surface::drawLocal179,4722
+
+source/common/visualization/visualization.hpp,1143
+#define visualization_h2,24
+class Visualization:Visualization15,219
+    virtual bool dynamics(Visualization::dynamics19,431
+    virtual bool onStart(Visualization::onStart21,684
+    class DrawablesVisualization::Drawables23,807
+        Drawables(Visualization::Drawables::Drawables26,845
+        void flip(Visualization::Drawables::flip28,902
+        vector<Drawable*> &getCurrent(Visualization::Drawables::getCurrent29,959
+        vector<Drawable*> &get(Visualization::Drawables::get30,1045
+    Visualization(Visualization::Visualization38,1263
+    ~Visualization(Visualization::~Visualization44,1502
+    int createBasis(Visualization::createBasis49,1572
+    bool addDrawable(Visualization::addDrawable50,1678
+    void flip(Visualization::flip66,2108
+    int width(Visualization::width75,2304
+    int height(Visualization::height76,2345
+    bool clear(Visualization::clear77,2388
+    bool startThread(Visualization::startThread93,2895
+    void finishThread(Visualization::finishThread94,2943
+    virtual bool execute(Visualization::execute97,2998
+    void updateTime(Visualization::updateTime100,3060
+
+source/common/visualization/treeview/treeview.hpp,390
+#define treeview_hpp2,21
+class TreeView10,107
+    TreeView(TreeView::TreeView13,132
+    bool quit(TreeView::quit28,729
+    bool checkKeys(TreeView::checkKeys30,761
+    bool drawLine(TreeView::drawLine49,1371
+    bool show(TreeView::show64,1840
+    bool getFormat(TreeView::getFormat70,1934
+    bool clear(TreeView::clear74,1980
+    bool getInput(TreeView::getInput78,2018
+
+source/common/visualization/datavisu/datavisu.hpp,784
+#define datavisu_h2,19
+class DataVisu:DataVisu16,243
+    } Lines;DataVisu::Lines22,361
+    } Marks;DataVisu::Marks28,481
+    } Rectangles;DataVisu::Rectangles36,612
+    } Functions;DataVisu::Functions44,780
+    DataVisu(DataVisu::DataVisu46,805
+    bool addLines(DataVisu::addLines49,913
+    bool addLines(DataVisu::addLines58,1162
+    bool addLine(DataVisu::addLine66,1398
+    bool addMarks(DataVisu::addMarks75,1659
+    bool addRectangle(DataVisu::addRectangle81,1793
+    bool add2DFunction(DataVisu::add2DFunction94,2257
+    bool redraw(DataVisu::redraw112,2928
+    bool show(DataVisu::show154,4647
+    bool clear(DataVisu::clear166,4923
+    virtual bool dynamics(DataVisu::dynamics175,5116
+    bool computeMinMax(DataVisu::computeMinMax183,5301
+
+source/common/grid/grid.hpp,170
+#define grid_h2,15
+class Grid11,114
+    Grid(Grid::Grid14,135
+    bool set(Grid::set18,289
+    bool each(Grid::each34,839
+    bool collect(Grid::collect57,1479
+
+source/common/function/function.hpp,3823
+#define function_h2,19
+template <typename T,13,171
+template <typename T,int OutputD,13,171
+class Function14,219
+    Function(Function::Function17,244
+    typedef T BaseType;Function::BaseType21,315
+    typedef typename Dimension<T,OutputD>::type OutputType;Function::OutputType22,339
+    typedef typename Dimension<T,InputDim>::type InputType;Function::InputType24,441
+    typedef typename Dimension<T,OutputD+InputDim>::type InputDerivativeType;Function::InputDerivativeType25,501
+    virtual bool computeDerivativeInput(Function::computeDerivativeInput33,1030
+    virtual bool computeNumericDerivativeInput(Function::computeNumericDerivativeInput38,1288
+    virtual bool computeNumericDerivativeInputDeprecated(Function::computeNumericDerivativeInputDeprecated76,2960
+    virtual OutputType& output(Function::output114,4554
+    virtual OutputType& output(Function::output115,4605
+    virtual InputType* input(Function::input122,4756
+    virtual bool setInput(Function::setInput123,4805
+    void invalidateInput(Function::invalidateInput129,4970
+    bool derivativeInput(Function::derivativeInput136,5109
+    long outputDimension(Function::outputDimension147,5460
+    long nrInputs(Function::nrInputs148,5530
+template <typename T,163,5795
+template <typename T, int OutputD,163,5795
+template <typename T, int OutputD, int InputDim,163,5795
+class FunctionWithParameter:FunctionWithParameter164,5862
+    FunctionWithParameter(FunctionWithParameter::FunctionWithParameter167,5939
+    typedef T BaseType;FunctionWithParameter::BaseType171,6031
+    typedef typename Dimension<T,OutputD>::type OutputType;FunctionWithParameter::OutputType172,6055
+    typedef typename Dimension<T,InputDim>::type InputType;FunctionWithParameter::InputType173,6115
+    typedef typename Dimension<T,ParameterDim>::type ParameterType;FunctionWithParameter::ParameterType174,6175
+    typedef typename Dimension<T,OutputD+InputDim>::type InputDerivativeType;FunctionWithParameter::InputDerivativeType175,6243
+    typedef typename Dimension<T,OutputD+ParameterDim>::type ParameterDerivativeType;FunctionWithParameter::ParameterDerivativeType176,6321
+    virtual bool computeDerivativeParameter(FunctionWithParameter::computeDerivativeParameter179,6492
+    virtual bool computeNumericDerivativeParameter(FunctionWithParameter::computeNumericDerivativeParameter184,6775
+    virtual bool computeNumericDerivativeParameterDeprecated(FunctionWithParameter::computeNumericDerivativeParameterDeprecated221,8470
+    virtual bool multiplyDerivativeParameter(FunctionWithParameter::multiplyDerivativeParameter260,10611
+    virtual bool multiplyDerivativeParameter(FunctionWithParameter::multiplyDerivativeParameter272,11185
+    virtual OutputType& outputParameter(FunctionWithParameter::outputParameter285,11765
+    virtual ParameterType* parameter(FunctionWithParameter::parameter292,11947
+    virtual bool setParameter(FunctionWithParameter::setParameter293,12008
+    virtual bool setInputParameter(FunctionWithParameter::setInputParameter299,12202
+    bool derivativeParameter(FunctionWithParameter::derivativeParameter309,12523
+template< typename ObjectT,329,13259
+template< typename ObjectT, typename T,329,13259
+template< typename ObjectT, typename T, int OutputD,329,13259
+template< typename ObjectT, typename T, int OutputD, int InputDim,329,13259
+template< typename ObjectT, typename T, int OutputD, int InputDim, int ParamDim 329,13259
+    typedef T BaseType;334,13448
+    typedef typename Dimension<Dimension335,13472
+    typedef typename Dimension<Dimension336,13532
+    typedef typename Dimension<Dimension337,13592
+    typedef typename Dimension<T,OutputD+InputDim>::type type338,13656
+    typedef typename Dimension<T,OutputD+ParamDim>::type type339,13734
+
+source/common/function/functionChain.hpp,1301
+#define functionChain_h2,24
+template <typename OutputLT,12,227
+class FunctionChain:FunctionChain13,274
+    typedef typename InputLT::BaseType BaseType;FunctionChain::BaseType17,525
+    typedef typename OutputLT::OutputType OutputType;FunctionChain::OutputType18,574
+    typedef typename InputLT::InputType InputType;FunctionChain::InputType19,628
+    typedef vector<typename InputLT::ParameterType> ParameterType;FunctionChain::ParameterType20,679
+    typedef typename Dimension<BaseType, Dimension<OutputType>::dimension+Dimension<InputType>::dimension >::type InputDerivativeType;FunctionChain::InputDerivativeType21,746
+    typedef typename Dimension<BaseType, Dimension<OutputType>::dimension+Dimension<ParameterType>::dimension >::type ParameterDerivativeType;FunctionChain::ParameterDerivativeType22,881
+    FunctionChain(FunctionChain::FunctionChain31,1539
+    FunctionChain(FunctionChain::FunctionChain32,1581
+    virtual bool clone(FunctionChain::clone38,1783
+    bool setStructure(FunctionChain::setStructure42,1930
+    virtual bool computeOutput(FunctionChain::computeOutput50,2166
+    virtual bool computeDerivativeInput(FunctionChain::computeDerivativeInput73,3024
+    virtual bool computeDerivativeParameter(FunctionChain::computeDerivativeParameter76,3172
+
+source/common/function/functionLayer.hpp,1662
+#define functionLayer_h2,24
+template< typename ObjectT,14,276
+template< typename ObjectT, typename T,14,276
+template< typename ObjectT, typename T, int OutputDim,14,276
+class FunctionLayerFromClass:FunctionLayerFromClass15,346
+    typedef T BaseType;FunctionLayerFromClass::BaseType19,455
+    typedef typename Dimension<T,OutputDim+1>::type OutputType;FunctionLayerFromClass::OutputType20,479
+    typedef typename Dimension<T,InputDim>::type InputType;FunctionLayerFromClass::InputType21,543
+    typedef typename Dimension<T,InputDim+1>::type ParameterType;FunctionLayerFromClass::ParameterType22,603
+    typedef typename Dimension<T,OutputDim+InputDim+1>::type InputDerivativeType;FunctionLayerFromClass::InputDerivativeType23,669
+    typedef typename Dimension<T,OutputDim+InputDim+2>::type ParameterDerivativeType;FunctionLayerFromClass::ParameterDerivativeType24,751
+    FunctionLayerFromClass(FunctionLayerFromClass::FunctionLayerFromClass26,838
+    ~FunctionLayerFromClass(FunctionLayerFromClass::~FunctionLayerFromClass41,1344
+    virtual bool clone(FunctionLayerFromClass::clone50,1597
+    void desc(FunctionLayerFromClass::desc55,1749
+    virtual bool computeOutput(FunctionLayerFromClass::computeOutput64,1992
+    virtual bool computeDerivativeInput(FunctionLayerFromClass::computeDerivativeInput77,2407
+    virtual bool computeDerivativeParameter(FunctionLayerFromClass::computeDerivativeParameter91,2923
+    virtual bool multiplyDerivativeParameter(FunctionLayerFromClass::multiplyDerivativeParameter114,3832
+    virtual bool multiplyDerivativeParameter(FunctionLayerFromClass::multiplyDerivativeParameter138,4855
+
+source/common/function/maskedFunction.hpp,870
+#define maskedFunction_h2,25
+template <typename T,7,98
+template <typename T, int OutputDim,7,98
+template <typename T, int OutputDim, int InputDim,7,98
+template <typename T, int OutputDim, int InputDim, int ParameterDim,7,98
+class MaskedFunction:MaskedFunction8,187
+    typedef typename Dimension<T,OutputDim+InputDim>::type InputDerivativeType;MaskedFunction::InputDerivativeType11,286
+    typedef typename Dimension<T,OutputDim+ParameterDim>::type ParameterDerivativeType;MaskedFunction::ParameterDerivativeType12,366
+    MaskedFunction(MaskedFunction::MaskedFunction17,634
+    virtual bool clone(MaskedFunction::clone18,730
+    bool computeOutput(MaskedFunction::computeOutput22,869
+    bool computeDerivativeInput(MaskedFunction::computeDerivativeInput72,2964
+    bool computeDerivativeParameter(MaskedFunction::computeDerivativeParameter73,3045
+
+source/common/function/optimalization/optimalization.hpp,246
+#define optimalization_h2,25
+class Optimizer11,165
+    typedef class: public Block<Optimizer::Block14,191
+    Optimizer(Optimizer::Optimizer22,435
+    bool optimize(Optimizer::optimize30,858
+    bool optimize(Optimizer::optimize35,1085
+
+source/common/clock/clock.hpp,115
+#define clock_hpp2,18
+class Clock9,189
+    Clock(Clock::Clock12,211
+    TimeStamp elapse(Clock::elapse20,381
+
+source/common/clock/timestamp.hpp,386
+#define timestamp_hpp2,22
+class TimeStamp9,110
+    TimeStamp(TimeStamp::TimeStamp13,137
+    bool set(TimeStamp::set18,253
+    long seconds(TimeStamp::seconds32,692
+    long microSeconds(TimeStamp::microSeconds33,742
+    bool now(TimeStamp::now34,798
+    bool add(TimeStamp::add44,1060
+    bool diff(TimeStamp::diff56,1525
+    } BrokenTime;TimeStamp::BrokenTime76,1989
+
+source/common/matrix/matrix.hpp,859
+#define matrix_h2,17
+class Matrix:Matrix12,144
+    Matrix(Matrix::Matrix15,195
+    Matrix(Matrix::Matrix19,284
+    bool setSize(Matrix::setSize24,423
+    vector<vector<T> > &data(Matrix::data34,672
+    long nrRows(Matrix::nrRows36,719
+    long nrCols(Matrix::nrCols37,760
+    bool setElement(Matrix::setElement38,801
+    bool setElements(Matrix::setElements48,1171
+    bool setElements(Matrix::setElements62,1647
+    Matrix &operator=(Matrix::operator=78,2218
+    bool writeTo(Matrix::writeTo88,2643
+    static Matrix* allocate4Serialize(Matrix::allocate4Serialize104,3089
+    bool serialize4Serialize(Matrix::serialize4Serialize105,3157
+    bool unserialize4Serialize(Matrix::unserialize4Serialize118,3696
+    bool match(Matrix::match142,4516
+basic_ostream<char> &operator<<(operator<<162,5180
+namespace Serialize170,5330
+
+source/common/matrix/matrixFunction.hpp,720
+#define cubeFunction_h2,23
+class MatrixFunction:MatrixFunction16,479
+    typedef vector<vector<T> > DataType;MatrixFunction::DataType19,539
+    enum BoundaryTypeMatrixFunction::BoundaryType20,580
+        eFixedValue,MatrixFunction::BoundaryType::eFixedValue22,608
+        eRepeatBoundary,MatrixFunction::BoundaryType::eRepeatBoundary23,629
+        eRepeatMatrixMatrixFunction::BoundaryType::eRepeatMatrix24,654
+    MatrixFunction(MatrixFunction::MatrixFunction28,782
+    void getLocation(MatrixFunction::getLocation40,1176
+    bool setMatrix(MatrixFunction::setMatrix48,1343
+    virtual bool computeOutput(MatrixFunction::computeOutput132,4841
+    virtual bool clone(MatrixFunction::clone230,8154
+
+source/common/reporting/reporting.hpp,287
+#define reporting_hpp2,22
+namespace Reporting11,129
+    double classificationRate(Reporting::classificationRate13,151
+    bool confusionCounts(Reporting::confusionCounts29,697
+    bool rocCurve(Reporting::rocCurve84,2365
+    double areaUnderROC(Reporting::areaUnderROC141,3831
+
+source/common/region/convexRegion.hpp,1880
+#define convexRegion_hpp2,25
+class ConvexRegion18,301
+    class PointConvexRegion::Point21,330
+        Point(ConvexRegion::Point::Point24,364
+        void set(ConvexRegion::Point::set27,452
+        bool operator!=(ConvexRegion::Point::operator!=32,551
+    static Point* allocate4Serialize(ConvexRegion::Point::allocate4Serialize36,670
+    bool serialize4Serialize(ConvexRegion::Point::serialize4Serialize37,730
+    bool unserialize4Serialize(ConvexRegion::Point::unserialize4Serialize41,895
+    ConvexRegion(ConvexRegion::ConvexRegion50,1108
+    bool learn(ConvexRegion::learn53,1153
+    bool learn(ConvexRegion::learn296,10604
+    bool filter(ConvexRegion::filter323,11833
+    bool isInternal(ConvexRegion::isInternal338,12300
+    bool eachSegment(ConvexRegion::eachSegment349,12652
+    long nrSegments(ConvexRegion::nrSegments364,13129
+    bool getSegment(ConvexRegion::getSegment373,13389
+    const vector<Point> &getPoints(ConvexRegion::getPoints393,14004
+    void print(ConvexRegion::print395,14059
+    static ConvexRegion* allocate4Serialize(ConvexRegion::allocate4Serialize405,14394
+    bool serialize4Serialize(ConvexRegion::serialize4Serialize406,14468
+    bool unserialize4Serialize(ConvexRegion::unserialize4Serialize410,14592
+    class BlockH:ConvexRegion::BlockH419,14826
+        BlockH(ConvexRegion::BlockH::BlockH422,14881
+        bool yield(ConvexRegion::BlockH::yield426,15061
+    class L1Dist:ConvexRegion::L1Dist442,15528
+        L1Dist(ConvexRegion::L1Dist::L1Dist445,15598
+        double logDensity(ConvexRegion::L1Dist::logDensity449,15768
+    class Proposal:ConvexRegion::Proposal479,16917
+        Proposal(ConvexRegion::Proposal::Proposal482,17014
+        bool draw(ConvexRegion::Proposal::draw489,17237
+    bool onTheLeftSide(ConvexRegion::onTheLeftSide530,18833
+namespace Serialize552,19445
+
+source/common/bayesian/posteriorLogProb.hpp,937
+#define posteriorLogProb_h2,27
+template<typename ModelT,11,163
+template<typename ModelT, typename InputT,11,163
+template<typename ModelT, typename InputT, typename TargetT,11,163
+template<typename ModelT, typename InputT, typename TargetT, typename PriorT 11,163
+    typedef typename ModelT::ParameterType 15,405
+    typedef typename ModelT::BaseType 16,459
+    typedef InputType InputDerivativeType;17,507
+    class OutputBlock:OutputBlock32,1038
+        OutputBlock(OutputBlock::OutputBlock35,1119
+        bool preYield(OutputBlock::preYield37,1185
+        bool yield(OutputBlock::yield42,1324
+        bool yield(OutputBlock::yield60,2060
+    class DerivativeBlock:DerivativeBlock87,2939
+        DerivativeBlock(DerivativeBlock::DerivativeBlock90,3024
+        bool preYield(DerivativeBlock::preYield93,3179
+        bool yield(DerivativeBlock::yield101,3479
+        bool yield(DerivativeBlock::yield122,4339
+
+source/common/vectar/vectar.hpp,648
+#define vectar_h2,17
+class MeanVectar10,157
+    MeanVectar(MeanVectar::MeanVectar13,184
+    bool set(MeanVectar::set19,365
+    class Block2:MeanVectar::Block231,743
+        Block2(MeanVectar::Block2::Block234,798
+        ~Block2(MeanVectar::Block2::~Block236,861
+        bool preYield(MeanVectar::Block2::preYield40,951
+        bool yield(MeanVectar::Block2::yield45,1064
+        bool postYield(MeanVectar::Block2::postYield52,1272
+    class Block1:MeanVectar::Block162,1564
+        Block1(MeanVectar::Block1::Block165,1619
+        bool yield(MeanVectar::Block1::yield69,1747
+    bool generate(MeanVectar::generate83,2084
+
+source/common/file/dir.hpp,288
+#define dir_h2,14
+class Dir18,320
+    Dir(Dir::Dir21,340
+    ~Dir(Dir::~Dir29,596
+    bool changeDir(Dir::changeDir35,725
+    bool entries(Dir::entries40,821
+    string origDir(Dir::origDir110,2993
+    string toString(Dir::toString114,3063
+    string pwd(Dir::pwd121,3222
+
+source/common/file/file.hpp,79
+#define file_h2,15
+namespace File9,91
+    bool readAll(File::readAll11,108
+
+source/common/communication/comPoint.hpp,169
+#define comPoint_h2,19
+class ComPoint10,166
+    ComPoint(ComPoint::ComPoint13,191
+    int port(ComPoint::port17,304
+    string hostname(ComPoint::hostname18,335
+
+source/common/communication/comStation.hpp,303
+#define comStation_h2,21
+typedef list<Message*> MessageListT;14,191
+class AcceptThread:AcceptThread23,521
+    AcceptThread(AcceptThread::AcceptThread26,565
+class ComStation38,905
+    ComStation(ComStation::ComStation41,932
+bool ComStation::send(76,1988
+bool ComStation::checkMessages(88,2235
+
+source/common/communication/message.hpp,590
+#define message_h2,18
+enum MessageTypeE14,199
+    eMessageRequest,MessageTypeE::eMessageRequest16,219
+    eMessageResponse,MessageTypeE::eMessageResponse17,240
+    eMessageEventMessageTypeE::eMessageEvent18,262
+class Message21,284
+    Message(Message::Message24,308
+    Message(Message::Message25,325
+    Message(Message::Message30,503
+    static Message* allocate4Serialize(Message::allocate4Serialize36,658
+    bool serialize4Serialize(Message::serialize4Serialize37,725
+    bool unserialize4Serialize(Message::unserialize4Serialize42,873
+namespace Serialize49,1058
+
+source/common/communication/socket.hpp,134
+#define socket_hpp2,20
+class Socket15,303
+    static Socket &instance(Socket::instance18,329
+    bool valid(Socket::valid19,379
+
+source/common/mask/matrixMask.hpp,665
+#define matrixMask_hpp2,23
+class MatrixMask14,215
+    MatrixMask(MatrixMask::MatrixMask17,242
+    MatrixMask(MatrixMask::MatrixMask18,269
+    bool filter(MatrixMask::filter25,466
+    bool learn(MatrixMask::learn43,1131
+    void print(MatrixMask::print92,2775
+    VectorMask &getVectorMask(MatrixMask::getVectorMask101,2978
+    class L1Dist:MatrixMask::L1Dist105,3073
+        L1Dist(MatrixMask::L1Dist::L1Dist108,3141
+        double logDensity(MatrixMask::L1Dist::logDensity111,3255
+    class Proposal:MatrixMask::Proposal132,4060
+        Proposal(MatrixMask::Proposal::Proposal135,4153
+        bool draw(MatrixMask::Proposal::draw138,4254
+
+source/common/mask/vectorMask.hpp,287
+#define vectorMask_hpp2,23
+class VectorMask11,131
+    VectorMask(VectorMask::VectorMask15,240
+    void setStartEnd(VectorMask::setStartEnd19,334
+    bool filter(VectorMask::filter26,474
+    void perturbate(VectorMask::perturbate41,980
+    void print(VectorMask::print52,1428
+
+source/common/regex/regex.hpp,227
+#define regex_h2,16
+class Regex10,117
+    Regex(Regex::Regex13,139
+    ~Regex(Regex::~Regex19,290
+    bool setRegex(Regex::setRegex25,386
+    bool match(Regex::match36,729
+    string toString(Regex::toString46,1015
+
+source/common/utils/utils.hpp,671
+#define utils_h2,16
+string indent(8,75
+namespace Utils16,206
+    T max(Utils::max32,541
+    T max(Utils::max40,634
+    T max(Utils::max48,751
+    T max(Utils::max56,893
+    T max(Utils::max64,1060
+    T max(Utils::max72,1252
+    T max(Utils::max80,1469
+    T max(Utils::max88,1711
+    T max(Utils::max96,1978
+    T max(Utils::max104,2270
+    T min(Utils::min127,2898
+    T min(Utils::min135,2991
+    T min(Utils::min143,3108
+    T min(Utils::min151,3250
+    T min(Utils::min159,3417
+    T min(Utils::min167,3609
+    T min(Utils::min175,3826
+    T min(Utils::min183,4068
+    T min(Utils::min191,4335
+    T min(Utils::min199,4627
+
+source/common/sequence/sequence.hpp,815
+#define sequence_h2,19
+class Sequence9,101
+    class EachBlockSequence::EachBlock12,126
+        bool preYield(Sequence::EachBlock::preYield15,164
+        bool yield(Sequence::EachBlock::yield16,203
+        bool postYield(Sequence::EachBlock::postYield17,242
+    class CollectBlockSequence::CollectBlock27,442
+        bool preYield(Sequence::CollectBlock::preYield30,483
+        bool yield(Sequence::CollectBlock::yield31,522
+        bool postYield(Sequence::CollectBlock::postYield32,574
+        typedef TResult ResultT;Sequence::CollectBlock::ResultT34,615
+    Sequence(Sequence::Sequence42,776
+    bool each(Sequence::each51,963
+    vector<typename Block::ResultT> *collect(Sequence::collect106,2744
+Sequence<T>::Sequence(Sequence173,4940
+Sequence<double>::Sequence(Sequence181,5075
+
+source/common/vector/vector.hpp,2448
+#define vector_h2,17
+namespace Vector19,276
+    bool inprod(Vector::inprod22,322
+    bool setUniform(Vector::setUniform37,754
+    bool setIncremental(Vector::setIncremental49,1077
+    bool setEqual(Vector::setEqual58,1306
+    bool setSame(Vector::setSame69,1565
+    bool set(Vector::set92,2082
+    bool set(Vector::set100,2219
+    bool set(Vector::set108,2380
+    bool set(Vector::set116,2565
+    bool set(Vector::set124,2774
+    bool set(Vector::set132,3007
+    bool set(Vector::set140,3264
+    bool set(Vector::set148,3545
+    bool set(Vector::set156,3850
+    bool set(Vector::set164,4179
+    bool multiplyOuter(Vector::multiplyOuter175,4585
+    bool multiplyOuter(Vector::multiplyOuter193,5124
+    bool multiplyOuter(Vector::multiplyOuter210,5632
+    struct OutputMethodsVector::OutputMethods218,5831
+        static string toString(Vector::OutputMethods::toString221,5892
+    string toString(Vector::toString296,8228
+    bool initIter(Vector::initIter303,8440
+    struct ProceedIterVector::ProceedIter321,8913
+        static bool lProceedIter(Vector::ProceedIter::lProceedIter324,8972
+    bool proceedIter(Vector::proceedIter409,11869
+    bool getAtIter(Vector::getAtIter415,12101
+    bool multiply2All(Vector::multiply2All422,12320
+    bool add2All(Vector::add2All430,12503
+    bool add(Vector::add438,12685
+    bool diff(Vector::diff446,12880
+    bool findMinMax(Vector::findMinMax454,13054
+    bool computeSum(Vector::computeSum468,13511
+    bool computeMean(Vector::computeMean477,13708
+    bool computeMean(Vector::computeMean492,14121
+    bool computeMeanSigma(Vector::computeMeanSigma506,14464
+    bool computeMeanSigma(Vector::computeMeanSigma526,15092
+    bool standardizeUsing(Vector::standardizeUsing541,15527
+    bool direction(Vector::direction550,15803
+    bool tangent(Vector::tangent557,15974
+    T angle(Vector::angle574,16436
+    double l2Norm(Vector::l2Norm583,16667
+    double l2Norm2(Vector::l2Norm2593,16892
+    bool sort(Vector::sort602,17093
+    static bool smallerThan(Vector::smallerThan610,17302
+    static bool greaterThan(Vector::greaterThan612,17413
+    bool sort(Vector::sort614,17533
+        typedef pair<T, TT> PairT;Vector::PairT622,17814
+    bool computeTrimmedMean(Vector::computeTrimmedMean646,18432
+    bool computeMedian(Vector::computeMedian671,19189
+basic_ostream<char> &operator<<(operator<<678,19332
+
+source/common/cube/cube.hpp,2076
+#define cube_h2,15
+namespace Cube11,202
+    bool setStructure(Cube::setStructure14,257
+    bool setStructure(Cube::setStructure19,373
+    bool setStructure(Cube::setStructure33,767
+    bool setStructure(Cube::setStructure38,929
+    bool add(Cube::add57,1493
+    bool diff(Cube::diff67,1930
+    bool computeMeanSigma(Cube::computeMeanSigma77,2305
+    bool multiplyRight(Cube::multiplyRight102,3129
+    bool multiplyRight(Cube::multiplyRight126,3934
+    bool multiplyRight(Cube::multiplyRight150,4745
+    bool multiplyRight(Cube::multiplyRight174,5556
+    bool multiplyRight(Cube::multiplyRight194,6200
+    bool multiplyRight(Cube::multiplyRight214,6844
+    bool multiplyRight(Cube::multiplyRight242,7835
+    bool multiplyRight(Cube::multiplyRight270,8826
+    bool multiplyRight(Cube::multiplyRight279,9067
+    bool multiplyRight(Cube::multiplyRight288,9308
+    bool multiplyRight(Cube::multiplyRight295,9564
+    bool multiplyRight(Cube::multiplyRight302,9865
+    bool multiplyRight(Cube::multiplyRight309,10130
+    bool multiplyRight(Cube::multiplyRight316,10422
+    bool multiplyRight(Cube::multiplyRight323,10687
+    bool multiplyRight(Cube::multiplyRight330,10961
+    bool multiplyRight(Cube::multiplyRight337,11235
+    bool multiplyRight(Cube::multiplyRight344,11509
+    bool multiplyRight(Cube::multiplyRight351,11765
+    bool multiplyRight(Cube::multiplyRight358,12012
+    bool multiplyRight(Cube::multiplyRight365,12250
+    bool multiply2All(Cube::multiply2All372,12542
+    bool add2All(Cube::add2All381,12826
+    bool setSame(Cube::setSame390,13109
+    long nrElements(Cube::nrElements399,13385
+    bool flatten(Cube::flatten409,13657
+    bool update(Cube::update420,14044
+    bool inproduct(Cube::inproduct435,14666
+    double l2Norm(Cube::l2Norm451,15315
+    double l2Norm2(Cube::l2Norm2462,15636
+    bool findMinMax(Cube::findMinMax472,15932
+    bool convert(Cube::convert487,16454
+    bool transformLinear(Cube::transformLinear503,17050
+    bool transpose(Cube::transpose512,17322
+
+source/common/cube/cubeDimension.hpp,353
+#define cubeDimension_h2,24
+namespace Cube8,90
+        typedef Dimension<T,dim-1> typemin;Cube::typemin16,368
+        typedef vector< typename typemin::type > type;Cube::type17,412
+        typedef T type;Cube::type22,531
+        typedef T basetype;Cube::basetype28,660
+        typedef typename Dimension<T,-1>::basetype Cube::basetype34,831
+
+source/common/cube/cubeIter.hpp,692
+#define cubeIter_h2,19
+namespace Cube13,290
+    class IteratorCube::Iterator16,349
+        Iterator(Cube::Iterator::Iterator19,386
+        Iterator(Cube::Iterator::Iterator21,437
+        BaseType *set(Cube::Iterator::set26,550
+        BaseType *change(Cube::Iterator::change42,1009
+        BaseType &operator*(Cube::Iterator::operator*59,1781
+        Iterator &operator++(Cube::Iterator::operator++63,1873
+        bool valid(Cube::Iterator::valid81,2456
+        BaseType &operator*(Cube::operator*126,3736
+        Iterator &operator++(Cube::operator++130,3828
+        BaseType &operator*(Cube::operator*172,4859
+        Iterator &operator++(Cube::operator++179,5063
+
+source/common/data/data.hpp,926
+#define data_h2,15
+class DataSource13,151
+    DataSource(DataSource::DataSource16,178
+class Data23,308
+    typedef vector<Datum>* GenericFieldPtr;Data::GenericFieldPtr26,329
+    string toString(Data::toString32,505
+    bool save(Data::save40,741
+    bool addRecord(Data::addRecord89,2433
+    bool extractField(Data::extractField137,4236
+    bool replaceField(Data::replaceField175,5493
+    bool extract(Data::extract251,8332
+    class EachBlockData::EachBlock320,11046
+        bool preYield(Data::EachBlock::preYield323,11084
+        bool yield(Data::EachBlock::yield324,11123
+        bool postYield(Data::EachBlock::postYield325,11159
+    bool eachRecord(Data::eachRecord333,11357
+    vector<string> &fieldNames(Data::fieldNames399,13348
+    long nrFields(Data::nrFields400,13403
+    bool convertStringsField(Data::convertStringsField406,13708
+    bool freeField(Data::freeField427,14410
+
+source/common/data/datum.hpp,3284
+#define datum_h2,16
+enum FieldTypeT11,131
+    eFieldTypeEmpty,FieldTypeT::eFieldTypeEmpty13,149
+    eFieldTypeString,FieldTypeT::eFieldTypeString14,170
+    eFieldTypeFloat,FieldTypeT::eFieldTypeFloat15,192
+    eFieldTypeInteger,FieldTypeT::eFieldTypeInteger16,213
+    eFieldTypeUnknownFieldTypeT::eFieldTypeUnknown17,236
+class Datum19,261
+    static bool canCreate(Datum::canCreate22,283
+    virtual string toString(Datum::toString29,448
+    virtual bool convert(Datum::convert33,581
+    virtual bool convert(Datum::convert34,629
+    virtual bool convert(Datum::convert35,678
+    virtual bool convert(Datum::convert36,729
+    virtual bool set(Datum::set38,785
+    virtual bool set(Datum::set39,828
+    virtual bool set(Datum::set40,872
+    virtual bool set(Datum::set41,918
+    class ConvertToDatum::ConvertTo43,989
+        static bool isPossible(Datum::ConvertTo::isPossible46,1027
+class Datum::ConvertTo<Datum::ConvertTo52,1119
+    static bool isPossible(Datum::ConvertTo::isPossible55,1157
+class Datum::ConvertTo<Datum::ConvertTo58,1244
+    static bool isPossible(Datum::ConvertTo::isPossible61,1283
+class Datum::ConvertTo<Datum::ConvertTo64,1370
+    static bool isPossible(Datum::ConvertTo::isPossible67,1411
+class Datum::ConvertTo<Datum::ConvertTo82,1759
+    static bool isPossible(Datum::ConvertTo::isPossible85,1800
+class StringD:StringD99,2104
+    StringD(StringD::StringD102,2142
+    StringD(StringD::StringD104,2180
+    static bool canCreate(StringD::canCreate106,2229
+    string data(StringD::data107,2281
+    string toString(StringD::toString108,2317
+    virtual bool convert(StringD::convert109,2357
+    virtual bool convert(StringD::convert110,2405
+    virtual bool convert(StringD::convert111,2454
+    virtual bool convert(StringD::convert112,2505
+    virtual bool set(StringD::set114,2566
+    virtual bool set(StringD::set121,2728
+    virtual bool set(StringD::set128,2891
+    virtual bool set(StringD::set135,3056
+class FloatD:FloatD140,3144
+    FloatD(FloatD::FloatD143,3181
+    FloatD(FloatD::FloatD145,3218
+    static bool canCreate(FloatD::canCreate147,3269
+    double data(FloatD::data188,4563
+    string toString(FloatD::toString189,4598
+    virtual bool convert(FloatD::convert195,4729
+    virtual bool convert(FloatD::convert196,4777
+    virtual bool convert(FloatD::convert197,4826
+    virtual bool convert(FloatD::convert198,4885
+    virtual bool set(FloatD::set200,4980
+    virtual bool set(FloatD::set201,5023
+    virtual bool set(FloatD::set202,5067
+    virtual bool set(FloatD::set203,5123
+class IntegerD:IntegerD216,5371
+    IntegerD(IntegerD::IntegerD219,5410
+    IntegerD(IntegerD::IntegerD221,5455
+    static bool canCreate(IntegerD::canCreate223,5506
+    long data(IntegerD::data244,6105
+    string toString(IntegerD::toString245,6138
+    virtual bool convert(IntegerD::convert251,6269
+    virtual bool convert(IntegerD::convert252,6325
+    virtual bool convert(IntegerD::convert253,6382
+    virtual bool convert(IntegerD::convert254,6441
+    virtual bool set(IntegerD::set256,6536
+    virtual bool set(IntegerD::set257,6589
+    virtual bool set(IntegerD::set258,6643
+    virtual bool set(IntegerD::set259,6689
+
+source/common/network/edge.hpp,270
+#define edge_h2,15
+class Edge11,108
+    Edge(Edge::Edge14,129
+    Vertex *start(Edge::start17,211
+    Vertex *end(Edge::end18,248
+    Vertex *otherSide(Edge::otherSide19,281
+    bool connects2(Edge::connects220,368
+    string toString(Edge::toString21,452
+
+source/common/network/network.hpp,621
+#define network_h2,18
+class MutationCfg14,183
+    MutationCfg(MutationCfg::MutationCfg17,211
+class Network30,524
+    Network(Network::Network33,548
+    ~Network(Network::~Network45,929
+    bool addVertex(Network::addVertex53,1141
+    Network *duplicate(Network::duplicate61,1364
+    bool addEdge(Network::addEdge74,1812
+    bool removeVertex(Network::removeVertex82,2100
+    long nrVertices(Network::nrVertices111,3090
+    Vertex *getVertex(Network::getVertex112,3139
+    string toString(Network::toString113,3192
+    bool expand(Network::expand123,3584
+    bool mutate(Network::mutate197,6292
+
+source/common/network/vertex.hpp,653
+#define vertex_h2,17
+class Vertex12,138
+    Vertex(Vertex::Vertex15,161
+    bool addEdge(Vertex::addEdge16,187
+    bool removeEdge(Vertex::removeEdge17,242
+    void setIndex(Vertex::setIndex29,540
+    long index(Vertex::index30,588
+    long nrNeighbours(Vertex::nrNeighbours32,623
+    Vertex *getNeighbour(Vertex::getNeighbour33,671
+    void setCo(Vertex::setCo35,742
+    void setRandomCo(Vertex::setRandomCo36,813
+    void getCo(Vertex::getCo37,879
+    void clearForce(Vertex::clearForce39,952
+    void addForce(Vertex::addForce40,1005
+    void getForce(Vertex::getForce41,1112
+    string toString(Vertex::toString43,1172
+
+source/common/image/image.hpp,302
+#define image_h2,16
+class Image15,194
+    Image(Image::Image18,216
+    bool loadImage(Image::loadImage21,297
+    bool valid(Image::valid65,1863
+    string toString(Image::toString66,1902
+    vector<vector<int> > &data(Image::data95,3016
+basic_ostream<char> &operator<<(operator<<105,3229
+
+source/common/linear/linear.hpp,50
+#define linear_h2,17
+class LinearTransform9,233
+
+source/common/math/math.hpp,898
+#define math_h2,15
+namespace Math8,74
+    class UnitSegmentInterpolationMath::UnitSegmentInterpolation18,605
+        UnitSegmentInterpolation(Math::UnitSegmentInterpolation::UnitSegmentInterpolation21,658
+        UnitSegmentInterpolation(Math::UnitSegmentInterpolation::UnitSegmentInterpolation23,721
+        bool set(Math::UnitSegmentInterpolation::set24,789
+        double output(Math::UnitSegmentInterpolation::output30,940
+    class UnitSquareInterpolationMath::UnitSquareInterpolation37,1142
+        UnitSquareInterpolation(Math::UnitSquareInterpolation::UnitSquareInterpolation40,1194
+        UnitSquareInterpolation(Math::UnitSquareInterpolation::UnitSquareInterpolation42,1268
+        bool set(Math::UnitSquareInterpolation::set43,1370
+        double output(Math::UnitSquareInterpolation::output51,1618
+        void print(Math::UnitSquareInterpolation::print52,1695
+
+source/common/math/distribution/bernoulli.hpp,398
+#define bernoulli_h2,20
+class BernoulliDistribution:BernoulliDistribution12,150
+    BernoulliDistribution(BernoulliDistribution::BernoulliDistribution15,215
+    double density(BernoulliDistribution::density18,291
+    double logDensity(BernoulliDistribution::logDensity22,396
+    void setProbTrue(BernoulliDistribution::setProbTrue26,490
+    bool draw(BernoulliDistribution::draw27,552
+
+source/common/math/distribution/distribution.hpp,830
+#define distribution_h2,23
+class Distribution9,117
+    typedef DomainT DomainType;Distribution::DomainType12,146
+    Distribution(Distribution::Distribution14,179
+    double density(Distribution::density15,200
+    double logDensity(Distribution::logDensity16,267
+    bool draw(Distribution::draw17,318
+template <typename DomainT,26,544
+class ConditionalDistribution:ConditionalDistribution27,590
+    typedef DomainT DomainType;ConditionalDistribution::DomainType30,660
+    typedef DomainC ConditionType;ConditionalDistribution::ConditionType31,692
+    ConditionalDistribution(ConditionalDistribution::ConditionalDistribution33,728
+    double density(ConditionalDistribution::density34,760
+    double logDensity(ConditionalDistribution::logDensity35,863
+    bool draw(ConditionalDistribution::draw36,940
+
+source/common/math/distribution/gaussian.hpp,820
+#define gaussian_h2,19
+template <typename DomainT 13,168
+class GaussianD<GaussianD43,930
+    typedef vector<T> DomainType;GaussianD::DomainType46,1001
+    GaussianD(GaussianD::GaussianD48,1036
+    GaussianD(GaussianD::GaussianD53,1175
+    double logDensity(GaussianD::logDensity63,1455
+    bool gradLogDensity(GaussianD::gradLogDensity79,2139
+    void setMean(GaussianD::setMean98,2822
+    void setMean(GaussianD::setMean99,2874
+    bool draw(GaussianD::draw100,2916
+template <typename DomainT 124,3513
+class GaussianCD<GaussianCD146,4082
+    typedef vector<T> DomainType;GaussianCD::DomainType149,4176
+    GaussianCD(GaussianCD::GaussianCD151,4211
+    GaussianCD(GaussianCD::GaussianCD153,4267
+    double logDensity(GaussianCD::logDensity156,4345
+    bool draw(GaussianCD::draw161,4515
+
+source/common/math/distribution/kernel.hpp,98
+#define kernel_hpp2,19
+template <typename DomainT 15,275
+    typedef DomainT DomainType;19,366
+
+source/common/math/distribution/random.hpp,546
+#define random_h2,17
+class Random12,149
+    Random(Random::Random15,172
+    static void initialize(Random::initialize19,232
+    static void setSeed(Random::setSeed27,416
+    static double drawUniform(Random::drawUniform33,542
+    static double drawUniform(Random::drawUniform34,607
+    static long drawUniformDiscrete(Random::drawUniformDiscrete36,747
+    static bool drawDiscrete(Random::drawDiscrete41,904
+    static double drawGaussian(Random::drawGaussian58,1619
+    static double drawGaussian(Random::drawGaussian86,2511
+
+source/common/math/sampling/metropolis.hpp,248
+#define metropolis_h2,21
+template <typename TargetD,8,119
+class Metropolis9,167
+    Metropolis(Metropolis::Metropolis12,194
+    bool run(Metropolis::run18,394
+    vector<typename TargetD::DomainType> locations(Metropolis::locations70,2447
+
+source/common/block/block.hpp,297
+#define block_h2,16
+class Block11,251
+    typedef ContextT ContextType;Block::ContextType14,273
+    Block(Block::Block16,308
+    bool preYield(Block::preYield19,346
+    bool yield(Block::yield20,380
+    bool postYield(Block::postYield21,479
+    bool postYield(Block::postYield23,540
+
+source/common/sleep/sleep.hpp,86
+#define sleep_hpp2,19
+void sleep(7,80
+void nanosleep(11,133
+void nanosleep(20,257
+
+source/common/array/array.hpp,985
+#define array_h2,16
+class Nothing8,74
+template<typename T,12,94
+template<typename T, typename T2=12,94
+    class CollectBlock27,422
+        bool preYield(CollectBlock::preYield30,463
+        bool yield(CollectBlock::yield31,514
+        bool postYield(CollectBlock::postYield32,575
+        typedef TResult ResultT;CollectBlock::ResultT34,616
+    class EachBlock125,3390
+        bool preYield(EachBlock::preYield128,3428
+        bool yield(EachBlock::yield129,3471
+        bool postYield(EachBlock::postYield130,3511
+    class CollectBlock136,3635
+        bool preYield(CollectBlock::preYield139,3676
+        bool yield(CollectBlock::yield140,3719
+        bool postYield(CollectBlock::postYield141,3772
+        typedef TResult ResultT;CollectBlock::ResultT143,3813
+    Array(147,3898
+    Array(148,3912
+    void set(149,3952
+    bool each(151,4024
+    vector<typename Block::ResultT> *collect(collect185,5068
+    vector<T> *mpVector;mpVector225,6351
+
+source/common/threading/thread.hpp,324
+#define thread_h2,17
+class Thread6,57
+    Thread(Thread::Thread9,80
+    bool isRunning(Thread::isRunning13,157
+    void setRunning(Thread::setRunning17,278
+class Mutex24,399
+    Mutex(Mutex::Mutex27,421
+    bool access(Mutex::access31,573
+    void lock(Mutex::lock39,791
+    void unlock(Mutex::unlock43,868
+
+source/global/initialization.hpp,30
+#define initialization_h2,25
+
+source/global/typeIDs.hpp,3418
+#define typeids_h2,18
+namespace Serialize8,145
+    enum TypeIDHSerialize::TypeIDH10,167
+        eTypeIDint,Serialize::TypeIDH::eTypeIDint12,190
+        eTypeIDlong,Serialize::TypeIDH::eTypeIDlong13,210
+        eTypeIDdouble,Serialize::TypeIDH::eTypeIDdouble14,231
+        eTypeIDstring,Serialize::TypeIDH::eTypeIDstring15,254
+        eTypeIDvector,Serialize::TypeIDH::eTypeIDvector16,277
+        eTypeIDVectorInt,Serialize::TypeIDH::eTypeIDVectorInt17,300
+        eTypeIDVectorLong,Serialize::TypeIDH::eTypeIDVectorLong18,326
+        eTypeIDVectorDouble,Serialize::TypeIDH::eTypeIDVectorDouble19,353
+        eTypeIDVectorVectorDouble,Serialize::TypeIDH::eTypeIDVectorVectorDouble20,382
+        eTypeIDVectorVectorVectorDouble,Serialize::TypeIDH::eTypeIDVectorVectorVectorDouble21,417
+        eTypeIDMessage,Serialize::TypeIDH::eTypeIDMessage22,458
+        eTypeIDNeuronTanh,Serialize::TypeIDH::eTypeIDNeuronTanh23,482
+        eTypeIDNeuronSigmoid,Serialize::TypeIDH::eTypeIDNeuronSigmoid24,509
+        eTypeIDNeuronLinear,Serialize::TypeIDH::eTypeIDNeuronLinear25,539
+        eTypeIDMatrixInt,Serialize::TypeIDH::eTypeIDMatrixInt26,568
+        eTypeIDMatrixLong,Serialize::TypeIDH::eTypeIDMatrixLong27,594
+        eTypeIDMatrixDouble,Serialize::TypeIDH::eTypeIDMatrixDouble28,621
+        eTypeIDVectorMatrixInt,Serialize::TypeIDH::eTypeIDVectorMatrixInt29,650
+        eTypeIDVectorMatrixLong,Serialize::TypeIDH::eTypeIDVectorMatrixLong30,682
+        eTypeIDVectorMatrixDouble,Serialize::TypeIDH::eTypeIDVectorMatrixDouble31,715
+        eTypeIDCRPoint,Serialize::TypeIDH::eTypeIDCRPoint32,750
+        eTypeIDVectorCRPoint,Serialize::TypeIDH::eTypeIDVectorCRPoint33,774
+        eTypeIDConvexRegion,Serialize::TypeIDH::eTypeIDConvexRegion34,804
+        eTypeIDVectorConvexRegion,Serialize::TypeIDH::eTypeIDVectorConvexRegion35,833
+    struct BasicMethodsIntSerialize::BasicMethodsInt39,887
+        static int* allocate(Serialize::BasicMethodsInt::allocate41,920
+        static bool serialize(Serialize::BasicMethodsInt::serialize42,971
+        static bool unserialize(Serialize::BasicMethodsInt::unserialize43,1090
+    struct BasicMethodsLongSerialize::BasicMethodsLong48,1345
+        static long* allocate(Serialize::BasicMethodsLong::allocate50,1379
+        static bool serialize(Serialize::BasicMethodsLong::serialize51,1432
+        static bool unserialize(Serialize::BasicMethodsLong::unserialize52,1552
+    struct BasicMethodsDoubleSerialize::BasicMethodsDouble57,1815
+        static double* allocate(Serialize::BasicMethodsDouble::allocate59,1851
+        static bool serialize(Serialize::BasicMethodsDouble::serialize60,1908
+        static bool unserialize(Serialize::BasicMethodsDouble::unserialize65,2089
+    struct BasicMethodsStringSerialize::BasicMethodsString70,2364
+        static string* allocate(Serialize::BasicMethodsString::allocate72,2400
+        static bool serialize(Serialize::BasicMethodsString::serialize73,2457
+        static bool unserialize(Serialize::BasicMethodsString::unserialize81,2736
+    struct BasicMethodsVectorSerialize::BasicMethodsVector98,3376
+        static vector<T>* allocate(Serialize::BasicMethodsVector::allocate100,3412
+        static bool serialize(Serialize::BasicMethodsVector::serialize101,3475
+        static bool unserialize(Serialize::BasicMethodsVector::unserialize116,3956
+
+source/nn/imageData.hpp,258
+#define imageData_hpp2,22
+class ImageData20,322
+    ImageData(ImageData::ImageData23,348
+    bool create(ImageData::create27,495
+    bool load(ImageData::load89,3169
+    void clear(ImageData::clear135,5134
+    bool learn(ImageData::learn145,5387
+
+source/nn/nnModel.hpp,544
+typedef MLP<double> MLPT;6,104
+class Model:Model8,131
+    Model(Model::Model11,191
+    virtual ~Model(Model::~Model19,355
+    void set(Model::set29,564
+    void show(Model::show58,1780
+    double logDensity(Model::logDensity63,1991
+    double prediction(Model::prediction71,2242
+    void setLocation(Model::setLocation81,2624
+vector<vector<vector<double> > > *Model::sParameter Model::sParameter100,3177
+class ProposalH:ProposalH102,3238
+    ProposalH(ProposalH::ProposalH105,3329
+    bool draw(ProposalH::draw108,3429
+
+source/physics/force.hpp,334
+#define force_h2,16
+class Force13,158
+    typedef Node<dim> NodeT;Force::NodeT16,180
+    typedef typename list<NodeT*>::iterator NodeIter;Force::NodeIter17,209
+    typedef Link<dim> LinkT;Force::LinkT18,263
+    typedef typename list<LinkT*>::iterator LinkIter;Force::LinkIter19,292
+    bool addForce(Force::addForce21,347
+
+source/physics/link.hpp,345
+#define link_h2,15
+class Link10,104
+    typedef Node<dim> NodeT;Link::NodeT14,163
+    Link(Link::Link16,193
+    NodeT *otherSide(Link::otherSide26,469
+    void initialize(Link::initialize28,555
+    bool computeSpringDampForce(Link::computeSpringDampForce36,814
+    NodeT *start(Link::start68,2326
+    NodeT *end(Link::end69,2362
+
+source/physics/node.hpp,1347
+#define node_h2,15
+class NodeAttr14,176
+    NodeAttr(NodeAttr::NodeAttr17,201
+    double mass(NodeAttr::mass43,1302
+    double radius(NodeAttr::radius44,1336
+    double bounceFrac(NodeAttr::bounceFrac45,1374
+    double charge(NodeAttr::charge46,1420
+    void setCharge(NodeAttr::setCharge47,1458
+    vector<double> &location(NodeAttr::location48,1512
+    vector<double> &speed(NodeAttr::speed49,1563
+class Node:Node64,1831
+    typedef Link<dim> LinkT;Node::LinkT68,1912
+    typedef typename list<LinkT*>::iterator LinkIter;Node::LinkIter69,1941
+    typedef Node<dim> NodeT;Node::NodeT70,1995
+    typedef NodeAttr<dim> NodeAttrT;Node::NodeAttrT71,2024
+    Node(Node::Node73,2062
+    Node(Node::Node74,2091
+    bool addLink(Node::addLink77,2162
+    LinkIter initLinkIter(Node::initLinkIter80,2310
+    bool getLink(Node::getLink81,2362
+    bool getLinked(Node::getLinked90,2577
+    bool clearForce(Node::clearForce100,2814
+    bool collectSpringDampForces(Node::collectSpringDampForces101,2883
+    bool addDampForce(Node::addDampForce119,3512
+    bool updateSpeed(Node::updateSpeed124,3623
+    bool updateLocation(Node::updateLocation129,3758
+    bool addElectrostaticForce(Node::addElectrostaticForce134,3893
+    bool addForce(Node::addForce151,4758
+    string toString(Node::toString157,4912
+
+source/physics/physics.hpp,1189
+#define physics_h2,18
+class Physics11,138
+    typedef Node<dim> NodeT;Physics::NodeT15,200
+    typedef typename list<NodeT*>::iterator NodeIter;Physics::NodeIter16,229
+    typedef Link<dim> LinkT;Physics::LinkT17,283
+    typedef typename list<LinkT*>::iterator LinkIter;Physics::LinkIter18,312
+    typedef NodeAttr<dim> NodeAttrT;Physics::NodeAttrT19,366
+    typedef Force<dim> ForceT;Physics::ForceT20,403
+    typedef typename list<ForceT*>::iterator ForceIter;Physics::ForceIter21,434
+    Physics(Physics::Physics23,491
+    ~Physics(Physics::~Physics26,614
+    bool addForce(Physics::addForce39,981
+    NodeT * addNode(Physics::addNode46,1128
+    LinkT * addLink(Physics::addLink53,1355
+    NodeIter initNodeIter(Physics::initNodeIter66,1698
+    bool getNode(Physics::getNode67,1750
+    LinkIter initLinkIter(Physics::initLinkIter76,1965
+    bool getLink(Physics::getLink77,2017
+    ForceIter initForceIter(Physics::initForceIter86,2232
+    bool getForce(Physics::getForce87,2287
+    void initializeSimulation(Physics::initializeSimulation98,2557
+    bool simulateFor(Physics::simulateFor106,2795
+    string toString(Physics::toString146,4316
+
+source/physics/physicsVisu.hpp,496
+#define physicsVisu_h2,22
+class PhysicsVisu:PhysicsVisu11,166
+    typedef Physics<2>::NodeT NodeT;PhysicsVisu::NodeT14,216
+    typedef Physics<2>::NodeIter NodeIter;PhysicsVisu::NodeIter15,253
+    typedef Physics<2>::LinkT LinkT;PhysicsVisu::LinkT16,296
+    typedef Physics<2>::LinkIter LinkIter;PhysicsVisu::LinkIter17,333
+    PhysicsVisu(PhysicsVisu::PhysicsVisu19,377
+    virtual bool onStart(PhysicsVisu::onStart56,1838
+    virtual bool dynamics(PhysicsVisu::dynamics63,2106

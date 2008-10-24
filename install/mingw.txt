@@ -1,0 +1,87 @@
+These are the installation instructions for gubg for MinGW (Windows):
+
+ * Installation of MinGW
+    * MinGW provides POSIX-like functionality and the gcc (and g++)
+    * Download MinGW-5.1.3.exe from http://www.mingw.org (actually from SourceForge)
+    * Install MinGW-5.1.3.exe into C:/MinGW
+       * Make sure you ask for both gcc, g++ and the Makefile stuff
+
+ * Installation of MSYS
+    * Download MSYS-1.0.10.exe from http://www.mingw.org (actually from SourceForge)
+    * Install MSYS-1.0.10.exe into C:/MinGW/msys/1.0. During the post install steps, indicate that MinGW is installed in C:/MinGW (make sure you use / and not \). The directory C:/MinGW/msys/1.0 is the root ("/") of your MSYS system.
+    * Edit C:/MinGW/msys/1.0/etc/profile and add ". .bashrc" at the end, after the "cd $HOME" statement. This will fix a bug that MSYS does not execute the .bashrc file in your home directory (your home directory is located at C:/MinGW/msys/1.0/home/$USERNAME via explorer and /home/$USERNAME via MSYS). Currently, there is no .bashrc file in your home directory yet, but we will create it in one of the next steps
+
+ * Install ruby
+    * Download the MinGW ruby version from http://ftp.ruby-lang.org/pub/ruby/binaries/mingw/1.8/. "ruby-1.8.4-i386-mingw32.tar.gz" will do.
+    * Copy ruby-1.8.4-i386-mingw32.tar.gz to your root directory ("/"), which is located at C:/MinGW/msys/1.0
+    * Go to your root dir and extract the file: open a MSYS shell window and type the following commands:
+       * cd /
+       * tar xzvf ruby-1.8.4-i386-mingw32.tar.gz
+    * You can check if the correct version of ruby can be found by typing "ruby --version" in MSYS.
+
+ * Installation build
+    * You need the ruby "build" command to compile gubg. This is part of the bin.<date>.tar.bz2 package
+    * Extract the bin.<date>.tar.bz2 in your home directory:
+       * cd
+       * tar xjvf bin.<date>.tar.bz2
+    * Add the following ".bashrc"-file in you MSYS home directory (your home directory is located at C:/MinGW/msys/1.0 via explorer and /home/$USERNAME):
+#begin .bashrc
+echo "This is bashrc speaking"
+
+export RUBYLIB=$HOME/bin/ruby
+export PATH=$HOME/bin:$PATH
+export MINGW_PATH=C:\\MinGW\\bin
+#end .bashrc
+       * RUBYLIB: make sure "build" can find its necessary "build.rb" and tools/utils.rb scripts
+       * PATH: make sure that the "build" command can be found
+       * MINGW_PATH: make sure that tools/utils.rb can create the path to the g++ compiler
+    * Close you MSYS shell and start it again. It should now print the line "This is bashrc speaking" before showing the prompt.
+
+ * Installation of SDL
+    * SDL (Simple DirectMedia Layer) provides basic visualization functionality.
+    * Download SDL-devel-1.2.13-mingw32.tar.gz from http://www.libsdl.org/
+    * Copy this package to /, extract it and copy the .dll to your C:/WINDOWS/system32/:
+       * cp <download location>/SDL-devel-1.2.13-mingw32.tar.gz /
+       * cd /
+       * tar xzvf SDL-devel-1.2.13-mingw32.tar.gz
+       * cp SDL-1.2.13/bin/SDL.dll /c/WINDOWS/system32
+
+ * Installation of GTK (cairo)
+    * WARNING::this step needs confirmation
+    * We need cairo for more advanced drawing in an SDL window. Cairo is provided as part of the GTK package on MinGW. In fact, we need cairomm (the C++ bindings to cairo, and cairomm needs cairo)
+    * Download gtk+-2.12.9-bundle-20080402.zip from http://www.gtk.org/download-windows.html
+    * Extract this package:
+       * Create the GTK destination directory C:/MinGW/msys/1.0/GTK (this package does not create a single base directory itself)
+       * Extract this .zip archive to there
+       * Copy the necessary DLLs from C:/MinGW/msys/1.0/GTK/bin to C:/WINDOWS/system32
+          * TODO::which ones are necessary?
+
+ * Installation of GTKmm (cairomm)
+    * Download gtkmm-win32-devel-2.10.11-1.exe from http://ftp.gnome.org/pub/gnome/binaries/win32/gtkmm/2.10/
+    * Execute this file and install it into C:/MinGW/msys/1.0/GTKmm
+    * Copy the necessary DLLs from C:/MinGW/msys/1.0/GTKmm/bin to C:/WINDOWS/system32
+
+ * Installation of pthread
+    * Download pthreads-w32-2-8-0-release.exe from ftp://sourceware.org/pub/pthreads-win32
+    * Execute this file and install it into C:/MinGW/msys/1.0/Pthread. This should create the directories "pthreads.2" and "Pre-built.2"
+    * Rename the C:/MinGW/msys/1.0/Pthread/Pre-built.2/lib/pthreadVC2.lib to libpthread.a
+    * Copy C:/MinGW/msys/1.0/Pthread/Pre-built.2/lib/pthreadVC2.dll to C:/WINDOWS/system32
+
+ * Installation tre
+    * tre is a regular expression library
+    * Download tre-0.7.5.tar.bz2 from http://www.laurikari.net/tre/download.html
+    * Extract and compile tre with the following commands:
+       * cp <download location>/tre-0.7.5.tar.bz2 /
+       * cd /
+       * tar xjvf tre-0.7.5.tar.bz2
+       * cd tre-0.7.5
+       * ./configure
+       * make
+       * make install
+
+ * Installation of gubg
+    * Extract the gubg package to your home directory:
+       * cp <download location>/gubg.<date>.tar.bz2 ~/
+       * cd ~/gubg
+       * build
+    * Optionally, make adjustments to ~/gubg/source/buildBase.rb to match the specifics of your installation.

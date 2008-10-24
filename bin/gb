@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require("gb/gb.rb")
+
+# The allowed flags
+flagHelp = "-h"
+flagExec = "-x"
+allowedFlags = [flagHelp, flagExec]
+
+# General function to be used when exit with error message is necessary
+def exitMessage(str)
+  puts("gd: #{str}")
+  exit(1)
+end
+
+# Parse the passed arguments
+options = {}
+sourceFile = nil
+ARGV.each do |arg|
+  case arg
+  when /^-/
+    exitMessage("I don't know the \"#{arg}\" option") if !allowedFlags.include?(arg)
+    exitMessage("Option \"#{arg}\" specified more than once") if options[arg]
+    options[arg] = true
+  when /\.d$/
+    exitMessage("I found more than one source file: \"#{sourceFile}\" and \"#{arg}\"") if sourceFile
+    sourceFile = arg
+  else
+    exitMessage("Unknown argument \"#{arg}\"")
+  end
+end
+
+# If requested, display help and exit
+if options[flagHelp]
+  puts %Q@Usage: gb [options] <source-file>
+
+This program (generic builder) tries to build the passed <source-file>. It will compile all imported modules automatically before.
+
+options:
+\t-h\tPrint this help message
+\t-x\tExecute the produced executable
+
+This program is written by Geert Fannes.
+@
+  exit(0)
+end
+
+# Build the executable
+exitMessage("Please specify a source file to build") if !sourceFile
+executable = buildExecutable(sourceFile)
+exitMessage("Could not build \"#{sourceFile}\"") if !executable
+
+# If requested, execute
+if options[flagExec]
+  command = './'+executable
+  nr = 114
+  puts("*"*nr)
+  puts(" Executing #{command} ".center(nr,'*'))
+  puts("*"*nr)
+  exec(command)
+end

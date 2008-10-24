@@ -1,0 +1,14 @@
+ * Add the tools into the tree
+ * Split the unit tests into real unit tests and system tests
+ * Add windows compilation support
+ * Move implementations of template class methods which are in .hpp files to .cpp files for better readability
+ * Start using const reference arguments to indicate what is input and output
+ * Design a general guideline on the use of pointers and references
+ * Create a central Block class that can be used anywhere
+ * Extend the do(<level>) to multiline
+ * Create a data visualization class, that can also visualize matrices
+ * 
+
+Any comments or suggestions on these todo's are always welcome at geert_dot_fannes_at_gmail_dot_com
+
+ * 

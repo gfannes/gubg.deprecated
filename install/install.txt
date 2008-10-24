@@ -1,0 +1,16 @@
+This software is compiled using the Ruby (http://www.ruby-lang.org) build system developed by Geert Fannes, which can be found in the tools directory. Take into account that it is currently a big exauguration to call this a build system, since it will recompile a part of the tree, or the whole tree, without checking file modifications etc. as a normal make-based build system does.
+
+On the other hand, it provides a high level of flexibility, allowing zero-effort modifications to the structure of the source tree and provides automatic support for unit test compilation and execution.
+
+To enable this build system, simple add the tools directory to your system path and make sure you have Ruby installed (http://www.ruby-lang.org).
+
+When "build" is invoked at any place in the source tree, the build script will step down the directory tree until it finds "buildBase.rb". At that place, it will analyze the whole tree, collect source, header and object files, together with their locations and potentially specific compile and link options. Finaly, the whole subtree where "build" was invoked, will be recompiled and the foud unit tests will be executed.
+
+When "build all" is invoked, the same process as above takes place, except that the whole source tree will be recompiled and all tests will be executed.
+
+Dependencies:
+ * TRE is used as regular expression library (version 0.7.5, http://www.laurikari.net/tre/download.html)
+ * SDL is used to provide a drawing canvas
+ * Cairomm is used to draw into the SDL drawing canvas
+ * pthreads are used. I guess this is Linux-only.
+ * dirent.h is used to provide directory manipulation functionality. I guess this is Linux-only.
