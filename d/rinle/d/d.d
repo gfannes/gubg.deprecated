@@ -247,6 +247,7 @@ version (Test)
     }
     void main()
     {
+/*
  	test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
 	test!(DModuleDeclaration)("module asdfasdf;", "");
 
@@ -304,10 +305,12 @@ version (Test)
 	test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
 	test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
   
-	test!(DSymbolExpression)("a ? b : c;", ";");
+*/
+	test!(DExpression)("a ? b : c;", ";");
+/*
 	test!(DSymbolExpression)("++a;", ";");
-	test!(DSymbolExpression)("a++;", ";");
-  
+	test!(DExpression)("a++;", ";");
+*/
 //	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
 //     throw new Exception("Mmh, some unknown things that start with the above.");
 

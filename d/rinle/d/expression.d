@@ -7,8 +7,17 @@ import rinle.d.d;
 import rinle.interfaces;;
 import rinle.sink;
 import rinle.d.parser.tokenSequence;
+import gubg.iofiber;
 
 import gubg.puts;
+
+enum PreviousExpression
+{
+    unknown,
+	multi,
+	ternary,
+	post
+}
 
 class DExpression: DNode
 {
@@ -47,10 +56,19 @@ class DExpression: DNode
 	return DExpression.createFrom(env.askString("Expression: "));
     }
 
-    static DExpression create(inout TokenSequence ts, bool single = false)
+    static DExpression create(inout TokenSequence ts, PreviousExpression previous = PreviousExpression.unknown)
     {
 	DExpression res;
-	res = DSymbolExpression.create(ts, single);
+	if (PreviousExpression.ternary != previous)
+	{
+	    puts("Going for ternary");
+	    res = DTernaryExpression.create(ts);
+	}
+	throw new Exception("asdfasdf");
+	if (res is null && PreviousExpression.post != previous)
+	    res = DPostExpression.create(ts);
+	if (res is null)
+	    res = DSymbolExpression.create(ts, PreviousExpression.multi == previous);
 	if (res is null)
 	    foreach (type; Tuple!(DKeywordExpression, DStringExpression, DFunctionExpression))
 	    {
@@ -376,7 +394,7 @@ class DSymbolExpression: DExpression
 	    DExpression exp;
 	    while (true)
 	    {
-		if ((exp = DExpression.create(ts, true)) is null)
+		if ((exp = DExpression.create(ts, PreviousExpression.multi)) is null)
 		    break;
 		exps ~= [exp];
 		if (!ts.isSymbol(multiSymbols, symb))
@@ -393,7 +411,7 @@ class DSymbolExpression: DExpression
 	    DExpression ex;
 	    if (ts.isSymbol(singleSymbols, symb))
 	    {
-		if ((ex = DExpression.create(ts, true)) !is null)
+		if ((ex = DExpression.create(ts, PreviousExpression.multi)) !is null)
 		    res = new DSymbolExpression(symb, ex);
 	    }
 	} else
@@ -444,4 +462,140 @@ private:
     static char[][] singleSymbols;
     static char[][] multiSymbols;
     static bool[char[]] symbolHash;
+}
+
+class DTernaryExpression: DExpression
+{
+    this ()
+    {
+	setNrChilds(3);
+    }
+    this (DExpression test, DExpression caseTrue, DExpression caseFalse)
+    {
+	setChild(0, test);
+	setChild(1, caseTrue);
+	setChild(2, caseFalse);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    res = DExpression.createFrom(env.askString("Ternary test: "));
+	    break;
+	case 1:
+	    res = DExpression.createFrom(env.askString("Ternary true case: "));
+	    break;
+	case 2:
+	    res = DExpression.createFrom(env.askString("Ternary false case: "));
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DTernaryExpression res){res = new DTernaryExpression();}
+    static void createI(inout DTernaryExpression res, inout Environment env)
+    {
+	res = DTernaryExpression.create();
+	VariantFiber.yield(res);
+	for (uint i = 0; i < 3; ++i)
+	{
+	    INode ch;
+	    res.createChild(ch, i);
+	    res.setChild(i, ch);
+	    VariantFiber.yield(res);
+	}
+    }
+    static void createI(inout DTernaryExpression res, inout TokenSequence ts)
+    {
+	DExpression a, b, c;
+	if ((a = DExpression.create(ts, PreviousExpression.ternary)) is null &&
+	    ts.isSymbol("?") &&
+	    ts.create(b) &&
+	    ts.isSymbol(":") &&
+	    ts.create(c))
+	    res = new DTernaryExpression(a, b, c);
+    }
+    
+    void renderI(Sink sink)
+    {
+	if (childs[0])
+	    childs[0].render(sink);
+	sink.add(" ? ");
+	if (childs[1])
+	    childs[1].render(sink);
+	sink.add(" : ");
+	if (childs[2])
+	    childs[2].render(sink);
+    }
+}
+
+class DPostExpression: DExpression
+{
+    static this()
+    {
+	postSymbols = ["!", "++", "--", "-", "+"];
+    }
+
+    this ()
+    {
+	setNrChilds(2);
+    }
+    this (DExpression ex, DIdentifier symbol)
+    {
+	setChild(0, ex);
+	setChild(1, symbol);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    res = DExpression.createFrom(env.askString("Post-symbol expression: "));
+	    break;
+	case 1:
+	    res = new DIdentifier(env.askString("Post-symbol symbol: "));
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DPostExpression res){res = new DPostExpression();}
+    static void createI(inout DPostExpression res, inout Environment env)
+    {
+	res = DPostExpression.create();
+	VariantFiber.yield(res);
+	for (uint i = 0; i < 2; ++i)
+	{
+	    INode ch;
+	    res.createChild(ch, i);
+	    res.setChild(i, ch);
+	    VariantFiber.yield(res);
+	}
+    }
+    static void createI(inout DPostExpression res, inout TokenSequence ts)
+    {
+	DExpression ex;
+	char[] symb;
+	if ((ex = DExpression.create(ts, PreviousExpression.post)) is null &&
+	    ts.isSymbol(postSymbols, symb))
+	    res = new DPostExpression(ex, new DIdentifier(symb));
+    }
+    
+    void renderI(Sink sink)
+    {
+	if (childs[0])
+	    childs[0].render(sink);
+	if (childs[1])
+	    childs[1].render(sink);
+    }
+
+private:
+    static char[][] postSymbols;
 }
