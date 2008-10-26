@@ -6,7 +6,7 @@ import rinle.globals;
 import rinle.content;
 import rinle.node;
 import rinle.d.parser.tokenSequence;
-import rinle.d.parser.token;
+public import rinle.d.parser.token;
 import rinle.d.declaration;
 import rinle.d.statement;
 import rinle.d.expression;
@@ -112,19 +112,27 @@ abstract class DNode: Node
 	// Create a node based on TokenSequence input
 	static typeof(this) create(inout TokenSequence ts)
 	    {
+		static Token head;
+
 		++level;
 		scope (exit) --level;
 		puts("{}Trying {}", indent, this.stringof);
 		
 		typeof(this) res;
-		scope sp = ts.savePoint;
-		
-		typeof(this).createI(res, ts);
-		
-		if (res is null)
-		    sp.restore;
-		else
-		    puts("{}OK {}", indent, this.stringof);
+
+		if (head !is ts.peep)
+		{
+		    head = ts.peep;
+
+		    scope sp = ts.savePoint;
+		    
+		    typeof(this).createI(res, ts);
+		    
+		    if (res is null)
+			sp.restore;
+		    else
+			puts("{}OK {}", indent, this.stringof);
+		}
 		
 		return res;
 	    }
