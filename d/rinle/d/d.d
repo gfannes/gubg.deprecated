@@ -130,8 +130,10 @@ abstract class DNode: Node
 		    
 		    if (res is null)
 			sp.restore;
+
 		    else
 			puts("{}OK {}", indent, this.stringof);
+		    head = null;
 		}
 		
 		return res;
@@ -255,6 +257,7 @@ version (Test)
     }
     void main()
     {
+
 /*
  	test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
 	test!(DModuleDeclaration)("module asdfasdf;", "");
@@ -263,7 +266,6 @@ version (Test)
 	test!(DImportDeclaration)("import asdfasdf;", "");
 
 	test!(DExpression)("asdfasdf STOP", "STOP");
-
 	test!(DExpression)("asdfasdf", "");
 
 	test!(DExpression)("asdfasdf() STOP", "STOP");
@@ -313,9 +315,10 @@ version (Test)
 	test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
 	test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
   
+
+	test!(DExpression)("a;", ";");
 */
 	test!(DExpression)("a ? b : c;", ";");
-
 
 /*
 	test!(DSymbolExpression)("++a;", ";");
