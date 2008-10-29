@@ -223,22 +223,32 @@ class Dir
   end
   def Dir.relative(dir,pwd = nil)
     pwd ||= Dir.pwd
+#    puts("dir = #{dir}")
+#    puts("pwd = #{pwd}")
     if dir[/^\//] or dir[/^[a-zA-Z]:\//]
       dir = dir.dup
       if dir[pwd+'/']
+#        puts("Subpath")
         dir[pwd+'/'] = ''
         dir = './' if dir == ''
       elsif dir == pwd
+#        puts("Equal")
         dir = './'
       else
+#        puts("Different")
         parts = pwd.split('/')
+#        puts("parts = #{parts}")
         parts.shift
+#        puts("parts = #{parts}")
         ix = nil
         parts.each_with_index do |part,ix|
           startDir = '/'+parts[0,ix+1].join('/')
+#          puts("startDir = #{startDir}")
           break if !dir[/^#{startDir}/]
         end
-        nr = dir.split('/').length-1 - ix
+#        puts("dir.split = #{dir.split('/')}")
+        nr = parts.length - ix
+#        puts("nr = #{nr}, ix = #{ix}")
         if ix == 0
           dir['/'] = '../'*nr
         else
@@ -400,6 +410,19 @@ end
 def md5sum(fileName)
   require("digest/md5")
   return Digest::MD5.hexdigest(String.load(fileName))
+end
+
+class Collection < Array
+  def ===(rhs)
+    any?{|el|el === rhs}
+  end
+  def Collection.from(ary)
+    collection=Collection.new
+    ary.each do |el|
+      collection << el
+    end
+    collection
+  end
 end
 
 if __FILE__==$0

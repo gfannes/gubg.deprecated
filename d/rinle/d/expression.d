@@ -133,7 +133,6 @@ class DTernaryExpression: DExpression
 	DSymbolExpression a, b, c;
 	if ((a = cast(DSymbolExpression)io) !is null &&
 	    ts.isSymbol("?") &&
-	    ts.isSymbol("?") &&
 	    ts.create(b) &&
 	    ts.isSymbol(":") &&
 	    ts.create(c))
@@ -165,6 +164,10 @@ class DSymbolExpression: DExpression
 	symbols = ["||", "&&", "+", "-", "/", "*", "~", "=", "<", ">", "<=", ">=", "==", "is", "in"];
 	foreach (s; symbols)
 	    symbolHash[s] = true;
+    }
+
+    this ()
+    {
     }
 
     this (char[] symb, DUnaryExpression ex = null)
@@ -202,36 +205,41 @@ class DSymbolExpression: DExpression
     {
 	DSymbolExpression res;
 
-	if ((exps.length == symbs.length+1) && symbs.length > 0)
+	if ((exps.length == symbs.length+1))
 	{
-	    // Determine the lowest priority symbol found
-	    char[] symb;
-	    foreach (s; symbols)
-		foreach (ss; symbs)
-		    if (s == ss)
-		    {
-			symb = s;
-			break;
-		    }
-	    // Create the multi expression
-	    res = new DSymbolExpression(symb);
-	    // Split the single expressions and add them
-	    int ixPrev = -1;
-	    foreach (ix, s; symbs)
-	    {
-		if (s == symb)
-		{
-		    if (ix == ixPrev+1)
-			res.addChild(exps[ix]);
-		    else
-			res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. ix], exps[ixPrev+1 .. ix+1]));
-		    ixPrev = ix;
-		}
-	    }
-	    if (symbs.length == ixPrev+1)
-		res.addChild(exps[$-1]);
-	    else
-		res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. $], exps[ixPrev+1 .. $]));
+            if (symbs.length == 0)
+                res = exps[0];
+            else
+            {
+                // Determine the lowest priority symbol found
+                char[] symb;
+                foreach (s; symbols)
+                    foreach (ss; symbs)
+                        if (s == ss)
+                        {
+                            symb = s;
+                            break;
+                        }
+                // Create the multi expression
+                res = new DSymbolExpression(symb);
+                // Split the single expressions and add them
+                int ixPrev = -1;
+                foreach (ix, s; symbs)
+                {
+                    if (s == symb)
+                    {
+                        if (ix == ixPrev+1)
+                            res.addChild(exps[ix]);
+                        else
+                            res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. ix], exps[ixPrev+1 .. ix+1]));
+                        ixPrev = ix;
+                    }
+                }
+                if (symbs.length == ixPrev+1)
+                    res.addChild(exps[$-1]);
+                else
+                    res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. $], exps[ixPrev+1 .. $]));
+            }
 	}
 
 	return res;
@@ -312,7 +320,7 @@ private:
     static bool[char[]] symbolHash;
 }
 
-class DUnaryExpression: DExpression
+class DUnaryExpression: DSymbolExpression
 {
     static this()
     {
@@ -359,21 +367,57 @@ private:
     static char[][] symbols;
 }
 
-class DPostfixExpression: DUnaryExpression
+// class DPostfix: DNode
+// {
+//     this ()
+//     {
+//     }
+//     this (char[] str)
+//     {
+//     }
+// }
+
+class DSymbolPostfix: DIdentifier
 {
     static this()
     {
-	symbols = ["!", "++", "--", "-", "+"];
+	symbols = ["!", "++", "--"];
     }
 
+    this (char[] str)
+    {
+        super(str);
+    }
+
+
+    mixin Create;
+    static void createI(inout DSymbolPostfix res){}
+    static void createI(inout DSymbolPostfix res, inout Environment env)
+    {
+    }
+    static void createI(inout DSymbolPostfix res, inout TokenSequence ts)
+    {
+	char[] symb;
+        if (ts.isSymbol(symbols, symb))
+            res = new DSymbolPostfix(symb);
+    }
+
+private:
+    static char[][] symbols;
+}
+
+// [0]: Postfix or primary expression
+// [1]: Postfix itself (symbol, (), [], ...)
+class DPostfixExpression: DUnaryExpression
+{
     this ()
     {
 	setNrChilds(2);
     }
-    this (DPrimaryExpression ex, DIdentifier symbol)
+    this (DPostfixExpression ex, DNode postfix)
     {
 	setChild(0, ex);
-	setChild(1, symbol);
+	setChild(1, postfix);
     }
 
     void createChild(inout INode res, uint ix)
@@ -381,7 +425,7 @@ class DPostfixExpression: DUnaryExpression
 	switch (ix)
 	{
 	case 0:
-	    res = DPrimaryExpression.createFrom(env.askString("Postfix expression: "));
+	    res = DPostfixExpression.createFrom(env.askString("Postfix expression: "));
 	    break;
 	case 1:
 	    res = new DIdentifier(env.askString("Postfix symbol: "));
@@ -407,14 +451,15 @@ class DPostfixExpression: DUnaryExpression
     }
     static void createI(inout DPostfixExpression res, inout TokenSequence ts)
     {
-	DPrimaryExpression ex = DPrimaryExpression.create(ts);
-	char[] symb;
-	if (ex !is null)
+	DPrimaryExpression pex = DPrimaryExpression.create(ts);
+        DNode postfix;
+	if (pex !is null)
 	{
-	    if (ts.isSymbol(symbols, symb))
-		res = new DPostfixExpression(ex, new DIdentifier(symb));
+            postfix = DSymbolPostfix.create(ts);
+            if (postfix !is null)
+                res = new DPostfixExpression(pex, postfix);
 	    else
-		res = ex;
+		res = pex;
 	}
     }
     static void extend(inout DPostfixExpression io, inout TokenSequence ts)
@@ -423,10 +468,13 @@ class DPostfixExpression: DUnaryExpression
 	scope sp = ts.savePoint;
 
 	DPrimaryExpression pex = cast(DPrimaryExpression)io;
-	char[] symb;
-	if (pex !is null &&
-	    ts.isSymbol(symbols, symb))
-	    res = new DPostfixExpression(pex, new DIdentifier(symb));
+        DNode postfix;
+	if (pex !is null)
+        {
+            postfix = DSymbolPostfix.create(ts);
+            if (postfix !is null)
+                res = new DPostfixExpression(pex, postfix);
+        }
 	
 	if (res is null)
 	    sp.restore;
@@ -441,9 +489,6 @@ class DPostfixExpression: DUnaryExpression
 	if (childs[1])
 	    childs[1].render(sink);
     }
-
-private:
-    static char[][] symbols;
 }
 
 class DPrimaryExpression: DPostfixExpression
