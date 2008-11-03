@@ -406,6 +406,69 @@ private:
     static char[][] symbols;
 }
 
+class DArgumentList: DNode
+{
+    void createChild(inout INode res, uint ix)
+    {
+	res =  DExpression.create(env);
+    }
+
+    mixin Create;
+    static void createI(inout DArgumentList res){}
+    static void createI(inout DArgumentList res, inout Environment env){}
+    static void createI(inout DArgumentList res, inout TokenSequence ts){}
+
+    void createFrom(inout TokenSequence ts)
+    {
+	while (true)
+	{
+	    DExpression ds;
+	    if (!ts.create(ds))
+		return;
+	    addChild(ds);
+	    if (!ts.isSymbol(","))
+		return;
+	}
+    }
+
+    void render(Sink sink)
+    {
+	Tag tag;
+	tag.node = this;
+	tag.color = (select ? 1 : 0);
+	tag.indent = false;
+	auto h = sink.create(tag);
+
+	h.add("(");
+	foreach (ix, ch; childs)
+	{
+	    if (ix > 0)
+		h.add(", ");
+	    ch.render(h);
+	}
+	h.add(")");
+    }
+}
+
+class DFunctionPostfix: DArgumentList
+{
+    mixin Create;
+    static void createI(inout DFunctionPostfix res){}
+    static void createI(inout DFunctionPostfix res, inout Environment env)
+    {
+    }
+    static void createI(inout DFunctionPostfix res, inout TokenSequence ts)
+    {
+	if (ts.isSymbol("("))
+	{
+	    res = new DFunctionPostfix;
+	    res.createFrom(ts);
+	    if (!ts.isSymbol(")"))
+		res = null;
+	}
+    }
+}
+
 // [0]: Postfix or primary expression
 // [1]: Postfix itself (symbol, (), [], ...)
 class DPostfixExpression: DUnaryExpression
@@ -451,36 +514,40 @@ class DPostfixExpression: DUnaryExpression
     }
     static void createI(inout DPostfixExpression res, inout TokenSequence ts)
     {
-	DPrimaryExpression pex = DPrimaryExpression.create(ts);
-        DNode postfix;
-	if (pex !is null)
-	{
-            postfix = DSymbolPostfix.create(ts);
-            if (postfix !is null)
-                res = new DPostfixExpression(pex, postfix);
-	    else
-		res = pex;
-	}
+	res = DPrimaryExpression.create(ts);
+	extend(res, ts);
     }
-    static void extend(inout DPostfixExpression io, inout TokenSequence ts)
+    mixin Extend!(DPrimaryExpression);
+    static void extendI(inout DPostfixExpression res, inout DPrimaryExpression from, inout TokenSequence ts)
     {
-	DPostfixExpression res;
-	scope sp = ts.savePoint;
-
-	DPrimaryExpression pex = cast(DPrimaryExpression)io;
         DNode postfix;
-	if (pex !is null)
-        {
-            postfix = DSymbolPostfix.create(ts);
-            if (postfix !is null)
-                res = new DPostfixExpression(pex, postfix);
-        }
-	
-	if (res is null)
-	    sp.restore;
-	else
-	    io = res;
+	postfix = DSymbolPostfix.create(ts);
+	if (postfix is null)
+	    postfix = DFunctionPostfix.create(ts);
+	if (postfix !is null)
+	    res = new DPostfixExpression(from, postfix);
     }
+//     static void extend(inout DPostfixExpression io, inout TokenSequence ts)
+//     {
+// 	DPostfixExpression res;
+// 	scope sp = ts.savePoint;
+
+// 	DPrimaryExpression pex = cast(DPrimaryExpression)io;
+//         DNode postfix;
+// 	if (pex !is null)
+//         {
+//             postfix = DSymbolPostfix.create(ts);
+// 	    if (postfix is null)
+// 		postfix = DFunctionPostfix.create(ts);
+//             if (postfix !is null)
+//                 res = new DPostfixExpression(pex, postfix);
+//         }
+
+// 	if (res is null)
+// 	    sp.restore;
+// 	else
+// 	    io = res;
+//     }
     
     void renderI(Sink sink)
     {

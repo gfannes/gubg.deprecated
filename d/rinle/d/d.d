@@ -130,7 +130,6 @@ abstract class DNode: Node
 		    
 		    if (res is null)
 			sp.restore;
-
 		    else
 			puts("{}OK {}", indent, this.stringof);
 		    head = null;
@@ -147,6 +146,33 @@ abstract class DNode: Node
 		typeof(this).createI(res, env);
 		
 		return res;
+	    }
+    }
+
+    template Extend(FromT)
+    {
+	// Extend from FromT to typeof(this)
+	static void extend(inout typeof(this) io, inout TokenSequence ts)
+	    {
+		++level;
+		scope (exit) --level;
+		puts("{}Extending {} to {}", indent, FromT.stringof, this.stringof);
+		
+		scope sp = ts.savePoint;
+
+		typeof(this) res;
+		FromT from = cast(FromT)io;
+		
+		if (from !is null)
+		    extendI(res, from, ts);
+		
+		if (res is null)
+		    sp.restore;
+		else
+		{
+		    puts("{}OK {}", indent, this.stringof);
+		    io = res;
+		}
 	    }
     }
 }
@@ -267,7 +293,6 @@ version (Test)
 
 	test!(DExpression)("asdfasdf STOP", "STOP");
 	test!(DExpression)("asdfasdf", "");
-
 	test!(DExpression)("asdfasdf() STOP", "STOP");
 	test!(DExpression)("asdfasdf()", "");
 
@@ -284,7 +309,9 @@ version (Test)
 
 	test!(DExpression)("a+b+c;", ";");
 	test!(DExpression)("a = a+b+c;", ";");
+*/
 	test!(DExpression)("' ';", ";");
+/*
 
 	test!(DForArgument)("(;testsd;) STOP", "STOP");
 	test!(DForArgument)("(;testsd;)", "");
@@ -314,7 +341,6 @@ version (Test)
 
 	test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
 	test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
-*/
   
 
 	test!(DExpression)("a;", ";");
@@ -324,6 +350,7 @@ version (Test)
 	test!(DExpression)("++a++ + ++b;", ";");
  	test!(DExpression)("a ? b : c;", ";");
  	test!(DExpression)("a+b ? b : c;", ";");
+*/
 
 //	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
 //     throw new Exception("Mmh, some unknown things that start with the above.");
