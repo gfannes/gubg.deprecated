@@ -52,9 +52,9 @@ class DExpression: DNode
     {
 	DExpression res;
 	res = DSymbolExpression.create(ts);
-	// Try to extend the symbol expression to a ternary expression
-	if (res !is null)
-	    DTernaryExpression.extend(res, ts);
+// 	// Try to extend the symbol expression to a ternary expression
+// 	if (res !is null)
+// 	    DTernaryExpression.extend(res, ts);
 	return res;
     }
 
@@ -70,261 +70,11 @@ class DExpression: DNode
     }
 }
 
-class DTopSymbolExpression: DExpression
-{
-    static this()
-    {
-	symbols = [",", "="];
-	foreach (s; symbols)
-	    symbolHash[s] = true;
-    }
-
-    this ()
-    {
-    }
-
-    this (char[] symb, DExpression ex = null)
-    {
-	addChild(new DIdentifier(symb));
-	if (ex !is null)
-	    addChild(ex);
-    }
-
-    void createChild(inout INode res, uint ix)
-    {
-// 	switch (ix)
-// 	{
-// 	case 0:
-// 	    char[] str = env.askString("Symbol: ");
-// 	    res = new DIdentifier(str);
-// 	    break;
-// 	default:
-// 	    res = DUnaryExpression.create(env);
-// 	    break;
-// 	}
-    }
-
-    static bool isSymbol(char[] s)
-    {
-	return (s in symbolHash) !is null;
-    }
-
-    static DTopSymbolExpression createFrom(char[] str)
-    {
-	return null;
-    }
-
-    static DTopSymbolExpression createFrom(char[][] symbs, DUnaryExpression[] exps)
-    {
-	DTopSymbolExpression res;
-
-	if ((exps.length == symbs.length+1))
-	{
-            if (symbs.length == 0)
-                res = exps[0];
-            else
-            {
-                // Determine the lowest priority symbol found
-                char[] symb;
-                foreach (s; symbols)
-                    foreach (ss; symbs)
-                        if (s == ss)
-                        {
-                            symb = s;
-                            break;
-                        }
-                // Create the multi expression
-                res = new DTopSymbolExpression(symb);
-                // Split the single expressions and add them
-                int ixPrev = -1;
-                foreach (ix, s; symbs)
-                {
-                    if (s == symb)
-                    {
-                        if (ix == ixPrev+1)
-                            res.addChild(exps[ix]);
-                        else
-                            res.addChild(DTopSymbolExpression.createFrom(symbs[ixPrev+1 .. ix], exps[ixPrev+1 .. ix+1]));
-                        ixPrev = ix;
-                    }
-                }
-                if (symbs.length == ixPrev+1)
-                    res.addChild(exps[$-1]);
-                else
-                    res.addChild(DTopSymbolExpression.createFrom(symbs[ixPrev+1 .. $], exps[ixPrev+1 .. $]));
-            }
-	}
-
-	return res;
-    }
-
-    static DTopSymbolExpression create()
-    {
-	return null;
-    }
-
-    static DTopSymbolExpression create(inout TokenSequence ts)
-    {
-	++level;
-	scope (exit) --level;
-	puts("{}Trying DTopSymbolExpression", indent);
-
-	DTopSymbolExpression res;
-	scope sp = ts.savePoint;
-
-	char[][] symbs;
-	char[] symb;
-	DUnaryExpression[] exps;
-	DUnaryExpression exp;
-	while (true)
-	{
-	    if ((exp = DUnaryExpression.create(ts)) is null)
-		break;
-	    exps ~= [exp];
-	    if (!ts.isSymbol(symbols, symb))
-		break;
-	    symbs ~= [symb];
-	}
-	res = DTopSymbolExpression.createFrom(symbs, exps);
-	
-	if (res is null)
-	    sp.restore;
-	else
-	    puts("{}OK DTopSymbolExpression", indent);
-
-	return res;
-    }
-    
-    void renderI(Sink sink)
-    {
-	bool addBrackets = (parent !is null) && (cast(DTopSymbolExpression)parent !is null);
-
-	if (addBrackets)
-	    sink.add("(");
-	switch (nrChilds)
-	{
-	case 0:
-	    sink.add("<empty symbol expression>");
-	    break;
-	case 1:
-	    childs[0].render(sink);
-	    break;
-	case 2:
-	    childs[0].render(sink);
-	    childs[1].render(sink);
-	    break;
-	default:
-	    childs[1].render(sink);
-	    for (uint i = 2; i < nrChilds; ++i)
-	    {
-		sink.add(" ");
-		childs[0].render(sink);
-		sink.add(" ");
-		childs[i].render(sink);
-	    }
-	    break;
-	}
-	if (addBrackets)
-	    sink.add(")");
-    }
-
-private:
-    static char[][] symbols;
-    static bool[char[]] symbolHash;
-}
-
-class DTernaryExpression: DExpression
-{
-    this ()
-    {
-	setNrChilds(3);
-    }
-    this (DSymbolExpression test, DSymbolExpression caseTrue, DSymbolExpression caseFalse)
-    {
-	setChild(0, test);
-	setChild(1, caseTrue);
-	setChild(2, caseFalse);
-    }
-
-    void createChild(inout INode res, uint ix)
-    {
-	switch (ix)
-	{
-	case 0:
-	    res = DSymbolExpression.createFrom(env.askString("Ternary test: "));
-	    break;
-	case 1:
-	    res = DSymbolExpression.createFrom(env.askString("Ternary true case: "));
-	    break;
-	case 2:
-	    res = DSymbolExpression.createFrom(env.askString("Ternary false case: "));
-	    break;
-	default:
-	    break;
-	}
-    }
-
-    mixin Create;
-    static void createI(inout DTernaryExpression res){res = new DTernaryExpression();}
-    static void createI(inout DTernaryExpression res, inout Environment env)
-    {
-	res = DTernaryExpression.create();
-	VariantFiber.yield(res);
-	for (uint i = 0; i < 3; ++i)
-	{
-	    INode ch;
-	    res.createChild(ch, i);
-	    res.setChild(i, ch);
-	    VariantFiber.yield(res);
-	}
-    }
-    static void createI(inout DTernaryExpression res, inout TokenSequence ts)
-    {
-	DSymbolExpression a, b, c;
-	if (ts.create(a) &&
-	    ts.isSymbol("?") &&
-	    ts.create(b) &&
-	    ts.isSymbol(":") &&
-	    ts.create(c))
-	    res = new DTernaryExpression(a, b, c);
-    }
-    static void extend(inout DExpression io, inout TokenSequence ts)
-    {
-	DTernaryExpression res;
-	scope sp = ts.savePoint;
-
-	DSymbolExpression a, b, c;
-	if ((a = cast(DSymbolExpression)io) !is null &&
-	    ts.isSymbol("?") &&
-	    ts.create(b) &&
-	    ts.isSymbol(":") &&
-	    ts.create(c))
-	    res = new DTernaryExpression(a, b, c);
-	
-	if (res is null)
-	    sp.restore;
-	else
-	    io = res;
-    }
-    
-    void renderI(Sink sink)
-    {
-	if (childs[0])
-	    childs[0].render(sink);
-	sink.add(" ? ");
-	if (childs[1])
-	    childs[1].render(sink);
-	sink.add(" : ");
-	if (childs[2])
-	    childs[2].render(sink);
-    }
-}
-
 class DSymbolExpression: DExpression
 {
     static this()
     {
-	symbols = ["||", "&&", "+", "-", "/", "*", "~", "<", ">", "<=", ">=", "==", "is", "in"];
+	symbols = [",", "=", "?", ":", "||", "&&", "+", "-", "/", "*", "~", "<", ">", "<=", ">=", "==", "is", "in"];
 	foreach (s; symbols)
 	    symbolHash[s] = true;
     }
@@ -376,32 +126,62 @@ class DSymbolExpression: DExpression
             {
                 // Determine the lowest priority symbol found
                 char[] symb;
-                foreach (s; symbols)
+	    all: foreach (s; symbols)
                     foreach (ss; symbs)
                         if (s == ss)
                         {
                             symb = s;
-                            break;
+                            break all;
                         }
                 // Create the multi expression
                 res = new DSymbolExpression(symb);
                 // Split the single expressions and add them
-                int ixPrev = -1;
-                foreach (ix, s; symbs)
-                {
-                    if (s == symb)
-                    {
-                        if (ix == ixPrev+1)
-                            res.addChild(exps[ix]);
-                        else
-                            res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. ix], exps[ixPrev+1 .. ix+1]));
-                        ixPrev = ix;
-                    }
-                }
-                if (symbs.length == ixPrev+1)
-                    res.addChild(exps[$-1]);
-                else
-                    res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. $], exps[ixPrev+1 .. $]));
+		if (symb == "?")
+		{
+		    uint qmix = -1, ddix = 0;
+		    foreach (ix, s; symbs)
+		    {
+			if (s == "?")
+			{
+			    if (qmix == -1)
+				qmix = ix;
+			    else
+				++ddix;
+			}
+			if (s == ":")
+			{
+			    if (qmix == -1)
+				throw new Exception("Found : before ?");
+			    if (ddix == 0)
+			    {
+				ddix = ix;
+				break;
+			    }
+			    --ddix;
+			}
+		    }
+		    res.addChild(DSymbolExpression.createFrom(symbs[0 .. qmix], exps[0 .. qmix+1]));
+		    res.addChild(DSymbolExpression.createFrom(symbs[qmix+1 .. ddix], exps[qmix+1 .. ddix+1]));
+		    res.addChild(DSymbolExpression.createFrom(symbs[ddix+1 .. $], exps[ddix+1 .. $]));
+		} else
+		{
+		    int ixPrev = -1;
+		    foreach (ix, s; symbs)
+		    {
+			if (s == symb)
+			{
+			    if (ix == ixPrev+1)
+				res.addChild(exps[ix]);
+			    else
+				res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. ix], exps[ixPrev+1 .. ix+1]));
+			    ixPrev = ix;
+			}
+		    }
+		    if (symbs.length == ixPrev+1)
+			res.addChild(exps[$-1]);
+		    else
+			res.addChild(DSymbolExpression.createFrom(symbs[ixPrev+1 .. $], exps[ixPrev+1 .. $]));
+		}
             }
 	}
 
@@ -529,16 +309,6 @@ class DUnaryExpression: DSymbolExpression
 private:
     static char[][] symbols;
 }
-
-// class DPostfix: DNode
-// {
-//     this ()
-//     {
-//     }
-//     this (char[] str)
-//     {
-//     }
-// }
 
 class DSymbolPostfix: DIdentifier
 {

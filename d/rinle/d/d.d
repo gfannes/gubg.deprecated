@@ -349,8 +349,8 @@ version (Test)
  	test!(DExpression)("a ? b : c;", ";");
  	test!(DExpression)("a+b ? b : c;", ";");
 	test!(DExpression)("a.b;", ";");
+ 	test!(DExpression)("true ? true : false ? false : true;", ";");
 */
-
 	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
 /*
 */
