@@ -309,9 +309,7 @@ version (Test)
 
 	test!(DExpression)("a+b+c;", ";");
 	test!(DExpression)("a = a+b+c;", ";");
-*/
 	test!(DExpression)("' ';", ";");
-/*
 
 	test!(DForArgument)("(;testsd;) STOP", "STOP");
 	test!(DForArgument)("(;testsd;)", "");
@@ -350,9 +348,12 @@ version (Test)
 	test!(DExpression)("++a++ + ++b;", ";");
  	test!(DExpression)("a ? b : c;", ";");
  	test!(DExpression)("a+b ? b : c;", ";");
+	test!(DExpression)("a.b;", ";");
 */
 
-//	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
+	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
+/*
+*/
 //     throw new Exception("Mmh, some unknown things that start with the above.");
 
 	puts("{} tests failed out of {}", nrFailed, nrTotal);
