@@ -207,6 +207,90 @@ private:
     char[] mIdent;
 }
 
+class DType: DNode
+{
+    this (char[][] modifiers, char[] typ)
+    {
+	foreach (mod; modifiers)
+	    addChild(new DIdentifier(mod));
+	addChild(new DIdentifier(typ));
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	res = new DIdentifier(env.askString((nrChilds == ix ? "Type: " : "Modifier: ")));
+    }
+
+    static bool createType(inout TokenSequence ts, inout char[] typ)
+    {
+	bool found = false;
+	char[] t;
+	if (ts.isKeyword(["void", "int", "uint", "char"], t) || ts.getIdentifier(t))
+	{
+	    typ ~= t;
+	    found = true;
+	    while (ts.isSymbol("*"))
+		typ ~= "*";
+	    if (ts.isSymbol("["))
+	    {
+		typ ~= "[";
+		if (!ts.isSymbol("]"))
+		{
+		    found = createType(ts, typ) && ts.isSymbol("]");
+		}
+		typ ~= "]";
+	    }
+	    while (ts.isSymbol("*"))
+		typ ~= "*";
+	}
+
+	return found;
+    }
+
+    mixin Create;
+    static void createI(inout DType res){}
+    static void createI(inout DType res, inout Environment env)
+    {
+	res = new DType([], env.askString("Type: "));
+    }
+    static void createI(inout DType res, inout TokenSequence ts)
+    {
+	char[][] modifiers;
+	char[] mod, typ;
+	while (true)
+	{
+	    if (ts.isKeyword(["public", "const", "in", "out", "inout"], mod))
+		modifiers ~= [mod];
+	    else if (createType(ts, typ))
+	    {
+		res = new DType(modifiers, typ);
+		break;
+	    }
+	    else
+		break;
+	}
+    }
+    
+    void render(Sink sink)
+    {
+	Tag tag;
+	tag.node = this;
+	tag.color = (select ? 1 : 0);
+	tag.indent = false;
+	auto h = sink.create(tag);
+
+	if (nrChilds > 0)
+	{
+	    childs[0].render(h);
+	    for (uint i = 1; i < nrChilds; ++i)
+	    {
+		h.add(" ");
+		childs[i].render(h);
+	    }
+	}
+    }
+}
+
 class DScope: DNode
 {
     void render(Sink sink)
@@ -358,14 +442,17 @@ version (Test)
 
 	test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
 	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
-*/
 
-        test!(DExpression)("(ix%2 == 0 ? '|' : ' ');", ";");
+//        test!(DExpression)("null ! is null;", ";");
+
+	test!(DExpression)("new Exception(\"Mmh, some unknown things that start with the above.\")", "");
+	test!(DStatement)("throw new Exception(\"Mmh, some unknown things that start with the above.\");", "");
 
 	puts("{} tests failed out of {}", nrFailed, nrTotal);
+*/
 
-//  	auto content = TFile("d.d").read;
-//  	auto dcontent = new DContent;
-//  	dcontent.load(content);
+ 	auto content = TFile("d.d").read;
+ 	auto dcontent = new DContent;
+ 	dcontent.load(content);
     }
 }

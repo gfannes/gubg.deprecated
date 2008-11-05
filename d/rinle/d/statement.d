@@ -43,6 +43,12 @@ class DStatement: DNode
 // 	case "foreach":
 // 	    stat = DForeachStatement.create(env);
 // 	    break;
+	case "return":
+	    stat = DReturnStatement.create(env);
+	    break;
+	case "throw":
+	    stat = DThrowStatement.create(env);
+	    break;
 	case "exp":
 	    stat = DExpressionStatement.create(env);
 	    break;
@@ -62,6 +68,7 @@ class DStatement: DNode
 			      DDoStatement,
 			      DForeachStatement,
 			      DReturnStatement,
+			      DThrowStatement,
 			      DExpressionStatement,
 			      DDeclaration,
 			      DEmptyStatement))
@@ -637,7 +644,7 @@ class DReturnStatement: DStatement
     this(DExpression exp = null)
     {
 	if (exp !is null)
-	addChild(exp);
+	    addChild(exp);
 	addSemicolon = true;
     }
 
@@ -652,6 +659,29 @@ class DReturnStatement: DStatement
 	    ts.create(exp);
 	    if (ts.isSymbol(";"))
 		res = new DReturnStatement(exp);
+	}
+    }
+}
+
+class DThrowStatement: DStatement
+{
+    this(DExpression exp)
+    {
+	addChild(exp);
+	addSemicolon = true;
+    }
+
+    mixin Create;
+    static void createI(inout DThrowStatement res){}
+    static void createI(inout DThrowStatement res, inout Environment env){}
+    static void createI(inout DThrowStatement res, inout TokenSequence ts)
+    {
+	DExpression exp;
+	if (ts.isKeyword("throw"))
+	{
+	    ts.create(exp);
+	    if (ts.isSymbol(";"))
+		res = new DThrowStatement(exp);
 	}
     }
 }

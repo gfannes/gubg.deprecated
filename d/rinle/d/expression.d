@@ -74,7 +74,7 @@ class DSymbolExpression: DExpression
 {
     static this()
     {
-	symbols = [",", "=", "?", ":", "||", "&&", "+", "-", "/", "*", "~", "<", ">", "<=", ">=", "==", "is", "in"];
+	symbols = [",", "=", "?", ":", "||", "&&", "&", "^", "|", "!is", "is", "!=", "==", ">=", ">", "<=", "<", ">>>", ">>", "<<", "in", "~", "-", "+", "%", "/", "*"];
 	foreach (s; symbols)
 	    symbolHash[s] = true;
     }
@@ -289,7 +289,11 @@ class DUnaryExpression: DSymbolExpression
     static void createI(inout DUnaryExpression res, inout TokenSequence ts)
     {
 	char[] symb;
-	if (ts.isSymbol(symbols, symb))
+	DNewExpression newExp;
+	if (ts.create(newExp))
+	{
+	    res = newExp;
+	} else if (ts.isSymbol(symbols, symb))
 	{
 	    DPostfixExpression pf;
 	    if (ts.create(pf))
@@ -509,6 +513,61 @@ class DPostfixExpression: DUnaryExpression
     }
 }
 
+class DNewExpression: DUnaryExpression
+{
+    this ()
+    {
+	setNrChilds(1);
+    }
+    this (DType typ, DExpression exp = null)
+    {
+	setChild(0, typ);
+	if (exp !is null)
+	    addChild(exp);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    break;
+	case 1:
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DNewExpression res){res = new DNewExpression();}
+    static void createI(inout DNewExpression res, inout Environment env)
+    {
+    }
+    static void createI(inout DNewExpression res, inout TokenSequence ts)
+    {
+	DType typ;
+	if (ts.isKeyword("new") &&
+	    ts.create(typ))
+	{
+	    DExpression exp = DExpression.create(ts);
+	    res = new DNewExpression(typ, exp);
+	}
+    }
+    
+    void renderI(Sink sink)
+    {
+	sink.add("new ");
+	foreach (ix, ch; childs)
+	{
+	    if (ix > 0)
+		sink.add(" ");
+            if (ch !is null)
+                ch.render(sink);
+	}
+    }
+}
+
 class DPrimaryExpression: DPostfixExpression
 {
     mixin Create;
@@ -518,7 +577,8 @@ class DPrimaryExpression: DPostfixExpression
     }
     static void createI(inout DPrimaryExpression res, inout TokenSequence ts)
     {
-	foreach (type; Tuple!(DKeywordExpression,
+	foreach (type; Tuple!(DBracketExpression,
+			      DKeywordExpression,
                               DStringExpression,
 			      DIdentifierExpression))
 	{
@@ -526,6 +586,34 @@ class DPrimaryExpression: DPostfixExpression
 	    if (res !is null)
 		break;
 	}
+    }
+}
+
+class DBracketExpression: DPrimaryExpression
+{
+    this (DExpression exp)
+    {
+	addChild(exp);
+    }
+
+    mixin Create;
+    static void createI(inout DBracketExpression res){}
+    static void createI(inout DBracketExpression res, inout Environment env){}
+    static void createI(inout DBracketExpression res, inout TokenSequence ts)
+    {
+	DExpression exp;
+	if (ts.isSymbol("(") &&
+	    ts.create(exp) &&
+	    ts.isSymbol(")"))
+	    res = new DBracketExpression(exp);
+    }
+    
+    void renderI(Sink sink)
+    {
+	sink.add("(");
+	if (childs[0] !is null)
+	    childs[0].render(sink);
+	sink.add(")");
     }
 }
 
