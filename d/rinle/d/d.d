@@ -286,11 +286,14 @@ version (Test)
 
 /*
 */
+/*
  	test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
 	test!(DModuleDeclaration)("module asdfasdf;", "");
 
 	test!(DImportDeclaration)("import asdfasdf; STOP", "STOP");
 	test!(DImportDeclaration)("import asdfasdf;", "");
+
+	test!(DDeclaration)("public import a.b.c.d;", "");
 
 	test!(DExpression)("asdfasdf STOP", "STOP");
 	test!(DExpression)("asdfasdf", "");
@@ -355,14 +358,14 @@ version (Test)
 
 	test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
 	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
-/*
 */
-//     throw new Exception("Mmh, some unknown things that start with the above.");
+
+        test!(DExpression)("(ix%2 == 0 ? '|' : ' ');", ";");
 
 	puts("{} tests failed out of {}", nrFailed, nrTotal);
 
-// 	auto content = TFile("d.d").read;
-// 	auto dcontent = new DContent;
-// 	dcontent.load(content);
+//  	auto content = TFile("d.d").read;
+//  	auto dcontent = new DContent;
+//  	dcontent.load(content);
     }
 }

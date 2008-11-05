@@ -27,7 +27,12 @@ class DDeclaration: DStatement
     }
     static void createI(inout DDeclaration res, inout TokenSequence ts)
     {
-	foreach (type; Tuple!(DImportDeclaration, DVersionDeclaration, DClassDeclaration, DFunctionDeclaration, DVariableDeclaration))
+	foreach (type; Tuple!(DAttributeDeclaration,
+                              DImportDeclaration,
+                              DVersionDeclaration,
+                              DClassDeclaration,
+                              DFunctionDeclaration,
+                              DVariableDeclaration))
 	{
 	    res = type.create(ts);
 	    if (res !is null)
@@ -66,6 +71,69 @@ class DDeclaration: DStatement
 
 	return decl;
     }
+}
+
+class DAttributeDeclaration: DDeclaration
+{
+    static this()
+    {
+	attributes = ["public"];
+    }
+
+    this ()
+    {
+	setNrChilds(1);
+    }
+    this (char[] attr, DDeclaration decl = null)
+    {
+	this();
+	setChild(0, new DIdentifier(attr));
+        if (decl !is null)
+            addChild(decl);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    res = new DIdentifier(env.askString("Attribute: "));
+	    break;
+        case 1:
+            res = DDeclaration.create(env);
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DAttributeDeclaration res){res = new DAttributeDeclaration();}
+    static void createI(inout DAttributeDeclaration res, inout Environment env)
+    {
+	res = DAttributeDeclaration.create();
+	res.setChild(0, new DIdentifier(env.askString("The attribute: ")));
+	VariantFiber.yield(res);
+	res.setChild(1, DDeclaration.createFrom(env.askString("The declaration: ")));
+    }
+    static void createI(inout DAttributeDeclaration res, inout TokenSequence ts)
+    {
+        char[] attr;
+        DDeclaration decl;
+	if (ts.isKeyword(attributes, attr) &&
+            ts.create(decl))
+	    res = new DAttributeDeclaration(attr, decl);
+    }
+
+    void renderI(Sink sink)
+    {
+        if (childs[0] !is null)
+            childs[0].render(sink);
+        if (childs[1] !is null)
+            childs[1].render(sink);
+    }
+
+private:
+    static char[][] attributes;
 }
 
 class DModuleDeclaration: DDeclaration
