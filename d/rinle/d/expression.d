@@ -479,22 +479,33 @@ class DPostfixExpression: DUnaryExpression
     mixin Extend!(DPrimaryExpression);
     static void extendI(inout DPostfixExpression res, inout DPrimaryExpression from, inout TokenSequence ts)
     {
-        DNode postfix;
-	postfix = DSymbolPostfix.create(ts);
-	if (postfix is null)
-	    postfix = DFunctionPostfix.create(ts);
-	if (postfix is null)
-	    postfix = DIdentifierPostfix.create(ts);
-	if (postfix !is null)
-	    res = new DPostfixExpression(from, postfix);
+        while (true)
+        {
+            DNode postfix;
+            foreach (type; Tuple!(DSymbolPostfix,
+                                  DFunctionPostfix,
+                                  DIdentifierPostfix))
+            {
+                postfix = type.create(ts);
+                if (postfix !is null)
+                {
+                    if (res is null)
+                        res = new DPostfixExpression(from, postfix);
+                    else
+                        res.addChild(postfix);
+                    break;
+                }
+            }
+            if (postfix is null)
+                break;
+        }
     }
     
     void renderI(Sink sink)
     {
-	if (childs[0])
-	    childs[0].render(sink);
-	if (childs[1])
-	    childs[1].render(sink);
+	foreach (ch; childs)
+            if (ch !is null)
+                ch.render(sink);
     }
 }
 

@@ -285,6 +285,7 @@ version (Test)
     {
 
 /*
+*/
  	test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
 	test!(DModuleDeclaration)("module asdfasdf;", "");
 
@@ -350,7 +351,9 @@ version (Test)
  	test!(DExpression)("a+b ? b : c;", ";");
 	test!(DExpression)("a.b;", ";");
  	test!(DExpression)("true ? true : false ? false : true;", ";");
-*/
+	test!(DExpression)("a.b.c", "");
+
+	test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
 	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
 /*
 */
