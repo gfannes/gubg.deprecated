@@ -98,6 +98,14 @@ class TokenSequence: List!(Token)
 	return true;
     }
 
+    bool getComment(inout char[] comment)
+    {
+	if (empty || !peep.getComment(comment))
+	    return false;
+	pop;
+	return true;
+    }
+
     bool create(T)(inout T res)
     {
 	return (res = T.create(this)) !is null;

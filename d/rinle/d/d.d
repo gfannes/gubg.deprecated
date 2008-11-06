@@ -175,6 +175,38 @@ abstract class DNode: Node
 		}
 	    }
     }
+
+    template Comment()
+    {
+        mixin Create;
+        static void createI(inout typeof(this) res){res = new typeof(this);}
+        static void createI(inout typeof(this) res, inout Environment env)
+            {
+                res = typeof(this).create();
+                 res.mComment = "//" ~ env.askString("Comment: ");
+            }
+        static void createI(inout typeof(this) res, inout TokenSequence ts)
+            {
+                char[] comment;
+                if (ts.getComment(comment))
+                {
+                    res = typeof(this).create();
+                    res.mComment = comment;
+                }
+            }
+
+        void render(Sink sink)
+            {
+                Tag tag;
+                tag.node = this;
+                tag.color = (select ? 1 : 0);
+                tag.indent = false;
+                auto h = sink.create(tag, mComment);
+            }
+
+    private:
+        char[] mComment;
+    }
 }
 
 class DIdentifier: DNode

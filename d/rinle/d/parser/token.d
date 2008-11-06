@@ -60,6 +60,15 @@ class Token
 	    return true;
 	}
 
+    bool isComment(){return false;}
+    bool getComment(inout char[] s)
+	{
+	    if (!isComment)
+		return false;
+	    s = str.dup;
+	    return true;
+	}
+
     void print()
         {
             puts("str = {}", str);
@@ -115,6 +124,8 @@ class Comment: Token
     this (char[] s){super(s);}
 
     bool known(){return true;}
+
+    bool isComment(){return true;}
 
     Comment create(inout char[] s)
     {

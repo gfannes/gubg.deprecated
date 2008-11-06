@@ -61,7 +61,8 @@ class DStatement: DNode
     }
     static void createI(inout DStatement res, inout TokenSequence ts)
     {
-	foreach (type; Tuple!(DBlockStatement,
+	foreach (type; Tuple!(DCommentStatement,
+                              DBlockStatement,
 			      DForStatement,
 			      DIfStatement,
 			      DWhileStatement,
@@ -99,6 +100,13 @@ class DStatement: DNode
 
     bool addSemicolon;
     bool addNewline;
+}
+
+class DCommentStatement: DStatement
+{
+    this(){}
+
+    mixin Comment;
 }
 
 class DEmptyStatement: DStatement
