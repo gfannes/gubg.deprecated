@@ -474,17 +474,17 @@ version (Test)
 
 	test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
 	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
-
-//        test!(DExpression)("null ! is null;", ";");
-
 	test!(DExpression)("new Exception(\"Mmh, some unknown things that start with the above.\")", "");
 	test!(DStatement)("throw new Exception(\"Mmh, some unknown things that start with the above.\");", "");
-
-	puts("{} tests failed out of {}", nrFailed, nrTotal);
 */
 
- 	auto content = TFile("d.d").read;
- 	auto dcontent = new DContent;
- 	dcontent.load(content);
+        test!(DExpression)("null ! is null;", ";");
+
+
+	puts("{} tests failed out of {}", nrFailed, nrTotal);
+
+//  	auto content = TFile("d.d").read;
+//  	auto dcontent = new DContent;
+//  	dcontent.load(content);
     }
 }

@@ -1,5 +1,7 @@
 module gubg.list;
 
+import gubg.puts;
+
 class List(T)
 {
     this (){}
@@ -39,6 +41,35 @@ class List(T)
 	    }
 
 	    return res;
+	}
+
+    void each(bool delegate(T v, T* next) dg)
+	{
+	    T v;
+	    T* next;
+	    Element el = head;
+	    
+
+	    if (el !is null)
+	    {
+		next = &el.value;
+		el = el.next;
+	    }
+
+	    bool cont = true;
+	    while (el !is null)
+	    {
+		v = *next;
+		next = &el.value;
+		if (!dg(v, next))
+		{
+		    cont = false;
+		    break;
+		}
+		el = el.next;
+	    }
+	    if (cont && next !is null)
+		dg(*next, null);
 	}
 
     uint length()

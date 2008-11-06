@@ -24,6 +24,8 @@ class TokenSequence: List!(Token)
         splitTokens();
 
         replaceSpecialTokens();
+
+	joinTokens();
     }
 
     bool isSymbol(char[] symb)
@@ -200,6 +202,29 @@ private:
 
     void replaceSpecialTokens()
     {
+    }
+
+    void joinTokens()
+    {
+	auto list = new List!(Token);
+	handover(list);
+
+	bool skipNext = false;
+	list.each(delegate bool(Token token, Token* next)
+		  {
+		      if (skipNext)
+			  skipNext = false;
+		      else
+		      {
+			  if (next !is null && token.isSymbol("!") && next.isSymbol("is"))
+			  {
+			      add(new Symbol("!is"));
+			      skipNext = true;
+			  } else
+			      add(token);
+		      }
+		      return true;
+		  });
     }
 }
 

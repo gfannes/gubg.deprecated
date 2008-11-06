@@ -318,7 +318,7 @@ class DSymbolPostfix: DIdentifier
 {
     static this()
     {
-	symbols = ["!", "++", "--"];
+	symbols = ["++", "--"];
     }
 
     this (char[] str)
@@ -621,7 +621,7 @@ class DKeywordExpression: DPrimaryExpression
 {
     static this()
     {
-	keywords = ["true", "false", "void"];
+	keywords = ["true", "false", "void", "null"];
 	foreach (kw; keywords)
 	    keywordHash[kw] = true;
     }
