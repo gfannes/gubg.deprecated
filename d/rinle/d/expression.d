@@ -74,7 +74,7 @@ class DSymbolExpression: DExpression
 {
     static this()
     {
-	symbols = [",", "=", "?", ":", "||", "&&", "&", "^", "|", "!is", "is", "!=", "==", ">=", ">", "<=", "<", ">>>", ">>", "<<", "in", "~", "-", "+", "%", "/", "*"];
+	symbols = [",", "=", "?", ":", "||", "&&", "&", "^", "|", "!is", "is", "!=", "==", "~=", ">=", ">", "<=", "<", ">>>", ">>", "<<", "in", "~", "-", "+", "%", "/", "*"];
 	foreach (s; symbols)
 	    symbolHash[s] = true;
     }
@@ -267,7 +267,7 @@ class DUnaryExpression: DSymbolExpression
 {
     static this()
     {
-	symbols = ["!", "++", "--", "-", "+"];
+	symbols = ["!", "++", "--", "-", "+", "&", "*", "~"];
     }
 
     this ()
@@ -681,7 +681,7 @@ class DKeywordExpression: DPrimaryExpression
 {
     static this()
     {
-	keywords = ["true", "false", "void", "null"];
+	keywords = ["true", "false", "void", "null", "this", "super"];
 	foreach (kw; keywords)
 	    keywordHash[kw] = true;
     }

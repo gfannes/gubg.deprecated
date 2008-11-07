@@ -234,10 +234,13 @@ private:
 class Identifier: Token
 {
     static bool[char[]] keywords;
+    static bool[char[]] symbols;
     static this()
     {
-	foreach (keyword; ["abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const", "continue", "creal", "dchar", "debug", "default", "delegate", "delete", "deprecated", "do", "double", "else", "enum", "export", "extern", "false", "final", "finally", "float", "for", "foreach", "foreach_reverse", "function", "goto", "idouble", "if", "ifloat", "import", "in", "inout", "int", "interface", "invariant", "ireal", "is", "lazy", "long", "mixin", "module", "new", "null", "out", "override", "package", "pragma", "private", "protected", "public", "real", "return", "scope", "short", "static", "struct", "super", "switch", "synchronized", "template", "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void", "volatile", "wchar", "while", "with"])
+	foreach (keyword; ["abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const", "continue", "creal", "dchar", "debug", "default", "delegate", "delete", "deprecated", "do", "double", "else", "enum", "export", "extern", "false", "final", "finally", "float", "for", "foreach", "foreach_reverse", "function", "goto", "idouble", "if", "ifloat", "import", "in", "inout", "ref", "int", "interface", "invariant", "ireal", "is", "lazy", "long", "mixin", "module", "new", "null", "out", "override", "package", "pragma", "private", "protected", "public", "real", "return", "scope", "short", "static", "struct", "super", "switch", "synchronized", "template", "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void", "volatile", "wchar", "while", "with"])
 	    keywords[keyword] = true;
+	foreach (symbol; ["is", "in"])
+	    symbols[symbol] = true;
     }
 
     this(){}
@@ -257,6 +260,24 @@ class Identifier: Token
     {
 	foreach (kw; kws)
 	    if (isKeyword(kw))
+		return true;
+	return false;
+    }
+
+    bool isSymbol()
+    {
+	return (str in symbols) !is null;
+    }
+
+    bool isSymbol(char[] sym)
+    {
+	return sym == str && isSymbol;
+    }
+
+    bool isSymbol(char[][] syms)
+    {
+	foreach (sym; syms)
+	    if (isSymbol(sym))
 		return true;
 	return false;
     }

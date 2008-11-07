@@ -7,6 +7,7 @@ import rinle.interfaces;
 import rinle.d.parser.token;
 import rinle.d.parser.tokenSequence;
 import rinle.d.statement;
+import rinle.d.expression;
 import rinle.sink;
 import tango.core.Tuple;
 
@@ -77,14 +78,14 @@ class DAttributeDeclaration: DDeclaration
 {
     static this()
     {
-	attributes = ["public", "private", "auto", "scope", "abstract"];
+	attributes = ["public", "private", "auto", "scope", "abstract", "const", "static"];
     }
 
     this ()
     {
 	setNrChilds(1);
     }
-    this (char[] attr, DDeclaration decl = null)
+    this (char[] attr, DNode decl = null)
     {
 	this();
 	setChild(0, new DIdentifier(attr));
@@ -118,10 +119,17 @@ class DAttributeDeclaration: DDeclaration
     static void createI(inout DAttributeDeclaration res, inout TokenSequence ts)
     {
         char[] attr;
-        DDeclaration decl;
-	if (ts.isKeyword(attributes, attr) &&
-            ts.create(decl))
-	    res = new DAttributeDeclaration(attr, decl);
+	if (ts.isKeyword(attributes, attr))
+	{
+	    DNode node;
+	    DDeclaration decl;
+	    DNameInit init;
+	    if (ts.create(decl))
+		node = decl;
+	    if (node is null && ts.create(init) && ts.isSymbol(";"))
+		node = init;
+	    res = new DAttributeDeclaration(attr, node);
+	}
     }
 
     void renderI(Sink sink)
@@ -267,7 +275,6 @@ class DClassDeclaration: DDeclaration
     this (DIdentifier name, DIdentifier parent, DScope bdy)
     {
 	this();
-	puts("Setting {} and {}", name, parent);
 	setChild(0, name);
 	setChild(1, parent);
 	setChild(2, bdy);
@@ -332,6 +339,83 @@ class DClassDeclaration: DDeclaration
 	    sink.add(": ");
 	    childs[1].render(sink);
 	}
+	sink.newline;
+	childs[2].render(sink);
+    }
+}
+
+// [0]: Template name (DIdentifier)
+// [1]: Template arguments (DTemplateArguments)
+// [2]: Body (DScope)
+class DTemplateDeclaration: DDeclaration
+{
+    this ()
+    {
+	setNrChilds(3);
+	addSemicolon = false;
+    }
+    this (DIdentifier name, DTemplateArguments args, DScope bdy)
+    {
+	this();
+	setChild(0, name);
+	setChild(1, args);
+	setChild(2, bdy);
+    }
+    this (char[] name)
+    {
+	this(new DIdentifier(name), new DTemplateArguments, new DScope);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    res = new DIdentifier(env.askString("Template name: "));
+	    break;
+	case 1:
+	    res = DTemplateArguments.create(env);
+	    break;
+	case 2:
+	    res = new DScope;
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DTemplateDeclaration res)
+    {
+	res =  new DTemplateDeclaration(null, null, new DScope);
+    }
+    static void createI(inout DTemplateDeclaration res, inout Environment env)
+    {
+	res = DTemplateDeclaration.create();
+	VariantFiber.yield(res);
+	res.setChild(0, new DIdentifier(env.askString("The template's name: ")));
+	VariantFiber.yield(res);
+	res.setChild(1, DTemplateArguments.create(env));
+    }
+    static void createI(inout DTemplateDeclaration res, inout TokenSequence ts)
+    {
+	char[] name;
+	DTemplateArguments args;
+	DScope scop;
+	if (ts.isKeyword("template") &&
+	    ts.getIdentifier(name) &&
+	    ts.create(args) &&
+	    ts.create(scop))
+	    res = new DTemplateDeclaration(new DIdentifier(name), args, scop);
+    }
+
+    void renderI(Sink sink)
+    {
+	sink.add("template ");
+	if (childs[0] !is null)
+	    childs[0].render(sink);
+	if (childs[1] !is null)
+	    childs[1].render(sink);
 	sink.newline;
 	childs[2].render(sink);
     }
@@ -516,7 +600,8 @@ class DArgumentTypes: DNode
 	    while (true)
 	    {
 		DTypeName typName;
-		if ((typName = DTypeName.create(ts)) !is null)
+//		if ((typName = DTypeName.create(ts)) !is null)
+		if (ts.create(typName))
 		    typeNames ~= [typName];
 		else
 		{
@@ -549,17 +634,82 @@ class DArgumentTypes: DNode
     }
 }
 
+class DTemplateArguments: DNode
+{
+    this(){}
+    this (char[][] types)
+    {
+	foreach (ix, typ; types)
+	{
+	    DIdentifier t = new DIdentifier(typ);
+	    addChild(t);
+	}
+    }
+    this (DIdentifier[] types)
+    {
+	foreach (typ; types)
+	    addChild(typ);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	res = new DIdentifier(env.askString("Template type: "));
+    }
+
+    mixin Create;
+    static void createI(inout DTemplateArguments res){}
+    static void createI(inout DTemplateArguments res, inout Environment env){}
+    static void createI(inout DTemplateArguments res, inout TokenSequence ts)
+    {
+	DIdentifier[] types;
+	if (ts.isSymbol("("))
+	{
+	    while (true)
+	    {
+		DIdentifier typ;
+		if (ts.create(typ))
+		    types ~= [typ];
+		else
+		{
+		    if (ts.isSymbol(","))
+			continue;
+		    else if (ts.isSymbol(")"))
+			res = new DTemplateArguments(types);
+		    break;
+		}
+	    }
+	}
+    }
+
+    void render(Sink sink)
+    {
+	Tag tag;
+	tag.node = this;
+	tag.color = (select ? 1 : 0);
+	tag.indent = false;
+	auto h = sink.create(tag);
+
+	h.add("(");
+        foreach (ix, child; childs)
+        {
+            if (ix > 0)
+                h.add(", ");
+            child.render(h);
+        }
+	h.add(")");
+    }
+}
+
 class DFunctionDeclaration: DDeclaration
 {
     this (char[] returnType, char[] name)
     {
-	auto retT = new DTypeName(returnType, name);
-	addChild(retT);
-	addSemicolon = false;
+	this(new DTypeName(returnType, name));
     }
-    this (DTypeName returnTypeName, DArgumentTypes argTypes = null, DScope bdy = null)
+    this (DTypeName returnTypeName, DTemplateArguments templArgs = null, DArgumentTypes argTypes = null, DScope bdy = null)
     {
 	addChild(returnTypeName);
+	addChild(templArgs);
 	if (argTypes is null)
 	    argTypes = new DArgumentTypes();
 	addChild(argTypes);
@@ -577,9 +727,12 @@ class DFunctionDeclaration: DDeclaration
 	    res = DTypeName.create(env);
 	    break;
 	case 1:
-	    res = DArgumentTypes.create(env);
+	    res = DTemplateArguments.create(env);
 	    break;
 	case 2:
+	    res = DArgumentTypes.create(env);
+	    break;
+	case 3:
 	    res = new DScope;
 	    break;
 	default:
@@ -597,28 +750,33 @@ class DFunctionDeclaration: DDeclaration
     static void createI(inout DFunctionDeclaration res, inout TokenSequence ts)
     {
 	DTypeName typname;
-	DArgumentTypes argTypes;
-	DScope bdy;
-	if ((typname = DTypeName.create(ts)) !is null &&
-	    (argTypes = DArgumentTypes.create(ts)) !is null &&
-	    createDNode(bdy, ts))
+	if (ts.create(typname))
 	{
-	    res = new DFunctionDeclaration(typname, argTypes, bdy);
+	    DTemplateArguments templArgs;
+	    DArgumentTypes argTypes;
+	    DScope bdy;
+	    ts.create(templArgs);
+	    ts.create(argTypes);
+	    if ((templArgs !is null || argTypes !is null) &&
+		ts.create(bdy))
+		res = new DFunctionDeclaration(typname, templArgs, argTypes, bdy);
 	}
     }
 
     void renderI(Sink sink)
     {
 	childs[0].render(sink);
-	childs[1].render(sink);
-	sink.newline;
+	if (childs[1] !is null)
+	    childs[1].render(sink);
 	childs[2].render(sink);
+	sink.newline;
+	childs[3].render(sink);
     }
 }
 
 class DNameInit: DNode
 {
-    this (DIdentifier name, DInitializer init)
+    this (DIdentifier name, DExpression init)
     {
 	addChild(name);
 	addChild(init);
@@ -630,7 +788,7 @@ class DNameInit: DNode
     static void createI(inout DNameInit res, inout TokenSequence ts)
     {
 	DIdentifier name;
-	DInitializer init;
+	DExpression init;
 	if (ts.create(name))
 	{
 	    if (ts.isSymbol("="))
@@ -667,7 +825,7 @@ class DVariableDeclaration: DDeclaration
     static DVariableDeclaration createFrom(DType t)
     {
 	DIdentifier name = new DIdentifier(env.askString("Variable name: "));
-	DInitializer init = DInitializer.create(env);
+	DExpression init = DExpression.create(env);
 	return new DVariableDeclaration(t, new DNameInit(name, init));
     }
 

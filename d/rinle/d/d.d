@@ -31,6 +31,20 @@ void fail(TokenSequence ts)
     throw new Exception("Mmh, some unknown things that start with the above.");
 }
 
+char[] createString(TokenSequence ts)
+{
+    char[] res;
+    scope sp = ts.savePoint;
+    for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)
+    {
+	if (i > 0)
+	    res ~= " ";
+	res ~= ts.peep.str;
+    }
+    sp.restore;
+    return res;
+}
+
 class DContent: Content
 {
     // IContent
@@ -116,7 +130,7 @@ abstract class DNode: Node
 
 		++level;
 		scope (exit) --level;
-		puts("{}Trying {}", indent, this.stringof);
+		puts("{}Trying {} \"{}\"", indent, this.stringof, createString(ts));
 		
 		typeof(this) res;
 
@@ -239,6 +253,40 @@ private:
     char[] mIdent;
 }
 
+class DTypeof: DNode
+{
+    this ()
+    {
+	setNrChilds(1);
+    }
+    this (DExpression exp)
+    {
+	this();
+	setChild(0, exp);
+    }
+
+    mixin Create;
+    static void createI(inout DTypeof res){}
+    static void createI(inout DTypeof res, inout Environment env){}
+    static void createI(inout DTypeof res, inout TokenSequence ts)
+    {
+	DExpression exp;
+	if (ts.isKeyword("typeof") &&
+	    ts.isSymbol("(") &&
+	    ts.create(exp) &&
+	    ts.isSymbol(")"))
+	    res = new DTypeof(exp);
+    }
+
+    void renderI(Sink sink)
+    {
+	sink.add("typeof(");
+	if (childs[0] !is null)
+	    childs[0].render(sink);
+	sink.add(")");
+    }
+}
+
 class DType: DNode
 {
     this (char[][] modifiers, char[] typ)
@@ -257,7 +305,19 @@ class DType: DNode
     {
 	bool found = false;
 	char[] t;
-	if (ts.isKeyword(["void", "int", "uint", "char", "bool"], t) || ts.getIdentifier(t))
+	if (!ts.isKeyword(["void", "int", "uint", "char", "bool"], t))
+	{
+	    char[] ident;
+	    while (ts.getIdentifier(ident))
+	    {
+		t ~= ident;
+		if (ts.isSymbol("."))
+		    t ~= ".";
+		else
+		    break;
+	    }
+	}
+	if (t.length > 0)
 	{
 	    typ ~= t;
 	    found = true;
@@ -291,7 +351,7 @@ class DType: DNode
 	char[] mod, typ;
 	while (true)
 	{
-	    if (ts.isKeyword(["public", "const", "in", "out", "inout"], mod))
+	    if (ts.isKeyword(["in", "out", "inout", "ref", "lazy"], mod))
 		modifiers ~= [mod];
 	    else if (createType(ts, typ))
 	    {
@@ -362,12 +422,12 @@ class DScope: DNode
 	    while (ok)
 	    {
 		DStatement ds;
-		if (ts.create(ds))
+		if (ts.isSymbol("}"))
+		    break;
+		else if (ts.create(ds))
 		    res.addChild(ds);
 		else
                 {
-		    if (ts.isSymbol("}"))
-			break;
                     ok = false;
                     res = null;
                 }
@@ -409,31 +469,14 @@ version (Test)
             dcontent.load(content);
             break;
         case "one":
-//             test!(DStatement)("bool load(void[] content)
-//     {
-// 	auto ts = new TokenSequence(cast(char[])content);
 
-// 	INode node = DModuleDeclaration.create(ts);
-
-//  	if (node !is null)
-//  	    addChild(node);
-// 	TokenSequence.Element prevHead;
-// 	while (!ts.empty && (ts.head != prevHead))
-// 	{
-// 	    prevHead = ts.head;
-
-// 	    node = DDeclaration.create(ts);
-// 	    if (node !is null)
-// 		addChild(node);
-// 	}
-// 	if (prevHead is ts.head)
-// 	    fail(ts);
-	
-// 	return true;
-//     }STOP", "STOP");
-
-//            test!(DStatement)("auto ts = new TokenSequence(cast(char[])content);", "");
-            test!(DDeclaration)("auto ts = new TokenSequence(cast(char[])content);", "");
+	    test!(DType)("int", "");
+	    test!(DType)("int[]", "");
+	    test!(DType)("int*[]", "");
+	    test!(DType)("a", "");
+	    test!(DType)("a.b", "");
+	    test!(DType)("typeof(this)", "");
+	    
             puts("{} tests failed out of {}", nrFailed, nrTotal);
             break;
         case "all":
@@ -443,10 +486,13 @@ version (Test)
             test!(DModuleDeclaration)("module asdfasdf;", "");
             test!(DImportDeclaration)("import asdfasdf; STOP", "STOP");
             test!(DImportDeclaration)("import asdfasdf;", "");
-            test!(DVariableDeclaration)("public uint level = 0;", "");
+            test!(DVariableDeclaration)("uint level = 0;", "");
+            test!(DAttributeDeclaration)("public uint level = 0;", "");
             test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;}", "");
             test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
             test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
+	    test!(DFunctionDeclaration)("bool createDNode(T)(inout T res, inout TokenSequence ts){}","");
+	    test!(DTemplateDeclaration)("template Create(){}", "");
             test!(DDeclaration)("public import a.b.c.d;", "");
 
             test!(DExpression)("asdfasdf STOP", "STOP");
@@ -475,6 +521,7 @@ version (Test)
             test!(DExpression)("a.b.c", "");
             test!(DExpression)("new Exception(\"Mmh, some unknown things that start with the above.\")", "");
             test!(DExpression)("null ! is null;", ";");
+	    test!(DExpression)("a is b", "");
 
             test!(DForArgument)("(;testsd;) STOP", "STOP");
             test!(DForArgument)("(;testsd;)", "");
@@ -496,6 +543,7 @@ version (Test)
             test!(DCommentStatement)("//{id.length = 2*level;}", "");
             test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
             test!(DStatement)("throw new Exception(\"Mmh, some unknown things that start with the above.\");", "");
+	    test!(DStatement)("auto ts = new TokenSequence(cast(char[])content);", "");
 
             test!(DScope)("{id.length = 2*level;}", "");
 /*
