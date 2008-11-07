@@ -288,18 +288,25 @@ class DUnaryExpression: DSymbolExpression
     }
     static void createI(inout DUnaryExpression res, inout TokenSequence ts)
     {
-	char[] symb;
-	DNewExpression newExp;
-	if (ts.create(newExp))
+	foreach (type; Tuple!(DNewExpression,
+                              DCastExpression))
 	{
-	    res = newExp;
-	} else if (ts.isSymbol(symbols, symb))
-	{
-	    DPostfixExpression pf;
-	    if (ts.create(pf))
-		res = new DUnaryExpression(symb, pf);
-	} else
-	    res = DPostfixExpression.create(ts);
+	    res = type.create(ts);
+	    if (res !is null)
+		break;
+	}
+
+	if (res is null)
+        {
+            char[] symb;
+            if (ts.isSymbol(symbols, symb))
+            {
+                DPostfixExpression pf;
+                if (ts.create(pf))
+                    res = new DUnaryExpression(symb, pf);
+            } else
+                res = DPostfixExpression.create(ts);
+        }
     }
     
     void renderI(Sink sink)
@@ -565,6 +572,59 @@ class DNewExpression: DUnaryExpression
             if (ch !is null)
                 ch.render(sink);
 	}
+    }
+}
+
+class DCastExpression: DUnaryExpression
+{
+    this ()
+    {
+	setNrChilds(2);
+    }
+    this (DType typ, DUnaryExpression unary)
+    {
+	setChild(0, typ);
+	setChild(1, unary);
+    }
+
+    void createChild(inout INode res, uint ix)
+    {
+	switch (ix)
+	{
+	case 0:
+	    break;
+	case 1:
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    mixin Create;
+    static void createI(inout DCastExpression res){res = new DCastExpression();}
+    static void createI(inout DCastExpression res, inout Environment env)
+    {
+    }
+    static void createI(inout DCastExpression res, inout TokenSequence ts)
+    {
+	DType typ;
+        DUnaryExpression unary;
+	if (ts.isKeyword("cast") &&
+            ts.isSymbol("(") &&
+	    ts.create(typ) &&
+            ts.isSymbol(")") &&
+            ts.create(unary))
+	    res = new DCastExpression(typ, unary);
+    }
+    
+    void renderI(Sink sink)
+    {
+	sink.add("cast(");
+        if (childs[0] !is null)
+            childs[0].render(sink);
+	sink.add(")");
+        if (childs[1] !is null)
+            childs[1].render(sink);
     }
 }
 

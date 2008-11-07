@@ -409,29 +409,31 @@ version (Test)
             dcontent.load(content);
             break;
         case "one":
-            test!(DStatement)("bool load(void[] content)
-    {
-	auto ts = new TokenSequence(cast(char[])content);
+//             test!(DStatement)("bool load(void[] content)
+//     {
+// 	auto ts = new TokenSequence(cast(char[])content);
 
-	INode node = DModuleDeclaration.create(ts);
+// 	INode node = DModuleDeclaration.create(ts);
 
- 	if (node !is null)
- 	    addChild(node);
-	TokenSequence.Element prevHead;
-	while (!ts.empty && (ts.head != prevHead))
-	{
-	    prevHead = ts.head;
+//  	if (node !is null)
+//  	    addChild(node);
+// 	TokenSequence.Element prevHead;
+// 	while (!ts.empty && (ts.head != prevHead))
+// 	{
+// 	    prevHead = ts.head;
 
-	    node = DDeclaration.create(ts);
-	    if (node !is null)
-		addChild(node);
-	}
-	if (prevHead is ts.head)
-	    fail(ts);
+// 	    node = DDeclaration.create(ts);
+// 	    if (node !is null)
+// 		addChild(node);
+// 	}
+// 	if (prevHead is ts.head)
+// 	    fail(ts);
 	
-	return true;
-    }STOP", "STOP");
-            test!(DExpression)("cast(char[])content", "");
+// 	return true;
+//     }STOP", "STOP");
+
+//            test!(DStatement)("auto ts = new TokenSequence(cast(char[])content);", "");
+            test!(DDeclaration)("auto ts = new TokenSequence(cast(char[])content);", "");
             puts("{} tests failed out of {}", nrFailed, nrTotal);
             break;
         case "all":
