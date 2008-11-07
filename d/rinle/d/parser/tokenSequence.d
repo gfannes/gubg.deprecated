@@ -216,9 +216,11 @@ private:
 			  skipNext = false;
 		      else
 		      {
-			  if (next !is null && token.isSymbol("!") && next.isSymbol("is"))
+			  if (next !is null &&
+                              token.isSymbol("!") &&
+                              (next.isKeyword("is") || next.isKeyword("in")))
 			  {
-			      add(new Symbol("!is"));
+			      add(new Symbol("!" ~ next.str));
 			      skipNext = true;
 			  } else
 			      add(token);

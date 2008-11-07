@@ -257,7 +257,7 @@ class DType: DNode
     {
 	bool found = false;
 	char[] t;
-	if (ts.isKeyword(["void", "int", "uint", "char"], t) || ts.getIdentifier(t))
+	if (ts.isKeyword(["void", "int", "uint", "char", "bool"], t) || ts.getIdentifier(t))
 	{
 	    typ ~= t;
 	    found = true;
@@ -399,92 +399,107 @@ version (Test)
     }
     void main()
     {
+        // d.d, all, one
+        auto testType = "one";
+        switch (testType)
+        {
+        case "d.d":
+            auto content = TFile("d.d").read;
+            auto dcontent = new DContent;
+            dcontent.load(content);
+            break;
+        case "one":
+            test!(DStatement)("bool load(void[] content)
+    {
+	auto ts = new TokenSequence(cast(char[])content);
 
+	INode node = DModuleDeclaration.create(ts);
+
+ 	if (node !is null)
+ 	    addChild(node);
+	TokenSequence.Element prevHead;
+	while (!ts.empty && (ts.head != prevHead))
+	{
+	    prevHead = ts.head;
+
+	    node = DDeclaration.create(ts);
+	    if (node !is null)
+		addChild(node);
+	}
+	if (prevHead is ts.head)
+	    fail(ts);
+	
+	return true;
+    }STOP", "STOP");
+            test!(DExpression)("cast(char[])content", "");
+            puts("{} tests failed out of {}", nrFailed, nrTotal);
+            break;
+        case "all":
 /*
-*/
+ */
+            test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
+            test!(DModuleDeclaration)("module asdfasdf;", "");
+            test!(DImportDeclaration)("import asdfasdf; STOP", "STOP");
+            test!(DImportDeclaration)("import asdfasdf;", "");
+            test!(DVariableDeclaration)("public uint level = 0;", "");
+            test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;}", "");
+            test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
+            test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
+            test!(DDeclaration)("public import a.b.c.d;", "");
+
+            test!(DExpression)("asdfasdf STOP", "STOP");
+            test!(DExpression)("asdfasdf", "");
+            test!(DExpression)("asdfasdf() STOP", "STOP");
+            test!(DExpression)("asdfasdf()", "");
+            test!(DExpression)("asdfasdf(asdf) STOP", "STOP");
+            test!(DExpression)("asdfasdf(asdf)", "");
+            test!(DExpression)("asdfasdf(asdf,asdfas) STOP", "STOP");
+            test!(DExpression)("asdfasdf(asdf,asdfas)", "");
+            test!(DExpression)("!asdfasdf STOP", "STOP");
+            test!(DExpression)("!asdfasdf", "");
+            test!(DExpression)("asdfasdf;", ";");
+            test!(DExpression)("a+b+c;", ";");
+            test!(DExpression)("a = a+b+c;", ";");
+            test!(DExpression)("' ';", ";");
+            test!(DExpression)("a;", ";");
+            test!(DExpression)("++a;", ";");
+            test!(DExpression)("a++;", ";");
+            test!(DExpression)("a+b;", ";");
+            test!(DExpression)("++a++ + ++b;", ";");
+            test!(DExpression)("a ? b : c;", ";");
+            test!(DExpression)("a+b ? b : c;", ";");
+            test!(DExpression)("a.b;", ";");
+            test!(DExpression)("true ? true : false ? false : true;", ";");
+            test!(DExpression)("a.b.c", "");
+            test!(DExpression)("new Exception(\"Mmh, some unknown things that start with the above.\")", "");
+            test!(DExpression)("null ! is null;", ";");
+
+            test!(DForArgument)("(;testsd;) STOP", "STOP");
+            test!(DForArgument)("(;testsd;)", "");
+            test!(DForStatement)("for (;!test(sdfs);++i) {} STOP", "STOP");
+            test!(DForStatement)("for (;!test(sdfs);++i) {}", "");
+            test!(DIfStatement)("if (true) {;}", "");
+            test!(DIfStatement)("if (true) ;", "");
+            test!(DIfStatement)("if (true) {;} else {;}", "");
+            test!(DIfStatement)("if (true) ; else ;", "");
+            test!(DWhileStatement)("while (true) {;}", "");
+            test!(DDoStatement)("do {;} while (true)", "");
+            test!(DForeachStatement)("foreach (;asdf) ;", "");
+            test!(DExpressionStatement)("id.length = 2*level;", "");
+            test!(DForeachStatement)("foreach (inout ch; id){}", "");
+            test!(DForeachStatement)("foreach (inout ch; id) ch = 123;", "");
+            test!(DForeachStatement)("foreach (inout ch; id) ch = ' ';", "");
+            test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
+            test!(DReturnStatement)("return id;", "");
+            test!(DCommentStatement)("//{id.length = 2*level;}", "");
+            test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
+            test!(DStatement)("throw new Exception(\"Mmh, some unknown things that start with the above.\");", "");
+
+            test!(DScope)("{id.length = 2*level;}", "");
 /*
- 	test!(DModuleDeclaration)("module asdfasdf; STOP", "STOP");
-	test!(DModuleDeclaration)("module asdfasdf;", "");
-
-	test!(DImportDeclaration)("import asdfasdf; STOP", "STOP");
-	test!(DImportDeclaration)("import asdfasdf;", "");
-
-	test!(DDeclaration)("public import a.b.c.d;", "");
-
-	test!(DExpression)("asdfasdf STOP", "STOP");
-	test!(DExpression)("asdfasdf", "");
-	test!(DExpression)("asdfasdf() STOP", "STOP");
-	test!(DExpression)("asdfasdf()", "");
-
-	test!(DExpression)("asdfasdf(asdf) STOP", "STOP");
-	test!(DExpression)("asdfasdf(asdf)", "");
-
-	test!(DExpression)("asdfasdf(asdf,asdfas) STOP", "STOP");
-	test!(DExpression)("asdfasdf(asdf,asdfas)", "");
-
-	test!(DExpression)("!asdfasdf STOP", "STOP");
-	test!(DExpression)("!asdfasdf", "");
-
-	test!(DExpression)("asdfasdf;", ";");
-
-	test!(DExpression)("a+b+c;", ";");
-	test!(DExpression)("a = a+b+c;", ";");
-	test!(DExpression)("' ';", ";");
-
-	test!(DForArgument)("(;testsd;) STOP", "STOP");
-	test!(DForArgument)("(;testsd;)", "");
-	test!(DForStatement)("for (;!test(sdfs);++i) {} STOP", "STOP");
-	test!(DForStatement)("for (;!test(sdfs);++i) {}", "");
-	test!(DIfStatement)("if (true) {;}", "");
-	test!(DIfStatement)("if (true) ;", "");
-	test!(DIfStatement)("if (true) {;} else {;}", "");
-	test!(DIfStatement)("if (true) ; else ;", "");
-
-	test!(DWhileStatement)("while (true) {;}", "");
-	test!(DDoStatement)("do {;} while (true)", "");
-
-	test!(DForeachStatement)("foreach (;asdf) ;", "");
-
-	test!(DVariableDeclaration)("public uint level = 0;", "");
-
-	test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;}", "");
-	test!(DExpressionStatement)("id.length = 2*level;", "");
-	test!(DScope)("{id.length = 2*level;}", "");
-
-	test!(DForeachStatement)("foreach (inout ch; id){}", "");
-	test!(DForeachStatement)("foreach (inout ch; id) ch = 123;", "");
-	test!(DForeachStatement)("foreach (inout ch; id) ch = ' ';", "");
-
-	test!(DReturnStatement)("return id;", "");
-
-	test!(DFunctionDeclaration)("char[] indent(){char[] id; id.length = 2*level;foreach (inout ch; id) ch = ' ';return id;} STOP", "STOP");
-	test!(DFunctionDeclaration)("void fail(TokenSequence ts){puts(\"Failing on the following code:\");} STOP", "STOP");
-  
-
-	test!(DExpression)("a;", ";");
-	test!(DExpression)("++a;", ";");
-	test!(DExpression)("a++;", ";");
-	test!(DExpression)("a+b;", ";");
-	test!(DExpression)("++a++ + ++b;", ";");
- 	test!(DExpression)("a ? b : c;", ";");
- 	test!(DExpression)("a+b ? b : c;", ";");
-	test!(DExpression)("a.b;", ";");
- 	test!(DExpression)("true ? true : false ? false : true;", ";");
-	test!(DExpression)("a.b.c", "");
-
-	test!(DStatement)("puts(\"Element = {}\", ts.peep.str);", "");
-	test!(DForStatement)("for (uint i = 0; i < 10 && !ts.empty; ++i, ts.pop)puts(\"Element = {}\", ts.peep.str);", "");
-	test!(DExpression)("new Exception(\"Mmh, some unknown things that start with the above.\")", "");
-	test!(DStatement)("throw new Exception(\"Mmh, some unknown things that start with the above.\");", "");
-*/
-
-        test!(DExpression)("null ! is null;", ";");
-
-
-	puts("{} tests failed out of {}", nrFailed, nrTotal);
-
-//  	auto content = TFile("d.d").read;
-//  	auto dcontent = new DContent;
-//  	dcontent.load(content);
+ */
+            puts("{} tests failed out of {}", nrFailed, nrTotal);
+            break;
+        }
     }
 }

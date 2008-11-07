@@ -77,7 +77,7 @@ class DAttributeDeclaration: DDeclaration
 {
     static this()
     {
-	attributes = ["public"];
+	attributes = ["public", "private", "auto", "scope", "abstract"];
     }
 
     this ()
