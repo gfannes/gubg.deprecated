@@ -8,7 +8,7 @@ interface Interface(I): I
 
 template Composite(I)
 {
-    void each()
+    int opApply(int delegate(inout ))
         {
         }
 }
