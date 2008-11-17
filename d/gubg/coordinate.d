@@ -159,25 +159,25 @@ version(Test)
 {
     void main()
     {
-	auto transf = new Transformation([1,2],0.2);
+	auto transf = new Transformation([1,2], [2,3], 0.2);
 
 	{
 	    puts("New -> old -> new");
-	    real[] co = [1,0];
+	    real[] co = [1,0], o;
 	    puts("{}",co);
-	    transf.transformN2O(co);
+	    transf.transformCoN2O(o, co);
 	    puts("{}",co);
-	    transf.transformO2N(co);
+	    transf.transformCoO2N(o, co);
 	    puts("{}",co);
 	}
 
 	{
 	    puts("Old -> new -> old");
-	    real[] co = [1,0];
+	    real[] co = [1,0], o;
 	    puts("{}",co);
-	    transf.transformO2N(co);
+	    transf.transformCoO2N(o, co);
 	    puts("{}",co);
-	    transf.transformN2O(co);
+	    transf.transformCoN2O(o, co);
 	    puts("{}",co);
 	}
     }
