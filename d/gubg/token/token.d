@@ -1,8 +1,8 @@
-module rinle.d.parser.token;
+module gubg.token.token;
 
 import tango.core.Array;
 
-import rinle.common.helper;
+import gubg.token.helper;
 import gubg.puts;
 
 class Token
