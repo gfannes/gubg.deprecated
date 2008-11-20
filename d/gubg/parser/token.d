@@ -1,21 +1,17 @@
-module gubg.token.token;
+module gubg.parser.token;
 
-import tango.core.Array;
-
-import gubg.token.helper;
+import gubg.parser.language;
+import gubg.parser.helper;
 import gubg.puts;
 
-class Token
+class Token(Language)
 {
     char[] str;
 
     this(){}
-    this (char[] s)
-	{
-	    str = s;
-	}
+    this (char[] s){str = s;}
 
-    Token create(inout char[] s){return null;}
+    static Token create(inout char[] s){return null;}
 
     bool known(){return false;}
 
@@ -23,23 +19,23 @@ class Token
     bool isKeyword(char[] kw){return false;}
     bool isKeyword(char[][] kws){return false;}
     bool getKeyword(inout char[] kw)
-    {
-	if (!isKeyword)
-	    return false;
-	kw = str.dup;
-	return true;
-    }
+        {
+            if (!isKeyword)
+                return false;
+            kw = str.dup;
+            return true;
+        }
 
     bool isSymbol(){return false;}
     bool isSymbol(char[] symb){return false;}
     bool isSymbol(char[][] symbs){return false;}
     bool getSymbol(inout char[] symb)
-    {
-	if (!isSymbol)
-	    return false;
-	symb = str.dup;
-	return true;
-    }
+        {
+            if (!isSymbol)
+                return false;
+            symb = str.dup;
+            return true;
+        }
 
     bool isIdentifier(){return false;}
     bool isIdentifier(char[] s){return false;}
@@ -75,7 +71,7 @@ class Token
         }
 }
 
-class String: Token
+class String(Language): Token!(Language)
 {
     this(){}
     this (char[] s){super(s);}
@@ -84,7 +80,7 @@ class String: Token
 
     bool isString(){return true;}
 
-    String create(inout char[] s)
+    static String create(inout char[] s)
     {
 	String res;
 
@@ -118,7 +114,7 @@ class String: Token
     }
 }
 
-class Comment: Token
+class Comment(Language): Token!(Language)
 {
     this(){}
     this (char[] s){super(s);}
@@ -127,7 +123,7 @@ class Comment: Token
 
     bool isComment(){return true;}
 
-    Comment create(inout char[] s)
+    static Comment create(inout char[] s)
     {
 	Comment res;
         if (startWith("//", s))
@@ -183,13 +179,8 @@ class Comment: Token
     }
 }
 
-class Symbol: Token
+class Symbol(Language): Token!(Language)
 {
-    this()
-    {
-	symbols = ["/", "/=", ".", "..", "...", "&", "&=", "&&", "|", "|=", "||", "-", "-=", "--", "+", "+=", "++", "<", "<=", "<<", "<<=", "<>", "<>=", ">", ">=", ">>=", ">>>=", ">>", ">>>", "!", "!=", "!==", "!<>", "!<>=", "!<", "!<=", "!>", "!>=", "!~", "(", ")", "[", "]", "{", "}", "?", ",", ";", ":", "$", "=", "==", "===", "*", "*=", "%", "%=", "^", "^=", "~", "~=", "~~"];
-	sort(symbols, delegate bool(char[] lhs, char[] rhs){return lhs.length > rhs.length;});
-    }
     this (char[] s){super(s);}
 
     bool known(){return true;}
@@ -212,11 +203,11 @@ class Symbol: Token
 	return false;
     }
 
-    Symbol create(inout char[] s)
+    static Symbol create(inout char[] s)
     {
 	Symbol res;
 
-	foreach (symbol; symbols)
+	foreach (symbol; sortedSymbols)
 	    if (startWith(symbol, s))
 	    {
 		res = new Symbol(s[0 .. symbol.length]);
@@ -226,22 +217,19 @@ class Symbol: Token
 
 	return res;
     }
-
-private:
-    char[][] symbols;
 }
 
-class Identifier: Token
+class Identifier(Language): Token!(Language)
 {
-    static bool[char[]] keywords;
-    static bool[char[]] symbols;
-    static this()
-    {
-	foreach (keyword; ["abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const", "continue", "creal", "dchar", "debug", "default", "delegate", "delete", "deprecated", "do", "double", "else", "enum", "export", "extern", "false", "final", "finally", "float", "for", "foreach", "foreach_reverse", "function", "goto", "idouble", "if", "ifloat", "import", "in", "inout", "ref", "int", "interface", "invariant", "ireal", "is", "lazy", "long", "mixin", "module", "new", "null", "out", "override", "package", "pragma", "private", "protected", "public", "real", "return", "scope", "short", "static", "struct", "super", "switch", "synchronized", "template", "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void", "volatile", "wchar", "while", "with"])
-	    keywords[keyword] = true;
-	foreach (symbol; ["is", "in"])
-	    symbols[symbol] = true;
-    }
+//     static bool[char[]] keywords;
+//     static bool[char[]] symbols;
+//     static this()
+//     {
+// 	foreach (keyword; ["abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const", "continue", "creal", "dchar", "debug", "default", "delegate", "delete", "deprecated", "do", "double", "else", "enum", "export", "extern", "false", "final", "finally", "float", "for", "foreach", "foreach_reverse", "function", "goto", "idouble", "if", "ifloat", "import", "in", "inout", "ref", "int", "interface", "invariant", "ireal", "is", "lazy", "long", "mixin", "module", "new", "null", "out", "override", "package", "pragma", "private", "protected", "public", "real", "return", "scope", "short", "static", "struct", "super", "switch", "synchronized", "template", "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void", "volatile", "wchar", "while", "with"])
+// 	    keywords[keyword] = true;
+// 	foreach (symbol; ["is", "in"])
+// 	    symbols[symbol] = true;
+//     }
 
     this(){}
     this (char[] s){super(s);}
@@ -291,7 +279,7 @@ class Identifier: Token
 	return s == str && isIdentifier;
     }
 
-    Identifier create(inout char[] s)
+    static Identifier create(inout char[] s)
     {
 	return new Identifier(s);
     }
@@ -303,7 +291,7 @@ version (Test)
     {
         char[] str;
 
-	Comment comment = new Comment;
+        auto comment = new Comment!(DLanguage);
 
         str = "//asdfsadf\nasa/*dfasd*/f";
         auto ct = comment.create(str);
@@ -320,7 +308,7 @@ version (Test)
         nbct.print();
 	puts("rest = ({})", str);
 
-	String string = new String;
+	auto string = new String!(DLanguage);
 
         str = "\"sadf\"f";
         auto strin = string.create(str);
