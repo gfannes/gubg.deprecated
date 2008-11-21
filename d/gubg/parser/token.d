@@ -181,6 +181,7 @@ class Comment(Language): Token!(Language)
 
 class Symbol(Language): Token!(Language)
 {
+    this(){}
     this (char[] s){super(s);}
 
     bool known(){return true;}
@@ -207,7 +208,7 @@ class Symbol(Language): Token!(Language)
     {
 	Symbol res;
 
-	foreach (symbol; sortedSymbols)
+	foreach (symbol; Language.sortedSymbols)
 	    if (startWith(symbol, s))
 	    {
 		res = new Symbol(s[0 .. symbol.length]);
@@ -238,7 +239,7 @@ class Identifier(Language): Token!(Language)
 
     bool isKeyword()
     {
-	return (str in keywords) !is null;
+	return Language.isKeyword(str);
     }
     bool isKeyword(char[] kw)
     {
@@ -254,7 +255,7 @@ class Identifier(Language): Token!(Language)
 
     bool isSymbol()
     {
-	return (str in symbols) !is null;
+	return Language.isSymbol(str);
     }
 
     bool isSymbol(char[] sym)

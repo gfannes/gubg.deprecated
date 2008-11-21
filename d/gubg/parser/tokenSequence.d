@@ -1,14 +1,17 @@
-module rinle.d.parser.tokenSequence;
+module gubg.parser.tokenSequence;
 
 import tango.text.Util;
 
+import gubg.parser.token;
+import gubg.parser.helper;
+
 import gubg.list;
-import rinle.d.parser.token;
-import rinle.common.helper;
 import gubg.puts;
 
-class TokenSequence: List!(Token)
+class TokenSequence(Language): List!(Token!(Language))
 {
+    alias Token!(Language) TokenT;
+
     this (char[] sourceCode)
     {
         // Split up in sequence of Comment, String and Unknown
@@ -116,10 +119,10 @@ class TokenSequence: List!(Token)
 private:
     void splitCommentsStrings(char[] sourceCode)
     {
-        Token[] tokens = [cast(Token)new String(), cast(Token)new Comment()];
+        TokenT[] tokens = [cast(TokenT)new String!(Language)(), cast(TokenT)new Comment!(Language)()];
 	    
         char[] pre, post, rest = sourceCode;
-        Token token;
+        TokenT token;
         uint ix = 0;
         while (ix < rest.length)
         {
@@ -132,7 +135,7 @@ private:
                 if (token !is null)
                 {
                     if (pre.length > 0)
-                        add(new Token(pre));
+                        add(new TokenT(pre));
                     add(token);
                     ix = 0;
                     rest = post;
@@ -141,12 +144,12 @@ private:
             }
         }
         if (rest.length > 0)
-            add(new Token(rest));
+            add(new TokenT(rest));
     }
 
     void splitWhiteSpaceEOL()
     {
-        auto list = new List!(Token);
+        auto list = new List!(TokenT);
         handover(list);
         foreach (token; list)
             if (token.known)
@@ -158,7 +161,7 @@ private:
                             if (str.length > 0)
                                 foreach (str2; split(str, "\t"))
                                     if (str2.length > 0)
-                                        add(new Token(str2));
+                                        add(new TokenT(str2));
     }
 
     void processSpecialTokenSequences()
@@ -167,10 +170,10 @@ private:
 
     void splitTokens()
     {
-	auto list = new List!(Token);
+	auto list = new List!(TokenT);
 	handover(list);
 
-	Symbol symbol = new Symbol;
+	auto symbol = new Symbol!(Language);
 
 	foreach (token; list)
 	    if (token.known)
@@ -178,7 +181,7 @@ private:
 	    else
 	    {
 		char[] pre, post, rest = token.str;
-		Symbol s;
+		Symbol!(Language) s;
 		uint ix = 0;
 		while (ix < rest.length)
 		{
@@ -189,14 +192,14 @@ private:
 		    if (s !is null)
 		    {
 			if (pre.length > 0)
-			    add(new Identifier(pre));
+			    add(new Identifier!(Language)(pre));
 			add(s);
 			ix = 0;
 			rest = post;
 		    }
 		}
 		if (rest.length > 0)
-		    add(new Identifier(rest));
+		    add(new Identifier!(Language)(rest));
 	    }
     }
 
@@ -206,11 +209,11 @@ private:
 
     void joinTokens()
     {
-	auto list = new List!(Token);
+	auto list = new List!(TokenT);
 	handover(list);
 
 	bool skipNext = false;
-	list.each(delegate bool(Token token, Token* next)
+	list.each(delegate bool(TokenT token, TokenT* next)
 		  {
 		      if (skipNext)
 			  skipNext = false;
@@ -220,7 +223,7 @@ private:
                               token.isSymbol("!") &&
                               (next.isKeyword("is") || next.isKeyword("in")))
 			  {
-			      add(new Symbol("!" ~ next.str));
+			      add(new Symbol!(Language)("!" ~ next.str));
 			      skipNext = true;
 			  } else
 			      add(token);
@@ -233,12 +236,13 @@ private:
 version (Test)
 {
     import gubg.file;
+    import gubg.parser.language;
 
     void main()
     {
 	char[] sourceCode;
 	loadFile(sourceCode, "tokenSequence.d");
-	TokenSequence ts = new TokenSequence(sourceCode);
+	auto ts = new TokenSequence!(DLanguage)(sourceCode);
 
 	foreach (token; ts)
 	    puts("token({}) = \"{}\"", token.known, token.str);
