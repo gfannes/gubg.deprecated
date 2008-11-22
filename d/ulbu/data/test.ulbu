@@ -1,0 +1,20 @@
+_main:
+{
+	+a:int
+	-b:int
+
+	func:
+	{
+	}
+}
+
+_Print
+{
+	-value:int
+	.asHex:
+	{
+	}
+	.asDec:
+	{
+	}
+}

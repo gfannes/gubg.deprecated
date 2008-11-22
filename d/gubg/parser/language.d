@@ -45,38 +45,6 @@ private:
     static bool[char[]] mIsKeyword;
 }
 
-class DITFLanguage: Language
-{
-    static this()
-    {
-        mSymbols = ["+", "-", ":", "{", "}", "(", ")", ";", "."];
-
- 	foreach (symb; mSymbols)
-	    mIsSymbol[symb] = true;
-
-        mSortedSymbols = mSymbols.dup;
- 	sort(mSortedSymbols, delegate bool(char[] lhs, char[] rhs){return lhs.length > rhs.length;});
-
- 	foreach (keyword; mKeywords)
-	    mIsKeyword[keyword] = true;
-    }
-
-    static char[][] symbols(){return mSymbols;}
-    static char[][] sortedSymbols(){return mSortedSymbols;}
-    static bool isSymbol(char[] str){return (str in mIsSymbol) !is null;}
-
-    static char[][] keywords(){return mKeywords;}
-    static bool isKeyword(char[] str){return (str in mIsKeyword) !is null;}
-
-private:
-    static char[][] mSymbols;
-    static char[][] mSortedSymbols;
-    static bool[char[]] mIsSymbol;
-
-    static char[][] mKeywords;
-    static bool[char[]] mIsKeyword;
-}
-
 version (Test)
 {
     import gubg.puts;

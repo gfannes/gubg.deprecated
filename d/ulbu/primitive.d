@@ -1,6 +1,6 @@
-module ditf.primitive;
+module ulbu.primitive;
 
-import ditf.element;
+import ulbu.element;
 
 class Integer: Element
 {
