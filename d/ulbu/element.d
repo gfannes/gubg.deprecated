@@ -119,11 +119,11 @@ class Element
 	{
 	    if (mBody !is null)
 	    {
-		puts("{}{}{}", repeat("  ", level), mAttributes.attributes, mName.name);
+		puts("{}{}({}).{}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name);
 		mBody.print(level + 1);
 	    } else
 	    {
-		puts("{}{}{} -> {}", repeat("  ", level), mAttributes.attributes, mName.name, mBodyName.name);
+		puts("{}{}({}).{} -> {}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name);
 	    }
 	}
 
