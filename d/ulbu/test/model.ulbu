@@ -1,0 +1,28 @@
+Attributes
+{
+  +attributes: array[char]
+}
+
+Name
+{
+  +name: array[char]
+  +location: array[char]
+}
+
+Type
+{
+  +elements: array[Element]
+}
+
+Element
+{
+  +attributes: Attributes
+  +name: Name
+  +type: Type
+  +typeName: Name
+}
+
+Module
+{
+  +elements: array[Element]
+}

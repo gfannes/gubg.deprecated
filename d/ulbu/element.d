@@ -260,6 +260,6 @@ version (Test)
     
     void main()
     {
-        auto mod = Module.createFrom("data/test.ulbu");
+        auto mod = Module.createFrom("test/test.ulbu");
     }
 }
