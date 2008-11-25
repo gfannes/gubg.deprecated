@@ -10,10 +10,7 @@ class Builder
 
     void build(char[] dirName, char[] fileName)
         {
-            auto mod = Module.createFrom(dirName, fileName);
-            auto conf = Config.createFrom(dirName);
-
-            mod.setLocation(conf.location);
+            auto el = Element.createFrom(dirName, fileName);
         }
 }
 

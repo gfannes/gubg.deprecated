@@ -20,9 +20,23 @@ class Config
         }
 
     char[] location(){return mLocation;}
+    char[] location(char[] fileName)
+	{
+	    char[] loc;
+	    switch (mLocation)
+	    {
+	    case ".":
+		loc = fileName.dup;
+		break;
+	    default:
+		loc = mLocation ~ "." ~ fileName;
+		break;
+	    }
+	    return loc;
+	}
 
     mixin Create!(CTS);
-    static void createI(inout Config res, inout CTS ts)
+    static void createI(inout Config res, inout CTS ts, in char[] loc)
 	{
             if (ts.isKeyword("location") && ts.isSymbol("="))
             {

@@ -34,31 +34,22 @@ template Create(TS)
         }
 
     // Create a node based on TS input
-    static typeof(this) create(inout TS ts)
+    static typeof(this) create(inout TS ts, in char[] location = "")
 	{
-	    static TS.TokenT head;
-
 	    ++level;
 	    scope (exit) --level;
 	    puts("{}Trying {} \"{}\"", indent, this.stringof, createString(ts));
-		
+    
 	    typeof(this) res;
+	    scope sp = ts.savePoint;
 
-	    if (head !is ts.peep)
-	    {
-		head = ts.peep;
+	    typeof(this).createI(res, ts, location);
 
-		scope sp = ts.savePoint;
-		    
-		typeof(this).createI(res, ts);
-		    
-		if (res is null)
-		    sp.restore;
-		else
-		    puts("{}OK {}", indent, this.stringof);
-		head = null;
-	    }
-		
+	    if (res is null)
+		sp.restore;
+	    else
+		puts("{}OK {}", indent, this.stringof);
+    
 	    return res;
 	}
 }
