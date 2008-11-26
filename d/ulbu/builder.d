@@ -2,25 +2,29 @@ module ulbu.builder;
 
 import gubg.puts;
 
-class Builder;
-
 import ulbu.element;
 
 class Builder
 {
+    this ()
+	{
+	    mRoot = new Root;
+	}
+
     void build(char[] dirName, char[] fileName)
         {
-            auto el = Element.createFrom(dirName, fileName, this);
+            auto el = Element.createFrom(dirName, fileName);
+	    mRoot.add(el);
+	    mRoot.setLocation();
         }
 
-    Body resolveBody(char[] bodyName)
-        {
-            return mBodyIndex[bodyName];
-        }
+    void print()
+	{
+	    mRoot.print();
+	}
 
 private:
-    char[][Body] mLocation;
-    Body[char[]] mBodyIndex;
+    Root mRoot;
 }
 
 version (Test)
@@ -30,5 +34,6 @@ version (Test)
         auto builder = new Builder;
 
         builder.build("test", "test.ulbu");
+	builder.print();
     }
 }

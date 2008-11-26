@@ -1,6 +1,6 @@
 module ulbu.create;
 
-import ulbu.interfaces;
+import ulbu.config;
 
 template Create(TS)
 {
@@ -36,21 +36,27 @@ template Create(TS)
         }
 
     // Create a node based on TS input
-    static typeof(this) create(inout TS ts, inout IBuilder builder = null)
+    static typeof(this) create(inout TS ts, in Config config = null)
 	{
-	    ++level;
-	    scope (exit) --level;
-	    puts("{}Trying {} \"{}\"", indent, this.stringof, createString(ts));
+	    static if (printCreate)
+	    {
+		++level;
+		scope (exit) --level;
+		puts("{}Trying {} \"{}\"", indent, this.stringof, createString(ts));
+	    }
     
 	    typeof(this) res;
 	    scope sp = ts.savePoint;
 
-	    typeof(this).createI(res, ts, builder);
+	    typeof(this).createI(res, ts, config);
 
 	    if (res is null)
 		sp.restore;
 	    else
-		puts("{}OK {}", indent, this.stringof);
+	    {
+		static if (printCreate)
+		    puts("{}OK {}", indent, this.stringof);
+	    }
     
 	    return res;
 	}

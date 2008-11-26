@@ -11,6 +11,7 @@ import ulbu.create;
 // For the Create mixin
 public uint level = 0;
 alias TokenSequence!(ConfigLanguage) CTS;
+const bool printCreate = false;
 
 class Config
 {
@@ -36,7 +37,7 @@ class Config
 	}
 
     mixin Create!(CTS);
-    static void createI(inout Config res, inout CTS ts, in char[] loc)
+    static void createI(inout Config res, inout CTS ts, in Config config)
 	{
             if (ts.isKeyword("location") && ts.isSymbol("="))
             {
