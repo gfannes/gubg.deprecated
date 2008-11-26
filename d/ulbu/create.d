@@ -1,6 +1,6 @@
 module ulbu.create;
 
-import ulbu.builder;
+import ulbu.interfaces;
 
 template Create(TS)
 {
@@ -36,7 +36,7 @@ template Create(TS)
         }
 
     // Create a node based on TS input
-    static typeof(this) create(inout TS ts, inout Builder builder = null)
+    static typeof(this) create(inout TS ts, inout IBuilder builder = null)
 	{
 	    ++level;
 	    scope (exit) --level;

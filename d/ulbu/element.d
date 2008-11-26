@@ -9,7 +9,7 @@ import gubg.puts;
 import ulbu.language;
 import ulbu.create;
 import ulbu.config;
-import ulbu.builder;
+import ulbu.interfaces;
 
 // For the Create mixin
 public uint level = 0;
@@ -28,7 +28,7 @@ class Attributes
 	}
 
     mixin Create!(TS);
-    static void createI(inout Attributes res, inout TS ts, inout Builder builder)
+    static void createI(inout Attributes res, inout TS ts, inout IBuilder builder)
 	{
 	    static char[][] symbols = ["+", "-", ".", "_", "/"];
 
@@ -58,7 +58,7 @@ class Name
     char[] location;
 
     mixin Create!(TS);
-    static void createI(inout Name res, inout TS ts, inout Builder builder)
+    static void createI(inout Name res, inout TS ts, inout IBuilder builder)
 	{
 	    char[] ident;
 	    if (ts.getIdentifier(ident))
@@ -88,7 +88,7 @@ class Body
 	}
 
     mixin Create!(TS);
-    static void createI(inout Body res, inout TS ts, inout Builder builder)
+    static void createI(inout Body res, inout TS ts, inout IBuilder builder)
 	{
 	    Element[] els;
 	    Element el;
@@ -128,7 +128,7 @@ class Element
             return mBody;
         }
 
-    void resolveBody(inout Builder builder)
+    void resolveBody(inout IBuilder builder)
         {
             mBody = builder.resolveBody(mBodyName.name);
         }
@@ -151,7 +151,7 @@ class Element
 	}
 
     mixin Create!(TS);
-    static void createI(inout Element res, inout TS ts, inout Builder builder)
+    static void createI(inout Element res, inout TS ts, inout IBuilder builder)
 	{
             Attributes attrs;
             Name name, bodyName;
@@ -172,7 +172,7 @@ class Element
             }
 	}
 
-    static Element createFrom(char[] dirName, char[] fileName, inout Builder builder)
+    static Element createFrom(char[] dirName, char[] fileName, inout IBuilder builder)
         {
 	    // Get the configuration
             auto conf = Config.createFrom(dirName);
