@@ -2,16 +2,25 @@ module ulbu.builder;
 
 import gubg.puts;
 
+class Builder;
+
 import ulbu.element;
-import ulbu.config;
 
 class Builder
 {
-
     void build(char[] dirName, char[] fileName)
         {
-            auto el = Element.createFrom(dirName, fileName);
+            auto el = Element.createFrom(dirName, fileName, this);
         }
+
+    Body resolveBody(char[] bodyName)
+        {
+            return mBodyIndex[bodyName];
+        }
+
+private:
+    char[][Body] mLocation;
+    Body[char[]] mBodyIndex;
 }
 
 version (Test)

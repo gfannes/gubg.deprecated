@@ -1,5 +1,7 @@
 module ulbu.create;
 
+import ulbu.builder;
+
 template Create(TS)
 {
     static char[] indent()
@@ -34,7 +36,7 @@ template Create(TS)
         }
 
     // Create a node based on TS input
-    static typeof(this) create(inout TS ts, in char[] location = "")
+    static typeof(this) create(inout TS ts, inout Builder builder = null)
 	{
 	    ++level;
 	    scope (exit) --level;
@@ -43,7 +45,7 @@ template Create(TS)
 	    typeof(this) res;
 	    scope sp = ts.savePoint;
 
-	    typeof(this).createI(res, ts, location);
+	    typeof(this).createI(res, ts, builder);
 
 	    if (res is null)
 		sp.restore;

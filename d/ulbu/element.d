@@ -9,6 +9,7 @@ import gubg.puts;
 import ulbu.language;
 import ulbu.create;
 import ulbu.config;
+import ulbu.builder;
 
 // For the Create mixin
 public uint level = 0;
@@ -27,7 +28,7 @@ class Attributes
 	}
 
     mixin Create!(TS);
-    static void createI(inout Attributes res, inout TS ts, in char[] loc)
+    static void createI(inout Attributes res, inout TS ts, inout Builder builder)
 	{
 	    static char[][] symbols = ["+", "-", ".", "_", "/"];
 
@@ -57,13 +58,13 @@ class Name
     char[] location;
 
     mixin Create!(TS);
-    static void createI(inout Name res, inout TS ts, in char[] loc)
+    static void createI(inout Name res, inout TS ts, inout Builder builder)
 	{
 	    char[] ident;
 	    if (ts.getIdentifier(ident))
 	    {
 		res = new Name(ident);
-		res.setLocation(loc);
+//		res.setLocation(loc);
 	    }
 	}
 }
@@ -75,6 +76,11 @@ class Body
             mElements = els;
         }
 
+    uint size()
+        {
+            return -1;
+        }
+
     void print(uint level = 0)
 	{
 	    foreach (el; mElements)
@@ -82,11 +88,11 @@ class Body
 	}
 
     mixin Create!(TS);
-    static void createI(inout Body res, inout TS ts, in char[] loc)
+    static void createI(inout Body res, inout TS ts, inout Builder builder)
 	{
 	    Element[] els;
 	    Element el;
-	    while ((el = Element.create(ts, loc)) !is null)
+	    while ((el = Element.create(ts, builder)) !is null)
 		els ~= [el];
 	    res = new Body(els);
 	}
@@ -115,33 +121,49 @@ class Element
             mBodyName = bodyName;
         }
 
+    Body resolvedBody()
+        {
+            if (mBody is null)
+                throw new Exception("ERROR::Could not resolve the body for " ~ mName.name ~ " which has bodyName " ~ mBodyName.name);
+            return mBody;
+        }
+
+    void resolveBody(inout Builder builder)
+        {
+            mBody = builder.resolveBody(mBodyName.name);
+        }
+
+    uint size()
+        {
+            return resolvedBody.size();
+        }
+
     void print(uint level = 0)
 	{
 	    if (mBody !is null)
 	    {
-		puts("{}{}({}).{}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name);
+		puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
 		mBody.print(level + 1);
 	    } else
 	    {
-		puts("{}{}({}).{} -> {}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name);
+		puts("{}{}({}).{} -> {} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name, size());
 	    }
 	}
 
     mixin Create!(TS);
-    static void createI(inout Element res, inout TS ts, in char[] loc)
+    static void createI(inout Element res, inout TS ts, inout Builder builder)
 	{
             Attributes attrs;
             Name name, bodyName;
             Body bdy;
             if (ts.create(attrs) && ts.create(name))
             {
-		name.setLocation(loc);
                 if (ts.isSymbol(":") && ts.create(bodyName))
                 {
                     // Reuse of existing body
                     res = new Element(attrs, name, bodyName);
                 } else if (ts.isSymbol("{") &&
-			   (bdy = Body.create(ts, loc ~ "." ~ name.name)) !is null &&
+			   (bdy = Body.create(ts, builder.addLocation(name.name))) !is null &&
 			   ts.isSymbol("}"))
                 {
                     // New body definition
@@ -150,7 +172,7 @@ class Element
             }
 	}
 
-    static Element createFrom(char[] dirName, char[] fileName)
+    static Element createFrom(char[] dirName, char[] fileName, inout Builder builder)
         {
 	    // Get the configuration
             auto conf = Config.createFrom(dirName);
@@ -165,7 +187,7 @@ class Element
             loadFile(sourceCode, dirName ~ "/" ~ fileName);
             // Create its token sequence
             auto ts = new TS(sourceCode);
-	    auto bdy = Body.create(ts, conf.location(elName));
+	    auto bdy = Body.create(ts, builder.setLocation(conf.location(elName)));
             return new Element(attrs, name, bdy);
         }
 
