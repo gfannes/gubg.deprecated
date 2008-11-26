@@ -2,11 +2,24 @@ module ulbu.primitive;
 
 import ulbu.element;
 
-class Integer: Element
+class Integer: Body
 {
-    char[] name(){return "int";}
+    this ()
+    {
+	super([]);
+    }
+
     uint size(){return 4;}
-    Element[] variables(){return [];}
+}
+
+class Byte: Body
+{
+    this ()
+    {
+	super([]);
+    }
+
+    uint size(){return 1;}
 }
 
 version (Test)
@@ -14,5 +27,6 @@ version (Test)
     void main()
     {
         auto i = new Integer;
+        auto b = new Byte;
     }
 }

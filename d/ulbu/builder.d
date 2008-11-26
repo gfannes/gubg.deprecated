@@ -3,6 +3,7 @@ module ulbu.builder;
 import gubg.puts;
 
 import ulbu.element;
+import ulbu.primitive;
 
 class Builder
 {
@@ -13,9 +14,17 @@ class Builder
 
     void build(char[] dirName, char[] fileName)
         {
+	    // Create the element for compilation
             auto el = Element.createFrom(dirName, fileName);
 	    mRoot.add(el);
+	    // Add the system elements
+	    addSystemElements();
+	    // Set the locations into the elements
 	    mRoot.setLocation();
+	    // Resolve the unknown bodies
+	    Body[char[]] fn2Body;
+	    mRoot.collectBodies(fn2Body);
+	    mRoot.resolveBodies(fn2Body);
         }
 
     void print()
@@ -24,6 +33,12 @@ class Builder
 	}
 
 private:
+    void addSystemElements()
+	{
+	    mRoot.add(new Element(new Attributes([]), new Name("int"), new Integer));
+	    mRoot.add(new Element(new Attributes([]), new Name("byte"), new Byte));
+	}
+
     Root mRoot;
 }
 

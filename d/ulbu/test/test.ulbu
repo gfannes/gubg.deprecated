@@ -5,16 +5,17 @@ main:
 
 	func:
 	{
+	  -p:test.Print
 	}
 }
 
 Print
 {
 	-value:int
-	.asHex:
+	*asHex:
 	{
 	}
-	.asDec:
+	*asDec:
 	{
 	}
 }

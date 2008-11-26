@@ -27,10 +27,25 @@ class Attributes
 	    return join(mAttributes, "|");
 	}
 
+    bool isAttribute()
+	{
+	    foreach (attr; mAttributes)
+		switch (attr)
+		{
+		case "+":
+		case "-":
+		    return true;
+		    break;
+		default:
+		    break;
+		}
+	    return false;
+	}
+
     mixin Create!(TS);
     static void createI(inout Attributes res, inout TS ts, in Config config)
 	{
-	    static char[][] symbols = ["+", "-", ".", "_", "/"];
+	    static char[][] symbols = ["+", "-", "*", "_", "/"];
 
             char[][] attrs;
 	    char[] symb;
@@ -54,17 +69,24 @@ class Name
 	    location = loc;
 	}
 
+    char[] fullName()
+	{
+	    return location == "" ? name : location ~ "." ~ name;
+	}
+
     char[] name;
     char[] location;
 
     mixin Create!(TS);
     static void createI(inout Name res, inout TS ts, in Config config)
 	{
-	    char[] ident;
-	    if (ts.getIdentifier(ident))
+	    char[] name;
+	    if (ts.getIdentifier(name))
 	    {
-		res = new Name(ident);
-//		res.setLocation(loc);
+		char[] ident;
+		while (ts.isSymbol(".") && ts.getIdentifier(ident))
+		    name ~= "." ~ ident;
+		res = new Name(name);
 	    }
 	}
 }
@@ -78,13 +100,19 @@ class Body
 
     uint size()
         {
-	    throw new Exception("ERROR");
+	    uint s;
+	    foreach (el; mElements)
+		if (el.mAttributes.isAttribute)
+		    s += el.size();
+	    return s;
         }
 
     void add(Element el)
 	{
 	    mElements ~= [el];
 	}
+
+    Element[] elements(){return mElements;}
 
     void setLocation(char[] location)
 	{
@@ -140,15 +168,46 @@ class Element
 	    mBody.setLocation(newLocation);
     }
 
-    void print(uint level = 0)
+    void collectBodies(inout Body[char[]] fn2Body)
 	{
 	    if (mBody !is null)
 	    {
-		puts("{}{}({}).{}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name);
+		fn2Body[mName.fullName] = mBody;
+		foreach (el; mBody.elements)
+		    el.collectBodies(fn2Body);
+	    }
+	}
+
+    void resolveBodies(in Body[char[]] fn2Body)
+	{
+	    if (mBody !is null)
+		foreach (el; mBody.elements)
+		    el.resolveBodies(fn2Body);
+	    else
+	    {
+		Body *bdy = (mBodyName.name in fn2Body);
+		if (bdy is null)
+		    throw new Exception("ERROR::Could not resolve " ~ mBodyName.name);
+		mBody = *bdy;
+	    }
+	}
+
+    uint size()
+	{
+	    if (mBody !is null)
+		return mBody.size();
+	    return 0;
+	}
+
+    void print(uint level = 0)
+	{
+	    if (mBodyName is null)
+	    {
+		puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
 		mBody.print(level + 1);
 	    } else
 	    {
-		puts("{}{}({}).{} -> {}", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name);
+		puts("{}{}({}).{} -> {} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name, size());
 	    }
 	}
 
