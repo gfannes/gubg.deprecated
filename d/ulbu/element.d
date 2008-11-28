@@ -41,6 +41,19 @@ class Attributes
 		}
 	    return false;
 	}
+    bool isMethod()
+	{
+	    foreach (attr; mAttributes)
+		switch (attr)
+		{
+		case "*":
+		    return true;
+		    break;
+		default:
+		    break;
+		}
+	    return false;
+	}
 
     mixin Create!(TS);
     static void createI(inout Attributes res, inout TS ts, in Config config)
@@ -120,10 +133,27 @@ class Body
 		el.setLocation(location);
 	}
 
+    bool isFunction()
+        {
+            bool ans = true;
+
+            foreach (el; mElements)
+                if (el.isMethod)
+                {
+                    ans = false;
+                    break;
+                }
+
+            return ans;
+        }
+
     void print(uint level = 0)
 	{
 	    foreach (el; mElements)
+            {
+                puts("el = {}", el);
 		el.print(level);
+            }
 	}
 
     mixin Create!(TS);
@@ -213,6 +243,8 @@ class Element
     bool isRoot(){return false;}
     bool isGenuine(){return mBodyName is null;}
     char[] fullName(){return mName.fullName();}
+    bool isFunction(){return mBody.isFunction();}
+    bool isMethod(){return mAttributes.isMethod();}
 
     void print(uint level = 0)
 	{

@@ -32,11 +32,41 @@ class Builder
     void compile(char[] fileName)
         {
             scope fo = new File(fileName);
-            fo.write([]);
+            fo.write(".section .data
+startMessage:
+	.ascii \"Starting...\\n\"
+endMessage:
+	.ascii \"End.\\n\"
+.section .bss
+.globl _start
+.section .text
+
+_start:
+	movl $12, %edx		# Write start message
+	movl $startMessage, %ecx
+	movl $1, %ebx
+	movl $4, %eax
+	int $0x80
+
+	movl $5, %edx		# Write end message
+	movl $endMessage, %ecx
+	movl $1, %ebx
+	movl $4, %eax
+	int $0x80
+	
+	movl $0, %ebx		# Exit
+	movl $1, %eax
+	int $0x80
+
+");
+            puts("OK");
             bool write2File(Element element)
             {
-                if (!element.isRoot)
-                    fo.append(element.fullName ~ "\n");
+                puts("write2File for {}", element);
+                if (!element.isRoot && element.isFunction)
+                {
+                    fo.append("_" ~ element.fullName ~ ":\n");
+                }
                 return true;
             }
             mRoot.depthFirst(&write2File);
@@ -59,12 +89,20 @@ private:
 
 version (Test)
 {
+//     import tango.sys.Process: Process;
+
     void main()
     {
         auto builder = new Builder;
 
         builder.build("test", "test.ulbu");
 	builder.print();
+        puts("Before compilation");
         builder.compile("test.s");
+        
+//         Process.execute("rm test.o a.out");
+//         Process.execute("as -o test.o test.s");
+//         Process.execute("ld test.o");
+//         Process.execute("./a.out");
     }
 }

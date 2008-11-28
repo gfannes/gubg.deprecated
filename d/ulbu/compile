@@ -1,0 +1,5 @@
+#!/bin/bash
+
+as -o test.o test.s
+ld test.o
+./a.out
