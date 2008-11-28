@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -f test.o a.out
 as -o test.o test.s
 ld test.o
 ./a.out

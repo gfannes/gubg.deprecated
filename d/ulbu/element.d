@@ -86,6 +86,10 @@ class Name
 	{
 	    return location == "" ? name : location ~ "." ~ name;
 	}
+    char[] functionName()
+	{
+	    return "_uf." ~ fullName;
+	}
 
     char[] name;
     char[] location;
@@ -135,23 +139,16 @@ class Body
 
     bool isFunction()
         {
-            bool ans = true;
-
             foreach (el; mElements)
                 if (el.isMethod)
-                {
-                    ans = false;
-                    break;
-                }
-
-            return ans;
+		    return false;
+            return true;
         }
 
     void print(uint level = 0)
 	{
 	    foreach (el; mElements)
             {
-                puts("el = {}", el);
 		el.print(level);
             }
 	}
@@ -242,8 +239,13 @@ class Element
 
     bool isRoot(){return false;}
     bool isGenuine(){return mBodyName is null;}
+    char[] name(){return mName.name;}
     char[] fullName(){return mName.fullName();}
-    bool isFunction(){return mBody.isFunction();}
+    char[] functionName(){return mName.functionName();}
+    bool isFunction()
+	{
+	    return !mAttributes.isAttribute && mBody.isFunction();
+	}
     bool isMethod(){return mAttributes.isMethod();}
 
     void print(uint level = 0)
@@ -325,6 +327,9 @@ class Root: Element
     }
 
     bool isRoot(){return true;}
+    bool isFunction(){return false;}
+
+    Element main;
 }
 
 version (Test)
