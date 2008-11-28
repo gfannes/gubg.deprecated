@@ -199,6 +199,21 @@ class Element
 	    return 0;
 	}
 
+    bool depthFirst(bool delegate(Element element) dg)
+        {
+            if (!dg(this))
+                return false;
+            if (isGenuine)
+                foreach (el; mBody.elements)
+                    if (!el.depthFirst(dg))
+                        return false;
+            return true;
+        }
+
+    bool isRoot(){return false;}
+    bool isGenuine(){return mBodyName is null;}
+    char[] fullName(){return mName.fullName();}
+
     void print(uint level = 0)
 	{
 	    if (mBodyName is null)
@@ -276,6 +291,8 @@ class Root: Element
 	mName.location = "";
 	mBody.setLocation(mName.location);
     }
+
+    bool isRoot(){return true;}
 }
 
 version (Test)

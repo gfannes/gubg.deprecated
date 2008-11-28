@@ -1,5 +1,7 @@
 module ulbu.builder;
 
+import tango.io.File;
+
 import gubg.puts;
 
 import ulbu.element;
@@ -27,6 +29,19 @@ class Builder
 	    mRoot.resolveBodies(fn2Body);
         }
 
+    void compile(char[] fileName)
+        {
+            scope fo = new File(fileName);
+            fo.write([]);
+            bool write2File(Element element)
+            {
+                if (!element.isRoot)
+                    fo.append(element.fullName ~ "\n");
+                return true;
+            }
+            mRoot.depthFirst(&write2File);
+        }
+
     void print()
 	{
 	    mRoot.print();
@@ -50,5 +65,6 @@ version (Test)
 
         builder.build("test", "test.ulbu");
 	builder.print();
+        builder.compile("test.s");
     }
 }
