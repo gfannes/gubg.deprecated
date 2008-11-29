@@ -1,13 +1,12 @@
 module ulbu.builder;
 
-import tango.io.File;
-import tango.text.Text: Text;
 import tango.text.convert.Layout: Layout;
 
 import gubg.puts;
 
 import ulbu.element;
 import ulbu.primitive;
+import ulbu.assembler;
 
 class Builder
 {
@@ -47,61 +46,55 @@ class Builder
 
     void compile(char[] fileName)
         {
-	    data = new Text!(char);
-	    bss = new Text!(char);
-	    text = new Text!(char);
+	    asmFile = new AsmFile;
+	    
+	    asmFile.addData("startMessage", "ascii", "Starting...\\n");
+	    asmFile.addData("endMessage", "ascii", "End.\\n");
+// 	    asmFile.addData("callDepth", "int", 0);
+// 	    asmFile.addData("indent", "ascii", "\t");
+// 	    asmFile.addData("enterMessage", "ascii", "Entering ");
+// 	    asmFile.addData("leaveMessage", "ascii", "Leaving  ");
 
-	    data.append("startMessage:
-	.ascii \"Starting...\\n\"
-endMessage:
-	.ascii \"End.\\n\"\n");
+	    asmFile.addBSS(".global _start");
 
-	    bss.append(".global _start");
-
-	    text.append("_start:
-	movl $12, %edx		# Write start message
-	movl $startMessage, %ecx
-	movl $1, %ebx
-	movl $4, %eax
-	int $0x80\n\n");
-	    addFunctionCall(root.main);
-	    text.append("\n	movl $5, %edx		# Write end message
-	movl $endMessage, %ecx
-	movl $1, %ebx
-	movl $4, %eax
-	int $0x80
+	    asmFile.newFunction("_start"); // _start
+	    asmFile.add("movl $12, %edx", "Write start message");
+	    asmFile.add("movl $startMessage, %ecx");
+	    asmFile.add("movl $1, %ebx");
+	    asmFile.add("movl $4, %eax");
+	    asmFile.add("int $0x80");
+	    addFunctionCall(root.main); // Call main
+	    asmFile.add("movl $5, %edx", "Write end message");
+	    asmFile.add("movl $endMessage, %ecx");
+	    asmFile.add("movl $1, %ebx");
+	    asmFile.add("movl $4, %eax");
+	    asmFile.add("int $0x80");
 	
-	movl $0, %ebx		# Exit
-	movl $1, %eax
-	int $0x80
-");
+	    asmFile.add("movl $0, %ebx", "Exit");
+	    asmFile.add("movl $1, %eax");
+	    asmFile.add("int $0x80");
+
             bool addFunctions(Element element)
             {
                 if (element.isFunction)
                 {
-                    text.append(layout("\n{}:\n", element.functionName));
-		    text.append(layout("	movl ${}, %edx
-	movl ${}, %ecx
-	movl $1, %ebx
-	movl $4, %eax
-	int $0x80\n", element.functionName.length + 1, "_ud." ~ element.functionName));
-		    text.append("\tret\n");
-		    data.append(layout("_ud.{}:\n\t.ascii \"{}\\n\"\n", element.functionName, element.functionName));
+		    auto dataName = layout("_ud.{}", element.functionName);
+		    asmFile.addData(dataName, "ascii", element.functionName ~ "\n");
+
+		    asmFile.newFunction(element.functionName);
+		    asmFile.add(layout("movl ${}, %edx", element.functionName.length + 1));
+		    asmFile.add(layout("movl ${}, %ecx", dataName));
+		    asmFile.add("movl $1, %ebx");
+		    asmFile.add("movl $4, %eax");
+		    asmFile.add("int $0x80");
+		    asmFile.add("ret");
                 }
                 return true;
             }
             root.depthFirst(&addFunctions);
 
-	    // Write out the assembler program
-	    scope fo = new File(fileName);
-	    fo.write([]);
-	    auto sections = ["data", "bss ", "text"];
-	    foreach (ix, buf; [data, bss, text])
-	    {
-		fo.append(layout("\n.section .{}\n", sections[ix]));
-		fo.append(buf.selection);
-		fo.append("\n");
-	    }
+	    // Write out the asm file
+	    asmFile.write(fileName);
         }
 
     void print()
@@ -118,18 +111,16 @@ private:
     void addFunctionCall(Element el)
 	{
 	    // Add necessary space to stack for output and input
-	    text.append(layout("\tsubl ${}, %esp\t# Calling {}\n", el.size(), el.fullName));
+	    asmFile.add(layout("subl ${}, %esp", el.size), layout("Calling {}", el.fullName));
 	    // Call
-	    text.append(layout("\tcall {}\n", el.functionName));
+	    asmFile.add(layout("call {}", el.functionName));
 	    // Remove input and output
-	    text.append(layout("\taddl ${}, %esp\n", el.size()));
+	    asmFile.add(layout("addl ${}, %esp", el.size));
 	}
 
     Root root;
+    AsmFile asmFile;
     Layout!(char) layout;
-    Text!(char) data ;
-    Text!(char) bss;
-    Text!(char) text;
 }
 
 version (Test)

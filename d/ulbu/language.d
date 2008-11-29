@@ -12,7 +12,7 @@ class ULBULanguage: Language
 {
     static this()
     {
-        mSymbols = ["+", "-", ":", "{", "}", "(", ")", ";", ".", "_", "*"];
+        mSymbols = ["+", "-", ":", "{", "}", "(", ")", ";", ".", "_", "*", "$"];
 
  	foreach (symb; mSymbols)
 	    mIsSymbol[symb] = true;

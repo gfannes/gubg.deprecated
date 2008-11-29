@@ -54,11 +54,24 @@ class Attributes
 		}
 	    return false;
 	}
+    bool isDirective()
+	{
+	    foreach (attr; mAttributes)
+		switch (attr)
+		{
+		case "$":
+		    return true;
+		    break;
+		default:
+		    break;
+		}
+	    return false;
+	}
 
     mixin Create!(TS);
     static void createI(inout Attributes res, inout TS ts, in Config config)
 	{
-	    static char[][] symbols = ["+", "-", "*", "_", "/"];
+	    static char[][] symbols = ["+", "-", "*", "_", "/", "$"];
 
             char[][] attrs;
 	    char[] symb;
@@ -169,6 +182,8 @@ private:
 
 class Element
 {
+    this (){}
+
     this (Attributes attrs, Name name)
         {
             mAttributes = attrs;
@@ -268,7 +283,22 @@ class Element
             Body bdy;
             if (ts.create(attrs) && ts.create(name))
             {
-                if (ts.isSymbol(":") && ts.create(bodyName))
+		if (attrs.isDirective)
+		{
+		    switch (name.name)
+		    {
+		    case "asm":
+			AsmElement asmElement;
+			if (ts.isSymbol("{") &&
+			    (asmElement = AsmElement.create(ts, config)) !is null &&
+			    ts.isSymbol("}"))
+			    res = asmElement;
+			break;
+		    default:
+			throw new Exception("Unknown directive " ~ name.name);
+			break;
+		    }
+		} else if (ts.isSymbol(":") && ts.create(bodyName))
                 {
                     // Reuse of existing body
                     res = new Element(attrs, name, bodyName);
@@ -306,6 +336,14 @@ private:
     Name mName;
     Body mBody;
     Name mBodyName;
+}
+
+class AsmElement: Element
+{
+    mixin Create!(TS);
+    static void createI(inout AsmElement res, inout TS ts, in Config config)
+	{
+	}
 }
 
 class Root: Element

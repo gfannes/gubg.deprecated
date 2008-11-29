@@ -3,6 +3,13 @@ main:
 	+a:int
 	-b:int
 
+	$asm
+	{
+	movl $0, %ebx
+	movl $1, %eax
+	int $0x80
+	}
+
 	func:
 	{
 	  -p:test.Print
