@@ -1,16 +1,18 @@
-main:
+main
 {
 	+a:int
 	-b:int
 
 	$asm
 	{
-	movl $0, %ebx
-	movl $1, %eax
+	movl $4, %edx
+	movl $startMessage, %ecx
+	movl $1, %ebx
+	movl $4, %eax
 	int $0x80
 	}
 
-	func:
+	func
 	{
 	  -p:test.Print
 	}
@@ -19,10 +21,10 @@ main:
 Print
 {
 	-value:int
-	.asHex:
+	.asHex
 	{
 	}
-	.asDec:
+	.asDec
 	{
 	}
 }

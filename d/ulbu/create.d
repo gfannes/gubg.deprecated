@@ -31,6 +31,9 @@ template Create(TS)
                     res ~= " ";
                 res ~= ts.peep.str;
             }
+	    res = substitute(res, "\n", "\\n");
+	    if (ts.empty)
+		res ~= " EOL";
             sp.restore;
             return res;
         }

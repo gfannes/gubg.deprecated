@@ -89,14 +89,20 @@ class Builder
 		    asmFile.addData(dataName, "ascii", element.functionName ~ "\n");
 
 		    asmFile.newFunction(element.functionName);
-                    // Print the enter message
-		    asmFile.add(layout("movl ${}, %edx", element.functionName.length + 1));
+                    // Function prologue
+		    asmFile.add(layout("movl ${}, %edx", element.functionName.length + 1), "Function prologue");
 		    asmFile.add(layout("movl ${}, %ecx", dataName));
 		    asmFile.add("movl $1, %ebx");
 		    asmFile.add("movl $4, %eax");
 		    asmFile.add("int $0x80");
                     // Add the function instructions
                     element.addFunctionInstructions(asmFile);
+                    // Function epilogue
+		    asmFile.add(layout("movl ${}, %edx", element.functionName.length + 1), "Function epilogue");
+		    asmFile.add(layout("movl ${}, %ecx", dataName));
+		    asmFile.add("movl $1, %ebx");
+		    asmFile.add("movl $4, %eax");
+		    asmFile.add("int $0x80");
                     // Return
 		    asmFile.add("ret");
                 }

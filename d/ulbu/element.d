@@ -17,9 +17,12 @@ public uint level = 0;
 alias TokenSequence!(ULBULanguage) TS;
 const bool printCreate = true;
 
-bool readDelimiter(TS ts)
+bool readDelimiter(TS ts, bool mustBePresent = false)
 {
-    return ts.isSymbol(";") || ts.isSymbol("\n");
+    bool res = !mustBePresent;
+    while (ts.isSymbol(";") || ts.isSymbol("\n"))
+	res = true;
+    return res;
 }
 
 class Attributes
@@ -78,11 +81,11 @@ class Attributes
     mixin Create!(TS);
     static void createI(inout Attributes res, inout TS ts, in Config config)
 	{
-	    static char[][] symbols = ["+", "-", "*", "_", "/", "$"];
+	    static char[][] symbols = ["+", "-", ".", "_", "/", "$"];
 
             char[][] attrs;
 	    char[] symb;
-            while (ts.isSymbol(symbols, symb))
+            while (readDelimiter(ts) && ts.isSymbol(symbols, symb))
                 attrs ~= [symb];
             res = new Attributes(attrs);
 	}
@@ -124,9 +127,18 @@ class Name
 		while (ts.isSymbol(".") && (ts.getIdentifier(ident) || ts.getKeyword(ident)))
 		    name ~= "." ~ ident;
 		res = new Name(name);
+		
 	    }
 	}
 }
+
+// class BodyReference
+// {
+// private:
+//     Body* mBody;
+// }
+
+// class 
 
 class Body
 {
@@ -371,8 +383,10 @@ class Element
 		    {
 		    case "asm":
 			AsmBody asmBody;
-			if (ts.isSymbol("{") &&
+			if (readDelimiter(ts) &&
+			    ts.isSymbol("{") &&
 			    (asmBody = AsmBody.create(ts, config)) !is null &&
+			    readDelimiter(ts) &&
 			    ts.isSymbol("}"))
 			    res = new Element(attrs, name, asmBody);
 			break;
@@ -380,12 +394,14 @@ class Element
 			throw new Exception("Unknown directive " ~ name.name);
 			break;
 		    }
-		} else if (ts.isSymbol(":") && ts.create(bodyName) && readDelimiter(ts))
+		} else if (ts.isSymbol(":") && ts.create(bodyName) && readDelimiter(ts, true))
                 {
                     // Reuse of existing body
                     res = new Element(attrs, name, bodyName);
-                } else if (ts.isSymbol("{") &&
+                } else if (readDelimiter(ts) &&
+			   ts.isSymbol("{") &&
 			   (bdy = Body.create(ts, config)) !is null &&
+			   readDelimiter(ts) &&
 			   ts.isSymbol("}"))
                 {
                     // New body definition
@@ -407,16 +423,26 @@ class Element
             // Load the source file
             char[] sourceCode;
             loadFile(sourceCode, dirName ~ "/" ~ fileName);
-            sourceCode = substitute(sourceCode, "\n", ";");
             // Create its token sequence
             auto ts = new TS(sourceCode);
 	    auto bdy = Body.create(ts, config);
+	    readDelimiter(ts);
             if (ts.length != 0)
             {
                 puts("ERROR::Unparsed tokens found:");
                 while(!ts.empty)
                 {
-                    putsn("{} ", ts.peep.str);
+		    char[] str;
+		    switch (ts.peep.str)
+		    {
+		    case "\n":
+			str = "\\n";
+			break;
+		    default:
+			str = ts.peep.str;
+			break;
+		    }
+                    putsn("{} ", str);
                     ts.pop;
                 }
                 throw new Exception("FATAL::Unparsed tokens found");
@@ -444,6 +470,7 @@ class AsmElement: Element
     mixin Create!(TS);
     static void createI(inout AsmElement res, inout TS ts, in Config config)
 	{
+	    readDelimiter(ts);
             AsmOperand lhs, rhs;
             if (ts.isKeyword("movl") && ts.create(lhs) && ts.isSymbol(",") && ts.create(rhs))
                 res = new AsmElement("movl", lhs, rhs);
