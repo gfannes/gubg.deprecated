@@ -1,5 +1,6 @@
 module ulbu.element;
 
+import tango.core.Tuple;
 import tango.text.Util;
 
 import gubg.file;
@@ -13,7 +14,7 @@ import ulbu.config;
 // For the Create mixin
 public uint level = 0;
 alias TokenSequence!(ULBULanguage) TS;
-const bool printCreate = false;
+const bool printCreate = true;
 
 class Attributes
 {
@@ -111,10 +112,10 @@ class Name
     static void createI(inout Name res, inout TS ts, in Config config)
 	{
 	    char[] name;
-	    if (ts.getIdentifier(name))
+	    if (ts.getIdentifier(name) || ts.getKeyword(name))
 	    {
 		char[] ident;
-		while (ts.isSymbol(".") && ts.getIdentifier(ident))
+		while (ts.isSymbol(".") && (ts.getIdentifier(ident) || ts.getKeyword(ident)))
 		    name ~= "." ~ ident;
 		res = new Name(name);
 	    }
@@ -178,6 +179,56 @@ class Body
 
 private:
     Element[] mElements;
+}
+
+class AsmBody: Body
+{
+    this (AsmElement[] els)
+        {
+            super(els);
+        }
+
+    uint size()
+        {
+	    return 0;
+        }
+
+    void add(AsmElement el)
+	{
+	    mElements ~= [el];
+	}
+
+    Element[] elements(){return cast(AsmElement[])mElements;}
+
+    void setLocation(char[] location)
+	{
+	    foreach (el; mElements)
+		el.setLocation(location);
+	}
+
+    bool isFunction()
+        {
+            return false;
+        }
+
+    void print(uint level = 0)
+	{
+            puts("AsmBody:");
+	    foreach (el; mElements)
+            {
+		el.print(level);
+            }
+	}
+
+    mixin Create!(TS);
+    static void createI(inout AsmBody res, inout TS ts, in Config config)
+	{
+	    AsmElement[] els;
+	    AsmElement el;
+	    while ((el = AsmElement.create(ts, config)) !is null)
+		els ~= [el];
+	    res = new AsmBody(els);
+	}
 }
 
 class Element
@@ -288,11 +339,11 @@ class Element
 		    switch (name.name)
 		    {
 		    case "asm":
-			AsmElement asmElement;
+			AsmBody asmBody;
 			if (ts.isSymbol("{") &&
-			    (asmElement = AsmElement.create(ts, config)) !is null &&
+			    (asmBody = AsmBody.create(ts, config)) !is null &&
 			    ts.isSymbol("}"))
-			    res = asmElement;
+			    res = new Element(attrs, name, asmBody);
 			break;
 		    default:
 			throw new Exception("Unknown directive " ~ name.name);
@@ -340,10 +391,77 @@ private:
 
 class AsmElement: Element
 {
+    this (char[] instr, AsmOperand lhs = null, AsmOperand rhs = null)
+    {
+        mInstruction = instr;
+    }
+
     mixin Create!(TS);
     static void createI(inout AsmElement res, inout TS ts, in Config config)
 	{
-	}
+            AsmOperand lhs, rhs;
+            if (ts.isKeyword("movl") && ts.create(lhs) && ts.isSymbol(",") && ts.create(rhs))
+                res = new AsmElement("movl", lhs, rhs);
+            else if (ts.isKeyword("int") && ts.create(lhs))
+                res = new AsmElement("int", lhs, rhs);
+        }
+
+private:
+    char[] mInstruction;
+    AsmOperand mLhs;
+    AsmOperand mRhs;
+}
+
+class AsmOperand
+{
+    mixin Create!(TS);
+    static void createI(inout AsmOperand res, inout TS ts, in Config config)
+	{
+            foreach (type; Tuple!(LiteralOperand, RegisterOperand))
+            {
+                res = type.create(ts);
+                if (res !is null)
+                    break;
+            }
+        }
+}
+
+class LiteralOperand: AsmOperand
+{
+    this (char[] ident)
+    {
+        mIdent = ident;
+    }
+
+    mixin Create!(TS);
+    static void createI(inout LiteralOperand res, inout TS ts, in Config config)
+	{
+            char[] ident;
+            if (ts.isSymbol("$") && ts.getIdentifier(ident))
+                res = new LiteralOperand(ident);
+        }
+
+private:
+    char[] mIdent;
+}
+
+class RegisterOperand: AsmOperand
+{
+    this (char[] ident)
+    {
+        mIdent = ident;
+    }
+
+    mixin Create!(TS);
+    static void createI(inout RegisterOperand res, inout TS ts, in Config config)
+	{
+            char[] ident;
+            if (ts.isSymbol("%") && ts.getIdentifier(ident))
+                res = new RegisterOperand(ident);
+        }
+
+private:
+    char[] mIdent;
 }
 
 class Root: Element

@@ -12,13 +12,15 @@ class ULBULanguage: Language
 {
     static this()
     {
-        mSymbols = ["+", "-", ":", "{", "}", "(", ")", ";", ".", "_", "*", "$"];
+        mSymbols = ["+", "-", ":", "{", "}", "(", ")", ";", ".", "_", "*", "$", ",", "%"];
 
  	foreach (symb; mSymbols)
 	    mIsSymbol[symb] = true;
 
         mSortedSymbols = mSymbols.dup;
  	sort(mSortedSymbols, delegate bool(char[] lhs, char[] rhs){return lhs.length > rhs.length;});
+
+        mKeywords = ["movl", "int"];
 
  	foreach (keyword; mKeywords)
 	    mIsKeyword[keyword] = true;
