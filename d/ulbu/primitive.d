@@ -2,7 +2,7 @@ module ulbu.primitive;
 
 import ulbu.element;
 
-class Integer: Body
+class Integer: BodyDefinition
 {
     this ()
     {
@@ -12,7 +12,7 @@ class Integer: Body
     uint size(){return 4;}
 }
 
-class Byte: Body
+class Byte: BodyDefinition
 {
     this ()
     {

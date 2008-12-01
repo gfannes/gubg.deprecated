@@ -1,5 +1,7 @@
 module ulbu.config;
 
+import tango.text.Util;
+
 // Parses a config file
 import gubg.file;
 import gubg.parser.tokenSequence;

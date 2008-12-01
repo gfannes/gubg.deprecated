@@ -1,7 +1,7 @@
 main
 {
-	+a:int
-	-b:int
+	+a int
+	-b int
 
 	$asm
 	{
@@ -14,13 +14,13 @@ main
 
 	func
 	{
-	  -p:test.Print
+	  -p test.Print
 	}
 }
 
 Print
 {
-	-value:int
+	-value int
 	.asHex
 	{
 	}

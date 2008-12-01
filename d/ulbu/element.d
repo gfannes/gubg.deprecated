@@ -127,25 +127,62 @@ class Name
 		while (ts.isSymbol(".") && (ts.getIdentifier(ident) || ts.getKeyword(ident)))
 		    name ~= "." ~ ident;
 		res = new Name(name);
-		
 	    }
 	}
 }
 
-// class BodyReference
-// {
-// private:
-//     Body* mBody;
-// }
+interface IBody
+{
+    bool isDefinition();
+    Element[] elements();
+    uint size();
+    bool isFunction();
+    void print(uint level = 0);
+}
+
+class BodyReference: IBody
+{
+    this (char[] refName)
+    {
+	mReferenceName = refName;
+    }
+
+    bool isDefinition(){return false;}
+    Element[] elements(){return mBody.elements();}
+    uint size(){return mBody.size();}
+    bool isFunction(){return mBody.isFunction();}
+    void print(uint level){}
+
+    char[] referenceName(){return mReferenceName;}
+    void setReference(IBody bdyDef){mBody = bdyDef;}
+
+    mixin Create!(TS);
+    static void createI(inout BodyReference res, inout TS ts, in Config config)
+	{
+	    char[] name;
+	    if (ts.getIdentifier(name) || ts.getKeyword(name))
+	    {
+		char[] ident;
+		while (ts.isSymbol(".") && (ts.getIdentifier(ident) || ts.getKeyword(ident)))
+		    name ~= "." ~ ident;
+		res = new BodyReference(name);
+	    }
+	}
+private:
+    char[] mReferenceName;
+    IBody mBody;
+}
 
 // class 
 
-class Body
+class BodyDefinition: IBody
 {
     this (Element[] els)
         {
             mElements = els;
         }
+
+    bool isDefinition(){return true;}
 
     uint size()
         {
@@ -177,7 +214,7 @@ class Body
             return true;
         }
 
-    void print(uint level = 0)
+    void print(uint level)
 	{
 	    foreach (el; mElements)
             {
@@ -186,7 +223,7 @@ class Body
 	}
 
     mixin Create!(TS);
-    static void createI(inout Body res, inout TS ts, in Config config)
+    static void createI(inout BodyDefinition res, inout TS ts, in Config config)
 	{
 	    Element[] els;
 	    Element el;
@@ -194,14 +231,14 @@ class Body
 		els ~= [el];
             if (els.length == 0)
                 puts("WARNING::Empty body found");
-            res = new Body(els);
+            res = new BodyDefinition(els);
 	}
 
 private:
     Element[] mElements;
 }
 
-class AsmBody: Body
+class AsmBody: BodyDefinition
 {
     this (AsmElement[] els)
         {
@@ -231,7 +268,7 @@ class AsmBody: Body
             return false;
         }
 
-    void print(uint level = 0)
+    void print(uint level)
 	{
             puts("AsmBody:");
 	    foreach (el; mElements)
@@ -259,65 +296,124 @@ class Element
             mName = name;
         }
 
-    this (Attributes attrs, Name name, Body bdy)
-        {
-            this(attrs, name);
-            mBody = bdy;
-        }
+    char[] name(){return mName.name;}
+    char[] fullName(){return mName.fullName();}
+    char[] functionName(){return mName.functionName();}
 
-    this (Attributes attrs, Name name, Name bodyName)
+    abstract void setLocation(char[] location);
+    abstract uint size();
+    abstract bool isMethod();
+    abstract bool isFunction();
+    abstract void print(uint level = 0);
+    abstract void collectBodies(inout BodyDefinition[char[]] fn2Body);
+    abstract void resolveBodies(in BodyDefinition[char[]] fn2Body);
+    abstract bool depthFirst(bool delegate(Element element) dg);
+    abstract void addFunctionInstructions(AsmFile asmFile);
+
+    mixin Create!(TS);
+    static void createI(inout Element res, inout TS ts, in Config config)
+	{
+            Attributes attrs;
+            Name name, bodyName;
+            IBody bdy;
+            if (ts.create(attrs) && ts.create(name))
+            {
+		if (attrs.isDirective)
+		{
+		    switch (name.name)
+		    {
+		    case "asm":
+			AsmBody asmBody;
+			if (readDelimiter(ts) &&
+			    ts.isSymbol("{") &&
+			    (asmBody = AsmBody.create(ts, config)) !is null &&
+			    readDelimiter(ts) &&
+			    ts.isSymbol("}"))
+			    res = new BodyElement(attrs, name, asmBody);
+			break;
+		    default:
+			throw new Exception("Unknown directive " ~ name.name);
+			break;
+		    }
+		} else if (readDelimiter(ts) &&
+			   (bdy = BodyReference.create(ts, config)) !is null &&
+			   readDelimiter(ts, true))
+                {
+                    // Reuse of existing body
+                    res = new BodyElement(attrs, name, bdy);
+                } else if (readDelimiter(ts) &&
+			   ts.isSymbol("{") &&
+			   (bdy = BodyDefinition.create(ts, config)) !is null &&
+			   readDelimiter(ts) &&
+			   ts.isSymbol("}"))
+                {
+                    // New body definition
+                    res = new BodyElement(attrs, name, bdy);
+                }
+            }
+	}
+private:
+    Attributes mAttributes;
+    Name mName;
+}
+
+class BodyElement: Element
+{
+    this (Attributes attrs, Name name, IBody bdy)
         {
-            this(attrs, name);
-            mBodyName = bodyName;
+            super(attrs, name);
+            mBody = bdy;
         }
 
     void setLocation(char[] location)
     {
 	mName.location = location;
 	auto newLocation = (location == "" ? mName.name : location ~ "." ~ mName.name);
-	if (mBody !is null)
-	    mBody.setLocation(newLocation);
+	if (mBody.isDefinition)
+	{
+	    auto bodyRef = cast(BodyDefinition)mBody;
+	    if (bodyRef is null)
+		throw new Exception("FATAL::Could not cast to BodyDefinition to set the location.");
+	    bodyRef.setLocation(newLocation);
+	}
     }
 
-    void collectBodies(inout Body[char[]] fn2Body)
+    void collectBodies(inout BodyDefinition[char[]] fn2Body)
 	{
-	    if (mBody !is null)
+	    if (mBody.isDefinition)
 	    {
-		fn2Body[mName.fullName] = mBody;
+		fn2Body[mName.fullName] = cast(BodyDefinition)mBody;
 		foreach (el; mBody.elements)
 		    el.collectBodies(fn2Body);
 	    }
 	}
 
-    void resolveBodies(in Body[char[]] fn2Body)
+    void resolveBodies(in BodyDefinition[char[]] fn2Body)
 	{
-	    if (mBody !is null)
+	    if (mBody.isDefinition)
 		foreach (el; mBody.elements)
 		    el.resolveBodies(fn2Body);
-	    else if (mBodyName !is null)
+	    else
 	    {
-		Body *bdy = (mBodyName.name in fn2Body);
+		auto bodyRef = cast(BodyReference)mBody;
+		auto refName = bodyRef.referenceName;
+		BodyDefinition *bdy = (refName in fn2Body);
 		if (bdy is null)
-		    throw new Exception("ERROR::Could not resolve " ~ mBodyName.name);
-		mBody = *bdy;
-	    } else
-            {
-                throw new Exception("ERROR::Neither body or body name is present.");
-            }
+		    throw new Exception("ERROR::Could not resolve " ~ refName);
+		bodyRef.setReference(*bdy);
+	    }
 	}
 
     uint size()
 	{
-	    if (mBody !is null)
-		return mBody.size();
-	    return 0;
+	    return mBody.size();
 	}
 
     bool depthFirst(bool delegate(Element element) dg)
         {
             if (!dg(this))
                 return false;
-            if (isGenuine)
+            if (mBody.isDefinition)
                 foreach (el; mBody.elements)
                     if (!el.depthFirst(dg))
                         return false;
@@ -333,19 +429,7 @@ class Element
         }
 
     bool isRoot(){return false;}
-    bool isGenuine()
-        {
-            if (mBodyName is null)
-            {
-                if (mBody is null)
-                    throw new Exception("ERROR::No body and no body name present.");
-                return true;
-            }
-            return false;
-        }
-    char[] name(){return mName.name;}
-    char[] fullName(){return mName.fullName();}
-    char[] functionName(){return mName.functionName();}
+
     bool isFunction()
 	{
 	    return !mAttributes.isAttribute && mBody.isFunction();
@@ -353,61 +437,9 @@ class Element
     bool isMethod(){return mAttributes.isMethod();}
 
     void print(uint level = 0)
-	{
-	    if (mBodyName is null)
-	    {
-                if (mBody !is null)
-                {
-                    puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
-                    mBody.print(level + 1);
-                } else
-                {
-                }
-	    } else
-	    {
-		puts("{}{}({}).{} -> {} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name, size());
-	    }
-	}
-
-    mixin Create!(TS);
-    static void createI(inout Element res, inout TS ts, in Config config)
-	{
-            Attributes attrs;
-            Name name, bodyName;
-            Body bdy;
-            if (ts.create(attrs) && ts.create(name))
-            {
-		if (attrs.isDirective)
-		{
-		    switch (name.name)
-		    {
-		    case "asm":
-			AsmBody asmBody;
-			if (readDelimiter(ts) &&
-			    ts.isSymbol("{") &&
-			    (asmBody = AsmBody.create(ts, config)) !is null &&
-			    readDelimiter(ts) &&
-			    ts.isSymbol("}"))
-			    res = new Element(attrs, name, asmBody);
-			break;
-		    default:
-			throw new Exception("Unknown directive " ~ name.name);
-			break;
-		    }
-		} else if (ts.isSymbol(":") && ts.create(bodyName) && readDelimiter(ts, true))
-                {
-                    // Reuse of existing body
-                    res = new Element(attrs, name, bodyName);
-                } else if (readDelimiter(ts) &&
-			   ts.isSymbol("{") &&
-			   (bdy = Body.create(ts, config)) !is null &&
-			   readDelimiter(ts) &&
-			   ts.isSymbol("}"))
-                {
-                    // New body definition
-                    res = new Element(attrs, name, bdy);
-                }
-            }
+	{ 
+	    puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
+	    mBody.print(level + 1);
 	}
 
     static Element createFrom(char[] dirName, char[] fileName)
@@ -425,7 +457,7 @@ class Element
             loadFile(sourceCode, dirName ~ "/" ~ fileName);
             // Create its token sequence
             auto ts = new TS(sourceCode);
-	    auto bdy = Body.create(ts, config);
+	    auto bdy = BodyDefinition.create(ts, config);
 	    readDelimiter(ts);
             if (ts.length != 0)
             {
@@ -447,14 +479,11 @@ class Element
                 }
                 throw new Exception("FATAL::Unparsed tokens found");
             }
-            return new Element(attrs, name, bdy);
+            return new BodyElement(attrs, name, bdy);
         }
 
 private:
-    Attributes mAttributes;
-    Name mName;
-    Body mBody;
-    Name mBodyName;
+    IBody mBody;
 }
 
 class AsmElement: Element
@@ -466,6 +495,20 @@ class AsmElement: Element
         mLhs = lhs;
         mRhs = rhs;
     }
+
+    void setLocation(char[] location)
+    {
+	mName.location = location;
+    }
+
+    uint size(){return 0;}
+    bool isMethod(){return false;}
+    void print(uint level = 0)
+    {
+	puts("\t{}", gasCode());
+    }
+    void collectBodies(inout BodyDefinition[char[]] fn2Body){}
+    bool depthFirst(bool delegate(Element element) dg){return true;}
 
     mixin Create!(TS);
     static void createI(inout AsmElement res, inout TS ts, in Config config)
@@ -483,9 +526,9 @@ class AsmElement: Element
             asmFile.add(gasCode());
         }
 
-    bool isGenuine(){return false;}
+    bool isDefinition(){return false;}
     bool isFunction(){return false;}
-    void resolveBodies(in Body[char[]] fn2Body){}
+    void resolveBodies(in BodyDefinition[char[]] fn2Body){}
 
 private:
 
@@ -567,28 +610,31 @@ private:
     char[] mIdent;
 }
 
-class Root: Element
+class Root: BodyElement
 {
     this ()
     {
-	super(new Attributes([]), new Name("<root>"), new Body([]));
+	super(new Attributes([]), new Name("<root>"), new BodyDefinition([]));
     }
 
     void add(Element el)
     {
-	mBody.add(el);
+	bodyDef.add(el);
     }
 
     void setLocation()
     {
 	mName.location = "";
-	mBody.setLocation(mName.location);
+	bodyDef.setLocation(mName.location);
     }
 
     bool isRoot(){return true;}
     bool isFunction(){return false;}
 
     Element main;
+
+private:
+    BodyDefinition bodyDef(){return cast(BodyDefinition)mBody;}
 }
 
 version (Test)

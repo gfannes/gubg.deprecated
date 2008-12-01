@@ -20,7 +20,7 @@ class Builder
         {
             puts("Building ...");
 	    // Create the element for compilation
-            auto el = Element.createFrom(dirName, fileName);
+            auto el = BodyElement.createFrom(dirName, fileName);
 	    root.add(el);
 	    // Search for the main
 	    root.main = null;
@@ -44,8 +44,10 @@ class Builder
 	    root.setLocation();
 	    // Resolve the unknown bodies
             puts("Resolving bodies");
-	    Body[char[]] fn2Body;
+	    BodyDefinition[char[]] fn2Body;
+	    puts("\tCollecting");
 	    root.collectBodies(fn2Body);
+	    puts("\tResolving");
 	    root.resolveBodies(fn2Body);
             puts("... building finished");
         }
@@ -125,8 +127,8 @@ class Builder
 private:
     void addSystemElements()
 	{
-	    root.add(new Element(new Attributes([]), new Name("int"), new Integer));
-	    root.add(new Element(new Attributes([]), new Name("byte"), new Byte));
+	    root.add(new BodyElement(new Attributes([]), new Name("int"), new Integer));
+	    root.add(new BodyElement(new Attributes([]), new Name("byte"), new Byte));
 	}
     void addFunctionCall(Element el)
 	{
