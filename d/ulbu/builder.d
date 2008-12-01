@@ -18,6 +18,7 @@ class Builder
 
     void build(char[] dirName, char[] fileName)
         {
+            puts("Building ...");
 	    // Create the element for compilation
             auto el = Element.createFrom(dirName, fileName);
 	    root.add(el);
@@ -33,19 +34,25 @@ class Builder
 		}
 		return true;
 	    }
+            puts("Searching for main");
 	    root.depthFirst(&searchMain);
 	    // Add the system elements
+            puts("Adding system elements");
 	    addSystemElements();
 	    // Set the locations into the elements
+            puts("Setting the location");
 	    root.setLocation();
 	    // Resolve the unknown bodies
+            puts("Resolving bodies");
 	    Body[char[]] fn2Body;
 	    root.collectBodies(fn2Body);
 	    root.resolveBodies(fn2Body);
+            puts("... building finished");
         }
 
     void compile(char[] fileName)
         {
+            puts("Compilation ...");
 	    asmFile = new AsmFile;
 	    
 	    asmFile.addData("startMessage", "ascii", "Starting...\\n");
@@ -82,11 +89,15 @@ class Builder
 		    asmFile.addData(dataName, "ascii", element.functionName ~ "\n");
 
 		    asmFile.newFunction(element.functionName);
+                    // Print the enter message
 		    asmFile.add(layout("movl ${}, %edx", element.functionName.length + 1));
 		    asmFile.add(layout("movl ${}, %ecx", dataName));
 		    asmFile.add("movl $1, %ebx");
 		    asmFile.add("movl $4, %eax");
 		    asmFile.add("int $0x80");
+                    // Add the function instructions
+                    element.addFunctionInstructions(asmFile);
+                    // Return
 		    asmFile.add("ret");
                 }
                 return true;
@@ -95,11 +106,14 @@ class Builder
 
 	    // Write out the asm file
 	    asmFile.write(fileName);
+            puts("... compilation finished.");
         }
 
     void print()
 	{
+            puts("Printing ...");
 	    root.print();
+            puts("... printing finished.");
 	}
 
 private:

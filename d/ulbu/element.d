@@ -10,6 +10,7 @@ import gubg.puts;
 import ulbu.language;
 import ulbu.create;
 import ulbu.config;
+import ulbu.assembler;
 
 // For the Create mixin
 public uint level = 0;
@@ -233,8 +234,6 @@ class AsmBody: Body
 
 class Element
 {
-    this (){}
-
     this (Attributes attrs, Name name)
         {
             mAttributes = attrs;
@@ -276,13 +275,16 @@ class Element
 	    if (mBody !is null)
 		foreach (el; mBody.elements)
 		    el.resolveBodies(fn2Body);
-	    else
+	    else if (mBodyName !is null)
 	    {
 		Body *bdy = (mBodyName.name in fn2Body);
 		if (bdy is null)
 		    throw new Exception("ERROR::Could not resolve " ~ mBodyName.name);
 		mBody = *bdy;
-	    }
+	    } else
+            {
+                throw new Exception("ERROR::Neither body or body name is present.");
+            }
 	}
 
     uint size()
@@ -303,8 +305,25 @@ class Element
             return true;
         }
 
+    void addFunctionInstructions(AsmFile asmFile)
+        {
+            foreach (el; mBody.elements)
+            {
+                el.addFunctionInstructions(asmFile);
+            }
+        }
+
     bool isRoot(){return false;}
-    bool isGenuine(){return mBodyName is null;}
+    bool isGenuine()
+        {
+            if (mBodyName is null)
+            {
+                if (mBody is null)
+                    throw new Exception("ERROR::No body and no body name present.");
+                return true;
+            }
+            return false;
+        }
     char[] name(){return mName.name;}
     char[] fullName(){return mName.fullName();}
     char[] functionName(){return mName.functionName();}
@@ -318,8 +337,13 @@ class Element
 	{
 	    if (mBodyName is null)
 	    {
-		puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
-		mBody.print(level + 1);
+                if (mBody !is null)
+                {
+                    puts("{}{}({}).{} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, size());
+                    mBody.print(level + 1);
+                } else
+                {
+                }
 	    } else
 	    {
 		puts("{}{}({}).{} -> {} ({})", repeat("  ", level), mAttributes.attributes, mName.location, mName.name, mBodyName.name, size());
@@ -393,7 +417,10 @@ class AsmElement: Element
 {
     this (char[] instr, AsmOperand lhs = null, AsmOperand rhs = null)
     {
+        super(new Attributes([]), new Name("AsmInstruction"));
         mInstruction = instr;
+        mLhs = lhs;
+        mRhs = rhs;
     }
 
     mixin Create!(TS);
@@ -406,7 +433,27 @@ class AsmElement: Element
                 res = new AsmElement("int", lhs, rhs);
         }
 
+    void addFunctionInstructions(AsmFile asmFile)
+        {
+            asmFile.add(gasCode());
+        }
+
+    bool isGenuine(){return false;}
+    bool isFunction(){return false;}
+    void resolveBodies(in Body[char[]] fn2Body){}
+
 private:
+
+    char[] gasCode()
+    {
+        if (mLhs is null)
+            return mInstruction;
+        else if (mRhs is null)
+            return mInstruction ~ " " ~ mLhs.gasCode();
+        else
+            return mInstruction ~ " " ~ mLhs.gasCode() ~ ", " ~ mRhs.gasCode();
+    }
+
     char[] mInstruction;
     AsmOperand mLhs;
     AsmOperand mRhs;
@@ -424,6 +471,7 @@ class AsmOperand
                     break;
             }
         }
+    abstract char[] gasCode();
 }
 
 class LiteralOperand: AsmOperand
@@ -440,6 +488,11 @@ class LiteralOperand: AsmOperand
             if (ts.isSymbol("$") && ts.getIdentifier(ident))
                 res = new LiteralOperand(ident);
         }
+    
+    char[] gasCode()
+    {
+        return "$" ~ mIdent;
+    }
 
 private:
     char[] mIdent;
@@ -459,6 +512,11 @@ class RegisterOperand: AsmOperand
             if (ts.isSymbol("%") && ts.getIdentifier(ident))
                 res = new RegisterOperand(ident);
         }
+    
+    char[] gasCode()
+    {
+        return "%" ~ mIdent;
+    }
 
 private:
     char[] mIdent;
