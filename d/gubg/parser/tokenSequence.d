@@ -18,7 +18,7 @@ class TokenSequence(Language): List!(Token!(Language))
         splitCommentsStrings(sourceCode);
 
         // Split Unknowns into Unknowns based on whitespaces and EOL
-        splitWhiteSpaceEOL();
+        splitWhiteSpaceEOL(Language.isSymbol("\n"));
 
         // 
         processSpecialTokenSequences();
@@ -147,21 +147,36 @@ private:
             add(new TokenT(rest));
     }
 
-    void splitWhiteSpaceEOL()
+    void splitWhiteSpaceEOL(bool keepEOL = false)
     {
+        puts("Splitting while keeping EOL = {}", keepEOL);
+
         auto list = new List!(TokenT);
         handover(list);
         foreach (token; list)
             if (token.known)
                 add(token);
             else
-                foreach (line; splitLines(token.str))
-                    if (line.length > 0)
-                        foreach (str; split(line, " "))
+            {
+                if (keepEOL)
+                {
+                    if (token.str.length > 0)
+                        foreach (str; split(token.str, " "))
                             if (str.length > 0)
                                 foreach (str2; split(str, "\t"))
                                     if (str2.length > 0)
                                         add(new TokenT(str2));
+                } else
+                {
+                    foreach (line; splitLines(token.str))
+                        if (line.length > 0)
+                            foreach (str; split(line, " "))
+                                if (str.length > 0)
+                                    foreach (str2; split(str, "\t"))
+                                        if (str2.length > 0)
+                                            add(new TokenT(str2));
+                }
+            }
     }
 
     void processSpecialTokenSequences()

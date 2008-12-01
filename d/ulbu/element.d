@@ -17,6 +17,11 @@ public uint level = 0;
 alias TokenSequence!(ULBULanguage) TS;
 const bool printCreate = true;
 
+bool readDelimiter(TS ts)
+{
+    return ts.isSymbol(";") || ts.isSymbol("\n");
+}
+
 class Attributes
 {
     this (char[][] attr)
@@ -175,7 +180,9 @@ class Body
 	    Element el;
 	    while ((el = Element.create(ts, config)) !is null)
 		els ~= [el];
-	    res = new Body(els);
+            if (els.length == 0)
+                puts("WARNING::Empty body found");
+            res = new Body(els);
 	}
 
 private:
@@ -373,7 +380,7 @@ class Element
 			throw new Exception("Unknown directive " ~ name.name);
 			break;
 		    }
-		} else if (ts.isSymbol(":") && ts.create(bodyName))
+		} else if (ts.isSymbol(":") && ts.create(bodyName) && readDelimiter(ts))
                 {
                     // Reuse of existing body
                     res = new Element(attrs, name, bodyName);
@@ -400,9 +407,20 @@ class Element
             // Load the source file
             char[] sourceCode;
             loadFile(sourceCode, dirName ~ "/" ~ fileName);
+            sourceCode = substitute(sourceCode, "\n", ";");
             // Create its token sequence
             auto ts = new TS(sourceCode);
 	    auto bdy = Body.create(ts, config);
+            if (ts.length != 0)
+            {
+                puts("ERROR::Unparsed tokens found:");
+                while(!ts.empty)
+                {
+                    putsn("{} ", ts.peep.str);
+                    ts.pop;
+                }
+                throw new Exception("FATAL::Unparsed tokens found");
+            }
             return new Element(attrs, name, bdy);
         }
 
