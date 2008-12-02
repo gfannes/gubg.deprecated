@@ -166,6 +166,8 @@ class BodyReference: IBody
 		while (ts.isSymbol(".") && (ts.getIdentifier(ident) || ts.getKeyword(ident)))
 		    name ~= "." ~ ident;
 		res = new BodyReference(name);
+                while (ts.isSymbol("*"))
+                    res = new BodyPointer(res);
 	    }
 	}
 private:
@@ -173,7 +175,22 @@ private:
     IBody mBody;
 }
 
-// class 
+class BodyPointer: BodyReference
+{
+    this (BodyReference bdy)
+    {
+        mBody = bdy;
+    }
+
+    bool isDefinition(){return mBody.isDefinition();}
+    Element[] elements(){return mBody.elements();}
+    uint size(){return 4;}
+    bool isFunction(){return mBody.isFunction();}
+    void print(uint level = 0){return mBody.print();}
+
+private:
+    BodyReference mBody;
+}
 
 class BodyDefinition: IBody
 {
@@ -335,20 +352,22 @@ class Element
 			throw new Exception("Unknown directive " ~ name.name);
 			break;
 		    }
-		} else if (readDelimiter(ts) &&
-			   (bdy = BodyReference.create(ts, config)) !is null &&
-			   readDelimiter(ts, true))
+                } else
                 {
-                    // Reuse of existing body
-                    res = new BodyElement(attrs, name, bdy);
-                } else if (readDelimiter(ts) &&
-			   ts.isSymbol("{") &&
-			   (bdy = BodyDefinition.create(ts, config)) !is null &&
-			   readDelimiter(ts) &&
-			   ts.isSymbol("}"))
-                {
-                    // New body definition
-                    res = new BodyElement(attrs, name, bdy);
+                    readDelimiter(ts);
+                    if (ts.isSymbol("{") &&
+                        (bdy = BodyDefinition.create(ts, config)) !is null &&
+                        readDelimiter(ts) &&
+                        ts.isSymbol("}"))
+                    {
+                        // New body definition
+                        res = new BodyElement(attrs, name, bdy);
+                    } else if ((bdy = BodyReference.create(ts, config)) !is null &&
+                               readDelimiter(ts, true))
+                    {
+                        // Reuse of existing body
+                        res = new BodyElement(attrs, name, bdy);
+                    }
                 }
             }
 	}
