@@ -5,15 +5,15 @@ class Name
   end
 end
 
-class Block
+class Cota
   attr :name, true
   attr :attributes, true
   attr :body, true
 end
 
 class Body
-  attr :blocks, true
+  attr :cotas, true
   def initialize
-    @blocks = []
+    @cotas = []
   end
 end

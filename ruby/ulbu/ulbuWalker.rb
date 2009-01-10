@@ -8,17 +8,18 @@ module UlbuWalker
   def walk4Walker(obj)
     case obj
     when Name
+      puts(" => #{obj.name}")
 
-    when Block
-      puts("#{indent}#{obj.name.name}")
+    when Cota
+      print("#{indent}#{obj.name.name}")
       @indentLevel += 1
       walk4Walker(obj.body)
       @indentLevel -= 1
 
     when Body
-      puts("Body has #{obj.blocks.length} blocks")
-      obj.blocks.each do |block|
-        walk4Walker(block)
+      puts(" (#{obj.cotas.length} cotas)")
+      obj.cotas.each do |cota|
+        walk4Walker(cota)
       end
 
     else

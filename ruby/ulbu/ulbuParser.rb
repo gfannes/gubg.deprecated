@@ -8,57 +8,55 @@ module UlbuParser
     case parent
 
     when NilClass
-      block = Block.new
-      block.name = Name.new(@baseName)
-      block.body = create(Body.new)
-      return block
+      cota = Cota.new
+      cota.name = Name.new(@baseName)
+      cota.body = create(Body.new)
+      return cota
 
-    when Block
-      block = parent
-      puts("Buffer for block = (#{buffer[0, 10]})")
-      if !matches(/^([@\$\+\-\.]*)/) do |attr|
-          block.attributes = attr
+    when Cota
+      cota = parent
+      if !matches(/\A([@\$\+\-\.]*)/) do |attr|
+          cota.attributes = attr
         end
         raise "ERROR::Could not read the attributes"
       end
-      puts("Buffer for blockk = (#{buffer[0, 10]})")
-      if !matches(/^([a-zA-Z]+):/) do |name|
-          puts("Block with name \"#{name}\" found")
-          block.name = Name.new(name)
+      if !matches(/\A([a-zA-Z]+):/) do |name|
+          puts("Cota with name \"#{name}\" found")
+          cota.name = Name.new(name)
         end
         raise "ERROR::Could not read the name"
       end
-      if block.attributes[/\$/]
+      if cota.attributes[/\$/]
         if !matches("{", "}") do
-            block.body = buffer[0, buffer.index("}")]
-            consume(block.body.length)
+            cota.body = buffer[0, buffer.index("}")]
+            consume(cota.body.length)
           end
           raise "ERROR::Could not create directive"
         end        
       else
         if matches("{", "}") do
             puts("\twith body")
-            block.body = create(Body.new)
+            cota.body = create(Body.new)
           end
         else
-          block.body = create(Name.new)
-          raise "ERROR::Could not create the body" if block.body.nil?
-          puts("\tname reference = #{block.body.name}")
+          cota.body = create(Name.new)
+          raise "ERROR::Could not create the body" if cota.body.nil?
+          puts("\tname reference = #{cota.body.name}")
         end
       end
-      return block
+      return cota
 
     when Body
       body = parent
       loop do
-        break if buffer[/\A\}/]
-        body.blocks << create(Block.new)
+        break if buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*$/]
+        body.cotas << create(Cota.new)
       end
       return body
 
     when Name
       name = parent
-      if !matches(/^([a-zA-Z\.]+)/) do |n|
+      if !matches(/\A([a-zA-Z\.]+)/) do |n|
           name.name = n
         end
         raise "ERROR::Could not create the name"

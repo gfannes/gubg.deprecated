@@ -3,13 +3,27 @@ Design for ulbu
 
 # High-level design goals #
 
- * Statically typed
  * Syntax as close as possible to UML
- * No inheritance, only composition with automatic method resolving
  * Uncluttered usage
+    * Implement main success scenario, treat deviations seperately
+    * Have direct access to output of previous computations
+    * Return multiple values
  * Minimalistic
- * Fast and low memory cost: compile ulbu into assembly code
+    * No inheritance, only composition with automatic method resolving should do the trick
+ * Fast
+    * Compilation into assembly code
+ * Low memory cost
+    * Reference by default
  * Integrated build system
+ * Check syntax and interpretability during compilation
+    * Statically typed
+ * As functional as possible
+    * Closures
+ * Scoped by default
+    * Use RAII principle
+       * Destructors
+ * Multiple way to call a function (different arguments and types), but one function body
+ * Templates?
 
 # Allocate - initialize - processing - cleanup #
 
@@ -50,4 +64,3 @@ As a central philosophy, everything should be interpreted as space - initialize 
  * Calling a cota returns two different things
     * Execution status: null or a pointer to an exception cota
     * Computed outputs: the result of the call
-    
