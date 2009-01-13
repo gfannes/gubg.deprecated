@@ -1,4 +1,4 @@
-require("math.rb")
+require("tools/math.rb")
 
 def operatingSystem
   case RUBY_PLATFORM

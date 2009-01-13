@@ -1,5 +1,3 @@
-require("tools/all")
-
 class Parser
   def initialize(mod)
     extend(mod)

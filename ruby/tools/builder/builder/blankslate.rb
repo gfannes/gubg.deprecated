@@ -8,7 +8,7 @@
 # above copyright notice is included.
 #++
 
-require 'blankslate'
+require 'tools/blankslate'
 
 ######################################################################
 # BlankSlate has been promoted to a top level name and is now

@@ -1,4 +1,4 @@
-require "ulbuObjects"
+require "objects"
 
 module UlbuParser
   def prepareParsing

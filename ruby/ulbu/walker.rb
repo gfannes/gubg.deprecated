@@ -1,4 +1,4 @@
-require("ulbuObjects")
+require("objects")
 
 module UlbuWalker
   def prepareWalking

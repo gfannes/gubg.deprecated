@@ -1,8 +1,8 @@
-require("tools/all")
-require("ulbuParser")
-require("ulbuWalker")
+require("tools")
+require("parser")
+require("walker")
 
-fileName = "data/test.ulbu"
+fileName = "data/main.ulbu"
 
 tree = time("Parsing #{fileName}", true) do
   parser = Parser.new(UlbuParser)
