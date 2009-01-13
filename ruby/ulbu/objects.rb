@@ -5,13 +5,23 @@ class Name
   end
 end
 
+class Attributes
+  attr :attributes, true
+  def initialize(attributes = "")
+    @attributes = attributes
+  end
+  def directive?
+    @attributes[/\$/]
+  end
+end
+
 class Cota
   attr :name, true
   attr :attributes, true
-  attr :body, true
+  attr :scope, true
 end
 
-class Body
+class Scope
   attr :cotas, true
   def initialize
     @cotas = []

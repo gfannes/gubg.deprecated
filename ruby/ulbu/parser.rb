@@ -10,53 +10,59 @@ module UlbuParser
     when NilClass
       cota = Cota.new
       cota.name = Name.new(@baseName)
-      cota.body = create(Body.new)
+      cota.scope = create(Scope.new)
       return cota
 
     when Cota
       cota = parent
-      if !matches(/\A([@\$\+\-\.]*)/) do |attr|
-          cota.attributes = attr
-        end
-        raise "ERROR::Could not read the attributes"
-      end
-      if !matches(/\A([a-zA-Z]+):/) do |name|
-          puts("Cota with name \"#{name}\" found")
-          cota.name = Name.new(name)
-        end
+      # Read the attributes
+      cota.attributes = create(Attributes.new)
+      # Read the name
+      cota.name = create(Name.new)
+      if !matches(/\A[ \n]*:/)
         raise "ERROR::Could not read the name"
       end
-      if cota.attributes[/\$/]
+
+      if cota.attributes.directive?
+        # Read the directive as-is
         if !matches("{", "}") do
-            cota.body = buffer[0, buffer.index("}")]
-            consume(cota.body.length)
+            cota.scope = buffer[0, buffer.index("}")]
+            consume(cota.scope.length)
           end
           raise "ERROR::Could not create directive"
         end        
       else
+        # Read the scope
         if matches("{", "}") do
-            puts("\twith body")
-            cota.body = create(Body.new)
+            cota.scope = create(Scope.new)
           end
         else
-          cota.body = create(Name.new)
-          raise "ERROR::Could not create the body" if cota.body.nil?
-          puts("\tname reference = #{cota.body.name}")
+          cota.scope = create(Name.new)
+          raise "ERROR::Could not create the scope" if cota.scope.nil?
         end
       end
       return cota
 
-    when Body
-      body = parent
+    when Scope
+      scope = parent
       loop do
-        break if buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*$/]
-        body.cotas << create(Cota.new)
+        break if (buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*\z/])
+        scope.cotas << create(Cota.new)
       end
-      return body
+      return scope
+
+    when Attributes
+      attributes = parent
+      if !matches(/\A[ \n]*([@\$\+\-\.]*)/) do |attr|
+          attributes.attributes = attr
+        end
+        raise "ERROR::Could not read the attributes"
+      end
+      return attributes
 
     when Name
       name = parent
-      if !matches(/\A([a-zA-Z\.]+)/) do |n|
+      if !matches(/\A[ \n]*([a-zA-Z\.]+)/) do |n|
           name.name = n
         end
         raise "ERROR::Could not create the name"

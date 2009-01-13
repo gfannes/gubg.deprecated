@@ -13,10 +13,10 @@ module UlbuWalker
     when Cota
       print("#{indent}#{obj.name.name}")
       @indentLevel += 1
-      walk4Walker(obj.body)
+      walk4Walker(obj.scope)
       @indentLevel -= 1
 
-    when Body
+    when Scope
       puts(" (#{obj.cotas.length} cotas)")
       obj.cotas.each do |cota|
         walk4Walker(cota)
