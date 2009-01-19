@@ -23,6 +23,10 @@ Design for ulbu
     * Use RAII principle
        * Destructors
  * Multiple way to call a function (different arguments and types), but one function body
+ * Other cota's are resolved as follows:
+    * Local
+    * Going to root step by step
+    * Other roots
  * Templates?
 
 # Allocate - initialize - processing - cleanup #

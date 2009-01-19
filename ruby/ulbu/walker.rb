@@ -1,6 +1,29 @@
 require("objects")
 
-module UlbuWalker
+module ResolveWalker
+  def prepareWalking
+  end
+
+  def walk4Walker(obj)
+    case obj
+    when Name
+
+    when Cota
+
+    when Root
+
+    when Scope
+
+    else
+
+    end
+  end
+
+  def finishWalking
+  end
+end
+
+module PrintWalker
   def prepareWalking
     @indentLevel = 0
   end

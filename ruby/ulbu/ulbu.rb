@@ -1,23 +1,29 @@
 require("tools")
 require("parser")
 require("walker")
+require("root")
 
-fileNames = [
-  "data/main.ulbu",
-  "data/test.ulbu",
-]
+fileName = "main.ulbu"
 
-fileNames.each do |fileName|
-  puts("\nfileName = #{fileName}")
-  tree = time("Parsing #{fileName}", true) do
+Dir.chdir("data") do
+  root = Root.new
+
+  subtree = time("\nParsing subtree #{fileName}", true) do
     parser = Parser.new(UlbuParser)
     parser.parse(fileName)
   end
-  
-  puts("")
-  
-  time("Printing", true) do
-    walker = Walker.new(UlbuWalker)
-    walker.walk(tree)
+
+  time("\nAdding subtree to root", true) do
+    root.add(subtree, ["/"])
+  end
+
+  time("\nResolving", true) do
+    walker = Walker.new(ResolveWalker)
+    walker.walk(root)
+  end
+
+  time("\nPrinting", true) do
+    walker = Walker.new(PrintWalker)
+    walker.walk(root)
   end
 end
