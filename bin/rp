@@ -1,0 +1,19 @@
+#!/bin/bash
+ORIG_PATH=`pwd`
+cd ~/.sr
+targetFile=save_path_$1
+if [ -f $targetFile ]; then
+    NEW_PATH=`cat $targetFile`
+    echo "I will go to $NEW_PATH"
+    cd "$NEW_PATH"
+else
+    target=${targetFile#save_path_}
+    echo "Could not find target \"$target\""
+    echo "You can choose from:"
+    for fn in save_path_*
+    do
+      content=`cat $fn`
+      echo -e "${fn#save_path_}\t$content"
+    done
+    cd "$ORIG_PATH"
+fi

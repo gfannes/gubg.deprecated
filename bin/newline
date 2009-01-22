@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+require("tools")
+
+if ARGV.length == 0
+  puts(%Q@Usage: newline [-w] [-u] <fileName>*
+\tChecks and/or fixes the line endings of a file
+\t -w\tFix the endings to WINDOWS
+\t -u\tFix the endings to UNIX
+
+Geert Fannes.
+@)
+  exit(0)
+end
+
+# Arguments
+wantedType = nil
+fileNames = nil
+case ARGV[0]
+when "-w"
+  wantedType = :windows
+  fileNames = ARGV[1..ARGV.length]
+when "-u"
+  wantedType = :unix
+  fileNames = ARGV[1..ARGV.length]
+else
+  fileNames = ARGV
+end
+
+# Iterate over the files
+fileNames.each do |fileName|
+  if File.exist?(fileName) and !File.directory?(fileName)
+    # Load the buffer
+    buffer = String.load(fileName).unpack("C*")
+    
+    # Determine the type
+    type = newlineType(buffer)
+    puts("\"#{fileName}\" has type #{type}")
+
+    # Fix the file if necessary
+    if !wantedType.nil? and wantedType != type
+      changeNewlineType(buffer, wantedType)
+      buffer.pack("C*").export(fileName)
+    end
+  end
+end
+

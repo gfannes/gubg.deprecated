@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+require("tools/allTools.rb")
+
+class Tasks
+  def initialize(fileName)
+    @fileName = fileName
+    begin
+      @tasks = String.loadLines(@fileName)
+    rescue
+      "".export(@fileName)
+      retry
+    end
+  end
+
+  def save
+    @tasks.join("\n").export(@fileName)
+  end
+
+  def print
+    @tasks.each_with_index do |task, ix|
+      puts(" (#{ix}) #{task}\n\n")
+    end
+  end
+
+  def addTask(task)
+    @tasks << task.chomp
+  end
+
+  def removeTask(ix)
+    return @tasks.delete_at(ix)
+  end
+
+  def prioritizeTask(taskIX, wantedIX)
+    task = @tasks.delete_at(taskIX)
+    @tasks.insert(wantedIX, task) if task
+    task
+  end
+end
+
+arguments=ARGV
+
+tasks = Tasks.new(File.expand_path("todo.txt", ENV["HOME"]))
+
+case arguments[0]
+when nil
+  wantedIX = -1
+  loop do
+    wantedIX += 1
+    puts("Prioritize a task\n\n")
+    tasks.print
+    puts("Which task should be moved forward to level #{wantedIX}?")
+    taskIndex = $stdin.gets
+    case taskIndex
+    when /\d+/
+      taskIndex = taskIndex.to_i
+      if tasks.prioritizeTask(taskIndex, wantedIX)
+        tasks.save
+      else
+        puts("ERROR::Index out of range")
+      end
+    when "\n"
+      break
+    else
+      puts("ERROR::Could not recognize a number in \"#{taskIndex}\"")
+    end
+  end
+when "add"
+  loop do
+    puts("Describe the new task in one line:")
+    taskDescription = $stdin.gets
+    case taskDescription
+    when "\n"
+      break
+    else
+      tasks.addTask(taskDescription)
+      tasks.save
+    end
+  end
+when "rm"
+  loop do
+    puts("Removing a task\n\n")
+    tasks.print
+    puts("Which task should be removed?")
+    taskIndex = $stdin.gets
+    case taskIndex
+    when /\d+/
+      taskIndex = taskIndex.to_i
+      if tasks.removeTask(taskIndex)
+        tasks.save
+      else
+        puts("ERROR::Index out of range")
+      end
+    when "\n"
+      break
+    else
+      puts("ERROR::Could not recognize a number in \"#{taskIndex}\"")
+    end
+  end
+else
+  puts(%Q@todo [<option>]
+\t<empty>\tPrint / prioritize the current todo list
+\tadd\tAdd an extra task to the todo list
+\trm\tRemove a task from the todo list
+
+Geert Fannes.@)
+end
+

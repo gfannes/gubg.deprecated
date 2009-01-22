@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+#this script starts emacs
+require("tools")
+
+arguments=ARGV
+
+#try to find the files in arguments
+def findFileRecusively(fn)
+  if File.exist?(fn) and File.file?(fn)
+    return fn
+  elsif fn[/\//]
+    return fn
+  else
+    dir,fnHere,found=nil,nil,false
+    puts("Looking for \"#{fn}\" recursively ... ")
+    Dir.each('./') do |dir,fnHere|
+      if fn==fnHere
+        found=true
+        true
+      end
+    end
+    if found
+      fnNew=File.expand_path(fnHere,dir)
+      puts("FOUND \"#{fn}\" in \"#{fnNew}\".")
+      return fnNew
+    else
+      puts("COULD NOT FIND \"#{fn}\", creating new file.")
+      return fn
+    end
+  end
+end
+arguments.collect! do |arg|
+  if lineNum=arg[/:(\d+)$/,1]
+    "+#{lineNum} \""+findFileRecusively(arg.gsub(/:#{lineNum}$/,''))+'"'
+  elsif lineNum=arg[/ *\(C Abbrev\)--L(\d+)$/,1]
+    "+#{lineNum} \""+findFileRecusively(arg.gsub(/ *\(C Abbrev\)--L#{lineNum}$/,''))+'"'    
+  else
+    '"'+findFileRecusively(arg)+'"'
+  end
+end
+
+command = "#{emacs} "+arguments.join(' ')
+case operatingSystem
+when "Linux"
+  command += " &"
+end
+system(command)

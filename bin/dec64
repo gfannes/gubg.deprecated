@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+require("base64")
+require("hexdump")
+require("tools/allTools")
+
+str = nil
+outputFile = nil
+
+if ARGV[0]
+  str = String.load(ARGV[0])
+  outputFile = ARGV[0] + ".dat"
+else
+  fi=$stdin
+  str=fi.readlines.collect{|line|line.strip}.join('')
+  outputFile = "dec64.dat"
+end
+
+dec=Base64.decode64(str)
+File.open(outputFile,"wb") do |fo|
+  fo.print dec
+end
+puts("**********DECODING START (STRING)**********")
+puts dec
+puts("**********DECODING END (STRING)**********")
+puts("**********DECODING START (HEXDUMP)**********")
+dec.hexdump(true)
+puts("**********DECODING END (HEXDUMP)**********")

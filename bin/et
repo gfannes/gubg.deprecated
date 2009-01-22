@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+#this script removes emacs rest files up to level the level specified, all at all level by default
+require("tools/allTools")
+
+binary = (ARGV[0]=="-vi" ? "ctags" : "etags")
+
+reOK = /^.+\.[ch]p*$/
+reKO = /\.cloak\.c/
+
+recursor = Proc.new do |dir|
+  case dir
+  when /\.svn/
+    false
+  else
+    true
+  end
+end
+
+bFirst = true
+Dir.each('./', recursor) do |dir, fn|
+  if fn[reOK] and !fn[reKO]
+    fileName = File.expand_path(fn, dir)
+    if bFirst
+      bFirst = false
+      system("#{binary} #{fileName}")
+    else
+      system("#{binary} -a #{fileName}")
+    end
+  end
+  nil
+end
+
+# #system("etags -l none -a --regex='/[ \\t]*def[ \\t]+\\([a-zA-Z0-9_]+\\)/\\1/' --regex='/[ \\t]*class[ \\t]+\\([a-zA-Z0-9_]+\\)/\\1/' #{dirsRuby}")
+
+# if operatingSystem == "Windows"
+#   puts("Doing windows modification to TAGS")
+#   tags=String.load("TAGS")
+#   tags.gsub!('/cygdrive/c/','c:/')
+#   tags.export("TAGS")
+# end

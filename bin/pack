@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+arguments=ARGV.dup
+backupDir=nil
+$zipFlag="j"
+$zipExt="bz2"
+while arguments[0][/^-/] do
+  case arguments[0]
+  when '-b'                       # backup to default backup dir
+    File.expand_path("backup",ENV["HOME"])
+    arguments.shift
+  when '-d'                       # backup to some specified dir
+    arguments.shift
+    backupDir=File.expand_path(arguments.shift)
+  when '-z'                       # use gzip instead of bzip2
+    arguments.shift
+    $zipFlag="z"
+    $zipExt="gz"
+  end
+end
+base=arguments[0]
+hostname=ENV['HOSTNAME'].split('.')[0]
+date=Time.now.strftime("%Y%m%d")
+version=0
+
+def archiveName(base,hostname,date,version)
+  baseHere=base.gsub(/^\./,'')
+  baseHere=baseHere.gsub(/\/$/,'')
+  raise "ERROR::Cannot handle deeper dirs" if baseHere[/\//]
+  if version>0
+    "#{baseHere}.#{date}-#{version}.#{hostname}.tar.#{$zipExt}"
+  else
+    "#{baseHere}.#{date}.#{hostname}.tar.#{$zipExt}"
+  end
+end
+
+fn=nil
+if backupDir
+  while File.exist?(File.expand_path(fn=archiveName(base,hostname,date,version),backupDir))
+    version+=1
+  end
+else
+  while File.exist?(fn=archiveName(base,hostname,date,version))
+    version+=1
+  end
+end
+puts("I will pack \"#{base}\" to \"#{fn}\"")
+puts("and move it to \"#{backupDir}\"") if backupDir
+
+if File.exist?(File.expand_path("internal/cleanAll.rb",base))
+  Dir.chdir(base) do
+    puts("Executing \"internal/cleanAll.rb ...\"")
+    system("ruby internal/cleanAll.rb")
+    puts("Finished")
+  end
+end
+
+puts("Creating archive ...")
+`tar c#{$zipFlag}vf #{fn} #{base}`
+puts("Finished")
+
+if backupDir
+  Dir.mkdir(backupDir) if !File.exist?(backupDir)
+  `mv #{fn} #{backupDir}`
+end
