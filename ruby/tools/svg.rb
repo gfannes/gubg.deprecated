@@ -1,6 +1,6 @@
 # This file implements functionality to create svg images
-require("builder.rb")
-require("utils.rb")
+require("tools/builder.rb")
+require("tools/utils.rb")
 
 module SVG
   # The SVG document

@@ -1,4 +1,4 @@
-require("math.rb")
+require("tools/math.rb")
 
 def operatingSystem
   case RUBY_PLATFORM
@@ -368,7 +368,7 @@ def time(str, newline = false)
   $stdout.flush
   $timingLevel += 1
   startTime=Time.now
-  yield
+  res = yield
   stopTime=Time.now
   timeStr="%.3f sec"%(stopTime-startTime)
   $timingLevel -= 1
@@ -380,6 +380,7 @@ def time(str, newline = false)
     $maxTimingLevel = $timingLevel
     puts("#{'  '*$timingLevel}finished (#{timeStr})")
   end
+  res
 end
 
 # Temporary path and files

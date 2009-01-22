@@ -1,0 +1,70 @@
+Design for ulbu
+===============
+
+# High-level design goals #
+
+ * Syntax as close as possible to UML
+ * Uncluttered usage
+    * Implement main success scenario, treat deviations seperately
+    * Have direct access to output of previous computations
+    * Return multiple values
+ * Minimalistic
+    * No inheritance, only composition with automatic method resolving should do the trick
+ * Fast
+    * Compilation into assembly code
+ * Low memory cost
+    * Reference by default
+ * Integrated build system
+ * Check syntax and interpretability during compilation
+    * Statically typed
+ * As functional as possible
+    * Closures
+ * Scoped by default
+    * Use RAII principle
+       * Destructors
+ * Multiple way to call a function (different arguments and types), but one function body
+ * Other cota's are resolved as follows:
+    * Local
+    * Going to root step by step
+    * Other roots
+ * Templates?
+
+# Allocate - initialize - processing - cleanup #
+
+As a central philosophy, everything should be interpreted as space - initialize - processing - cleanup:
+ * Function call:
+    * Space for return values and local variables
+    * Initialize local variables based on arguments and default values
+    * Function body which calculates the return values
+    * Remove local variables
+    * Use the calculated outputs
+    * Cleanup outputs when they are not needed anymore
+ * Class:
+    * Memory for class
+    * Constructor
+    * Methods
+    * Destructor
+
+# Nice to haves #
+
+ * Close integration with Ruby
+
+# Cota's #
+
+ * Code and data are treated the same way, they are called _cota_'s.
+    * Calling a cota is the same as its allocation
+
+# Calling a cota #
+
+ * Allocate space for the outputs on the stack
+ * Allocate space for the inputs on the stack
+ * Execute
+ * Remove inputs
+ * Other code that uses the outputs
+ * Remove the outputs from the stack when they are not needed anymore
+
+# Return values #
+
+ * Calling a cota returns two different things
+    * Execution status: null or a pointer to an exception cota
+    * Computed outputs: the result of the call
