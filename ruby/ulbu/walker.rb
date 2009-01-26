@@ -95,11 +95,35 @@ module CompileWalker
     when Name
       name = obj
 
+    when Root
+      cota = obj
+      walk4Walker(cota.scope)
+
     when Cota
       cota = obj
+      func = nil
+      if cota.name.name == "main"
+        @asm.bss.addGlobal("_start")
+        func = @asm.text.addFunction("_start")
+        func.add("# Main: begin of program")
+      else
+        func = @asm.text.addFunction(cota.name.name)
+      end
+
+      if cota.name.name == "main"
+        func.add([
+                    "movl $0, %ebx   # Exit",
+                    "movl $1, %eax",
+                    "int $0x80",
+                  ])
+      end
+      walk4Walker(cota.scope)
 
     when Scope
       scope = obj
+      scope.cotas.each do |cota|
+        walk4Walker(cota)
+      end
 
     else
       puts("Unknown type #{obj.class}")

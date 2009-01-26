@@ -3,14 +3,17 @@ require("parser")
 require("walker")
 require("root")
 
-fileName = "main.ulbu"
+ulbuFile = "main.ulbu"
+asmFile = ulbuFile + '.s'
+objectFile = ulbuFile + '.o'
+exeFile = ulbuFile + '.exec'
 
 Dir.chdir("data") do
   root = Root.new
 
-  subtree = time("\nParsing subtree #{fileName}", true) do
+  subtree = time("\nParsing subtree #{ulbuFile}", true) do
     parser = Parser.new(UlbuParser)
-    parser.parse(fileName)
+    parser.parse(ulbuFile)
   end
 
   time("\nAdding subtree to root", true) do
@@ -30,7 +33,16 @@ Dir.chdir("data") do
 
   time("\nCompiling", true) do
     walker = Walker.new(CompileWalker)
-    walker.fileName = fileName + '.s'
+    walker.fileName = asmFile
     walker.walk(root)
+  end
+
+  time("\nAssembling and linking", true) do
+    system("as #{asmFile} -o #{objectFile}")
+    system("ld #{objectFile} -o #{exeFile}")
+  end
+
+  time("\nExecuting", true) do
+    system("#{exeFile}")
   end
 end

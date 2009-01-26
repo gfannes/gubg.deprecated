@@ -1,4 +1,4 @@
-require("tools/allTools.rb")
+require("tools")
 
 system("ce")
 
@@ -7,6 +7,8 @@ tabReplacement = ' '*8
 Dir.each('./') do |dir,fn|
   case fn
   when /\.o$/
+  when /\.s$/
+  when /\.exec$/
   when /^a\.out$/
   when /^gmon\.out$/
   when /^execTest/
