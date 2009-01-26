@@ -1,0 +1,19 @@
+#!/bin/sh
+echo "OK"
+SAVE_PATH=`pwd`
+cd ~/.sr
+echo $SAVE_PATH > save_path_$1
+echo "Path saved to $SAVE_PATH"
+case $ARCH in
+    Linux)
+	cd ~/l
+	rm -f $1
+	ln -s $SAVE_PATH $1
+	;;
+    CYGWIN_NT-5.1)
+	echo "I cannot create links in ~/l for Cygwin"
+	;;
+    MINGW32_NT-5.1)
+	echo "I cannot create links in ~/l for MinGW"
+esac
+cd "$SAVE_PATH"

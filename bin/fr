@@ -1,0 +1,92 @@
+#!/usr/bin/env ruby
+require("tools")
+require("hexdump")
+
+arguments = ARGV.dup
+action = :print
+if ARGV.length == 0
+  puts(%Q@fr [option] <pattern>
+\t-o\t\tOpen the files in emacs that match the <pattern>
+\t-r string\tShow how the <pattern> would be replaced, but do not actually replace
+\t-R string\tSame as -r, but now <pattern> is actually replaced
+Geert Fannes.
+@)
+exit
+elsif ARGV.length == 2 and arguments[0] == "-o"
+  action = :open
+  arguments.shift
+  files2Open = []
+elsif ARGV.length == 3 and arguments[0][/^-[rR]$/]
+  action = :replace
+  option = arguments.shift
+  replace = option["R"]
+  newValue = arguments.shift
+end
+
+lookFor = Regexp.compile(arguments[0])
+
+recursor = Proc.new do |dir|
+  case File.basename(dir)
+  when /^\./
+    false
+  when /^(html)|(docs)|(data)$/
+    false
+  else
+    true
+  end
+end
+
+unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c]
+str = unwantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
+reUnwantedExtensions = Regexp.compile("(#{str})"+'$')
+
+wantedExtensions = %w[c h cpp hpp d rb]
+str = wantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
+reWantedExtensions = Regexp.compile("(#{str})"+'$')
+
+pwd = Dir.pwd+'/'
+Dir.each("./",recursor) do |dir,fn|
+  check = true
+  case fn
+  when reUnwantedExtensions
+    check = false
+  when reWantedExtensions
+  when /^Makefile/
+  else
+    check = false
+  end
+  if check
+    str = String.load(File.expand_path(fn, dir))
+    if str.nil?
+      puts("Failed to load #{File.expand_path(fn, dir)}")
+    elsif str[lookFor]
+      path = File.expand_path(fn, dir)
+      path[pwd] = ''
+      lines = str.split("\n")
+      lines.each_with_index do |line,ix|
+        if line[lookFor]
+          case action
+          when :print
+            puts(path+":#{ix+1} #{line}")
+          when :open
+            files2Open << path+":#{ix+1}"
+          when :replace
+            print(path+":#{ix+1} (#{line}) -> ")
+            line[lookFor] = newValue
+            puts("(#{line})")
+          end
+        end
+      end
+      if action == :replace and replace
+        lines.join("\n").export(File.expand_path(fn, dir))
+      end
+    end
+  end
+  nil
+end
+
+case action
+when :open
+  command = "e " + files2Open.join(" ")
+  system(command)
+end

@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+require("tools/allTools")
+require("fileutils")
+
+if ARGV.length != 2
+  puts("USAGE: #{$0} <src-dir> <dest-dir>")
+  exit(0)
+end
+
+srcDir = File.expand_path(ARGV[0])
+srcPwd = File.expand_path('..',srcDir)
+destDir = File.expand_path(ARGV[1])
+puts("srcDir = #{srcDir}")
+puts("srcPwd = #{srcPwd}")
+puts("destDir = #{destDir}")
+
+time("Creating the directory structure", true) do
+  Dir.eachDir(srcDir)  do |dir|
+    dir2Create = File.expand_path(Dir.relative(dir, srcPwd), destDir)
+    puts("\tD #{dir2Create}")
+    Dir.mkdir(dir2Create) if !File.exist?(dir2Create)
+    nil
+  end
+end
+
+time("Copying the files", true) do
+  prevDir = nil
+  Dir.each(srcDir) do |dir, fn|
+    sourceFile = File.expand_path(fn, dir)
+    targetDir = File.expand_path(Dir.relative(dir, srcPwd), destDir)
+    targetFile = File.expand_path(fn, targetDir)
+    if prevDir != targetDir
+      puts("\tF #{targetDir}")
+      prevDir = targetDir
+    end
+    if File.exist?(targetFile)
+      if File.size(sourceFile) != File.size(targetFile)
+        FileUtils::copy(sourceFile, targetFile)
+      end
+    else
+      FileUtils::copy(sourceFile, targetFile)
+    end
+    nil
+  end
+end

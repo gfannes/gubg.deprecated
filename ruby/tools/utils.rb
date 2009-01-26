@@ -217,11 +217,11 @@ class Dir
       permissionDenied << startDir if permissionDenied
     end
   end
-  def Dir.mkchdir(dir,&block)
+  def Dir.mkchdir(dir, &block)
     Dir.mkdir(dir) if !File.exist?(dir)
     Dir.chdir(dir,&block)
   end
-  def Dir.relative(dir,pwd = nil)
+  def Dir.relative(dir, pwd = nil)
     pwd ||= Dir.pwd
 #    puts("dir = #{dir}")
 #    puts("pwd = #{pwd}")

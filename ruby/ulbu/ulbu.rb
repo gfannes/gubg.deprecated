@@ -26,4 +26,11 @@ Dir.chdir("data") do
     walker = Walker.new(PrintWalker)
     walker.walk(root)
   end
+
+
+  time("\nCompiling", true) do
+    walker = Walker.new(CompileWalker)
+    walker.fileName = fileName + '.s'
+    walker.walk(root)
+  end
 end
