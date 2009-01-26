@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require("tools/allTools")
+require("tools")
 require("hexdump")
 
 arguments = ARGV.dup

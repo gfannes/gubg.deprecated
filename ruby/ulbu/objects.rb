@@ -18,6 +18,7 @@ end
 class Cota
   attr :name, true
   attr :attributes, true
+  attr :refName, true
   attr :scope, true
 
   def add(subtree, location)
@@ -30,6 +31,12 @@ class Cota
       raise "ERROR::Trying to add to a non-direct location"
     end
     true
+  end
+  def resolved?
+    return !@scope.nil?
+  end
+  def direct?
+    return @refName.nil?
   end
   def size
   end
