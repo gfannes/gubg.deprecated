@@ -17,9 +17,10 @@ class PrimitiveCota < Cota
   end
 end
 
-class PrimitiveScope < Cota
+class PrimitiveScope < Scope
   attr :outputSize, true
   def initialize(size)
     @outputSize = size
+    super()
   end
 end

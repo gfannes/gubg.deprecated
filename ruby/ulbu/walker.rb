@@ -14,12 +14,12 @@ module ResolveWalker
     when Cota
       cota = obj
       if cota.resolved?
-        puts("Found resolved cota #{cota.name.name}")
-        @scopePerName[cota.name.name] = cota.scope
+        puts("Found resolved cota #{cota.name}")
+        @scopePerName[cota.name] = cota.scope
         resolve
         walk4Walker(cota.scope) if cota.direct?
       else
-        puts("Unresolved cota #{cota.name.name}")
+        puts("Unresolved cota #{cota.name}")
         @unresolvedCotas << cota
       end
 
@@ -39,7 +39,7 @@ module ResolveWalker
     resolve
     if !@unresolvedCotas.empty?
       @unresolvedCotas.each do |cota|
-        puts("Unresolved cota: #{cota.name.name}")
+        puts("Unresolved cota: #{cota.name}")
       end
       raise "ERROR::Unresolved cota's still present"
     end
@@ -50,12 +50,12 @@ module ResolveWalker
       nrResolved = 0
       # Go over the unresolved cota's
       @unresolvedCotas.reject! do |cota|
-        puts("Resolving #{cota.name.name}")
+        puts("Resolving #{cota.name}")
         # Check if we can resolve this one
-        scope = @scopePerName[cota.refCota.name.name]
+        scope = @scopePerName[cota.refCota.name]
         if scope
           cota.scope = scope
-          @scopePerName[cota.name.name] = scope
+          @scopePerName[cota.name] = scope
           nrResolved += 1
           # Resolved, remove it
           true
@@ -104,15 +104,15 @@ module CompileWalker
     when Cota
       cota = obj
       func = nil
-      if cota.name.name == "main"
+      if cota.name == "main"
         @asm.bss.addGlobal("_start")
         func = @asm.text.addFunction("_start")
         func.add("# Main: begin of program")
       else
-        func = @asm.text.addFunction(cota.name.name)
+        func = @asm.text.addFunction(cota.name)
       end
 
-      if cota.name.name == "main"
+      if cota.name == "main"
         func.add([
                     "movl $0, %ebx   # Exit",
                     "movl $1, %eax",
@@ -146,16 +146,16 @@ module PrintWalker
     case obj
     when Name
       name = obj
-      puts(" => #{name.name}")
+      puts(" => #{name}")
 
     when Cota
       cota = obj
-      print("#{indent}#{cota.name.name} (#{cota.outputSize})")
+      print("#{indent}#{cota.name} (#{cota.outputSize})")
       @indentLevel += 1
       if cota.direct?
         walk4Walker(cota.scope)
       else
-        puts(" (#{cota.refCota.name.name})")
+        puts(" (#{cota.refCota.name})")
       end
       @indentLevel -= 1
 

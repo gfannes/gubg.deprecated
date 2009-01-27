@@ -1,17 +1,19 @@
-class Name
+class Name < String
   attr :name, true
   def initialize(name = nil)
-    @name = name
+    replace(name) if name
   end
 end
 
-class Attributes
-  attr :attributes, true
+class Attributes < String
   def initialize(attributes = "")
-    @attributes = attributes
+    replace(attributes)
+  end
+  def set(attributes)
+    replace(attributes)
   end
   def directive?
-    @attributes[/\$/]
+    self[/\$/]
   end
 end
 
@@ -22,7 +24,7 @@ class Cota
   attr :scope, true
 
   def add(subtree, location)
-    return false if location[0] != @name.name
+    return false if location[0] != @name
     case @scope
     when Scope
       location.shift
@@ -37,6 +39,13 @@ class Cota
   end
   def direct?
     return @refCota.nil?
+  end
+  def outputSize
+    if @scope
+      @scope.outputSize
+    else
+      @refCota.outputSize
+    end
   end
 end
 

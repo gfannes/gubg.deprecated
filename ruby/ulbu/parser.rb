@@ -55,7 +55,7 @@ module UlbuParser
     when Attributes
       attributes = parent
       if !matches(/\A[ \n]*([@\$\+\-\.]*)/) do |attr|
-          attributes.attributes = attr
+          attributes.set(attr)
         end
         raise "ERROR::Could not read the attributes"
       end
@@ -64,7 +64,7 @@ module UlbuParser
     when Name
       name = parent
       if !matches(/\A[ \n]*([a-zA-Z\.]+)/) do |n|
-          name.name = n
+          name = n
         end
         raise "ERROR::Could not create the name"
       end
