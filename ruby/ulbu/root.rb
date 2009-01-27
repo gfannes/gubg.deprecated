@@ -6,15 +6,20 @@ class Root < Cota
     @name = Name.new("/")
     @scope = Scope.new
 
-    @scope.add(Primitive.new("int", 4))
+    @scope.add(PrimitiveCota.new("int", 4))
   end
 end
 
-class Primitive < Cota
-  attr :size, true
+class PrimitiveCota < Cota
   def initialize(name, size)
     @name = Name.new(name)
-    @scope = Scope.new
-    @size = size
+    @scope = PrimitiveScope.new(size)
+  end
+end
+
+class PrimitiveScope < Cota
+  attr :outputSize, true
+  def initialize(size)
+    @outputSize = size
   end
 end

@@ -18,7 +18,7 @@ end
 class Cota
   attr :name, true
   attr :attributes, true
-  attr :refName, true
+  attr :refCota, true
   attr :scope, true
 
   def add(subtree, location)
@@ -36,9 +36,7 @@ class Cota
     return !@scope.nil?
   end
   def direct?
-    return @refName.nil?
-  end
-  def size
+    return @refCota.nil?
   end
 end
 
@@ -56,5 +54,12 @@ class Scope
         break if cota.add(subtree, location)
       end
     end
+  end
+  def outputSize
+    size = 0
+    @cotas.each do |cota|
+      size += cota.outputSize
+    end
+    size
   end
 end

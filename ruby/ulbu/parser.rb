@@ -37,8 +37,9 @@ module UlbuParser
             cota.scope = create(Scope.new)
           end
         else
-          cota.refName = create(Name.new)
-          raise "ERROR::Could not create the refName" if cota.refName.nil?
+          cota.refCota = Cota.new
+          cota.refCota.name = create(Name.new)
+          raise "ERROR::Could not create the refCota" if cota.refCota.name.nil?
         end
       end
       return cota

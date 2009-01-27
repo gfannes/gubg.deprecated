@@ -19,6 +19,7 @@ module ResolveWalker
         resolve
         walk4Walker(cota.scope) if cota.direct?
       else
+        puts("Unresolved cota #{cota.name.name}")
         @unresolvedCotas << cota
       end
 
@@ -49,8 +50,9 @@ module ResolveWalker
       nrResolved = 0
       # Go over the unresolved cota's
       @unresolvedCotas.reject! do |cota|
+        puts("Resolving #{cota.name.name}")
         # Check if we can resolve this one
-        scope = @scopePerName[cota.refName.name]
+        scope = @scopePerName[cota.refCota.name.name]
         if scope
           cota.scope = scope
           @scopePerName[cota.name.name] = scope
@@ -148,12 +150,12 @@ module PrintWalker
 
     when Cota
       cota = obj
-      print("#{indent}#{cota.name.name} (#{cota.scope})")
+      print("#{indent}#{cota.name.name} (#{cota.outputSize})")
       @indentLevel += 1
       if cota.direct?
         walk4Walker(cota.scope)
       else
-        puts(" (#{cota.refName.name})")
+        puts(" (#{cota.refCota.name.name})")
       end
       @indentLevel -= 1
 
