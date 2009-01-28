@@ -13,7 +13,8 @@ def newlineType(input)
   end
 
   buffer.each_with_index do |byte, ix|
-    if byte == 0x0a
+    case byte
+    when 0x0a
       if ix > 0 && buffer[ix-1] == 0x0d
         if type.nil? || type == :windows
           type = :windows
@@ -28,6 +29,11 @@ def newlineType(input)
           type = :mixed
           break
         end
+      end
+    when 0x0d
+      if buffer.length > ix + 1 and buffer[ix + 1] != 0x0a
+        puts("WARNING::Found a lonely 0x0d")
+        type = :mixed
       end
     end
   end
@@ -50,10 +56,11 @@ def changeNewlineType(input, wantedType)
   while (ix < buffer.length)
     byte = buffer[ix]
 
-    if byte == 0x0a
+    case byte
+    when 0x0a
       # Check if 0x0d is present before 0x0a
       has0d = (ix > 0 && buffer[ix-1] == 0x0d)
-
+      # Take action depending of wantedType
       case wantedType
       when :unix
         if has0d
@@ -68,10 +75,25 @@ def changeNewlineType(input, wantedType)
       else
         raise "ERROR::Unknown type #{wantedType}"
       end
+      # Proceed
+      ix += 1
+
+    when 0x0d
+      # Check that there is a 0x0a after 0x0d
+      has0a = (buffer.length > ix+1 && buffer[ix+1] == 0x0a)
+      if has0a
+        # Proceed
+        ix += 1
+      else
+        # We have a lonely 0x0d, remove it
+        buffer.delete_at(ix)
+      end
+
+    else
+      # Proceed
+      ix += 1
     end
 
-    # Proceed
-    ix += 1
   end
 
   case input

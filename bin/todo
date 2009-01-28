@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require("tools/allTools.rb")
+require("tools")
 
 class Tasks
   def initialize(fileName)
