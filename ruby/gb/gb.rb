@@ -1,4 +1,4 @@
-require("tools/allTools")
+require("tools")
 
 def buildExecutable(sourceFile)
   executable = nil

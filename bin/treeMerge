@@ -1,0 +1,144 @@
+#!/usr/bin/env ruby
+
+require("tools")
+require("ftools")
+
+baseDir, sourceDir, targetDir = nil, nil, nil
+doReal = false
+arguments = ARGV.dup
+if arguments[0] == "-r"
+  doReal = true
+  arguments.shift
+end
+if arguments.length == 3
+  baseDir = arguments.shift
+  sourceDir = arguments.shift
+  targetDir = arguments.shift
+else
+  puts(%Q@#{__FILE__} [-r] baseDir sourceDir targetDir
+\t-r\tPerform actual merge
+\tbaseDir\tThe most common ancestor
+\tsourceDir\tThe directory containing local changes that should be incorporated
+\ttargetDir\tThe directory where these changes should be copied to@)
+  exit
+end
+
+recursor = Proc.new do |dir|
+  case dir
+  when /\.svn$/
+    false
+  else
+    true
+  end
+end
+
+newFiles, changedFiles, conflictFiles, deletedFiles, changedTargetDeleted, deletedTargetChanged = [], [], [], [], [], []
+
+def collectInfo(dir, fn, baseDir, sourceDir, targetDir)
+  relativeName = Dir.relative(dir + '/', File.expand_path(sourceDir)) + fn
+  fnBase, fnSource, fnTarget = *([baseDir, sourceDir, targetDir].collect{|dirH| File.expand_path(relativeName, dirH) })
+  md5Base, md5Source, md5Target = *[fnBase, fnSource, fnTarget].collect{|fn|File.exist?(fn) && md5sum(fn)}
+  return relativeName, md5Base, md5Source, md5Target
+end
+
+# Look for files that where changed or added in the sourceDir compared to the baseDir
+time("Looking for new and changed files", true) do
+  Dir.each(sourceDir, recursor) do |dir, fn|
+    relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
+    if !md5Base
+      puts("\tAdded by us: \"#{relativeName}\"")
+      newFiles << relativeName
+    elsif md5Base != md5Source
+      if md5Base != md5Target
+        if md5Target
+          puts("\tChanged by us and target: \"#{relativeName}\"")
+          conflictFiles << relativeName
+        else
+          puts("\tChanged by us but deleted by target: \"#{relativeName}\"")
+          changedTargetDeleted << relativeName
+        end
+      else
+        puts("\tChanged by us: \"#{relativeName}\"")
+        changedFiles << relativeName
+      end
+    end
+    nil
+  end
+end
+
+# Look for files that where deleted in the sourceDir compared to the baseDir
+time("\nLooking for deleted files", true) do
+  Dir.each(baseDir, recursor) do |dir, fn|
+    relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
+    if !md5Source
+      if md5Base == md5Target
+        puts("\tDeleted by us: \"#{relativeName}\"")
+        deletedFiles << relativeName
+      else
+        puts("\tDeleted by us but changed by target: \"#{relativeName}\"")
+        deletedTargetChanged << relativeName
+      end if md5Target
+    end
+    nil
+  end
+end
+
+# Remove the deliver_status from the list of changed files
+changedFiles.reject!{|relativeName|relativeName == "./deliver_status"}
+
+# Print the summary
+puts("\nSummary\n-------\n")
+def printFiles(message, ary)
+  if !ary.empty?
+    puts("#{message} (#{ary.length}):")
+    ary.each do |relativeName|
+      puts("\t#{relativeName}")
+    end
+  end
+end
+printFiles("Files added by us", newFiles)
+printFiles("Files changed only by us", changedFiles)
+printFiles("Files deleted only by us", deletedFiles)
+printFiles("Files changed both by us and by target", conflictFiles)
+printFiles("Files changed by us but by target", changedTargetDeleted)
+printFiles("Files deleted by us but changed by target", deletedTargetChanged)
+puts("End of summary.\n\n")
+
+if doReal
+  # Copy new files
+  newFiles.each do |relativeName|
+    File.copy(File.expand_path(relativeName, sourceDir), File.expand_path(relativeName, targetDir))
+    Dir.chdir(targetDir) do
+      `svn add #{relativeName}`
+    end
+  end
+  # Copy changed files
+  changedFiles.each do |relativeName|
+    File.copy(File.expand_path(relativeName, sourceDir), File.expand_path(relativeName, targetDir))
+  end
+  # Remove deleted files
+  Dir.chdir(targetDir) do
+    deletedFiles.each do |relativeName|
+      `svn rm #{relativeName}`
+    end
+  end
+  # Merge the conflicting files
+  puts("Resolving conflicts:")
+  conflictFiles.each do |relativeName|
+    puts("\t#{relativeName}")
+    fnBase, fnSource, fnTarget = *[baseDir, sourceDir, targetDir].collect{|dirH|File.expand_path(relativeName, dirH)}
+    `kdiff3 -m -o #{fnTarget} #{fnBase} #{fnSource} #{fnTarget}`
+  end
+else
+  # Show conflicts
+  puts("Showing conflicts:")
+  conflictFiles.each do |relativeName|
+    puts("\t#{relativeName}")
+    fnBase, fnSource, fnTarget = *[baseDir, sourceDir, targetDir].collect{|dirH|File.expand_path(relativeName, dirH)}
+    `kdiff3 #{fnBase} #{fnSource} #{fnTarget}`
+  end
+end
+
+# Print list of files that need manual merge
+printFiles("WARNING::These files are changed by us, but deleted by target. Fix manually.", changedTargetDeleted)
+printFiles("WARNING::These files are deleted by us, but changed by target. Fix manually.", deletedTargetChanged)

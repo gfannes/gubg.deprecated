@@ -1,6 +1,6 @@
 # The D language parser for gb
 
-require("tools/allTools.rb")
+require("tools")
 
 class DLanguage
   attr :localIncludes, true
