@@ -1,4 +1,7 @@
 Ulbu syntax
 ===========
 
-Fill in...
+# Attributes #
+
+ * `+`: Indicates that the cota is public
+ * `/`: Indicates that the cota should be recomputed each time

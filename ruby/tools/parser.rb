@@ -9,7 +9,7 @@ class Parser
     @dirName = File.dirname(fileName)
     @ixs = [0]
     prepareParsing
-    res = create
+    res = complete
     finishedParsing
     res
   end
@@ -47,9 +47,9 @@ class Parser
     end
   end
   
-  def create(parent = nil)
+  def complete(obj = nil)
     @ixs << @ixs.last
-    res = create4Parser(parent)
+    res = complete4Parser(obj)
     @ixs[-2] = @ixs[-1] if res
     @ixs.pop
     res

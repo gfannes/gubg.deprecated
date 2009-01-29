@@ -4,21 +4,22 @@ module UlbuParser
   def prepareParsing
   end
 
-  def create4Parser(parent)
-    case parent
+  def complete4Parser(obj)
+    case obj
 
     when NilClass
       cota = Cota.new
       cota.name = Name.new(@baseName)
-      cota.scope = create(Scope.new)
+      cota.scope = complete(Scope.new)
       return cota
 
     when Cota
-      cota = parent
+      cota = obj
       # Read the attributes
-      cota.attributes = create(Attributes.new)
+      cota.attributes = complete(Attributes.new)
       # Read the name
-      cota.name = create(Name.new)
+      cota.name = complete(Name.new)
+      puts("Parsing #{cota.name}")
       if !matches(/\A[ \n]*:/)
         raise "ERROR::Could not read the name"
       end
@@ -34,27 +35,27 @@ module UlbuParser
       else
         # Read the scope
         if matches("{", "}") do
-            cota.scope = create(Scope.new)
+            cota.scope = complete(Scope.new)
           end
         else
           cota.refCota = Cota.new
-          cota.refCota.name = create(Name.new)
+          cota.refCota.name = complete(Name.new)
           raise "ERROR::Could not create the refCota" if cota.refCota.name.nil?
         end
       end
       return cota
 
     when Scope
-      scope = parent
+      scope = obj
       loop do
         break if (buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*\z/])
-        scope.cotas << create(Cota.new)
+        scope.cotas << complete(Cota.new)
       end
       return scope
 
     when Attributes
-      attributes = parent
-      if !matches(/\A[ \n]*([@\$\+\-\.]*)/) do |attr|
+      attributes = obj
+      if !matches(/\A[ \n]*([@\$\+\-\.\/]*)/) do |attr|
           attributes.set(attr)
         end
         raise "ERROR::Could not read the attributes"
@@ -62,11 +63,11 @@ module UlbuParser
       return attributes
 
     when Name
-      name = parent
+      name = obj
       if !matches(/\A[ \n]*([a-zA-Z\.]+)/) do |n|
           name = n
         end
-        raise "ERROR::Could not create the name"
+        raise "ERROR::Could not complete the name"
       end
       return name
 

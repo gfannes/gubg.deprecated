@@ -3,7 +3,7 @@ require("objects")
 class Root < Cota
   def initialize
     super
-    @name = Name.new("/")
+    @name = Name.new("^")
     @scope = Scope.new
 
     @scope.add(PrimitiveCota.new("int", 4))

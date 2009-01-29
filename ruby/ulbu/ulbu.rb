@@ -17,7 +17,7 @@ Dir.chdir("data") do
   end
 
   time("\nAdding subtree to root", true) do
-    root.add(subtree, ["/"])
+    root.add(subtree, ["^"])
   end
 
   time("\nResolving", true) do
@@ -29,7 +29,6 @@ Dir.chdir("data") do
     walker = Walker.new(PrintWalker)
     walker.walk(root)
   end
-
 
   time("\nCompiling", true) do
     walker = Walker.new(CompileWalker)

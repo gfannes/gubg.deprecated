@@ -70,12 +70,27 @@ module ResolveWalker
 end
 
 module CompileWalker
+  # Adds a call to the function called functionName to function
+  def addCall(function, functionName)
+    function.add("# Call to function \"#{functionName}\"")
+  end
+
   def fileName=(fileName)
     @fileName = fileName
   end
 
   def prepareWalking
     @asm = ASM.new
+    @asm.bss.addGlobal("_start")
+    func = @asm.text.addFunction("_start")
+    func.add("# Start of program")
+    addCall(func, "main")
+    func.add([
+               "# Exit of program",
+               "movl $0, %ebx",
+               "movl $1, %eax",
+               "int $0x80",
+             ])
 #   asm.data.add(:ascii, "startMessage", "Hello World\n")
 #   asm.bss.addGlobal("_start")
 #   start = asm.text.addFunction("_start")
@@ -104,21 +119,9 @@ module CompileWalker
     when Cota
       cota = obj
       func = nil
-      if cota.name == "main"
-        @asm.bss.addGlobal("_start")
-        func = @asm.text.addFunction("_start")
-        func.add("# Main: begin of program")
-      else
-        func = @asm.text.addFunction(cota.name)
-      end
 
-      if cota.name == "main"
-        func.add([
-                    "movl $0, %ebx   # Exit",
-                    "movl $1, %eax",
-                    "int $0x80",
-                  ])
-      end
+      func = @asm.text.addFunction(cota.name)
+
       walk4Walker(cota.scope)
 
     when Scope

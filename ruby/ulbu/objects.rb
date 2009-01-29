@@ -15,6 +15,12 @@ class Attributes < String
   def directive?
     self[/\$/]
   end
+  def public?
+    self[/\+/]
+  end
+  def volatile?
+    self[/\//]
+  end
 end
 
 class Cota
