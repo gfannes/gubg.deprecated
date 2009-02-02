@@ -196,25 +196,29 @@ class Dir
   end
   # Descends in each subdir recursively and calls the block passing the directory
   # recursor can be a Proc that indicates with true in which subdirs should be recursed
-  def Dir.eachDir(startDir="./", recursor=nil, permissionDenied=nil, level=0)
+  def Dir.eachDir(startDir = "./", recursor = nil, permissionDenied = nil, level = 0)
     raise "ERROR::I expect a block for eachFile" if !block_given?
-    subDirs=[]
+    subDirs = []
     begin
-      startDir=File.expand_path(startDir) if level==0
+      startDir = File.expand_path(startDir) if level == 0
       return if yield(startDir)
       if File.exist?(startDir)
         Dir.foreach(startDir) do |entry|
-          fnDir=File.expand_path(entry,startDir)
-          if fnDir.length>startDir.length and File.directory?(fnDir)
+          fnDir = File.expand_path(entry, startDir)
+          if fnDir.length > startDir.length and File.directory?(fnDir)
             subDirs << fnDir if !(recursor and !recursor.call(fnDir))
           end
         end
         subDirs.each do |subDir|
-          eachDir(subDir,recursor,permissionDenied,level+1){|dir|return if yield(dir)}
+          eachDir(subDir, recursor, permissionDenied, level+1){|dir|return if yield(dir)}
         end
       end
     rescue Errno::EACCES
-      permissionDenied << startDir if permissionDenied
+      if permissionDenied
+        permissionDenied << startDir
+      else
+        puts("WARNING::Not allowed to do something.")
+      end
     end
   end
   def Dir.mkchdir(dir, &block)
