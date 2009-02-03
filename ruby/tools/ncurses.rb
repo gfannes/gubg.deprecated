@@ -1,5 +1,4 @@
 require("ncurses")
-require("monitor")
 
 class NCurses
   attr(:nrRows, true)
