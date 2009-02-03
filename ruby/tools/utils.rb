@@ -164,18 +164,18 @@ end
 class Dir
   # Descends recursively in each subdir and calls the block, passing it each directory and filename it finds
   # recursor can be a Proc that indicates with true in which subdirs should be recursed
-  def Dir.each(startDir="./", recursor=nil, permissionDenied=nil, level=0)
+  def Dir.each(startDir = "./", recursor = nil, permissionDenied = nil, level = 0)
     raise "ERROR::I expect a block for eachFile" if !block_given?
-    subDirs=[]
+    subDirs = []
     begin
-      startDir=File.expand_path(startDir) if level==0
+      startDir = File.expand_path(startDir) if level == 0
       Dir.foreach(startDir) do |entry|
         begin
-          fnDir=File.expand_path(entry,startDir)
-          if fnDir.length>startDir.length
+          fnDir = File.expand_path(entry, startDir)
+          if fnDir.length > startDir.length
             if File.file?(fnDir)
               if File.readable?(fnDir)
-                return if yield(startDir.dup,entry.dup)
+                return if yield(startDir.dup, entry.dup)
               else
                 permissionDenied << fnDir
               end
@@ -183,8 +183,9 @@ class Dir
               subDirs << fnDir if !(recursor and !recursor.call(fnDir))
             end
           end
-        rescue ArgumentError
-          puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" because it does not seem to exist.")
+#         rescue ArgumentError
+#           puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" because it does not seem to exist.")
+#           raise "STOP"
         end
       end
       subDirs.each do |subDir|
@@ -266,7 +267,7 @@ end
 
 class String
   def String.load(fileName)
-    IO.read(fileName)||""
+    File.read(fileName, encoding: "ascii-8bit")||""
   end
   def String.loadLines(fileName)
     String.load(fileName).split("\n")

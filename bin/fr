@@ -44,7 +44,7 @@ str = wantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
 reWantedExtensions = Regexp.compile("(#{str})"+'$')
 
 pwd = Dir.pwd+'/'
-Dir.each("./",recursor) do |dir,fn|
+Dir.each("./",recursor) do |dir, fn|
   check = true
   case fn
   when reUnwantedExtensions
@@ -62,7 +62,7 @@ Dir.each("./",recursor) do |dir,fn|
       path = File.expand_path(fn, dir)
       path[pwd] = ''
       lines = str.split("\n")
-      lines.each_with_index do |line,ix|
+      lines.each_with_index do |line, ix|
         if line[lookFor]
           case action
           when :print
