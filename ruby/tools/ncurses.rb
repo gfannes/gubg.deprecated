@@ -44,15 +44,6 @@ class NCurses
     @nrRows = @screen.getmaxy
     @window = Ncurses::WINDOW.new(@nrRows, @nrCols, 0, 0)
     
-    # Start the key management
-    @keyQueue = []
-    @keyQueue.extend(MonitorMixin)
-    @keyThread = Thread.new do
-      loop do
-        pushKey
-      end
-    end
-    
     # Put something on the screen
     clear
     @nrRows.times do |r|
@@ -94,22 +85,10 @@ class NCurses
 
   # Functions that have todo with input
   # Get a single character
-  def pushKey
+  def getKey
     Ncurses.noecho
     Ncurses.cbreak
-    k = @window.getch
-    @keyQueue.synchronize do
-      @keyQueue << k
-    end if k
-  end
-  def getKey
-    res = nil
-    if !@keyQueue.empty?
-      @keyQueue.synchronize do
-        res = @keyQueue.pop
-      end
-    end
-    res
+    @window.getch
   end
   
 end
@@ -117,11 +96,9 @@ end
 if __FILE__ == $0
   NCurses.use do |nc|
     while (k = nc.getKey) != "q".ord
-      if k
-        nc.nrRows.times do |r|
-          nc.nrCols.times do |c|
-            nc.puts(r, c, k.chr)
-          end
+      nc.nrRows.times do |r|
+        nc.nrCols.times do |c|
+          nc.puts(r, c, k.chr)
         end
       end
     end
