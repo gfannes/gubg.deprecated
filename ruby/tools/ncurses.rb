@@ -42,13 +42,9 @@ class NCurses
     @nrCols = @screen.getmaxx
     @nrRows = @screen.getmaxy
     @window = Ncurses::WINDOW.new(@nrRows, @nrCols, 0, 0)
-    
-    # Put something on the screen
+
+    # Clear the window
     clear
-    @nrRows.times do |r|
-      puts(r, 0, '?'*@nrCols)
-    end
-    show
   end
 
   def exit
@@ -94,12 +90,18 @@ end
 
 if __FILE__ == $0
   NCurses.use do |nc|
+    # Put "?" on the screen
+    nc.nrRows.times do |r|
+     nc.puts(r, 0, "?"*nc.nrCols, noShow: true)
+    end
+    nc.show
+
+    # Put the typed character on the screen, unless it is "q"
     while (k = nc.getKey) != "q".ord
       nc.nrRows.times do |r|
-        nc.nrCols.times do |c|
-          nc.puts(r, c, k.chr)
-        end
+        nc.puts(r, 0, k.chr*nc.nrCols, noShow: true)
       end
     end
+    nc.show
   end
 end
