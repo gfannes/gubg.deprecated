@@ -17,6 +17,11 @@ class Rinle
   end
 
   def getCommand
+    case @nc.getKey
+    when
+    else
+      nil
+    end
   end
   def show
     @nc.puts(0, 0, @base.class.to_s)
