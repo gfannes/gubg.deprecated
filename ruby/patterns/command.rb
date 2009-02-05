@@ -4,6 +4,9 @@ class ICommand
   def execute
     raise "ERROR::#{self.class}#execute is not implemented"
   end
+  def undo
+    raise "ERROR::#{self.class}#undo is not implemented"
+  end
 end
 
 if __FILE__ == $0

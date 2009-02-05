@@ -17,17 +17,14 @@ class Rinle
   end
 
   def getCommand
-    case @nc.getKey
-    when
-    else
-      nil
-    end
+    @focus.handle(:getCommand)
   end
   def show
     @nc.puts(0, 0, @base.class.to_s)
   end
   def setNCurses(nc)
     @nc = nc
+    @focus = Focus.new(@nc)
     @nc.show
   end
 end

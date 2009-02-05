@@ -1,4 +1,4 @@
-require("pattern/command")
+require("patterns/command")
 
 class QuitCommand < ICommand
   
