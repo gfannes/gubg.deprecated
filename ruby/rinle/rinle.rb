@@ -1,6 +1,9 @@
 require("tools")
+require("focus")
+require("patterns/chainOfResponsibility")
+require("commands")
 
-class Rinle
+class Rinle < IChainOfResponsibility
   def initialize
     @nc = nil
     @root, @base, @current = nil, nil, nil
@@ -8,7 +11,8 @@ class Rinle
   def run
     NCurses.use do |nc|
       setNCurses(nc)
-      loop do
+      @ok = true
+      while @ok
         show
         command = getCommand
         command.execute if !command.nil?
@@ -24,8 +28,24 @@ class Rinle
   end
   def setNCurses(nc)
     @nc = nc
-    @focus = Focus.new(@nc)
+    @focus = Focus.new(self)
     @nc.show
+  end
+  def handle(request)
+    case request
+    when :getCommand
+      case @nc.getKey
+      when "q".ord
+        QuitCommand.new(self)
+      else
+        nil
+      end
+    else
+      raise "ERROR::Unknown request"
+    end
+  end
+  def quit
+    @ok = false
   end
 end
 
