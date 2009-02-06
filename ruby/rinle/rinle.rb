@@ -28,7 +28,7 @@ class Rinle < IChainOfResponsibility
   end
   def setNCurses(nc)
     @nc = nc
-    @focus = Focus.new(self)
+    @focus = Focus.new(@nc, self)
     @nc.show
   end
   def handle(request)
