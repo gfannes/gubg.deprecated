@@ -1,110 +1,139 @@
 module gubg.ncurses;
 
-import gubg.puts;
+import gubg.ui;
 
-class NCurses
+import NC = gubg.ncurses_c;
+
+class NCurses: Input, Output
 {
-    const short black   = 0;
-    const short red     = 1;
-    const short green   = 2;
-    const short yellow  = 3;
-    const short blue    = 4;
-    const short magenta = 5;
-    const short cyan    = 6;
-    const short white   = 7;
+    static this()
+    {
+	buildColorMap;
+    }
 
     this()
-	{
-	    mWindow = initscr();
-	    cbreak();
-	    noecho();
-	    start_color();
-	}
+    {
+	mWindow = NC.initscr();
+	NC.cbreak();
+	NC.noecho();
+	NC.start_color();
+    }
     ~this()
-	{
-	    endwin();
-	}
-    int width(){return COLS;}
-    int halfWidth(){return COLS/2;}
-    int height(){return LINES;}
-    int halfHeight(){return LINES/2;}
-
+    {
+	NC.endwin();
+    }
+    
+    int width(){return NC.COLS;}
+    int height(){return NC.LINES;}
+    
     bool opIndexAssign(char[] str, int lineIX)
+    {
+	synchronized(this)
 	{
-	    synchronized(this)
+	    if (lineIX < 0 || lineIX >= height)
+		return false;
+	    
+	    for (int colIX = 0; colIX < width; ++colIX)
 	    {
-		if (lineIX < 0 || lineIX >= height)
-		    return false;
-		
-		for (int colIX = 0; colIX < width; ++colIX)
-		{
-		    if (colIX < str.length)
-			mvaddch(lineIX, colIX, str[colIX]);
-		    else
-			mvaddch(lineIX, colIX, ' ');
-		}
-	    }
-	    return true;
-	}
-
-    bool print(char[] str, int lineIX, int colIX, short color)
-	{
-	    synchronized(this)
-	    {
-		if (lineIX < 0 || lineIX >= height)
-		    return false;
-
-		attron(COLOR_PAIR(color));
-		for (int ix = 0; colIX < width && ix < str.length; ++colIX, ++ix)
-		    mvaddch(lineIX, colIX, str[ix]);
-		attroff(COLOR_PAIR(color));
-	    }
-	    return true;
-	}
-    void createColor(short color, short fg, short bg)
-	{
-	    init_pair(color, fg, bg);
-	}
-
-    int update()
-	{
-	    synchronized(this)
-	    {
-		return refresh();
+		if (colIX < str.length)
+		    NC.mvaddch(lineIX, colIX, str[colIX]);
+		else
+		    NC.mvaddch(lineIX, colIX, ' ');
 	    }
 	}
+	return true;
+    }
+    
+    bool print(char[] str, int lineIX, int colIX, ColorPair color)
+    {
+	synchronized(this)
+	{
+	    if (lineIX < 0 || lineIX >= height)
+		return false;
 
-    int getKey(){return getch();}
+	    short colorPair = getColorPair(color.foreground, color.background);
+	    NC.attron(NC.COLOR_PAIR(colorPair));
+	    for (int ix = 0; colIX < width && ix < str.length; ++colIX, ++ix)
+		NC.mvaddch(lineIX, colIX, str[ix]);
+	    NC.attroff(NC.COLOR_PAIR(colorPair));
+	}
+	return true;
+    }
+    
+    int refresh()
+    {
+	synchronized(this)
+	{
+	    return NC.refresh();
+	}
+    }
+    
+    int getKey(){return NC.getch();}
     void clearKeyBuffer()
-	{
-	    nodelay(mWindow, true);
-	    while (getKey != -1){}
-	    nodelay(mWindow, false);
-	}
-
+    {
+	NC.nodelay(mWindow, true);
+	while (getKey != -1){}
+	NC.nodelay(mWindow, false);
+    }
+    
 private:
-    WINDOW* mWindow;
+    short getColorPair(Color fg, Color bg)
+    {
+	short color = 1;
+	NC.init_pair(color, map(fg), map(bg));
+	return color;
+    }
+    
+    static void buildColorMap()
+    {
+	sColorMap[Color.black] = NC.Color.black;
+	sColorMap[Color.red] = NC.Color.red;
+	sColorMap[Color.green] = NC.Color.green;
+	sColorMap[Color.yellow] = NC.Color.yellow;
+	sColorMap[Color.blue] = NC.Color.blue;
+	sColorMap[Color.magenta] = NC.Color.magenta;
+	sColorMap[Color.cyan] = NC.Color.cyan;
+	sColorMap[Color.white] = NC.Color.white;
+    }
+    short map(Color color)
+    {
+	return sColorMap[color];
+    }
+    static short[Color] sColorMap;
+    
+    NC.WINDOW* mWindow;
 }
 
-alias void WINDOW;
-alias uint chtype;
-
-extern(C)
+version (Test)
 {
-    WINDOW *initscr();
-    int endwin();
-    int mvaddch(int, int, chtype);
-    int refresh();
-    int cbreak();
-    int noecho();
-    int getch();
-    int start_color();
-    int init_pair(short, short, short);
-    int COLOR_PAIR(int);
-    int attron(int);
-    int attroff(int);
-    int nodelay(WINDOW*, bool);
+    import tango.text.convert.Format;
+    int main()
+    {
+	scope ncurses = new NCurses;
+	Input input = ncurses;
+	Output output = ncurses;
 
-    int LINES;
-    int COLS;
+	auto line = new char[output.width];
+	foreach (inout ch; line)
+	    ch = '-';
+	output[0] = line;
+	output[output.height-1] = line;
+
+	static ColorPair cp;
+	for (int i = 0; i <= Color.max-Color.min; ++i)
+	{
+	    for (int j = 0; j <= Color.max-Color.min; ++j)
+	    {
+		cp.foreground = cast(Color)(Color.min + 0);
+		cp.background = cast(Color)(Color.min + 0);
+		output.print("X", i, j, cp);
+	    }
+	}
+
+	auto key = input.getKey;
+	output.print(Format("Key = {} ", key), 2, 3, cp);
+
+	input.getKey;
+	return 0;
+    }
 }
