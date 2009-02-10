@@ -53,8 +53,8 @@ class Array
   #the result of this function is six, an array of sort indices
   #e.g., self[six[0]] is the smallest value
   def sortIndex
-    d=[]
-    self.each_with_index {|x,i| d[i]=[x,i]}
+    d = []
+    self.each_with_index {|x,i| d[i] = [x,i]}
     if block_given?
       d.sort{|x,y| yield(x[0],y[0])}.collect {|x| x[1]}
     else
@@ -62,23 +62,23 @@ class Array
     end
   end
   def sortReverseIndex
-    d=[]
-    self.each_with_index {|x,i| d[i]=[x,i]}
+    d = []
+    self.each_with_index {|x,i| d[i] = [x,i]}
     if block_given?
       d.sort{|x,y| yield(y[0],x[0])}.collect {|x| x[1]}
     else
       d.sort{|x,y|y[0]<=>x[0]}.collect{|x| x[1]}
     end
   end
-  def sortBy(ord=[])
+  def sortBy(ord = [])
     raise "ERROR::Lengths of the array and order array are different (#{self.length} != #{ord.length})." if ord.length!=self.length
     self.values_at(*ord)
   end
-  def sortBy!(ord=[])
+  def sortBy!(ord = [])
     raise "ERROR::Lengths of the array and order array are different (#{ord.length}!=#{self.length})." if ord.length!=self.length
-    temp=values_at(*ord)
+    temp = values_at(*ord)
     (0...length).each do |ix|
-      self[ix]=temp[ix]
+      self[ix] = temp[ix]
     end
     return self
   end
@@ -93,11 +93,11 @@ class Array
     end
   end
   alias index_old index
-  def index(arg=nil)
+  def index(arg = nil)
     if block_given?
-      ix=-1
+      ix = -1
       each do |el|
-        ix+=1
+        ix += 1
         return ix if yield(el)
       end
       return nil
@@ -107,21 +107,21 @@ class Array
   end
   def maxIndex
     if block_given?
-      m,mix=nil,nil
-      each_with_index do |el,ix|
-        v=yield(el)
-        if m.nil? or v>m
-          mix=ix
-          m=v
+      m, mix = nil, nil
+      each_with_index do |el, ix|
+        v = yield(el)
+        if m.nil? or v > m
+          mix = ix
+          m = v
         end
       end
       mix
     else
-      m,mix=nil,nil
-      each_with_index do |v,ix|
-        if m.nil? or v>m
-          mix=ix
-          m=v
+      m, mix = nil, nil
+      each_with_index do |v, ix|
+        if m.nil? or v > m
+          mix = ix
+          m = v
         end
       end
       mix
@@ -129,21 +129,21 @@ class Array
   end
   def minIndex
     if block_given?
-      m,mix=nil,nil
-      each_with_index do |el,ix|
-        v=yield(el)
-        if m.nil? or v<m
-          mix=ix
-          m=v
+      m, mix = nil, nil
+      each_with_index do |el, ix|
+        v = yield(el)
+        if m.nil? or v < m
+          mix = ix
+          m = v
         end
       end
       mix
     else
-      m,mix=nil,nil
-      each_with_index do |v,ix|
+      m, mix = nil, nil
+      each_with_index do |v, ix|
         if m.nil? or v<m
-          mix=ix
-          m=v
+          mix = ix
+          m = v
         end
       end
       mix
@@ -245,9 +245,10 @@ class Dir
 #        puts("parts = #{parts}")
         parts.shift
 #        puts("parts = #{parts}")
-        ix = nil
-        parts.each_with_index do |part,ix|
-          startDir = '/'+parts[0,ix+1].join('/')
+        ix = -1
+        parts.each_with_index do |part|
+          ix += 1
+          startDir = '/'+parts[0, ix+1].join('/')
 #          puts("startDir = #{startDir}")
           break if !dir[/^#{startDir}/]
         end
@@ -299,11 +300,11 @@ end
 
 class Hash
   def to_s
-    res="{"
-    first=true
-    each do |k,v|
+    res = "{"
+    first = true
+    each do |k, v|
       if first
-        first=false
+        first = false
       else
         res += ", "
       end
@@ -315,16 +316,16 @@ class Hash
   # is returnZero == true, this method will return a Hash containing 0 elements, instead of nil if the sum is 0
   def fractions(returnZero = false)
     res=Hash.new(0)
-    s=values.sum.to_f
+    s = values.sum.to_f
     if s>0
-      each do |k,v|
-        res[k]=v/s
+      each do |k, v|
+        res[k] = v / s
       end
     else
       puts("WARNING::Sum of elements is zero while computing the fractions")
       if returnZero
-        each do |k,v|
-          res[k]=0
+        each do |k, v|
+          res[k] = 0
         end
       else
         res = nil
@@ -333,16 +334,16 @@ class Hash
     res
   end
   def eachDec(&block)
-    ks,vs=keys,values
+    ks,vs = keys,values
     six = vs.sortReverseIndex
-    ks.sortBy(six).zip(vs.sortBy(six)).each do |k,v|
+    ks.sortBy(six).zip(vs.sortBy(six)).each do |k, v|
       block.call(k,v)
     end
   end
   def eachInc(&block)
-    ks,vs=keys,values
+    ks,vs = keys,values
     six = values.sortIndex
-    ks.sortBy(six).zip(vs.sortBy(six)).each do |k,v|
+    ks.sortBy(six).zip(vs.sortBy(six)).each do |k, v|
       block.call(k,v)
     end
   end
@@ -372,10 +373,10 @@ def time(str, newline = false)
   end
   $stdout.flush
   $timingLevel += 1
-  startTime=Time.now
+  startTime = Time.now
   res = yield
-  stopTime=Time.now
-  timeStr="%.3f sec"%(stopTime-startTime)
+  stopTime = Time.now
+  timeStr = "%.3f sec"%(stopTime-startTime)
   $timingLevel -= 1
   if $maxTimingLevel == $timingLevel
     # We did not go deeper recursively, close without enter
@@ -389,7 +390,7 @@ def time(str, newline = false)
 end
 
 # Temporary path and files
-def tempDir(dir='/tmp')
+def tempDir(dir = '/tmp')
   res = nil
   begin
     res = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
@@ -397,15 +398,15 @@ def tempDir(dir='/tmp')
   Dir.mkdir(res)
   res
 end
-def tempPath(dir='/tmp')
-  res=nil
+def tempPath(dir = '/tmp')
+  res = nil
   if %w[Linux Linux64].include?(operatingSystem)
-    dir[/\/$/]='' if dir[dir.length-1]==47
+    dir[/\/$/] = '' if dir[dir.length-1]==47
     begin
-      res=dir+"/tempPath-#{rand(1000000000)}.tmp"
+      res = dir+"/tempPath-#{rand(1000000000)}.tmp"
     end while File.exist?(res)
   else
-    res="tempPath-#{rand(1000000000)}.tmp"
+    res = "tempPath-#{rand(1000000000)}.tmp"
   end
   res
 end
@@ -423,7 +424,7 @@ class Collection < Array
     any?{|el|el === rhs}
   end
   def Collection.from(ary)
-    collection=Collection.new
+    collection = Collection.new
     ary.each do |el|
       collection << el
     end
@@ -431,6 +432,6 @@ class Collection < Array
   end
 end
 
-if __FILE__==$0
+if __FILE__ == $0
   puts Dir.relative(Dir.pwd+'/')
 end
