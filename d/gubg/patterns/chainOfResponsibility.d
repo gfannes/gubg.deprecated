@@ -4,12 +4,12 @@ module gubg.patterns.chainOfResponsibility;
 
 interface IChainOfResponsibility(Request)
 {
-    bool handle(Request request);
+    bool handle(inout Request request);
 }
 
 class ChainOfResponsibility(Request): IChainOfResponsibility!(Request)
 {
-    bool handle(Request request)
+    bool handle(inout Request request)
     {
 	if (mSuccessor is null)
 	{
