@@ -5,12 +5,15 @@ module gubg.patterns.chainOfResponsibility;
 interface IChainOfResponsibility(Request)
 {
     bool handle(inout Request request);
+    void successor(IChainOfResponsibility!(Request) succ);
 }
 
-class ChainOfResponsibility(Request): IChainOfResponsibility!(Request)
+template ChainOfResponsibility(Request)
 {
     bool handle(inout Request request)
     {
+	if (handle4COR(request))
+	    return true;
 	if (mSuccessor is null)
 	{
 	    throw new Exception("ERROR::Cannot handle the request, successor is null.");
@@ -18,17 +21,31 @@ class ChainOfResponsibility(Request): IChainOfResponsibility!(Request)
 	}
 	return mSuccessor.handle(request);
     }
+    void successor(IChainOfResponsibility!(Request) succ)
+    {
+	mSuccessor = succ;
+    }
 
 private:
-    ChainOfResponsibility mSuccessor;
+    IChainOfResponsibility!(Request) mSuccessor;
 }
 
 version (Test)
 {
+    class Test
+    {
+	bool handle4COR(inout int request)
+	    {
+		return true;
+	    }
+	mixin ChainOfResponsibility!(int);
+    }
+
     int main()
     {
-	auto cor = new ChainOfResponsibility!(int);
-	cor.handle(1);
+	auto cor = new Test;
+	int request = 1;
+	cor.handle(request);
 	return 0;
     }
 }

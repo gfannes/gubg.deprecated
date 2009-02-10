@@ -6,7 +6,7 @@ import gubg.patterns.command;
 import gubg.patterns.chainOfResponsibility;
 
 import rinle.focus;
-import rinle.commands;
+//import rinle.commands;
 
 class Rinle: IChainOfResponsibility!(ICommand)
 {
@@ -17,10 +17,12 @@ class Rinle: IChainOfResponsibility!(ICommand)
             mOutput = mNCurses;
 
             mFocus = new Focus(mInput, mOutput);
+	    mFocus.push(this);
         }
     ~this()
         {
             delete mNCurses;
+	    mFocus.pop;
         }
 
     void run()
@@ -38,8 +40,7 @@ class Rinle: IChainOfResponsibility!(ICommand)
     ICommand getCommand()
         {
             ICommand command;
-//            mFocus.handle(command);
-            handle(command);
+            mFocus.handle(command);
             return command;
         }
 
@@ -54,14 +55,16 @@ class Rinle: IChainOfResponsibility!(ICommand)
             switch (key = mInput.getKey)
             {
             case 'q':
-                command = new QuitCommand(&quit);
+                command = new QuitCommand;
                 break;
             default:
+		// This is the last level, we don't try to delegate to our successor
                 return false;
                 break;
             }
             return true;
         }
+    void successor(IChainOfResponsibility!(ICommand) handler){};
 
     void quit()
         {
@@ -69,6 +72,16 @@ class Rinle: IChainOfResponsibility!(ICommand)
         }
 
 private:
+    class QuitCommand: ICommand
+    {
+	bool execute()
+	{
+	    quit();
+	    return true;
+	}
+	bool undo(){return false;}
+    }
+
     // root, base, current
     
     bool mProceed;
