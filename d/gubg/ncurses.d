@@ -79,8 +79,25 @@ class NCurses: Input, Output
 private:
     short getColorPair(Color fg, Color bg)
     {
-	short color = 1;
-	NC.init_pair(color, map(fg), map(bg));
+	short color;
+        short[Color]* pMap = null;
+        short* pColor = null;
+
+        // Check if the color already exists
+        pMap = (bg in sKnownColors);
+        if (pMap !is null)
+            pColor = (fg in *pMap);
+
+        if (pColor is null)
+        {
+            // Color does not exist yet: create and save it
+            color = sNextColor;
+            ++sNextColor;
+            NC.init_pair(color, map(fg), map(bg));
+            sKnownColors[bg][fg] = color;
+        } else
+            color = *pColor;
+        
 	return color;
     }
     
@@ -94,12 +111,15 @@ private:
 	sColorMap[Color.magenta] = NC.Color.magenta;
 	sColorMap[Color.cyan] = NC.Color.cyan;
 	sColorMap[Color.white] = NC.Color.white;
+        sNextColor = 1;
     }
     short map(Color color)
     {
 	return sColorMap[color];
     }
     static short[Color] sColorMap;
+    static short[Color][Color] sKnownColors;
+    static short sNextColor;
     
     NC.WINDOW* mWindow;
 }
@@ -124,14 +144,14 @@ version (Test)
 	{
 	    for (int j = 0; j <= Color.max-Color.min; ++j)
 	    {
-		cp.foreground = cast(Color)(Color.min + 0);
-		cp.background = cast(Color)(Color.min + 0);
-		output.print("X", i, j, cp);
+		cp.foreground = cast(Color)(Color.min + i);
+		cp.background = cast(Color)(Color.min + j);
+		output.print("X", 2*i+1, 2*j+1, cp);
 	    }
 	}
 
-	auto key = input.getKey;
-	output.print(Format("Key = {} ", key), 2, 3, cp);
+// 	auto key = input.getKey;
+// 	output.print(Format("Key = {} ", key), 2, 3, cp);
 
 	input.getKey;
 	return 0;
