@@ -104,7 +104,7 @@ def collectBuildInfo
       when /\.cpp$/
         sourceFiles << File.expand_path(fn,dir)
         objectFiles << File.expand_path(fn,dir).gsub(/\.cpp$/,'.o')
-      when /\.hpp$/
+      when /\.hp?p?$/
         headerFiles << (fnTmp=File.expand_path(fn,dir))
         includesPerInclude[fn]=includeFiles(fnTmp)
       else

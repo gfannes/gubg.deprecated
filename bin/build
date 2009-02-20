@@ -2,6 +2,7 @@
 require("build.rb")
 
 res=collectBuildInfo
+puts res
 puts("")
 case ARGV[0]
 when nil
