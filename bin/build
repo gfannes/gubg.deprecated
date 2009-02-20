@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+require("build.rb")
+
+res=collectBuildInfo
+puts("")
+case ARGV[0]
+when nil
+  time("Building local"){puts("");buildLocal(res)}
+  puts("")
+  time("Testing local"){puts("");testLocal(res)}
+  puts("")
+when "test"
+  time("Testing local"){puts("");testLocal(res)}
+  puts("")
+when "all"
+  time("Building all"){puts("");buildAllSource(res)}
+  puts("")
+when "allt"
+  time("Testing all"){puts("");testAll(res)}
+  puts("")
+when "expand"
+  time("Expanding local"){puts("");expandLocal(res)}
+  puts("")
+when "expandall"
+  time("Expanding all"){puts("");expandAll(res)}
+  puts("")
+else
+  puts("Unknown build command \"#{ARGV[0]}\"")
+end
