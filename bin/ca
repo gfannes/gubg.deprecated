@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #This script removes all build brol
-require("tools")
+require("tools/utils")
 
 system("ce")
 
