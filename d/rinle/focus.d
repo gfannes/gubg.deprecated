@@ -4,7 +4,12 @@ import gubg.ui;
 import gubg.patterns.command;
 import gubg.patterns.chainOfResponsibility;
 
-class Focus: IChainOfResponsibility!(ICommand)
+interface IFocus: IChainOfResponsibility!(ICommand)
+{
+    void setIO(Input input, Output output);
+}
+
+class FocusMgr: IChainOfResponsibility!(ICommand)
 {
     this(Input input, Output output)
         {
@@ -20,7 +25,7 @@ class Focus: IChainOfResponsibility!(ICommand)
     }
     void successor(IChainOfResponsibility!(ICommand) handler){};
 
-    bool push(IChainOfResponsibility!(ICommand) handler)
+    bool push(IFocus handler)
     {
 	auto catcher = new Catcher;
 	if (mHandlers.length > 0)
@@ -28,6 +33,8 @@ class Focus: IChainOfResponsibility!(ICommand)
 	    catcher.successor = mHandlers[$-1];
 	    handler.successor = catcher;
 	}
+        // For now, just set the normal one. This should be replaced with a cached input variant.
+        handler.setIO(mInput, mOutput);
 	mHandlers ~= [handler];
 	return true;
     }
@@ -52,5 +59,5 @@ private:
 
     Input mInput;
     Output mOutput;
-    IChainOfResponsibility!(ICommand) mHandlers[];
+    IFocus mHandlers[];
 }

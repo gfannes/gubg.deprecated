@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require("tools")
-#require("ftools")
+require("fileutils")
 
 baseDir, sourceDir, targetDir = nil, nil, nil
 doReal = false
@@ -100,21 +100,23 @@ printFiles("Files added by us", newFiles)
 printFiles("Files changed only by us", changedFiles)
 printFiles("Files deleted only by us", deletedFiles)
 printFiles("Files changed both by us and by target", conflictFiles)
-printFiles("Files changed by us but by target", changedTargetDeleted)
+printFiles("Files changed by us but deleted by target", changedTargetDeleted)
 printFiles("Files deleted by us but changed by target", deletedTargetChanged)
 puts("End of summary.\n\n")
 
 if doReal
   # Copy new files
   newFiles.each do |relativeName|
-    File.copy(File.expand_path(relativeName, sourceDir), File.expand_path(relativeName, targetDir))
+    fnTarget = File.expand_path(relativeName, targetDir)
+    FileUtils.makedirs(File.dirname(fnTarget))
+    FileUtils.copy(File.expand_path(relativeName, sourceDir), fnTarget)
     Dir.chdir(targetDir) do
       `svn add #{relativeName}`
     end
   end
   # Copy changed files
   changedFiles.each do |relativeName|
-    File.copy(File.expand_path(relativeName, sourceDir), File.expand_path(relativeName, targetDir))
+    FileUtils.copy(File.expand_path(relativeName, sourceDir), File.expand_path(relativeName, targetDir))
   end
   # Remove deleted files
   Dir.chdir(targetDir) do

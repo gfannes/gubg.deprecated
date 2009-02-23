@@ -8,7 +8,7 @@ import gubg.patterns.chainOfResponsibility;
 import rinle.focus;
 //import rinle.commands;
 
-class Rinle: IChainOfResponsibility!(ICommand)
+class Rinle
 {
     this()
         {
@@ -16,13 +16,13 @@ class Rinle: IChainOfResponsibility!(ICommand)
             mInput = mNCurses;
             mOutput = mNCurses;
 
-            mFocus = new Focus(mInput, mOutput);
-	    mFocus.push(this);
+            mFocusMgr = new FocusMgr(mInput, mOutput);
+	    mFocusMgr.push(new Focus);
         }
     ~this()
         {
             delete mNCurses;
-	    mFocus.pop;
+	    mFocusMgr.pop;
         }
 
     void run()
@@ -40,7 +40,7 @@ class Rinle: IChainOfResponsibility!(ICommand)
     ICommand getCommand()
         {
             ICommand command;
-            mFocus.handle(command);
+            mFocusMgr.handle(command);
             return command;
         }
 
@@ -49,7 +49,15 @@ class Rinle: IChainOfResponsibility!(ICommand)
             mOutput.refresh;
         }
 
-    bool handle(inout ICommand command)
+    class Focus: IFocus
+    {
+        // IFocus
+        void setIO(Input input, Output output)
+        {
+            mInput = input;
+            mOutput = output;
+        }
+        bool handle(inout ICommand command)
         {
             int key;
             switch (key = mInput.getKey)
@@ -64,7 +72,12 @@ class Rinle: IChainOfResponsibility!(ICommand)
             }
             return true;
         }
-    void successor(IChainOfResponsibility!(ICommand) handler){};
+        void successor(IChainOfResponsibility!(ICommand) handler){};
+
+    private:
+        Input mInput;
+        Output mOutput;
+    }
 
     void quit()
         {
@@ -90,7 +103,7 @@ private:
     Input mInput;
     Output mOutput;
 
-    Focus mFocus;
+    FocusMgr mFocusMgr;
 }
 
 import tango.core.Thread;
