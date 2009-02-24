@@ -1,6 +1,7 @@
 require("tools/utils")
 
-require("commands")
+require("gb.new/commands")
+require("gb.new/tree")
 
 class GenericBuild
   def initialize
@@ -40,9 +41,15 @@ class GenericBuild
     when :help
       print(:usage)
     when :git
+      puts("Git")
+      tree = Tree.create(location)
     when :build
+      puts("Build")
+      tree = Tree.create(location)
     when :unknownCommand
       print(:unknownCommand, @command)
+    else
+      print(:unknownCommand)
     end
   end
 

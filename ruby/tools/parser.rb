@@ -3,13 +3,13 @@ class Parser
     extend(mod)
   end
 
-  def parse(fileName)
+  def parse(fileName, obj = nil)
     @globalBuffer = String.load(fileName)
     @baseName = File.basename(fileName, ".ulbu")
     @dirName = File.dirname(fileName)
     @ixs = [0]
     prepareParsing
-    res = complete
+    res = complete(obj)
     finishedParsing
     res
   end
