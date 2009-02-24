@@ -1,0 +1,46 @@
+Requirements for GenericBuild
+=============================
+
+# Tree #
+ * A tree is defined by a file as the complete subtree starting from the location of this file.
+ * The name of the tree is the name of the leaf directory where this file is located. E.g., if the tree "root.tree" is found in /home/gfannes/gugbg/, the name of the tree is "gubg".
+ * The following tree types are envisioned:
+    * "root.tree": A root tree
+    * "main.cpp", "main.d": Application trees within a root tree
+    * "test.cpp", "test.d": System test trees within a root tree
+ * A root tree can refer to other root trees:
+    * Compilation flags and settings are taken from its own "root.tree" file
+    * Object and header files are accessible across different trees
+
+# Compilation #
+ * Only compile files that were changed.
+    * A file is considered to be changed:
+       * The content of the file changed. It can be assumed that is timestamp and size did not change, the content did not change either.
+       * The compilation settings changed
+       * Any of its dependent files changed
+ * Dependency
+    * For C++, the ".hpp" has to be used for header files, and if this is included, it is expected that it depends on the corresponding ".cpp" file.
+    * For D, dependent files are retrieved via the import statement.
+ * Do not litter the tree with object files
+
+# Building #
+ * If a "lib" subdirectory is present at the location of root.tree, all non-test and non-app object files are archived into a library with the name of the tree.
+ * If a "include" subdirectory is present at the location of root.tree, all non-test and non-app object files are copied into this "include" directory
+ * If a test file is found, the complete subtree defined by this is considered to be a system test with its name being equal to the subtree name.
+    * C++: test.cpp, D: test.d, Ruby: test.rb
+    * It should return 0 on success
+ * If an application file is found, the complete subtree defined by this is considered to be an application with its name being equal to the subtree name.
+    * C++: main.cpp, D: main.d, Ruby: main.rb
+ * All filenames should be unique, except for system tests and applications: two system tests can have files with the same name inside.
+
+# Unit testing #
+ * A source file can contain unit tests, which are only enabled with a special macro or version definition, depending on the language used:
+    * C++: The macro "UNIT_TEST" is defined
+    * D: The version UnitTest is set
+    * Ruby: __FILE__ == $0
+
+# Source code management #
+ * For easy cooperation with git, root.tree can specify:
+    * Which repository to be used for pushing, doing a "commit -a" beforehand.
+    * Which repository and branch to be used for pulling. Before doing so, check that all local changed are commited.
+    * Support for "commit -a" and "add"
