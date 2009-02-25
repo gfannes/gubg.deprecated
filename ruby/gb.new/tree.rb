@@ -9,7 +9,10 @@ class Tree# < IChainOfResponsibility
   attr :file, true
   attr :successor, true
   @@definingFiles = %w[root.tree disabled.tree main.cpp main.d test.cpp test.d test.rb]
-  @@wantedFiles = [/\.cpp$/, /\.hpp$/, /\.d$/]
+  @@cppFile = /\.cpp$/
+  @@hppFile = /\.hpp$/
+  @@dFile = /\.d$/
+  @@wantedFiles = [@@cppFile, @@hppFile, @dFile]
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
@@ -23,7 +26,11 @@ class Tree# < IChainOfResponsibility
       when "root.tree"
         # Build all
         each do |dir, fn|
-          puts("#{dir} #{fn}")
+          case fn
+          when @@cppFile
+            commands << CompileCommand.new(self, File.expand_path(fn, dir))
+          when @@dFile
+          end
         end
       when "test.cpp"
         # Build system test

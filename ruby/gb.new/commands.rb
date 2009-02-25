@@ -1,5 +1,7 @@
 require("patterns/command")
 
+require("gb.new/dependency")
+
 class GitCommand < ICommand
   def initialize(tree, command)
     @tree, @command = tree, command
@@ -22,6 +24,16 @@ class GitCommand < ICommand
     Dir.chdir(@tree.base) do
       system(cmd)
     end
+  end
+end
+
+class CompileCommand
+  def initialize(tree, fileName)
+    @tree, @fileName = tree, fileName
+  end
+  def execute
+    includedFiles = Dependency.includedFiles(@fileName)
+    puts("#{@fileName}: #{includedFiles}")
   end
 end
 
