@@ -24,7 +24,6 @@ class GenericBuild
           setCommand(:git, argument)
         else
           location = File.expand_path(argument)
-          location.freeze
         end
       end
     rescue
@@ -44,6 +43,7 @@ class GenericBuild
       @commands << GitCommand.new(Tree.create(location), @command)
     when :build
       tree = Tree.create(location)
+      @commands += tree.buildCommands(@command)
     when :unknownCommand
       print(:unknownCommand, @command)
     else

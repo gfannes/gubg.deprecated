@@ -1,28 +1,74 @@
 require("yaml")
 
 require("patterns/chainOfResponsibility")
+require("tools/utils")
 
 class Tree# < IChainOfResponsibility
   attr :rootTree, true
   attr :base, true
   attr :file, true
   attr :successor, true
+  @@definingFiles = %w[root.tree disabled.tree main.cpp main.d test.cpp test.d test.rb]
+  @@wantedFiles = [/\.cpp$/, /\.hpp$/, /\.d$/]
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
+  end
+
+  def buildCommands(command)
+    commands = []
+    case command
+    when NilClass
+      case @file
+      when "root.tree"
+        # Build all
+        each do |dir, fn|
+          puts("#{dir} #{fn}")
+        end
+      when "test.cpp"
+        # Build system test
+        each do |dir, fn|
+          puts("#{dir} #{fn}")
+        end
+      else
+        raise "Not supported"
+      end
+    else
+      raise "Not supported"
+    end
+    commands
+  end
+
+  def each
+    recursor = Proc.new do |dir|
+      res = true
+      @@definingFiles.each do |fn|
+        res = false if File.exist?(File.expand_path(fn, dir))
+      end
+      res
+    end
+    Dir.each(@base, recursor) do |dir, fn|
+      case fn
+      when Collection.from(@@wantedFiles)
+        yield(dir, fn)
+      end
+      nil
+    end
+    # Iterate also over the files of the successor
+    @successor.each{|dir, fn|yield(dir, fn)} if !@successor.nil?
   end
 
   def baseFile
     File.expand_path(@file, @base)
   end
 
-  def Tree.create(pwd, wantedFiles = nil)
-    wantedFiles = %w[root.tree disabled.tree main.cpp main.d main.rb test.cpp test.d test.rb] if wantedFiles.nil?
+  def Tree.create(pwd, definingFiles = nil)
+    definingFiles = @@definingFiles if definingFiles.nil?
     res = nil
     prevTree = nil
     base = pwd
     while true
-      base, file = Tree.findBaseFile(base, wantedFiles)
+      base, file = Tree.findBaseFile(base, definingFiles)
       if res.nil?
         prevTree = res = Tree.new(base, file)
       else
