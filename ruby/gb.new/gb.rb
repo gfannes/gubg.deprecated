@@ -19,7 +19,7 @@ class GenericBuild
           # Help commands
           setCommand(:help)
           break
-        when Collection.from(%w[add commit push pull])
+        when Collection.from(%w[push pull s c])
           # Git commands
           setCommand(:git, argument)
         else
@@ -41,10 +41,8 @@ class GenericBuild
     when :help
       print(:usage)
     when :git
-      puts("Git")
-      tree = Tree.create(location)
+      @commands << GitCommand.new(Tree.create(location), @command)
     when :build
-      puts("Build")
       tree = Tree.create(location)
     when :unknownCommand
       print(:unknownCommand, @command)
@@ -64,10 +62,10 @@ class GenericBuild
     when :usage
       puts(%Q@Usage:: gb [command] [location]
 #{indent(1)}Git commands:
-#{indent(2)} * add
-#{indent(2)} * commit
-#{indent(2)} * push
-#{indent(2)} * pull
+#{indent(2)} * push: push to the location specified in root.tree
+#{indent(2)} * pull: pull from the location specified in root.tree
+#{indent(2)} * s: status
+#{indent(2)} * c: commit -a
 #{indent(1)}Location: The tree to be used. If not specified, the working directory is taken.
 Created by Geert Fannes under GPL.
 @)

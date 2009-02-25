@@ -1,12 +1,15 @@
-require("tools/parser")
+require("yaml")
 
-class Tree
+require("patterns/chainOfResponsibility")
+
+class Tree# < IChainOfResponsibility
   attr :rootTree, true
   attr :base, true
   attr :file, true
+  attr :successor, true
   def initialize(base, file)
     @base, @file = base, file
-    @rootTree = Tree.create(@base, %w[root.tree])
+    loadSettings
   end
 
   def baseFile
@@ -14,14 +17,26 @@ class Tree
   end
 
   def Tree.create(pwd, wantedFiles = nil)
-    wantedFiles = %w[root.tree main.cpp main.d main.rb test.cpp test.d test.rb] if wantedFiles.nil?
+    wantedFiles = %w[root.tree disabled.tree main.cpp main.d main.rb test.cpp test.d test.rb] if wantedFiles.nil?
     res = nil
-    base, file = Tree.findBaseFile(pwd, wantedFiles)
-    case file
-    when "root.tree"
-      res = RootTree.new(base, file)
-    else
-      res = Tree.new(base, file)
+    prevTree = nil
+    base = pwd
+    while true
+      base, file = Tree.findBaseFile(base, wantedFiles)
+      if res.nil?
+        prevTree = res = Tree.new(base, file)
+      else
+        prevTree.successor = Tree.new(base, file)
+        prevTree = prevTree.successor
+      end
+      case file
+      when "root.tree"
+        break
+      when "disabled.tree"
+        raise "You are inside a disabled tree"
+      else
+      end
+      base = File.dirname(base)
     end
     res
   end
@@ -48,42 +63,27 @@ class Tree
     end
     return base, file
   end
-end
 
-class RootTree < Tree
-  def initialize(base, file)
-    @base, @file = base, file
-    @rootTree = self
-    parser = Parser.new(RootTreeParser)
-    parser.parse(baseFile, self)
-  end
   def pushURL
-    raise "Not implemented"
+    if !@settings.nil?
+      @settings["git"]["push"][ENV["USER"]]
+    else
+      @successor.pushURL
+    end
   end
   def pullURL
-    raise "Not implemented"
-  end
-end
-
-module RootTreeParser
-  def prepareParsing
-  end
-
-  def complete4Parser(obj)
-    case obj
-
-    when RootTree
-      rt = obj
-      matches(/\A[ \n]*push\.([a-zA-Z]*)/) do |hostName|
-        puts("hostName = #{hostName}")
-      end
-      puts("Parsing RootTree")
-
+    if !@settings.nil?
+      @settings["git"]["pull"][ENV["USER"]]
+    else
+      @successor.pullURL
     end
-    nil
   end
-
-  def finishedParsing
+  def loadSettings
+    if @file == "root.tree"
+      @settings = YAML::load(File.open(File.expand_path(@file, @base)))
+    else
+      @settings = nil
+    end
   end
 end
 

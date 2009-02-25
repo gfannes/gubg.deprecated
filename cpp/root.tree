@@ -1,2 +1,7 @@
-push.ri:github
-pull.ri:github master
+git:
+ push:
+  gfannes: github
+  befanneg: github
+ pull:
+  gfannes: github master
+  befanneg: github master
