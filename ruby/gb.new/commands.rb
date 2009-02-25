@@ -28,12 +28,16 @@ class GitCommand < ICommand
 end
 
 class CompileCommand
-  def initialize(tree, fileName)
-    @tree, @fileName = tree, fileName
+  def initialize(source, output, includeDirs, settings)
+    @source, @output, @includeDirs, @settings = source, output, includeDirs, settings
   end
   def execute
-    includedFiles = Dependency.includedFiles(@fileName)
-    puts("#{@fileName}: #{includedFiles}")
+    command = "gcc -c -o #{@output} #{@source} #{@settings}"
+    @includeDirs.each do |id|
+      command += " -I#{id}"
+    end
+    puts(command)
+    raise "Compilation failed." if !system(command)
   end
 end
 

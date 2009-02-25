@@ -16,6 +16,11 @@ class Tree# < IChainOfResponsibility
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
+    @dirPerFile = {}
+    each do |dir, fn|
+      raise "File \"#{fn}\" is present multiple times (\"#{@dirPerFile[fn]}\" and \"#{dir}\")" if @dirPerFile.has_key?(fn)
+      @dirPerFile[fn] = dir
+    end
   end
 
   def buildCommands(command)
@@ -28,7 +33,10 @@ class Tree# < IChainOfResponsibility
         each do |dir, fn|
           case fn
           when @@cppFile
-            commands << CompileCommand.new(self, File.expand_path(fn, dir))
+            internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
+            source = File.expand_path(fn, dir)
+            output = source.gsub(/\.cpp/, ".o")
+            commands << CompileCommand.new(source, output, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
           when @@dFile
           end
         end
@@ -44,6 +52,45 @@ class Tree# < IChainOfResponsibility
       raise "Not supported"
     end
     commands
+  end
+
+  def compileSettings(type, includes)
+    settings = []
+    includes.each do |incl|
+      cs = compileSetting(incl)
+      settings << cs if cs
+    end
+    settings = settings.uniq.sort
+    return settings.join(" ")
+  end
+  def compileSetting(incl)
+    if @settings
+      @settings["compilation"][incl]
+    else
+      @successor.compileSetting(incl)
+    end
+  end
+
+  def findIncludeFilesAndDirs(fn)
+    internalHeaders = {}
+    externalHeaders = {}
+    files2Check = [fn]
+    while !files2Check.empty?
+      newFiles2Check = []
+      files2Check.each do |file|
+        if @dirPerFile.has_key?(file)
+          Dependency.includedFiles(File.expand_path(file, @dirPerFile[file])).each do |header|
+            newFiles2Check << header if (!internalHeaders[header] and !externalHeaders[header])
+          end
+          internalHeaders[file] = true
+        else
+          externalHeaders[file] = true
+        end
+      end
+      files2Check = newFiles2Check
+    end
+    internalHeaders.delete(fn)
+    return internalHeaders.keys.sort, externalHeaders.keys.sort, internalHeaders.keys.collect{|file|@dirPerFile[file]}.uniq.sort
   end
 
   def each
