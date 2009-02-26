@@ -35,16 +35,28 @@ class Tree# < IChainOfResponsibility
           when @@cppFile
             internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
             source = File.expand_path(fn, dir)
-            output = source.gsub(/\.cpp/, ".o")
-            commands << CompileCommand.new(source, output, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+            commands << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
           when @@dFile
           end
         end
-      when "test.cpp"
-        # Build system test
-        each do |dir, fn|
-          puts("#{dir} #{fn}")
+      when Collection.from(["test.cpp", "main.cpp"])
+        objects = []
+        internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(@file)
+        # Compile @file
+        source = File.expand_path(@file, @base)
+        objects << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+        # Compile all the referenced modules
+        internalHeaders.each do |ih|
+          im = ih.gsub(/\.hpp$/, ".cpp")
+          if dirPerFile(im)
+            source = File.expand_path(im, dirPerFile(im))
+            objects << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+          end
         end
+        commands += objects
+        # Link all the object files
+        exec = File.expand_path(name, @base)
+        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(internalHeaders + externalHeaders))
       else
         raise "Not supported"
       end
@@ -52,6 +64,9 @@ class Tree# < IChainOfResponsibility
       raise "Not supported"
     end
     commands
+  end
+  def name
+    File.basename(@base)
   end
 
   def compileSettings(type, includes)
@@ -61,6 +76,10 @@ class Tree# < IChainOfResponsibility
       settings << cs if cs
     end
     settings = settings.uniq.sort
+    case type
+    when :unitTest
+      settings << "-DUNIT_TEST"
+    end
     return settings.join(" ")
   end
   def compileSetting(incl)
@@ -71,6 +90,35 @@ class Tree# < IChainOfResponsibility
     end
   end
 
+  def linkSettings(includes)
+    settings = []
+    includes.each do |incl|
+      cs = linkSetting(incl)
+      settings << cs if cs
+    end
+    settings = settings.uniq.sort
+    return settings.join(" ")
+  end
+  def linkSetting(incl)
+    if @settings
+      @settings["linking"][incl]
+    else
+      @successor.linkSetting(incl)
+    end
+  end
+
+  def dirPerFile(file)
+    if @dirPerFile.has_key?(file)
+      @dirPerFile[file]
+    else
+      if @successor
+        @successor.dirPerFile(file)
+      else
+        nil
+      end
+    end
+  end
+
   def findIncludeFilesAndDirs(fn)
     internalHeaders = {}
     externalHeaders = {}
@@ -78,8 +126,8 @@ class Tree# < IChainOfResponsibility
     while !files2Check.empty?
       newFiles2Check = []
       files2Check.each do |file|
-        if @dirPerFile.has_key?(file)
-          Dependency.includedFiles(File.expand_path(file, @dirPerFile[file])).each do |header|
+        if dirPerFile(file)
+          Dependency.includedFiles(File.expand_path(file, dirPerFile(file))).each do |header|
             newFiles2Check << header if (!internalHeaders[header] and !externalHeaders[header])
           end
           internalHeaders[file] = true
@@ -90,7 +138,7 @@ class Tree# < IChainOfResponsibility
       files2Check = newFiles2Check
     end
     internalHeaders.delete(fn)
-    return internalHeaders.keys.sort, externalHeaders.keys.sort, internalHeaders.keys.collect{|file|@dirPerFile[file]}.uniq.sort
+    return internalHeaders.keys.sort, externalHeaders.keys.sort, internalHeaders.keys.collect{|file|dirPerFile(file)}.uniq.sort
   end
 
   def each

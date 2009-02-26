@@ -28,16 +28,30 @@ class GitCommand < ICommand
 end
 
 class CompileCommand
-  def initialize(source, output, includeDirs, settings)
-    @source, @output, @includeDirs, @settings = source, output, includeDirs, settings
+  def initialize(source, includeDirs, settings)
+    @source, @includeDirs, @settings = source, includeDirs, settings
   end
   def execute
-    command = "gcc -c -o #{@output} #{@source} #{@settings}"
+    command = "gcc -c -o #{output} #{@source} #{@settings}"
     @includeDirs.each do |id|
       command += " -I#{id}"
     end
     puts(command)
     raise "Compilation failed." if !system(command)
+  end
+  def output
+    @source.gsub(/\.cpp$/, ".o")
+  end
+end
+
+class LinkCommand
+  def initialize(exec, objects, settings)
+    @exec, @objects, @settings = exec, objects, settings
+  end
+  def execute
+    command = "gcc -o #{@exec} #{@settings} " + @objects.join(" ")
+    puts(command)
+    raise "Linking failed." if !system(command)
   end
 end
 
