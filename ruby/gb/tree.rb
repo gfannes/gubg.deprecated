@@ -35,7 +35,7 @@ class Tree# < IChainOfResponsibility
           when @@cppFile
             internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
             source = File.expand_path(fn, dir)
-            commands << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+            commands << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
           when @@dFile
           end
         end

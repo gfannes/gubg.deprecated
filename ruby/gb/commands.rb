@@ -1,3 +1,6 @@
+require("digest/md5")
+require("fileutils")
+
 require("patterns/command")
 
 require("gb/dependency")
@@ -28,10 +31,11 @@ class GitCommand < ICommand
 end
 
 class CompileCommand
-  def initialize(source, includeDirs, settings)
-    @source, @includeDirs, @settings = source, includeDirs, settings
+  def initialize(base, source, includeDirs, settings)
+    @base, @source, @includeDirs, @settings = base, source, includeDirs, settings
   end
   def execute
+    FileUtils.mkdir_p(baseDir) if !File.exist?(baseDir)
     command = "gcc -c -o #{output} #{@source} #{@settings}"
     @includeDirs.each do |id|
       command += " -I#{id}"
@@ -39,8 +43,11 @@ class CompileCommand
     puts(command)
     raise "Compilation failed." if !system(command)
   end
+  def baseDir
+    File.expand_path(".obj/" + Digest::MD5.hexdigest(@settings), @base)
+  end
   def output
-    @source.gsub(/\.cpp$/, ".o")
+    File.expand_path(File.basename(@source, ".cpp") + ".o", baseDir)
   end
 end
 
