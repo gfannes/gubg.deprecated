@@ -35,8 +35,9 @@ class Tree# < IChainOfResponsibility
           when @@cppFile
             internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
             source = File.expand_path(fn, dir)
-            commands << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+            commands << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
           when @@dFile
+            commands << DCompileCommand.new(@base, source, cppCompileSettings(:lib, internalHeaders + externalHeaders))
           end
         end
       when Collection.from(["test.cpp", "main.cpp"])
@@ -44,13 +45,13 @@ class Tree# < IChainOfResponsibility
         internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(@file)
         # Compile @file
         source = File.expand_path(@file, @base)
-        objects << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+        objects << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
         # Compile all the referenced modules
         internalHeaders.each do |ih|
           im = ih.gsub(/\.hpp$/, ".cpp")
           if dirPerFile(im)
             source = File.expand_path(im, dirPerFile(im))
-            objects << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+            objects << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
           end
         end
         commands += objects
@@ -69,10 +70,10 @@ class Tree# < IChainOfResponsibility
     File.basename(@base)
   end
 
-  def compileSettings(type, includes)
+  def cppCompileSettings(type, includes)
     settings = []
     includes.each do |incl|
-      cs = compileSetting(incl)
+      cs = cppCompileSetting(incl)
       settings << cs if cs
     end
     settings = settings.uniq.sort
@@ -82,11 +83,32 @@ class Tree# < IChainOfResponsibility
     end
     return settings.join(" ")
   end
-  def compileSetting(incl)
+  def cppCompileSetting(incl)
     if @settings
       @settings["cpp"]["compilation"][incl]
     else
-      @successor.compileSetting(incl)
+      @successor.cppCompileSetting(incl)
+    end
+  end
+
+  def dCompileSettings(type, includes)
+    settings = []
+    includes.each do |incl|
+      cs = dCompileSetting(incl)
+      settings << cs if cs
+    end
+    settings = settings.uniq.sort
+    case type
+    when :unitTest
+      settings << "-versionUNIT_TEST"
+    end
+    return settings.join(" ")
+  end
+  def dCompileSetting(incl)
+    if @settings
+      @settings["d"]["compilation"][incl]
+    else
+      @successor.dCompileSetting(incl)
     end
   end
 
