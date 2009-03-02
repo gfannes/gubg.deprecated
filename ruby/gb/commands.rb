@@ -1,6 +1,6 @@
 require("patterns/command")
 
-require("gb.new/dependency")
+require("gb/dependency")
 
 class GitCommand < ICommand
   def initialize(tree, command)

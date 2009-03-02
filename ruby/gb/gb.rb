@@ -1,50 +1,99 @@
-require("tools")
+require("tools/utils")
 
-def buildExecutable(sourceFile)
-  executable = nil
+require("gb/commands")
+require("gb/tree")
 
-  time("Building executable #{sourceFile}") do
-    language = nil
-    begin
-
-      # Create the language dependency parser and builder
-      case sourceFile
-      when /\.d$/
-        require("gb/gb-d.rb")
-        language = DLanguage.new("base.rb")
-      when /\.c$/
-      when /\.cpp$/
-      else
-        puts("ERROR::Could not determine the programming language from \"#{sourceFile}\"")
-      end
-
-      # Collect dependency information
-      if language
-        dependencyInformation = language.collectDependencyInformation(sourceFile)
-      else
-        puts("ERROR::Invalid language specification")
-      end
-
-      # Compile dependencies
-      if dependencyInformation
-        objectFiles = language.compile(dependencyInformation)
-      else
-        puts("ERROR::Invalid dependency information")
-      end
-
-      # Build the executable
-      if objectFiles
-        executable = language.build(sourceFile, objectFiles)
-      else
-        puts("ERROR::Compilation failed")
-      end
-    ensure
-      # Clean the language parser, e.g., removing temporary files
-      language.clean if language
-    end
-
-    puts("ERROR::Building executable failed") if !executable
+class GenericBuild
+  def initialize
+    @commands = []
   end
 
-  return executable
+  def parseArguments(arguments)
+    # Check the arguments and extract the command and location
+    setCommand(:reset)
+    location = nil
+    begin
+      arguments.each do |argument|
+        case argument
+        when Collection.from(%w[--help -h --])
+          # Help commands
+          setCommand(:help)
+          break
+        when Collection.from(%w[push pull s c])
+          # Git commands
+          setCommand(:git, argument)
+        else
+          location = File.expand_path(argument)
+        end
+      end
+    rescue
+      setCommand(:unknownCommand, arguments)
+    end
+
+    # By default, we build
+    setCommand(:build) if @commandType.nil?
+    # By default, we take the current working directory as location
+    location = Dir.pwd if location.nil?
+
+    # Create the command objects depending on the command
+    case @commandType
+    when :help
+      print(:usage)
+    when :git
+      @commands << GitCommand.new(Tree.create(location), @command)
+    when :build
+      tree = Tree.create(location)
+      @commands += tree.buildCommands(@command)
+    when :unknownCommand
+      print(:unknownCommand, @command)
+    else
+      print(:unknownCommand)
+    end
+  end
+
+  def executeCommands
+    @commands.each do |command|
+      command.execute
+    end
+  end
+
+  def print(what, args = nil)
+    case what
+    when :usage
+      puts(%Q@Usage:: gb [command] [location]
+#{indent(1)}Git commands:
+#{indent(2)} * push: push to the location specified in root.tree
+#{indent(2)} * pull: pull from the location specified in root.tree
+#{indent(2)} * s: status
+#{indent(2)} * c: commit -a
+#{indent(1)}Location: The tree to be used. If not specified, the working directory is taken.
+Created by Geert Fannes under GPL.
+@)
+    when :unknownCommand
+      puts("ERROR::Unknown command \"#{args}\"")
+    else
+    end
+  end
+
+  def indent(level)
+    " "*3*level
+  end
+
+  def setCommand(type, command = nil)
+    case type
+    when :reset
+      @commandType = nil
+      @command = nil
+    else
+      raise "ERROR::command is already set" if !@command.nil?
+      @commandType = type
+      @command = command
+    end
+  end
+end
+
+if __FILE__ == $0
+  gb = GenericBuild.new
+  gb.parseArguments(ARGV.dup)
+  gb.executeCommands
 end

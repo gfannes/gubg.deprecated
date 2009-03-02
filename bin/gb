@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("gb.new/gb")
+require("gb/gb")
 
 gb = GenericBuild.new
 
