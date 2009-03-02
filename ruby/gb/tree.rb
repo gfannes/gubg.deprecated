@@ -44,18 +44,18 @@ class Tree# < IChainOfResponsibility
         internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(@file)
         # Compile @file
         source = File.expand_path(@file, @base)
-        objects << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+        objects << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
         # Compile all the referenced modules
         internalHeaders.each do |ih|
           im = ih.gsub(/\.hpp$/, ".cpp")
           if dirPerFile(im)
             source = File.expand_path(im, dirPerFile(im))
-            objects << CompileCommand.new(source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
+            objects << CompileCommand.new(@base, source, includeDirs, compileSettings(:lib, internalHeaders + externalHeaders))
           end
         end
         commands += objects
         # Link all the object files
-        exec = File.expand_path(name, @base)
+        exec = File.expand_path(name + ".bin", @base)
         commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(internalHeaders + externalHeaders))
       else
         raise "Not supported"
