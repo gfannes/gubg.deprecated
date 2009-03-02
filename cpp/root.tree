@@ -1,17 +1,12 @@
-git:
- push:
-  gfannes: github
-  befanneg: github
- pull:
-  gfannes: github master
-  befanneg: github master
-compilation:
- SDL/SDL.h: `sdl-config --cflags`
- cairomm/context.h: `pkg-config --cflags cairomm-1.0`
- cairomm/surface.h: `pkg-config --cflags cairomm-1.0`
-linking:
- SDL/SDL.h: `sdl-config --libs`
- cairomm/context.h: `pkg-config --libs cairomm-1.0`
- cairomm/surface.h: `pkg-config --libs cairomm-1.0`
- pthread.h: -l pthread
- tre/regex.h: -LC:/users/befanneg/software/1.0/local/lib -ltre
+include: ../root.tree
+cpp:
+ compilation:
+  SDL/SDL.h: `sdl-config --cflags`
+  cairomm/context.h: `pkg-config --cflags cairomm-1.0`
+  cairomm/surface.h: `pkg-config --cflags cairomm-1.0`
+ linking:
+  SDL/SDL.h: `sdl-config --libs`
+  cairomm/context.h: `pkg-config --libs cairomm-1.0`
+  cairomm/surface.h: `pkg-config --libs cairomm-1.0`
+  pthread.h: -l pthread
+  tre/regex.h: -LC:/users/befanneg/software/1.0/local/lib -ltre

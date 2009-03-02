@@ -84,7 +84,7 @@ class Tree# < IChainOfResponsibility
   end
   def compileSetting(incl)
     if @settings
-      @settings["compilation"][incl]
+      @settings["cpp"]["compilation"][incl]
     else
       @successor.compileSetting(incl)
     end
@@ -101,7 +101,7 @@ class Tree# < IChainOfResponsibility
   end
   def linkSetting(incl)
     if @settings
-      @settings["linking"][incl]
+      @settings["cpp"]["linking"][incl]
     else
       @successor.linkSetting(incl)
     end
@@ -228,7 +228,14 @@ class Tree# < IChainOfResponsibility
   end
   def loadSettings
     if @file == "root.tree"
-      @settings = YAML::load(File.open(File.expand_path(@file, @base)))
+      fnSettings = File.expand_path(@file, @base)
+      @settings = YAML::load(File.open(fnSettings))
+      if @settings["include"]
+        fnExtraSettings = File.expand_path(@settings["include"], @base)
+        @settings.merge!(YAML::load(File.open(fnExtraSettings))) do |k, ov, nv|
+          raise "Duplicate settings found in \"#{fnExtraSettings}\" and \"#{fnSettings}\"."
+        end
+      end
     else
       @settings = nil
     end

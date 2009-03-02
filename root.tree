@@ -1,0 +1,7 @@
+git:
+ push:
+  gfannes: github
+  befanneg: github
+ pull:
+  gfannes: github master
+  befanneg: github master
