@@ -2,6 +2,7 @@ require("yaml")
 
 require("patterns/chainOfResponsibility")
 require("tools/utils")
+require("tools/filestore")
 
 class Tree# < IChainOfResponsibility
   attr :rootTree, true
