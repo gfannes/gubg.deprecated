@@ -14,6 +14,7 @@ class Tree# < IChainOfResponsibility
   @@hppFile = /\.hpp$/
   @@dFile = /\.d$/
   @@wantedFiles = [@@cppFile, @@hppFile, @@dFile]
+  @@fileStore = FileStore.new("/tmp/gb")
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
@@ -22,7 +23,6 @@ class Tree# < IChainOfResponsibility
       raise "File \"#{fn}\" is present multiple times (\"#{@dirPerFile[fn]}\" and \"#{dir}\")" if @dirPerFile.has_key?(fn)
       @dirPerFile[fn] = dir
     end
-    @fileStore = FileStore.new("/tmp/gb")
   end
 
   def buildCommands(command = nil)
@@ -41,20 +41,20 @@ class Tree# < IChainOfResponsibility
           when @@dFile
             fileInfo = createCompilationFileInfo(:d, :lib, dir, fn)
           end
-          commands << CompileCommand.new(fileInfo, @fileStore) if fileInfo
+          commands << CompileCommand.new(fileInfo, @@fileStore) if fileInfo
         end
 
       when Collection.from(["test.cpp", "main.cpp"])
         # Build test or main application
         #  Compile @file
         fileInfo = createCompilationFileInfo(:cpp, :lib, @base, @file)
-        objects = [CompileCommand.new(fileInfo, @fileStore)]
+        objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
           im = ih.gsub(/\.hpp$/, ".cpp")
           if dirPerFile(im)
             fi = createCompilationFileInfo(:cpp, :lib, dirPerFile(im), im)
-            objects << CompileCommand.new(fi, @fileStore)
+            objects << CompileCommand.new(fi, @@fileStore)
           end
         end
         commands += objects
@@ -66,13 +66,13 @@ class Tree# < IChainOfResponsibility
         # Build test or main application
         #  Compile @file
         fileInfo = createCompilationFileInfo(:d, :lib, @base, @file)
-        objects = [CompileCommand.new(fileInfo, @fileStore)]
+        objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
           im = ih + ".d"
           if dirPerFile(im)
             fi = createCompilationFileInfo(:d, :lib, dirPerFile(im), im)
-            objects << CompileCommand.new(fi, @fileStore)
+            objects << CompileCommand.new(fi, @@fileStore)
           end
         end
         commands += objects
@@ -232,6 +232,10 @@ class Tree# < IChainOfResponsibility
       nil
     end
     trees
+  end
+
+  def Tree.cleanFileStore
+    @@fileStore.clean
   end
 
   def baseFile

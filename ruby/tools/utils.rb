@@ -364,12 +364,12 @@ $maxTimingLevel = 0
 def time(str, newline = false)
   raise "You have to provide a block that contains the code that should be timed" if !block_given?
   if $maxTimingLevel == $timingLevel
-    print("#{'  '*$timingLevel}#{str} ... ")
-    print("\n") if newline
+    $stdout.print("#{'  '*$timingLevel}#{str} ... ")
+    $stdout.print("\n") if newline
   else
     $maxTimingLevel = $timingLevel
-    print("\n#{'  '*$timingLevel}#{str} ... ")
-    print("\n") if newline
+    $stdout.print("\n#{'  '*$timingLevel}#{str} ... ")
+    $stdout.print("\n") if newline
   end
   $stdout.flush
   $timingLevel += 1

@@ -63,6 +63,9 @@ class GenericBuild
       trees.each do |tree|
         @commands += tree.buildCommands(@command)
       end
+    when :clean
+      Tree.cleanFileStore
+      
     when :unknownCommand
       print(:unknownCommand, @command)
     else
@@ -71,8 +74,10 @@ class GenericBuild
   end
 
   def executeCommands
-    @commands.each do |command|
-      command.execute
+    time("Executing all commands", true) do
+      @commands.each do |command|
+        command.execute
+      end
     end
   end
 

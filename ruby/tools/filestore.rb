@@ -62,6 +62,11 @@ class FileStore
   def name(fi)
     File.expand_path(fi.name, @base)
   end
+  def clean
+    Dir.chdir(@base) do
+      FileUtils.rm(Dir.glob("*"))
+    end
+  end
 end
 
 if __FILE__ == $0
