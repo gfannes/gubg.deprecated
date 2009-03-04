@@ -42,6 +42,8 @@ class CompileCommand
         cmd = "gcc -c -o #{fileName} #{@fileInfo['sourceFile']} #{@fileInfo['settings']}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       when "d"
+        cmd = "dmd -c -of#{fileName} #{@fileInfo['sourceFile']} #{@fileInfo['settings']}"
+        @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       else
         raise "Unknown type \"#{@fileInfo["type"]}\""
       end

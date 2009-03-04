@@ -78,7 +78,6 @@ class Tree# < IChainOfResponsibility
 
     when :cpp
       fileInfo =  FileInfo.new(File.basename(fn, ".cpp") + ".o")
-      fileInfo["sourceFile"] = File.expand_path(fn, dir)
       internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
       fileInfo["internalHeaders"] = internalHeaders
       fileInfo["externalHeaders"] = externalHeaders
@@ -98,8 +97,25 @@ class Tree# < IChainOfResponsibility
 
     when :d
       fileInfo =  FileInfo.new(File.basename(fn, ".d") + ".o")
+      internalImports, externalImports, includeDirs = findIncludeFilesAndDirs(fn)
+      fileInfo["internalImports"] = internalImports
+      fileInfo["externalImports"] = externalImports
+      fileInfo["includeDirs"] = includeDirs
+      fileInfo["dates"] = internalImports.collect{|incl|File.new(File.expand_path(incl, dirPerFile(incl))).mtime.to_s}
+      settings = []
+      (internalImports + externalImports).each do |incl|
+        cs = cppCompileSetting(incl)
+        settings << cs if cs
+      end
+      settings = settings.uniq.sort
+      case subType
+      when :unitTest
+        settings << "-DUNIT_TEST"
+      end
+      fileInfo["settings"] = settings.join(" ")
 
     end
+    fileInfo["sourceFile"] = File.expand_path(fn, dir)
     fileInfo["directory"] = dir
     fileInfo["type"] = type.to_s
     fileInfo
