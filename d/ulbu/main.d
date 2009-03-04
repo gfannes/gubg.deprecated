@@ -1,5 +1,5 @@
 // The ulbu compiler
-module ulbu.ulbu;
+module ulbu.main;
 
 import ulbu.builder;
 

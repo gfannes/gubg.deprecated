@@ -118,7 +118,11 @@ class Tree# < IChainOfResponsibility
 
   def compilationSetting(type, incl)
     if @settings
-      @settings[type.to_s]["compilation"][incl]
+      begin
+        @settings[type.to_s]["compilation"][incl]
+      rescue
+        nil
+      end
     else
       @successor.compilationSetting(type, incl)
     end

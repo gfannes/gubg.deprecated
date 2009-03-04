@@ -1,4 +1,4 @@
-module rinle.rinle;
+module rinle.main;
 
 import gubg.ui;
 import gubg.ncurses;
