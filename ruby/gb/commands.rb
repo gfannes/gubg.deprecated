@@ -31,53 +31,51 @@ class GitCommand < ICommand
 end
 
 class CompileCommand
-  def initialize(base, source, includeDirs, settings)
-    @base, @source, @includeDirs, @settings = base, source, includeDirs, settings
+  def initialize(fileInfo, fileStore)
+    @fileInfo, @fileStore = fileInfo, fileStore
   end
   def execute
-    FileUtils.mkdir_p(baseDir) if !File.exist?(baseDir)
-    puts(command)
-    raise "Compilation failed." if !system(command)
-  end
-  def baseDir
-    File.expand_path(".obj/" + Digest::MD5.hexdigest(@settings), @base)
-  end
-  def output
-    File.expand_path(File.basename(@source, extension) + ".o", baseDir)
-  end
-  def command
-    raise "Not implemented"
-  end
-  def extension
-    raise "Not implemented"
+    @fileStore.create(@fileInfo) do |fileName|
+      cmd = nil
+      case @fileInfo["type"]
+      when "cpp"
+        cmd = "gcc -c -o #{fileName} #{@fileInfo['sourceFile']} #{@fileInfo['settings']}"
+        @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
+      when "d"
+      else
+        raise "Unknown type \"#{@fileInfo["type"]}\""
+      end
+      puts("Executing \"#{cmd}\"")
+      system(cmd)
+    end
   end
 end
 
-class CPPCompileCommand < CompileCommand
-  def command
-    cmd = "gcc -c -o #{output} #{@source} #{@settings}"
-    @includeDirs.each do |id|
-      cmd += " -I#{id}"
-    end
-    cmd
-  end
-  def extension
-    ".cpp"
-  end
-end
+# class CPPCompileCommand < CompileCommand
+#   def command
+#     cmd = "gcc -c -o #{output} #{@source} #{@settings}"
+#     @includeDirs.each do |id|
+#       cmd += " -I#{id}"
+#     end
+#     cmd
+#   end
+#   def extension
+#     ".cpp"
+#   end
+# end
 
-class DCompileCommand
-  def command
-    cmd = "dmd -c -of#{output} #{@source} #{@settings}"
-    @includeDirs.each do |id|
-      cmd += " -I#{id}"
-    end
-    cmd
-  end
-  def extension
-    ".d"
-  end
-end
+# class DCompileCommand
+#   def command
+#     cmd = "dmd -c -of#{output} #{@source} #{@settings}"
+#     @includeDirs.each do |id|
+#       cmd += " -I#{id}"
+#     end
+#     cmd
+#   end
+#   def extension
+#     ".d"
+#   end
+# end
 
 class LinkCommand
   def initialize(exec, objects, settings)

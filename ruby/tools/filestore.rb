@@ -11,7 +11,15 @@ class FileInfo
     @basename + "." + Digest::MD5.hexdigest(canonicalize) + @ext
   end
   def []=(key, v)
-    raise "I can only deal with Strings" if !(String === v)
+    case v
+    when String
+    when Array
+      v.each do |el|
+        raise "Non-String element found in Array." if !(String === el)
+      end
+    else
+      raise "I can only deal with Strings and Arrays of Strings"
+    end
     raise "Key \"#{key}\" already exists." if @info.has_key?(key)
     @info[key] = v
     v
@@ -24,8 +32,15 @@ class FileInfo
     res = ""
     @info.keys.sort.each do |k|
       v = @info[k]
-      raise "I can only deal with Strings" if !(String === v)
-      res += "#{k}: #{v}\n"
+      case v
+      when String
+        res += "#{k}: #{v}\n"
+      when Array
+        v.each { |el| raise "Non-String element found in Array." if !(String === el)}
+        res += "#{k}: [#{v.join(', ')}]"
+      else
+        raise "I can only deal with Strings or Arrays of Strings"
+      end
     end
     res
   end

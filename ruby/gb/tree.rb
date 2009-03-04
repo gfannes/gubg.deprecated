@@ -22,6 +22,7 @@ class Tree# < IChainOfResponsibility
       raise "File \"#{fn}\" is present multiple times (\"#{@dirPerFile[fn]}\" and \"#{dir}\")" if @dirPerFile.has_key?(fn)
       @dirPerFile[fn] = dir
     end
+    @fileStore = FileStore.new(File.expand_path(".obj", @base))
   end
 
   def buildCommands(command)
@@ -34,9 +35,9 @@ class Tree# < IChainOfResponsibility
         each do |dir, fn|
           case fn
           when @@cppFile
-            internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
-            source = File.expand_path(fn, dir)
-            commands << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
+            fileInfo = createCompileFileInfo(:cpp, :lib, dir, fn)
+            commands << CompileCommand.new(fileInfo, @fileStore)
+# @base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
           when @@dFile
             commands << DCompileCommand.new(@base, source, cppCompileSettings(:lib, internalHeaders + externalHeaders))
           end
@@ -69,6 +70,39 @@ class Tree# < IChainOfResponsibility
   end
   def name
     File.basename(@base)
+  end
+
+  def createCompileFileInfo(type, subType, dir, fn)
+    fileInfo = nil
+    case type
+
+    when :cpp
+      fileInfo =  FileInfo.new(File.basename(fn, ".cpp") + ".o")
+      fileInfo["sourceFile"] = File.expand_path(fn, dir)
+      internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
+      fileInfo["internalHeaders"] = internalHeaders
+      fileInfo["externalHeaders"] = externalHeaders
+      fileInfo["includeDirs"] = includeDirs
+      fileInfo["dates"] = internalHeaders.collect{|incl|File.new(File.expand_path(incl, dirPerFile(incl))).mtime.to_s}
+      settings = []
+      (internalHeaders + externalHeaders).each do |incl|
+        cs = cppCompileSetting(incl)
+        settings << cs if cs
+      end
+      settings = settings.uniq.sort
+      case subType
+      when :unitTest
+        settings << "-DUNIT_TEST"
+      end
+      fileInfo["settings"] = settings.join(" ")
+
+    when :d
+      fileInfo =  FileInfo.new(File.basename(fn, ".d") + ".o")
+
+    end
+    fileInfo["directory"] = dir
+    fileInfo["type"] = type.to_s
+    fileInfo
   end
 
   def cppCompileSettings(type, includes)
