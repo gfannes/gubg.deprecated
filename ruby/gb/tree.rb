@@ -79,12 +79,11 @@ class Tree# < IChainOfResponsibility
 
     # Create the settings based on the included files
     internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(type, fn)
-    settings = []
+    settings = [compilationSetting(type, "always")]
     (internalHeaders + externalHeaders).each do |incl|
-      cs = compilationSetting(type, incl)
-      settings << cs if cs
+      settings << compilationSetting(type, incl)
     end
-    settings = settings.uniq.sort
+    settings = settings.compact.uniq.sort
 
     # The objectName  and type-specific settings and 
     case type

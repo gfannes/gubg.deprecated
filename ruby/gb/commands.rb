@@ -39,10 +39,10 @@ class CompileCommand
       cmd = nil
       case @fileInfo["type"]
       when "cpp"
-        cmd = "gcc -c -o #{fileName} #{@fileInfo['sourceFile']} #{@fileInfo['settings']}"
+        cmd = "gcc -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -o #{fileName}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       when "d"
-        cmd = "dmd -c -of#{fileName} #{@fileInfo['sourceFile']} #{@fileInfo['settings']}"
+        cmd = "dmd -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -of#{fileName}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       else
         raise "Unknown type \"#{@fileInfo["type"]}\""
