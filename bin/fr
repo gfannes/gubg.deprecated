@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
-require("tools")
+
+require("tools/utils")
 
 arguments = ARGV.dup
 action = :print

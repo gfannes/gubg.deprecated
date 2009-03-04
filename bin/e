@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 #this script starts emacs
-require("tools")
+
+require("tools/utils")
 
 arguments=ARGV
 

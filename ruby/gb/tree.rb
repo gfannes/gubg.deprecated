@@ -60,7 +60,7 @@ class Tree# < IChainOfResponsibility
         end
         commands += objects
         #  Link all the object files
-        exec = File.expand_path(name + ".bin", @base)
+        exec = File.expand_path(name + ".exec", @base)
         commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
       else
         raise "Not supported"

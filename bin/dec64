@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
+
 require("base64")
 require("hexdump")
-require("tools/allTools")
+require("tools/utils")
 
 str = nil
 outputFile = nil

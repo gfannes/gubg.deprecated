@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 #this script removes emacs rest files up to level the level specified, all at all level by default
-require("tools")
+
+require("tools/utils")
 
 binary = (ARGV[0]=="-vi" ? "ctags" : "etags")
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("tools")
+require("tools/utils")
 require("fileutils")
 
 if ARGV.length != 2

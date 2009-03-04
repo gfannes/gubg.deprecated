@@ -5,7 +5,7 @@ def indent(nr)
   " "*2*nr
 end
 
-def cleanEmacs(path,level=nil,il=0)
+def cleanEmacs(path, level=nil, il=0)
   pwd=Dir.pwd
   Dir.chdir(path) do
     if il==0 or Dir.pwd!=pwd
@@ -15,11 +15,11 @@ def cleanEmacs(path,level=nil,il=0)
           File.delete(fn)
         elsif (level.nil? or level>0) and File.directory?(fn) and fn!='.' and fn!='..'
           puts(indent(il)+"Stepping into \"#{fn}\".")
-          cleanEmacs(File.expand_path(fn),level&&level-1,il+1)
+          cleanEmacs(File.expand_path(fn), level&&level-1, il+1)
         end
       end
     end
   end
 end
 
-cleanEmacs('./',ARGV[0]&&ARGV[0].to_i)
+cleanEmacs('./', ARGV[0]&&ARGV[0].to_i)
