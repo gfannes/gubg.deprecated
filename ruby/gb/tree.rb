@@ -30,18 +30,20 @@ class Tree# < IChainOfResponsibility
     case command
     when NilClass
       case @file
+
       when "root.tree"
         # Build all
         each do |dir, fn|
+          fileInfo = nil
           case fn
           when @@cppFile
-            fileInfo = createCompileFileInfo(:cpp, :lib, dir, fn)
-            commands << CompileCommand.new(fileInfo, @fileStore)
-# @base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
+            fileInfo = createCompilationFileInfo(:cpp, :lib, dir, fn)
           when @@dFile
-            commands << DCompileCommand.new(@base, source, cppCompileSettings(:lib, internalHeaders + externalHeaders))
+            fileInfo = createCompilationFileInfo(:d, :lib, dir, fn)
           end
+          commands << CompileCommand.new(fileInfo, @fileStore) if fileInfo
         end
+
       when Collection.from(["test.cpp", "main.cpp"])
         objects = []
         internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(@file)
@@ -72,94 +74,53 @@ class Tree# < IChainOfResponsibility
     File.basename(@base)
   end
 
-  def createCompileFileInfo(type, subType, dir, fn)
+  def createCompilationFileInfo(type, subType, dir, fn)
     fileInfo = nil
-    case type
 
-    when :cpp
-      fileInfo =  FileInfo.new(File.basename(fn, ".cpp") + ".o")
-      internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(fn)
-      fileInfo["internalHeaders"] = internalHeaders
-      fileInfo["externalHeaders"] = externalHeaders
-      fileInfo["includeDirs"] = includeDirs
-      fileInfo["dates"] = internalHeaders.collect{|incl|File.new(File.expand_path(incl, dirPerFile(incl))).mtime.to_s}
-      settings = []
-      (internalHeaders + externalHeaders).each do |incl|
-        cs = cppCompileSetting(incl)
-        settings << cs if cs
-      end
-      settings = settings.uniq.sort
-      case subType
-      when :unitTest
-        settings << "-DUNIT_TEST"
-      end
-      fileInfo["settings"] = settings.join(" ")
-
-    when :d
-      fileInfo =  FileInfo.new(File.basename(fn, ".d") + ".o")
-      internalImports, externalImports, includeDirs = findIncludeFilesAndDirs(fn)
-      fileInfo["internalImports"] = internalImports
-      fileInfo["externalImports"] = externalImports
-      fileInfo["includeDirs"] = includeDirs
-      fileInfo["dates"] = internalImports.collect{|incl|File.new(File.expand_path(incl, dirPerFile(incl))).mtime.to_s}
-      settings = []
-      (internalImports + externalImports).each do |incl|
-        cs = cppCompileSetting(incl)
-        settings << cs if cs
-      end
-      settings = settings.uniq.sort
-      case subType
-      when :unitTest
-        settings << "-DUNIT_TEST"
-      end
-      fileInfo["settings"] = settings.join(" ")
-
+    # Create the settings based on the included files
+    internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(type, fn)
+    settings = []
+    (internalHeaders + externalHeaders).each do |incl|
+      cs = compilationSetting(type, incl)
+      settings << cs if cs
     end
+    settings = settings.uniq.sort
+
+    # The objectName  and type-specific settings and 
+    case type
+    when :cpp
+      objectName = File.basename(fn, ".cpp") + ".o"
+      case subType
+      when :unitTest
+        settings << "-DUNIT_TEST"
+      end
+    when :d
+      objectName = File.basename(fn, ".d") + ".o"
+      case subType
+      when :unitTest
+        settings << "-version=UnitTest"
+      end
+    end
+
+    # Create the FileInfo object
+    fileInfo =  FileInfo.new(objectName)
+    fileInfo["settings"] = settings.join(" ")
+    fileInfo["internalHeaders"] = internalHeaders
+    fileInfo["externalHeaders"] = externalHeaders
+    fileInfo["includeDirs"] = includeDirs
+    fileInfo["dates"] = internalHeaders.collect{|incl|File.new(fullFileName(incl)).mtime.to_s}
     fileInfo["sourceFile"] = File.expand_path(fn, dir)
     fileInfo["directory"] = dir
     fileInfo["type"] = type.to_s
+
     fileInfo
   end
 
-  def cppCompileSettings(type, includes)
-    settings = []
-    includes.each do |incl|
-      cs = cppCompileSetting(incl)
-      settings << cs if cs
-    end
-    settings = settings.uniq.sort
-    case type
-    when :unitTest
-      settings << "-DUNIT_TEST"
-    end
-    return settings.join(" ")
-  end
-  def cppCompileSetting(incl)
+  def compilationSetting(type, incl)
     if @settings
-      @settings["cpp"]["compilation"][incl]
+      @settings[type.to_s]["compilation"][incl]
     else
-      @successor.cppCompileSetting(incl)
-    end
-  end
-
-  def dCompileSettings(type, includes)
-    settings = []
-    includes.each do |incl|
-      cs = dCompileSetting(incl)
-      settings << cs if cs
-    end
-    settings = settings.uniq.sort
-    case type
-    when :unitTest
-      settings << "-versionUNIT_TEST"
-    end
-    return settings.join(" ")
-  end
-  def dCompileSetting(incl)
-    if @settings
-      @settings["d"]["compilation"][incl]
-    else
-      @successor.dCompileSetting(incl)
+      @successor.compilationSetting(type, incl)
     end
   end
 
@@ -191,8 +152,11 @@ class Tree# < IChainOfResponsibility
       end
     end
   end
+  def fullFileName(file)
+    File.expand_path(file, dirPerFile(file))
+  end
 
-  def findIncludeFilesAndDirs(fn)
+  def findIncludeFilesAndDirs(type, fn)
     internalHeaders = {}
     externalHeaders = {}
     files2Check = [fn]
@@ -200,7 +164,7 @@ class Tree# < IChainOfResponsibility
       newFiles2Check = []
       files2Check.each do |file|
         if dirPerFile(file)
-          Dependency.includedFiles(File.expand_path(file, dirPerFile(file))).each do |header|
+          Dependency.includedFiles(type, File.expand_path(file, dirPerFile(file))).each do |header|
             newFiles2Check << header if (!internalHeaders[header] and !externalHeaders[header])
           end
           internalHeaders[file] = true

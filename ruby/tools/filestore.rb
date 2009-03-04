@@ -54,7 +54,8 @@ class FileStore
   def create(fi)
     raise "No block given to create the file." if !block_given?
     fileName = name(fi)
-    yield(fileName) if !File.exist?(fileName)
+    return false if File.exist?(fileName)
+    yield(fileName)
     raise "Could not find file \"#{fileName}\"" if !File.exist?(fileName)
     true
   end

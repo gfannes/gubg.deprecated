@@ -35,7 +35,7 @@ class CompileCommand
     @fileInfo, @fileStore = fileInfo, fileStore
   end
   def execute
-    @fileStore.create(@fileInfo) do |fileName|
+    wasCreated = @fileStore.create(@fileInfo) do |fileName|
       cmd = nil
       case @fileInfo["type"]
       when "cpp"
@@ -47,37 +47,12 @@ class CompileCommand
       else
         raise "Unknown type \"#{@fileInfo["type"]}\""
       end
-      puts("Executing \"#{cmd}\"")
+      puts(cmd)
       system(cmd)
     end
+    puts("\"#{@fileStore.name(@fileInfo)}\" => Found in cache.") if !wasCreated
   end
 end
-
-# class CPPCompileCommand < CompileCommand
-#   def command
-#     cmd = "gcc -c -o #{output} #{@source} #{@settings}"
-#     @includeDirs.each do |id|
-#       cmd += " -I#{id}"
-#     end
-#     cmd
-#   end
-#   def extension
-#     ".cpp"
-#   end
-# end
-
-# class DCompileCommand
-#   def command
-#     cmd = "dmd -c -of#{output} #{@source} #{@settings}"
-#     @includeDirs.each do |id|
-#       cmd += " -I#{id}"
-#     end
-#     cmd
-#   end
-#   def extension
-#     ".d"
-#   end
-# end
 
 class LinkCommand
   def initialize(exec, objects, settings)
