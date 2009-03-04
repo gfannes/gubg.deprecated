@@ -39,7 +39,7 @@ class CompileCommand
       cmd = nil
       case @fileInfo["type"]
       when "cpp"
-        cmd = "gcc -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -o #{fileName}"
+        cmd = "g++ -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -o #{fileName}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       when "d"
         cmd = "dmd -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -of#{fileName}"
@@ -62,7 +62,7 @@ class LinkCommand
     @exec, @objects, @settings = exec, objects, settings
   end
   def execute
-    command = "gcc -o #{@exec} #{@settings} " + @objects.join(" ")
+    command = "g++ -o #{@exec} #{@settings} " + @objects.join(" ")
     puts(command)
     raise "Linking failed." if !system(command)
   end
