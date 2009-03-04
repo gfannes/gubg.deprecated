@@ -52,6 +52,9 @@ class CompileCommand
     end
     puts("\"#{@fileStore.name(@fileInfo)}\" => Found in cache.") if !wasCreated
   end
+  def output
+    @fileStore.name(@fileInfo)
+  end
 end
 
 class LinkCommand

@@ -13,7 +13,7 @@ class Tree# < IChainOfResponsibility
   @@cppFile = /\.cpp$/
   @@hppFile = /\.hpp$/
   @@dFile = /\.d$/
-  @@wantedFiles = [@@cppFile, @@hppFile, @dFile]
+  @@wantedFiles = [@@cppFile, @@hppFile, @@dFile]
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
@@ -34,6 +34,7 @@ class Tree# < IChainOfResponsibility
       when "root.tree"
         # Build all
         each do |dir, fn|
+          puts("#{dir} #{fn}")
           fileInfo = nil
           case fn
           when @@cppFile
@@ -45,23 +46,22 @@ class Tree# < IChainOfResponsibility
         end
 
       when Collection.from(["test.cpp", "main.cpp"])
-        objects = []
-        internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(@file)
-        # Compile @file
-        source = File.expand_path(@file, @base)
-        objects << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
-        # Compile all the referenced modules
-        internalHeaders.each do |ih|
+        # Build test or main application
+        #  Compile @file
+        fileInfo = createCompilationFileInfo(:cpp, :lib, @base, @file)
+        objects = [CompileCommand.new(fileInfo, @fileStore)]
+        #  Compile all the referenced modules
+        fileInfo["internalHeaders"].each do |ih|
           im = ih.gsub(/\.hpp$/, ".cpp")
           if dirPerFile(im)
-            source = File.expand_path(im, dirPerFile(im))
-            objects << CPPCompileCommand.new(@base, source, includeDirs, cppCompileSettings(:lib, internalHeaders + externalHeaders))
+            fi = createCompilationFileInfo(:cpp, :lib, dirPerFile(im), im)
+            objects << CompileCommand.new(fi, @fileStore)
           end
         end
         commands += objects
-        # Link all the object files
+        #  Link all the object files
         exec = File.expand_path(name + ".bin", @base)
-        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(internalHeaders + externalHeaders))
+        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
       else
         raise "Not supported"
       end

@@ -13,11 +13,10 @@ class Dependency
         end
       end
     when :d
-      re = /^\import +[<\"](.+)[>\"]/
+      re = /^(private|public)? *import +(.+);.*$/
       String.loadLines(fileName).each do |line|
-        case line
-        when re
-          res << line[re, 1]
+        if md = re.match(line)
+          res << md[2]
         end
       end
     else
