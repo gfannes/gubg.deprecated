@@ -56,6 +56,10 @@ class GenericBuild
         trees = Tree.allTrees(location)
         @command = nil
       end
+      puts("I will build the following trees:")
+      trees.each do |tree|
+        puts(" * #{tree.base} (#{tree.file})")
+      end
       trees.each do |tree|
         @commands += tree.buildCommands(@command)
       end

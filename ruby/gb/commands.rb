@@ -50,7 +50,7 @@ class CompileCommand
       puts(cmd)
       system(cmd)
     end
-    puts("\"#{@fileStore.name(@fileInfo)}\" => Found in cache.") if !wasCreated
+#    puts("\"#{@fileStore.name(@fileInfo)}\" => Found in cache.") if !wasCreated
   end
   def output
     @fileStore.name(@fileInfo)

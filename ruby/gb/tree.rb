@@ -60,7 +60,25 @@ class Tree# < IChainOfResponsibility
         commands += objects
         #  Link all the object files
         exec = File.expand_path(name + ".exec", @base)
-        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
+        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(:cpp, fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
+
+      when Collection.from(["test.d", "main.d"])
+        # Build test or main application
+        #  Compile @file
+        fileInfo = createCompilationFileInfo(:d, :lib, @base, @file)
+        objects = [CompileCommand.new(fileInfo, @fileStore)]
+        #  Compile all the referenced modules
+        fileInfo["internalHeaders"].each do |ih|
+          im = ih + ".d"
+          if dirPerFile(im)
+            fi = createCompilationFileInfo(:d, :lib, dirPerFile(im), im)
+            objects << CompileCommand.new(fi, @fileStore)
+          end
+        end
+        commands += objects
+        #  Link all the object files
+        exec = File.expand_path(name + ".exec", @base)
+        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(:d, fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
       else
         raise "Not supported"
       end
@@ -127,20 +145,20 @@ class Tree# < IChainOfResponsibility
     end
   end
 
-  def linkSettings(includes)
+  def linkSettings(type, includes)
     settings = []
     includes.each do |incl|
-      cs = linkSetting(incl)
+      cs = linkSetting(type, incl)
       settings << cs if cs
     end
     settings = settings.uniq.sort
     return settings.join(" ")
   end
-  def linkSetting(incl)
+  def linkSetting(type, incl)
     if @settings
-      @settings["cpp"]["linking"][incl]
+      @settings[type.to_s]["linking"][incl]
     else
-      @successor.linkSetting(incl)
+      @successor.linkSetting(type, incl)
     end
   end
 
@@ -291,6 +309,14 @@ class Tree# < IChainOfResponsibility
         @settings.merge!(YAML::load(File.open(fnExtraSettings))) do |k, ov, nv|
           raise "Duplicate settings found in \"#{fnExtraSettings}\" and \"#{fnSettings}\"."
         end
+      end
+      if @settings["cpp"]
+        @settings["cpp"]["compilation"] = {} if @settings["cpp"]["compilation"].nil?
+        @settings["cpp"]["linking"] = {} if @settings["cpp"]["linking"].nil?
+      end
+      if @settings["d"]
+        @settings["d"]["compilation"] = {} if @settings["d"]["compilation"].nil?
+        @settings["d"]["linking"] = {} if @settings["d"]["linking"].nil?
       end
     else
       @settings = nil
