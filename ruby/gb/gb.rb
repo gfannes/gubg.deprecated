@@ -22,6 +22,12 @@ class GenericBuild
         when Collection.from(%w[push pull s c])
           # Git commands
           setCommand(:git, argument)
+        when "all"
+          # Build all
+          setCommand(:build, argument)
+        when "clean"
+          # Clean all
+          setCommand(:clean, argument)
         else
           location = File.expand_path(argument)
         end
@@ -42,8 +48,17 @@ class GenericBuild
     when :git
       @commands << GitCommand.new(Tree.create(location), @command)
     when :build
-      tree = Tree.create(location)
-      @commands += tree.buildCommands(@command)
+      trees = nil
+      case @command
+      when NilClass
+        trees = [Tree.create(location)]
+      when "all"
+        trees = Tree.allTrees(location)
+        @command = nil
+      end
+      trees.each do |tree|
+        @commands += tree.buildCommands(@command)
+      end
     when :unknownCommand
       print(:unknownCommand, @command)
     else

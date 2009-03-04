@@ -22,10 +22,10 @@ class Tree# < IChainOfResponsibility
       raise "File \"#{fn}\" is present multiple times (\"#{@dirPerFile[fn]}\" and \"#{dir}\")" if @dirPerFile.has_key?(fn)
       @dirPerFile[fn] = dir
     end
-    @fileStore = FileStore.new(File.expand_path(".obj", @base))
+    @fileStore = FileStore.new("/tmp/gb")
   end
 
-  def buildCommands(command)
+  def buildCommands(command = nil)
     commands = []
     case command
     when NilClass
@@ -34,7 +34,6 @@ class Tree# < IChainOfResponsibility
       when "root.tree"
         # Build all
         each do |dir, fn|
-          puts("#{dir} #{fn}")
           fileInfo = nil
           case fn
           when @@cppFile
@@ -65,8 +64,9 @@ class Tree# < IChainOfResponsibility
       else
         raise "Not supported"
       end
+
     else
-      raise "Not supported"
+      raise "Build command \"#{command}\" not supported"
     end
     commands
   end
@@ -200,6 +200,22 @@ class Tree# < IChainOfResponsibility
     @successor.each{|dir, fn|yield(dir, fn)} if !@successor.nil?
   end
 
+  def Tree.allTrees(base)
+    trees = []
+    Dir.eachDir(base) do |dir|
+      Dir.chdir(dir) do
+        Dir["*"].each do |fn|
+          case fn
+          when Collection.from(@@definingFiles)
+            trees << Tree.create(dir)
+          end
+        end
+      end
+      nil
+    end
+    trees
+  end
+
   def baseFile
     File.expand_path(@file, @base)
   end
@@ -239,7 +255,7 @@ class Tree# < IChainOfResponsibility
         if File.exist?(File.expand_path(lfile, here))
           base = here
           file = lfile
-          puts("I found basefile \"#{file}\" at \"#{base}\"")
+#          puts("I found basefile \"#{file}\" at \"#{base}\"")
           break
         end
       end
