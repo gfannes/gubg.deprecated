@@ -63,7 +63,13 @@ class LinkCommand
   end
   def execute
     wasCreated = @fileStore.create(@fileInfo) do |fileName|
-      cmd = "#{@fileInfo['linker']} #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -o #{fileName}"
+      cmd = nil
+      case @fileInfo['linker']
+      when "g++"
+        cmd = "g++ #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -o #{fileName}"
+      when "dmd"
+        cmd = "dmd #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -of#{fileName}"
+      end
       puts(cmd)
       system(cmd)
     end

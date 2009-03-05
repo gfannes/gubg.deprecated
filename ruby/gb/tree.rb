@@ -15,7 +15,7 @@ class Tree# < IChainOfResponsibility
   @@dFile = /\.d$/
   @@wantedFiles = [@@cppFile, @@hppFile, @@dFile]
   @@fileStore = FileStore.new("/tmp/gb")
-  @@linkerPerType = {cpp: "g++", d: "gcc"}
+  @@linkerPerType = {cpp: "g++", d: "dmd"}
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
@@ -52,13 +52,8 @@ class Tree# < IChainOfResponsibility
         objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
-          im = nil
-          case type
-          when :cpp
-            im = ih.gsub(/\.hpp$/, ".cpp")
-          when :d
-            im = ih + ".d"
-          end
+          im = ih
+          im = im.gsub(/\.hpp$/, ".cpp") if type == :cpp
           if internalFile?(im)
             fi = createCompilationFileInfo(type, :lib, fullFileName(im))
             objects << CompileCommand.new(fi, @@fileStore)
@@ -158,16 +153,13 @@ class Tree# < IChainOfResponsibility
   end
 
   def dirPerFile(file)
-    puts("\nLooking for dir for #{file}")
     res = nil
     relativeName = relativeFileName(file)
     fileName = File.basename(relativeName)
     relativeDir = File.dirname(relativeName)
-#     puts("file = #{file}")
-#     puts("relativeDir = #{relativeDir}")
-#     puts("fileName = #{fileName}")
+    relativeDir = "" if relativeDir == "."
     if @dirsPerFile.has_key?(fileName)
-      dirs = @dirsPerFile[fileName]
+      dirs = @dirsPerFile[fileName].dup
       ix = 0
       while ix < relativeDir.length
         ix += 1
@@ -176,11 +168,9 @@ class Tree# < IChainOfResponsibility
       case dirs.length
       when 0
         # We will try @successor
-        puts("for successor")
       when 1
         res = dirs[0]
         len = res.length - relativeDir.length
-        puts("ln = #{len}")
         res = res[0, len]
       else
         raise "I found #{dirs.length} different files matching \"#{file}\"" if dirs.length != 1
@@ -224,10 +214,7 @@ class Tree# < IChainOfResponsibility
       files2Check = newFiles2Check
     end
     tmp = internalHeaders.keys.collect do |file|
-      puts("#{file}")
-      d = dirPerFile(file)
-      puts("#{d}")
-      d
+      dirPerFile(file)
     end
     tmp = tmp.uniq.sort
     return internalHeaders.keys.sort, externalHeaders.keys.sort, tmp
