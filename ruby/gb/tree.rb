@@ -15,13 +15,13 @@ class Tree# < IChainOfResponsibility
   @@dFile = /\.d$/
   @@wantedFiles = [@@cppFile, @@hppFile, @@dFile]
   @@fileStore = FileStore.new("/tmp/gb")
+  @@linkerPerType = {cpp: "g++", d: "gcc"}
   def initialize(base, file)
     @base, @file = base, file
     loadSettings
-    @dirPerFile = {}
+    @dirsPerFile = Hash.new{|h, k|h[k] = []}
     each do |dir, fn|
-      raise "File \"#{fn}\" is present multiple times (\"#{@dirPerFile[fn]}\" and \"#{dir}\")" if @dirPerFile.has_key?(fn)
-      @dirPerFile[fn] = dir
+      @dirsPerFile[fn] << dir
     end
   end
 
@@ -37,48 +37,43 @@ class Tree# < IChainOfResponsibility
           fileInfo = nil
           case fn
           when @@cppFile
-            fileInfo = createCompilationFileInfo(:cpp, :lib, dir, fn)
+            fileInfo = createCompilationFileInfo(:cpp, :lib, File.expand_path(fn, dir))
           when @@dFile
-            fileInfo = createCompilationFileInfo(:d, :lib, dir, fn)
+            fileInfo = createCompilationFileInfo(:d, :lib, File.expand_path(fn, dir))
           end
           commands << CompileCommand.new(fileInfo, @@fileStore) if fileInfo
         end
 
-      when Collection.from(["test.cpp", "main.cpp"])
+      when Collection.from(["test.cpp", "main.cpp", "test.d", "main.d"])
         # Build test or main application
+        type = @file[/\.([^\.]+)$/, 1]. to_sym
         #  Compile @file
-        fileInfo = createCompilationFileInfo(:cpp, :lib, @base, @file)
+        fileInfo = createCompilationFileInfo(type, :lib, File.expand_path(@file, @base))
         objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
-          im = ih.gsub(/\.hpp$/, ".cpp")
-          if dirPerFile(im)
-            fi = createCompilationFileInfo(:cpp, :lib, dirPerFile(im), im)
+          im = nil
+          case type
+          when :cpp
+            im = ih.gsub(/\.hpp$/, ".cpp")
+          when :d
+            im = ih + ".d"
+          end
+          if internalFile?(im)
+            fi = createCompilationFileInfo(type, :lib, fullFileName(im))
             objects << CompileCommand.new(fi, @@fileStore)
           end
         end
         commands += objects
         #  Link all the object files
-        exec = File.expand_path(name + ".exec", @base)
-        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(:cpp, fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
+        execName = File.expand_path(name + ".exec", @base)
+        linkInfo = FileInfo.new(execName)
+        linkInfo["execName"] = execName
+        linkInfo["linker"] = @@linkerPerType[type]
+        linkInfo["objectFiles"] = objects.collect{|obj|obj.output}
+        linkInfo["settings"] = linkSettings(type, fileInfo["internalHeaders"] + fileInfo["externalHeaders"])
+        commands << LinkCommand.new(linkInfo, @@fileStore)
 
-      when Collection.from(["test.d", "main.d"])
-        # Build test or main application
-        #  Compile @file
-        fileInfo = createCompilationFileInfo(:d, :lib, @base, @file)
-        objects = [CompileCommand.new(fileInfo, @@fileStore)]
-        #  Compile all the referenced modules
-        fileInfo["internalHeaders"].each do |ih|
-          im = ih + ".d"
-          if dirPerFile(im)
-            fi = createCompilationFileInfo(:d, :lib, dirPerFile(im), im)
-            objects << CompileCommand.new(fi, @@fileStore)
-          end
-        end
-        commands += objects
-        #  Link all the object files
-        exec = File.expand_path(name + ".exec", @base)
-        commands << LinkCommand.new(exec, objects.collect{|obj|obj.output}, linkSettings(:d, fileInfo["internalHeaders"] + fileInfo["externalHeaders"]))
       else
         raise "Not supported"
       end
@@ -92,11 +87,11 @@ class Tree# < IChainOfResponsibility
     File.basename(@base)
   end
 
-  def createCompilationFileInfo(type, subType, dir, fn)
+  def createCompilationFileInfo(type, subType, fileName)
     fileInfo = nil
 
     # Create the settings based on the included files
-    internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(type, fn)
+    internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(type, fileName)
     settings = [compilationSetting(type, "always")]
     (internalHeaders + externalHeaders).each do |incl|
       settings << compilationSetting(type, incl)
@@ -106,13 +101,13 @@ class Tree# < IChainOfResponsibility
     # The objectName  and type-specific settings and 
     case type
     when :cpp
-      objectName = File.basename(fn, ".cpp") + ".o"
+      objectName = File.basename(fileName, ".cpp") + ".o"
       case subType
       when :unitTest
         settings << "-DUNIT_TEST"
       end
     when :d
-      objectName = File.basename(fn, ".d") + ".o"
+      objectName = File.basename(fileName, ".d") + ".o"
       case subType
       when :unitTest
         settings << "-version=UnitTest"
@@ -126,8 +121,8 @@ class Tree# < IChainOfResponsibility
     fileInfo["externalHeaders"] = externalHeaders
     fileInfo["includeDirs"] = includeDirs
     fileInfo["dates"] = internalHeaders.collect{|incl|File.new(fullFileName(incl)).mtime.to_s}
-    fileInfo["sourceFile"] = File.expand_path(fn, dir)
-    fileInfo["directory"] = dir
+    fileInfo["sourceFile"] = fileName
+    fileInfo["directory"] = File.dirname(fileName)
     fileInfo["type"] = type.to_s
 
     fileInfo
@@ -163,29 +158,62 @@ class Tree# < IChainOfResponsibility
   end
 
   def dirPerFile(file)
-    if @dirPerFile.has_key?(file)
-      @dirPerFile[file]
-    else
-      if @successor
-        @successor.dirPerFile(file)
+    puts("\nLooking for dir for #{file}")
+    res = nil
+    relativeName = relativeFileName(file)
+    fileName = File.basename(relativeName)
+    relativeDir = File.dirname(relativeName)
+#     puts("file = #{file}")
+#     puts("relativeDir = #{relativeDir}")
+#     puts("fileName = #{fileName}")
+    if @dirsPerFile.has_key?(fileName)
+      dirs = @dirsPerFile[fileName]
+      ix = 0
+      while ix < relativeDir.length
+        ix += 1
+        dirs.reject!{|dir|relativeDir[-ix] != dir[-ix]}
+      end
+      case dirs.length
+      when 0
+        # We will try @successor
+        puts("for successor")
+      when 1
+        res = dirs[0]
+        len = res.length - relativeDir.length
+        puts("ln = #{len}")
+        res = res[0, len]
       else
-        nil
+        raise "I found #{dirs.length} different files matching \"#{file}\"" if dirs.length != 1
       end
     end
+    # Ask the successor if not found
+    res = @successor.dirPerFile(file) if (res.nil? and @successor)
+    res
+  end
+  def relativeFileName(file)
+    relativeName = file.dup
+    if !(Collection.from([@@cppFile, @@hppFile]) === file)
+      relativeName.gsub!(".", "/")
+      relativeName += ".d"
+    end
+    relativeName
   end
   def fullFileName(file)
-    File.expand_path(file, dirPerFile(file))
+    File.expand_path(relativeFileName(file), dirPerFile(file))
+  end
+  def internalFile?(file)
+    dirPerFile(file)
   end
 
   def findIncludeFilesAndDirs(type, fn)
     internalHeaders = {}
     externalHeaders = {}
-    files2Check = [fn]
+    files2Check = Dependency.includedFiles(type, fn)
     while !files2Check.empty?
       newFiles2Check = []
       files2Check.each do |file|
-        if dirPerFile(file)
-          Dependency.includedFiles(type, File.expand_path(file, dirPerFile(file))).each do |header|
+        if internalFile?(file)
+          Dependency.includedFiles(type, fullFileName(file)).each do |header|
             newFiles2Check << header if (!internalHeaders[header] and !externalHeaders[header])
           end
           internalHeaders[file] = true
@@ -195,8 +223,14 @@ class Tree# < IChainOfResponsibility
       end
       files2Check = newFiles2Check
     end
-    internalHeaders.delete(fn)
-    return internalHeaders.keys.sort, externalHeaders.keys.sort, internalHeaders.keys.collect{|file|dirPerFile(file)}.uniq.sort
+    tmp = internalHeaders.keys.collect do |file|
+      puts("#{file}")
+      d = dirPerFile(file)
+      puts("#{d}")
+      d
+    end
+    tmp = tmp.uniq.sort
+    return internalHeaders.keys.sort, externalHeaders.keys.sort, tmp
   end
 
   def each

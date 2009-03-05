@@ -58,13 +58,18 @@ class CompileCommand
 end
 
 class LinkCommand
-  def initialize(exec, objects, settings)
-    @exec, @objects, @settings = exec, objects, settings
+  def initialize(fileInfo, fileStore)
+    @fileInfo, @fileStore = fileInfo, fileStore
   end
   def execute
-    command = "g++ -o #{@exec} #{@settings} " + @objects.join(" ")
-    puts(command)
-    raise "Linking failed." if !system(command)
+    wasCreated = @fileStore.create(@fileInfo) do |fileName|
+      cmd = "#{@fileInfo['linker']} #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -o #{fileName}"
+      puts(cmd)
+      system(cmd)
+    end
+    # Copy the file from the file store to its proper location
+    FileUtils.copy(@fileStore.name(@fileInfo), @fileInfo["execName"])
+    FileUtils.chmod(0755, @fileInfo["execName"])
   end
 end
 
