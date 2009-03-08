@@ -124,7 +124,7 @@ private:
     NC.WINDOW* mWindow;
 }
 
-version (Test)
+version (UnitTest)
 {
     import tango.text.convert.Format;
     int main()

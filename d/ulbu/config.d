@@ -71,7 +71,7 @@ private:
     char[] mLocation;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

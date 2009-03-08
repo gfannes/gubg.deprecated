@@ -207,7 +207,7 @@ private:
     bool mInitialized;
 }
 
-version(Test)
+version(UnitTest)
 {
     void main()
     {

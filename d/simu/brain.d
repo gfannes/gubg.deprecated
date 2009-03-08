@@ -44,7 +44,7 @@ private:
     Region[] mRegions;
 }
 
-version (Test)
+version (UnitTest)
 {
     import simu.region;
     import gubg.visu;

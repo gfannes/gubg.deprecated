@@ -64,7 +64,7 @@ private:
     Element[10] mArray;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

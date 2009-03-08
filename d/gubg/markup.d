@@ -168,7 +168,7 @@ private:
         }
 }
 
-version (Test)
+version (UnitTest)
 {
 
     void main()

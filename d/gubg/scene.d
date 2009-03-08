@@ -77,7 +77,7 @@ private:
     Tree!(CoSystem) mTree;
 }
 
-version(Test)
+version(UnitTest)
 {
     import tango.core.Thread;
 

@@ -436,7 +436,7 @@ class DScope: DNode
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     import tango.io.File: TFile = File;
 

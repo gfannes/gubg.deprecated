@@ -30,7 +30,7 @@ private:
     IChainOfResponsibility!(Request) mSuccessor;
 }
 
-version (Test)
+version (UnitTest)
 {
     class Test
     {

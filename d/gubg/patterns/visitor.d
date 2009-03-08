@@ -17,7 +17,7 @@ template Visited()
         }
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
 

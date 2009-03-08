@@ -189,7 +189,7 @@ private:
     Node mRoot;
 };
 
-version(Test)
+version(UnitTest)
 {
     import gubg.puts;
 

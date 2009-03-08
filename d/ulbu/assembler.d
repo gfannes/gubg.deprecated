@@ -88,7 +88,7 @@ private:
     Text!(char) text;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

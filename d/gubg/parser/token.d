@@ -286,7 +286,7 @@ class Identifier(Language): Token!(Language)
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

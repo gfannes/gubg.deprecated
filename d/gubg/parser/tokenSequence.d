@@ -248,7 +248,7 @@ private:
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.file;
     import gubg.parser.language;

@@ -22,7 +22,7 @@ class Byte: BodyDefinition
     uint size(){return 1;}
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

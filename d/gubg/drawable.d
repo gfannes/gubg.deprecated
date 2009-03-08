@@ -106,7 +106,7 @@ private:
     real mOrigRadius;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

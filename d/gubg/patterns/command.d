@@ -8,7 +8,7 @@ interface ICommand
     bool undo();
 }
 
-version (Test)
+version (UnitTest)
 {
     class Test: ICommand
     {

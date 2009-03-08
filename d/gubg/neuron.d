@@ -153,7 +153,7 @@ private:
     real mBias;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

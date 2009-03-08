@@ -1,3 +1,4 @@
+include: ../root.tree
 d:
  compilation:
   always: -I/home/gfannes/d/src -I/home/befanneg/personal/d/src

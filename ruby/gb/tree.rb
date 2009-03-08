@@ -45,7 +45,7 @@ class Tree# < IChainOfResponsibility
         end
 
       when Collection.from([@@cppFile, @@dFile])
-	    puts @target
+        puts @target
         # Build test or main application
         type = @target[/\.([^\.]+)$/, 1]. to_sym
         #  Compile the target
@@ -271,20 +271,20 @@ class Tree# < IChainOfResponsibility
     definingFiles = @@definingFiles if definingFiles.nil?
     res = nil
     prevTree = nil
-	settingsFile = nil
-	target = File.file?(pwd) && File.expand_path(pwd)
+    settingsFile = nil
+    target = File.file?(pwd) && File.expand_path(pwd)
     base = pwd
-	foundRoot = false
+    foundRoot = false
     while !foundRoot
       base, file = Tree.findBaseFile(base, definingFiles)
-	  case file
+      case file
       when "root.tree"
         foundRoot = true
-		settingsFile = file
+        settingsFile = file
       when "disabled.tree"
         raise "You are inside a disabled tree"
-	  else
-	    target ||= File.expand_path(file, base)
+      else
+        target ||= File.expand_path(file, base)
       end
       if res.nil?
         prevTree = res = Tree.new(base, settingsFile, target)
@@ -307,7 +307,7 @@ class Tree# < IChainOfResponsibility
         if File.exist?(File.expand_path(lfile, here))
           base = here
           file = lfile
-#          puts("I found basefile \"#{file}\" at \"#{base}\"")
+          #          puts("I found basefile \"#{file}\" at \"#{base}\"")
           break
         end
       end
@@ -321,20 +321,25 @@ class Tree# < IChainOfResponsibility
   end
 
   def pushURL
-    if !@settings.nil?
+    if !@settings.nil? and @settings.has_key?("git")
       @settings["git"]["push"][ENV["USER"]]
-    else
+    elsif @successor
       @successor.pushURL
+    else
+      raise "No git settings found"
     end
   end
   def pullURL
-    if !@settings.nil?
+    if !@settings.nil? and @settings.has_key?("git")
       @settings["git"]["pull"][ENV["USER"]]
-    else
+    elsif @successor
       @successor.pullURL
+    else
+      raise "No git settings found"
     end
   end
   def loadSettings
+    puts("Loading settings from #{@settingsFile}")
     if @settingsFile == "root.tree"
       fnSettings = File.expand_path(@settingsFile, @base)
       @settings = YAML::load(File.open(fnSettings))

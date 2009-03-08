@@ -152,7 +152,7 @@ private:
     real mSleepTime;
 }
 
-version(Test)
+version(UnitTest)
 {
     void main()
     {

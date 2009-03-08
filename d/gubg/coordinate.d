@@ -155,7 +155,7 @@ private:
     Rotation mRotation;
 }
 
-version(Test)
+version(UnitTest)
 {
     void main()
     {

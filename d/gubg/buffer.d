@@ -41,7 +41,7 @@ private:
     Index current;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

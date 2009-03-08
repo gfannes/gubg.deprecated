@@ -903,7 +903,7 @@ class DEmptyExpression: DExpression
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

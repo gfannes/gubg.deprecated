@@ -117,7 +117,7 @@ class Dir: FSNode
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     import rinle.sink;
     void main()

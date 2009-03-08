@@ -88,7 +88,7 @@ public void errn(char[] fmt, ...)
     }
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

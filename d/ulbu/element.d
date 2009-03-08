@@ -656,7 +656,7 @@ private:
     BodyDefinition bodyDef(){return cast(BodyDefinition)mBody;}
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
     

@@ -36,7 +36,7 @@ class IOFiber(O, I): VariantFiber
     {
 	if (state != State.TERM)
 	{
-	    version (Test) puts("Fiber is not yet terminated");
+	    version (UnitTest) puts("Fiber is not yet terminated");
 	    return false;
 	}
 	output = O.init;
@@ -62,10 +62,10 @@ class IOFiber(O, I): VariantFiber
 	    puts("output = {}", output);
 	    break;
 	case State.TERM:
-	    version (Test) puts("Fiber is terminated");
+	    version (UnitTest) puts("Fiber is terminated");
 	    break;
 	case State.EXEC:
-	    version (Test) puts("Fiber is executing");
+	    version (UnitTest) puts("Fiber is executing");
 	    break;
 	default:
 	    puts("Fiber is in an unknown state");
@@ -98,7 +98,7 @@ class VariantFiber: Fiber
         VariantFiber fiber;
         if ((fiber = cast(VariantFiber)Fiber.getThis) is null)
         {
-            version (Test) puts("Yield outside of VariantFiber detected");
+            version (UnitTest) puts("Yield outside of VariantFiber detected");
             return false;
         }
         fiber.variant = t;
@@ -108,7 +108,7 @@ class VariantFiber: Fiber
 }
 
 
-version (Test)
+version (UnitTest)
 {
     void func(inout int o, int i)
     {

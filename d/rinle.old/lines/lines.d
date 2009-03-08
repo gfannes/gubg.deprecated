@@ -103,7 +103,7 @@ private:
     char[] mWord;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

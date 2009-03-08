@@ -251,7 +251,7 @@ private:
     uint mChildIX;
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
     void main()

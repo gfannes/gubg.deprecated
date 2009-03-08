@@ -145,7 +145,7 @@ private:
     Layout!(char) layout;
 }
 
-version (Test)
+version (UnitTest)
 {
 //     import tango.sys.Process: Process;
 

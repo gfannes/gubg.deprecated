@@ -89,7 +89,7 @@ private:
     Neuron[] mNeurons;
 }
 
-version (Test)
+version (UnitTest)
 {
     void main()
     {

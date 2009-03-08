@@ -25,7 +25,7 @@ template Leaf(I)
 }
 
 
-version (Test)
+version (UnitTest)
 {
     interface Component
     {

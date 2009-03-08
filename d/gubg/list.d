@@ -184,7 +184,7 @@ class List(T)
     SavePoint savePoints;
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
     void main()

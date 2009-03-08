@@ -45,7 +45,7 @@ private:
     static bool[char[]] mIsKeyword;
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
 
