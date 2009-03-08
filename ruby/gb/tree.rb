@@ -16,8 +16,8 @@ class Tree# < IChainOfResponsibility
   @@wantedFiles = [@@cppFile, @@hppFile, @@dFile]
   @@fileStore = FileStore.new("/tmp/gb")
   @@linkerPerType = {cpp: "g++", d: "dmd"}
-  def initialize(base, file)
-    @base, @file = base, file
+  def initialize(base, file, target)
+    @base, @settingsFile, @target = base, file, target
     loadSettings
     @dirsPerFile = Hash.new{|h, k|h[k] = []}
     each do |dir, fn|
@@ -29,9 +29,9 @@ class Tree# < IChainOfResponsibility
     commands = []
     case command
     when NilClass
-      case @file
+      case @target
 
-      when "root.tree"
+      when NilClass
         # Build all
         each do |dir, fn|
           fileInfo = nil
@@ -44,11 +44,12 @@ class Tree# < IChainOfResponsibility
           commands << CompileCommand.new(fileInfo, @@fileStore) if fileInfo
         end
 
-      when Collection.from(["test.cpp", "main.cpp", "test.d", "main.d"])
+      when Collection.from([@@cppFile, @@dFile])
+	    puts @target
         # Build test or main application
-        type = @file[/\.([^\.]+)$/, 1]. to_sym
-        #  Compile @file
-        fileInfo = createCompilationFileInfo(type, :lib, File.expand_path(@file, @base))
+        type = @target[/\.([^\.]+)$/, 1]. to_sym
+        #  Compile the target
+        fileInfo = createCompilationFileInfo(type, (unitTest? ? :unitTest : :lib), @target)
         objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
@@ -61,7 +62,6 @@ class Tree# < IChainOfResponsibility
         end
         commands += objects
         #  Link all the object files
-        execName = File.expand_path(name + ".exec", @base)
         linkInfo = FileInfo.new(execName)
         linkInfo["execName"] = execName
         linkInfo["linker"] = @@linkerPerType[type]
@@ -70,7 +70,7 @@ class Tree# < IChainOfResponsibility
         commands << LinkCommand.new(linkInfo, @@fileStore)
 
       else
-        raise "Not supported"
+        raise "Tartet #{@target} is not supported"
       end
 
     else
@@ -78,8 +78,15 @@ class Tree# < IChainOfResponsibility
     end
     commands
   end
+  
+  def unitTest?
+    !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === @target)
+  end
   def name
     File.basename(@base)
+  end
+  def execName
+    @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit.exec" : ".exec"))
   end
 
   def createCompilationFileInfo(type, subType, fileName)
@@ -115,6 +122,7 @@ class Tree# < IChainOfResponsibility
     fileInfo["internalHeaders"] = internalHeaders
     fileInfo["externalHeaders"] = externalHeaders
     fileInfo["includeDirs"] = includeDirs
+    fileInfo["date"] = File.new(fileName).mtime.to_s
     fileInfo["dates"] = internalHeaders.collect{|incl|File.new(fullFileName(incl)).mtime.to_s}
     fileInfo["sourceFile"] = fileName
     fileInfo["directory"] = File.dirname(fileName)
@@ -259,29 +267,30 @@ class Tree# < IChainOfResponsibility
     @@fileStore.clean
   end
 
-  def baseFile
-    File.expand_path(@file, @base)
-  end
-
   def Tree.create(pwd, definingFiles = nil)
     definingFiles = @@definingFiles if definingFiles.nil?
     res = nil
     prevTree = nil
+	settingsFile = nil
+	target = File.file?(pwd) && File.expand_path(pwd)
     base = pwd
-    while true
+	foundRoot = false
+    while !foundRoot
       base, file = Tree.findBaseFile(base, definingFiles)
-      if res.nil?
-        prevTree = res = Tree.new(base, file)
-      else
-        prevTree.successor = Tree.new(base, file)
-        prevTree = prevTree.successor
-      end
-      case file
+	  case file
       when "root.tree"
-        break
+        foundRoot = true
+		settingsFile = file
       when "disabled.tree"
         raise "You are inside a disabled tree"
+	  else
+	    target ||= File.expand_path(file, base)
+      end
+      if res.nil?
+        prevTree = res = Tree.new(base, settingsFile, target)
       else
+        prevTree.successor = Tree.new(base, settingsFile, target)
+        prevTree = prevTree.successor
       end
       base = File.dirname(base)
     end
@@ -326,8 +335,8 @@ class Tree# < IChainOfResponsibility
     end
   end
   def loadSettings
-    if @file == "root.tree"
-      fnSettings = File.expand_path(@file, @base)
+    if @settingsFile == "root.tree"
+      fnSettings = File.expand_path(@settingsFile, @base)
       @settings = YAML::load(File.open(fnSettings))
       if @settings["include"]
         fnExtraSettings = File.expand_path(@settings["include"], @base)

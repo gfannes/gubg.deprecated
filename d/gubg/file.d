@@ -9,7 +9,7 @@ bool loadFile(out char[] content, in char[] fileName)
     return true;
 }
 
-version (Test)
+version (UnitTest)
 {
     import gubg.puts;
 
