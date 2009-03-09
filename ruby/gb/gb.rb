@@ -61,7 +61,7 @@ class GenericBuild
       end
       puts("I will build the following trees:")
       trees.each do |tree|
-        puts(" * #{tree.base} (#{tree.file})")
+        puts(" * #{tree.base}")
       end
       trees.each do |tree|
         @commands += tree.buildCommands(@command)

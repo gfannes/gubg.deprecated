@@ -10,6 +10,7 @@ tabReplacement = ' '*8
 Dir.each('./') do |dir,fn|
   case fn
   when /\.o$/
+  when /\.a$/
   when /\.s$/
   when /\.exec$/
   when /^a\.out$/

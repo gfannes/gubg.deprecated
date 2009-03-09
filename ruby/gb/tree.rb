@@ -7,7 +7,7 @@ require("tools/filestore")
 class Tree# < IChainOfResponsibility
   attr :rootTree, true
   attr :base, true
-  attr :file, true
+  attr :target, true
   attr :successor, true
   @@definingFiles = %w[root.tree disabled.tree main.cpp main.d test.cpp test.d test.rb]
   @@cppFile = /\.cpp$/
@@ -33,7 +33,7 @@ class Tree# < IChainOfResponsibility
       case @target
 
       when NilClass
-        # Build all
+        # Compile all object files
         each do |dir, fn|
           fileInfo = nil
           case fn
@@ -44,9 +44,31 @@ class Tree# < IChainOfResponsibility
           end
           commands << CompileCommand.new(fileInfo, @@fileStore) if fileInfo
         end
+        # Link them into a library
+        dirLib = File.expand_path("lib", @base)
+        if File.exist?(dirLib)
+          libName = File.expand_path("#{name}.a", dirLib)
+          fileInfo = FileInfo.new(libName)
+          fileInfo["libName"] = libName
+          fileInfo["objects"] = commands.collect{|command|command.output}
+          commands << ArchiveCommand.new(fileInfo, @@fileStore)
+        else
+          puts("WARNING::Directory \"#{dirLib}\" was not found, I will not create the library.")
+        end
+        # Copy the include files
+        dirInclude = File.expand_path("include", @base)
+        if File.exist?(dirInclude)
+          each do |dir, fn|
+            case fn
+            when @@hppFile
+              commands << CopyCommand.new(File.expand_path(fn, dir), dirInclude)
+            end
+          end
+        else
+          puts("WARNING::Directory \"#{dirInclude}\" was not found, I will not copy the include files.")
+        end
 
       when Collection.from([@@cppFile, @@dFile])
-        puts @target
         # Build test or main application
         type = @target[/\.([^\.]+)$/, 1]. to_sym
         #  Compile the target
@@ -249,6 +271,7 @@ class Tree# < IChainOfResponsibility
       @@definingFiles.each do |fn|
         res = false if File.exist?(File.expand_path(fn, dir))
       end
+      res = false if Collection.from(["lib", "include"]) === File.basename(dir)
       res
     end
     Dir.each(@base, recursor) do |dir, fn|
@@ -323,7 +346,6 @@ class Tree# < IChainOfResponsibility
         if File.exist?(File.expand_path(lfile, here))
           base = here
           file = lfile
-          #          puts("I found basefile \"#{file}\" at \"#{base}\"")
           break
         end
       end
@@ -355,7 +377,6 @@ class Tree# < IChainOfResponsibility
     end
   end
   def loadSettings
-    puts("Loading settings from #{@settingsFile}")
     if @settingsFile == "root.tree"
       fnSettings = File.expand_path(@settingsFile, @base)
       @settings = YAML::load(File.open(fnSettings))

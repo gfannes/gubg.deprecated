@@ -79,6 +79,21 @@ class LinkCommand
   end
 end
 
+class ArchiveCommand
+  def initialize(fileInfo, fileStore)
+    @fileInfo, @fileStore = fileInfo, fileStore
+  end
+  def execute
+    wasCreated = @fileStore.create(@fileInfo) do |fileName|
+      cmd = "ar rcs #{fileName} " + @fileInfo["objects"].join(" ")
+      puts(cmd)
+      system(cmd)
+    end
+    # Copy the file from the file store to its proper location
+    FileUtils.copy(@fileStore.name(@fileInfo), @fileInfo["libName"])
+  end
+end
+
 class ExecuteCommand
   def initialize(cmd, dir = nil)
     @cmd, @dir = cmd, (dir || Dir.pwd )
@@ -98,6 +113,15 @@ class FormatCommand
     cmd = "astyle --style=#{@style} #{@fileName}"
     raise "Could not format \"#{@fileName}\" with style \"#{@style}\"" if !system(cmd)
     FileUtils.rm(@fileName + ".orig")
+  end
+end
+
+class CopyCommand
+  def initialize(from, to)
+    @from, @to = from, to
+  end
+  def execute
+    FileUtils.copy(@from, @to)
   end
 end
 
