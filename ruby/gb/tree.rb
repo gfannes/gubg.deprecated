@@ -79,6 +79,20 @@ class Tree# < IChainOfResponsibility
     end
     commands
   end
+
+  def formatCommands
+    commands = []
+    # Format all local files, do not recurse
+    each(false) do |dir, fn|
+      fileInfo = nil
+      case fn
+      when @@cppFile
+        commands << FormatCommand.new(File.expand_path(fn, dir), @settings["astyle"] || "linux")
+      when @@dFile
+      end
+    end
+    commands
+  end
   
   def unitTest?
     !@target.nil? && !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === File.basename(@target))
@@ -229,7 +243,7 @@ class Tree# < IChainOfResponsibility
     return internalHeaders.keys.sort, externalHeaders.keys.sort, tmp
   end
 
-  def each
+  def each(recurse = true)
     recursor = Proc.new do |dir|
       res = true
       @@definingFiles.each do |fn|
@@ -245,7 +259,7 @@ class Tree# < IChainOfResponsibility
       nil
     end
     # Iterate also over the files of the successor
-    @successor.each{|dir, fn|yield(dir, fn)} if !@successor.nil?
+    @successor.each{|dir, fn|yield(dir, fn)} if (recurse and !@successor.nil?)
   end
 
   def Tree.allTrees(base)

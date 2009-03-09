@@ -90,6 +90,16 @@ class ExecuteCommand
   end
 end
 
+class FormatCommand
+  def initialize(fileName, style)
+    @fileName, @style = fileName, style
+  end
+  def execute
+    cmd = "astyle --style=#{@style} #{@fileName}"
+    raise "Could not format \"#{@fileName}\" with style \"#{@style}\"" if !system(cmd)
+  end
+end
+
 if __FILE__ == $0
   GitCommand.new(:tree, :command)
 end

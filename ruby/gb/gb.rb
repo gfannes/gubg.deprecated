@@ -28,6 +28,9 @@ class GenericBuild
         when "clean"
           # Clean all
           setCommand(:clean, argument)
+        when Collection.from(%w[f format])
+          # Format using astyle
+          setCommand(:format, argument)
         else
           location = File.expand_path(argument)
         end
@@ -71,7 +74,15 @@ class GenericBuild
       end
     when :clean
       Tree.cleanFileStore
-      
+    when :format
+      trees = Tree.allTrees(location)
+      puts("I will format the following trees:")
+      trees.each do |tree|
+        puts(" * #{tree.base} (#{tree.file})")
+      end
+      trees.each do |tree|
+        @commands += tree.formatCommands
+      end
     when :unknownCommand
       print(:unknownCommand, @command)
     else
