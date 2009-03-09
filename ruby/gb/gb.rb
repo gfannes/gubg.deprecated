@@ -63,6 +63,12 @@ class GenericBuild
       trees.each do |tree|
         @commands += tree.buildCommands(@command)
       end
+      # Execute the compiled unit tests
+      trees.each do |tree|
+        if tree.unitTest?
+          @commands << ExecuteCommand.new(tree.execName, File.dirname(tree.execName))
+        end
+      end
     when :clean
       Tree.cleanFileStore
       

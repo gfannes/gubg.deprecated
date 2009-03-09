@@ -79,6 +79,17 @@ class LinkCommand
   end
 end
 
+class ExecuteCommand
+  def initialize(cmd, dir = nil)
+    @cmd, @dir = cmd, (dir || Dir.pwd )
+  end
+  def execute
+    Dir.chdir(@dir) do
+      puts("WARNING::\"#{@cmd}\" in \"#{@dir}\" failed.")if !system(@cmd)
+    end
+  end
+end
+
 if __FILE__ == $0
   GitCommand.new(:tree, :command)
 end

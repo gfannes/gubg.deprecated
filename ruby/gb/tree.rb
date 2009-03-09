@@ -18,6 +18,7 @@ class Tree# < IChainOfResponsibility
   @@linkerPerType = {cpp: "g++", d: "dmd"}
   def initialize(base, file, target)
     @base, @settingsFile, @target = base, file, target
+    @target = nil if target == false
     loadSettings
     @dirsPerFile = Hash.new{|h, k|h[k] = []}
     each do |dir, fn|
@@ -70,7 +71,7 @@ class Tree# < IChainOfResponsibility
         commands << LinkCommand.new(linkInfo, @@fileStore)
 
       else
-        raise "Tartet #{@target} is not supported"
+        raise "Target #{@target} is not supported"
       end
 
     else
@@ -80,7 +81,7 @@ class Tree# < IChainOfResponsibility
   end
   
   def unitTest?
-    !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === @target)
+    !@target.nil? && !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === File.basename(@target))
   end
   def name
     File.basename(@base)
@@ -293,6 +294,7 @@ class Tree# < IChainOfResponsibility
         prevTree = prevTree.successor
       end
       base = File.dirname(base)
+      target = nil
     end
     res
   end
