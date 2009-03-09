@@ -2,35 +2,35 @@
 
 string Datum::fieldTypeToString(FieldTypeT ft)
 {
-    switch (ft)
+  switch (ft)
     {
     case eFieldTypeEmpty:
-        return "eFieldTypeEmpty";
+      return "eFieldTypeEmpty";
     case eFieldTypeString:
-        return "eFieldTypeString";
+      return "eFieldTypeString";
     case eFieldTypeFloat:
-        return "eFieldTypeFloat";
+      return "eFieldTypeFloat";
     case eFieldTypeInteger:
-        return "eFieldTypeInteger";
+      return "eFieldTypeInteger";
     default:
-        return "Unknown fieldType";
+      return "Unknown fieldType";
     }
 }
 
 int Datum::size(FieldTypeT ft)
 {
-    switch (ft)
+  switch (ft)
     {
     case eFieldTypeEmpty:
-        return sizeof(Datum);
+      return sizeof(Datum);
     case eFieldTypeString:
-        return sizeof(StringD);
+      return sizeof(StringD);
     case eFieldTypeFloat:
-        return sizeof(FloatD);
+      return sizeof(FloatD);
     case eFieldTypeInteger:
-        return sizeof(IntegerD);
+      return sizeof(IntegerD);
     default:
-        cerr << "Unknown field type " << ft << endl;
-        return -1;
+      cerr << "Unknown field type " << ft << endl;
+      return -1;
     }
 }

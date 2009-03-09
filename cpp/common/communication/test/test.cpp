@@ -7,48 +7,50 @@
 using namespace std;
 
 class Checker
-{
-public:
+  {
+  public:
     bool execute4Mutex(MessageListT *messages)
-        {
-            cout << "I found " << messages->size() << " messages" << endl;
-            return true;
-        }
-};
+    {
+      cout << "I found " << messages->size() << " messages" << endl;
+      return true;
+    }
+  };
 
 int main(int argc, char **argv)
 {
-    initialize();
-    ComPoint cp("localhost",1234);
-    cout << cp.toStr() << endl;
-    if ( argc > 1)
+  initialize();
+  ComPoint cp("localhost",1234);
+  cout << cp.toStr() << endl;
+  if ( argc > 1)
     {
-        if (strcmp(argv[1],"client") == 0)
+      if (strcmp(argv[1],"client") == 0)
         {
-            cout << "Starting client." << endl;
-            string message;
-            ostringstream oss;
-            int i;
-            for (i=0;i<1000000;i++)
-                oss << "TestMessage" << endl;
-            message=oss.str();
-            ComStation::send(cp,message);
-            cout << "sending is af" << endl;
-        } else if (strcmp(argv[1],"server") == 0)
-        {
-            ComStation cs(cp);
-            cs.start();
-            sleep(10);
-
-            Checker checker;
-            cs.checkMessages(checker);
+          cout << "Starting client." << endl;
+          string message;
+          ostringstream oss;
+          int i;
+          for (i=0;i<1000000;i++)
+            oss << "TestMessage" << endl;
+          message=oss.str();
+          ComStation::send(cp,message);
+          cout << "sending is af" << endl;
         }
-    } else
-    {
-        ComStation cs(cp);
+      else if (strcmp(argv[1],"server") == 0)
+        {
+          ComStation cs(cp);
+          cs.start();
+          sleep(10);
 
-        cs.start();
-        sleep(1);
+          Checker checker;
+          cs.checkMessages(checker);
+        }
     }
-    return 0;
+  else
+    {
+      ComStation cs(cp);
+
+      cs.start();
+      sleep(1);
+    }
+  return 0;
 }

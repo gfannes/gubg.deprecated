@@ -6,16 +6,16 @@ Socket &gSocket = Socket::instance();
 Socket::Socket()
 {
 #ifdef MINGW32
-    WSADATA wsaData;
-    mValid = (WSAStartup(MAKEWORD(1, 1), &wsaData) == 0);
+  WSADATA wsaData;
+  mValid = (WSAStartup(MAKEWORD(1, 1), &wsaData) == 0);
 #else
-    mValid = true;
+  mValid = true;
 #endif
 }
 
 Socket::~Socket()
 {
 #ifdef MINGW32
-    WSACleanup();
+  WSACleanup();
 #endif
 }

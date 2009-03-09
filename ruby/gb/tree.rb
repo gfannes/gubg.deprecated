@@ -86,8 +86,8 @@ class Tree# < IChainOfResponsibility
     each(false) do |dir, fn|
       fileInfo = nil
       case fn
-      when @@cppFile
-        commands << FormatCommand.new(File.expand_path(fn, dir), @settings["astyle"] || "linux")
+      when Collection.from([@@cppFile, @hppFile])
+        commands << FormatCommand.new(File.expand_path(fn, dir), (@settings && @settings["astyle"]) || "gnu")
       when @@dFile
       end
     end

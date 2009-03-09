@@ -3,14 +3,14 @@
 
 bool initialize()
 {
-    return
-        Serialize::registerType<string>() &&
-        Serialize::registerType<Message>() &&
-        Serialize::registerType<Neuron<eNeuronTanh> >() &&
-        true;
+  return
+    Serialize::registerType<string>() &&
+    Serialize::registerType<Message>() &&
+    Serialize::registerType<Neuron<eNeuronTanh> >() &&
+    true;
 }
 
 bool finalize()
 {
-    return true;
+  return true;
 }

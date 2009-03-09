@@ -11,16 +11,16 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    vector<ImageData> infos;
+  vector<ImageData> infos;
+  {
+    ImageData info("Beans", "BeansGood", "BeansBad");
+    infos.push_back(info);
+  }
+  Dir dir(dirRaw);
+  for (int i=0; i<infos.size(); ++i)
     {
-        ImageData info("Beans", "BeansGood", "BeansBad");
-        infos.push_back(info);
+      ImageData &info = infos[i];
+      info.create();
     }
-    Dir dir(dirRaw);
-    for (int i=0; i<infos.size(); ++i)
-    {
-        ImageData &info = infos[i];
-        info.create();
-    }
-    return 0;
+  return 0;
 }
