@@ -78,7 +78,7 @@ class GenericBuild
       trees = Tree.allTrees(location)
       puts("I will format the following trees:")
       trees.each do |tree|
-        puts(" * #{tree.base} (#{tree.file})")
+        puts(" * #{tree.base}")
       end
       trees.each do |tree|
         @commands += tree.formatCommands

@@ -109,7 +109,7 @@ class Tree# < IChainOfResponsibility
       fileInfo = nil
       case fn
       when Collection.from([@@cppFile, @hppFile])
-        commands << FormatCommand.new(File.expand_path(fn, dir), (@settings && @settings["astyle"]) || "gnu")
+        commands << FormatCommand.new(File.expand_path(fn, dir), astyleStyle)
       when @@dFile
       end
     end
@@ -374,6 +374,16 @@ class Tree# < IChainOfResponsibility
       @successor.pullURL
     else
       raise "No git settings found"
+    end
+  end
+  def astyleStyle
+    if !@settings.nil? and @settings.has_key?("astyle")
+      @settings["astyle"]
+    elsif @successor
+      @successor.astyleStyle
+    else
+      # Default style
+      "gnu"
     end
   end
   def loadSettings

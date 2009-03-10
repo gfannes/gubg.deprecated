@@ -111,8 +111,13 @@ class FormatCommand
   end
   def execute
     cmd = "astyle --style=#{@style} #{@fileName}"
-    raise "Could not format \"#{@fileName}\" with style \"#{@style}\"" if !system(cmd)
-    FileUtils.rm(@fileName + ".orig")
+    puts("Formatting \"#{@fileName}\" using style \"#{@style}\".")
+    output = `#{cmd}`
+    if $? != 0
+      raise "Could not format \"#{@fileName}\" with style \"#{@style}\""
+    else
+      FileUtils.rm(@fileName + ".orig")
+    end
   end
 end
 
