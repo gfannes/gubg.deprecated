@@ -8,6 +8,7 @@
 #include "message.hpp"
 
 using namespace std;
+using namespace gubg;
 
 ComStation::~ComStation()
 {

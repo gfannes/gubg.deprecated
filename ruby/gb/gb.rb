@@ -108,6 +108,10 @@ class GenericBuild
 #{indent(2)} * s: status
 #{indent(2)} * c: commit -a
 #{indent(1)}Location: The tree to be used. If not specified, the working directory is taken.
+#{indent(2)} * all: Build all subtrees
+#{indent(1)}Other commands:
+#{indent(2)} * clean: Clean all objects from /tmp/gb
+#{indent(2)} * f: Format the code
 Created by Geert Fannes under GPL.
 @)
     when :unknownCommand

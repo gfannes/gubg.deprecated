@@ -7,7 +7,7 @@
 #include "neuron.hpp"
 #include "initialization.hpp"
 
-using namespace Serialize;
+using namespace gubg::Serialize;
 
 int main()
 {

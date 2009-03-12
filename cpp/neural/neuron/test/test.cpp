@@ -3,6 +3,7 @@
 #include "neuron.hpp"
 
 using namespace std;
+using namespace gubg;
 
 int main()
 {

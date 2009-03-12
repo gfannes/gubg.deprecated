@@ -3,6 +3,7 @@
 #include "treeview.hpp"
 
 using namespace std;
+using namespace gubg;
 
 int main(int argc, char *argv[])
 {

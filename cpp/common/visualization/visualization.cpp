@@ -3,6 +3,7 @@
 #include "visualization.hpp"
 
 using namespace std;
+using namespace gubg;
 
 void Visualization::initialize()
 {

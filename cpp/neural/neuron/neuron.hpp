@@ -8,6 +8,7 @@
 #include "vector.hpp"
 
 using namespace std;
+using namespace gubg;
 
 // Transfer function types
 enum NeuronE
@@ -196,9 +197,12 @@ private:
     WeightType mWeights;
 };
 
-namespace Serialize
+namespace gubg
 {
-    SetType(Neuron<eNeuronTanh>,eTypeIDNeuronTanh);
+    namespace Serialize
+    {
+	SetType(Neuron<eNeuronTanh>,eTypeIDNeuronTanh);
+    }
 }
 
 #endif
