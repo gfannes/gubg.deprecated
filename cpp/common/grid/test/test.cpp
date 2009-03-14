@@ -4,7 +4,7 @@
 #include "vector.hpp"
 
 using namespace std;
-//using namespace Vector;
+using namespace gubg;
 
 class BlockH: public Block<Grid>
   {

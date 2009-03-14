@@ -6,6 +6,7 @@
 #include "datavisu.hpp"
 
 using namespace std;
+using namespace gubg;
 
 class Sine:public Function<double, 0, 0>
   {

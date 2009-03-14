@@ -3,6 +3,8 @@
 #include "gaussian.hpp"
 #include "datavisu.hpp"
 
+using namespace gubg;
+
 // Has a minimum of 0 at (1,1)
 double rosenBrock(double x, double y)
 {

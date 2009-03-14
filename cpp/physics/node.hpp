@@ -9,6 +9,7 @@
 #include "utils.hpp"
 
 using namespace std;
+using namespace gubg;
 
 template <int dimension>
 class NodeAttr

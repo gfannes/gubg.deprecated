@@ -5,6 +5,7 @@
 #include "array.hpp"
 
 using namespace std;
+using namespace gubg;
 
 class CollectRecord: public Array<Datum*>::CollectBlock<string>
   {

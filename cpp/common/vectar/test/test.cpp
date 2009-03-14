@@ -5,6 +5,7 @@
 #include "vector.hpp"
 
 using namespace std;
+using namespace gubg;
 
 class FunctionH: public Function<double,0,1>
   {

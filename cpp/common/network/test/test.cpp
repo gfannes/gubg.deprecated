@@ -7,7 +7,8 @@
 #include "vector.hpp"
 
 using namespace std;
-using namespace Vector;
+using namespace gubg;
+using namespace gubg::Vector;
 
 class VisualizationH: public Visualization
   {

@@ -11,6 +11,7 @@
 #include "datavisu.hpp"
 
 using namespace std;
+using namespace gubg;
 
 enum TestT
 {

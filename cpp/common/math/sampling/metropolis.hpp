@@ -5,75 +5,78 @@
 #include "bernoulli.hpp"
 #include "vector.hpp"
 
-template <typename TargetD, typename ProposalD>
-class Metropolis
+namespace gubg
 {
-public:
-    Metropolis(TargetD &targetD, ProposalD &proposalD, bool symmetric = false):
-        mTargetD(targetD),
-        mProposalD(proposalD),
-        mSymmetric(symmetric),
-        mBernoulli(0.0){}
+    template <typename TargetD, typename ProposalD>
+    class Metropolis
+    {
+    public:
+	Metropolis(TargetD &targetD, ProposalD &proposalD, bool symmetric = false):
+	    mTargetD(targetD),
+	    mProposalD(proposalD),
+	    mSymmetric(symmetric),
+	    mBernoulli(0.0){}
     
-    bool run(typename TargetD::DomainType &location, long nrSteps, bool optimize = false)
-        {
-            double logP0, logP1, alpha, bestLogP;
-            typename TargetD::DomainType newLocation, bestLocation;
-            bool b;
+	bool run(typename TargetD::DomainType &location, long nrSteps, bool optimize = false)
+	    {
+		double logP0, logP1, alpha, bestLogP;
+		typename TargetD::DomainType newLocation, bestLocation;
+		bool b;
 
-            bestLogP = logP0 = mTargetD.logDensity(location);
-            bestLocation = location;
-            mLocations.resize(nrSteps);
-            for (long i=0;i<nrSteps;++i)
-            {
-                // Generate a new candidate location
-                mProposalD.draw(newLocation, location);
-                logP1 = mTargetD.logDensity(newLocation);
+		bestLogP = logP0 = mTargetD.logDensity(location);
+		bestLocation = location;
+		mLocations.resize(nrSteps);
+		for (long i=0;i<nrSteps;++i)
+		{
+		    // Generate a new candidate location
+		    mProposalD.draw(newLocation, location);
+		    logP1 = mTargetD.logDensity(newLocation);
                 
-                // Compute the likelihood ratio
-                alpha = (logP1-logP0);
-                if (!mSymmetric)
-                    alpha += mProposalD.logDensity(location, newLocation) - mProposalD.logDensity(newLocation, location);
+		    // Compute the likelihood ratio
+		    alpha = (logP1-logP0);
+		    if (!mSymmetric)
+			alpha += mProposalD.logDensity(location, newLocation) - mProposalD.logDensity(newLocation, location);
 
-                // Accept if likelihood ratio is large enough (we increased in probability or did not decrease to much)
-                if (alpha >= 0)
-                {
-                    location = newLocation;
-                    logP0 = logP1;
+		    // Accept if likelihood ratio is large enough (we increased in probability or did not decrease to much)
+		    if (alpha >= 0)
+		    {
+			location = newLocation;
+			logP0 = logP1;
 //                    cout << "Accept" << endl;
-                    if (optimize && logP0>bestLogP)
-                    {
-                        bestLogP = logP0;
-                        bestLocation = location;
-                    }
-                } else
-                {
-                    mBernoulli.setProbTrue(exp(alpha));
-                    mBernoulli.draw(b);
-                    if (b)
-                    {
-                        location = newLocation;
-                        logP0 = logP1;
+			if (optimize && logP0>bestLogP)
+			{
+			    bestLogP = logP0;
+			    bestLocation = location;
+			}
+		    } else
+		    {
+			mBernoulli.setProbTrue(exp(alpha));
+			mBernoulli.draw(b);
+			if (b)
+			{
+			    location = newLocation;
+			    logP0 = logP1;
 //                        cout << "Accept but random" << endl;
-                    } else
-                    {
+			} else
+			{
 //                        cout << "Reject" << endl;
-                    }
-                }
+			}
+		    }
 //                cout << "" << Vector::toString(location) << "" << endl;
-                mLocations[i] = location;
-            }
-            if (optimize)
-                location = bestLocation;
-            return true;
-        }
-    vector<typename TargetD::DomainType> locations(){return mLocations;}
-private:
-    TargetD &mTargetD;
-    ProposalD &mProposalD;
-    bool mSymmetric;
-    BernoulliDistribution mBernoulli;
-    vector<typename TargetD::DomainType> mLocations;
-};
+		    mLocations[i] = location;
+		}
+		if (optimize)
+		    location = bestLocation;
+		return true;
+	    }
+	vector<typename TargetD::DomainType> locations(){return mLocations;}
+    private:
+	TargetD &mTargetD;
+	ProposalD &mProposalD;
+	bool mSymmetric;
+	BernoulliDistribution mBernoulli;
+	vector<typename TargetD::DomainType> mLocations;
+    };
+}
 
 #endif

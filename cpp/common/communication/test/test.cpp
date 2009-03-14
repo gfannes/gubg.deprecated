@@ -5,6 +5,7 @@
 #include "initialization.hpp"
 
 using namespace std;
+using namespace gubg;
 
 class Checker
   {

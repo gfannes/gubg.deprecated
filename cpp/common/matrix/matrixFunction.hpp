@@ -8,7 +8,8 @@
 #include "cube.hpp"
 
 using namespace std;
-using namespace Math;
+using namespace gubg;
+using namespace gubg::Math;
 
 // This class creates a function from a matrix by interpolation of its values to get those for coordinates in between cells
 // The matrix is transformed to a function as is (rix = yco, cix = xco), but with the cell [0,0] in (x,y) and the cells [nrR-1,nrC-1] at coordinate (x+w,y+h)

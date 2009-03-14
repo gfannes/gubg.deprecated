@@ -4,7 +4,8 @@
 #include "image.hpp"
 #include "datavisu.hpp"
 
-using namespace Vector;
+using namespace gubg;
+using namespace gubg::Vector;
 
 int main(int argc, char *argv[])
 {

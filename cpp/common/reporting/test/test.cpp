@@ -5,6 +5,7 @@
 #include "vector.hpp"
 
 using namespace std;
+using namespace gubg;
 
 int main()
 {

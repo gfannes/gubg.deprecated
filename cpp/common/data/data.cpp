@@ -5,6 +5,7 @@
 #include "data.hpp"
 
 using namespace std;
+using namespace gubg;
 
 Data::Data(string fileName, char delimiter)
 {

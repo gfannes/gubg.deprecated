@@ -3,6 +3,8 @@
 #include "matrixFunction.hpp"
 #include "datavisu.hpp"
 
+using namespace gubg;
+
 int main(int argc, char *argv[])
 {
   typedef ConvexRegion::Point Point;

@@ -14,10 +14,11 @@
 #include "cube.hpp"
 
 using namespace std;
-using namespace Cube;
 
 namespace gubg
 {
+    using namespace Cube;
+
     namespace Vector
     {
 	template< typename T >
@@ -674,7 +675,7 @@ namespace gubg
 	{
 	    return computeTrimmedMean(mean,vec,1);
 	}
-    };
+    }
 
     template<typename T>
     basic_ostream<char> &operator<<(basic_ostream<char> &os, const vector<T> &t)
@@ -682,5 +683,5 @@ namespace gubg
 	os << Vector::toString(t);
 	return os;
     }
-};
+}
 #endif

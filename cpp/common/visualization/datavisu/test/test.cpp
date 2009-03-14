@@ -6,7 +6,8 @@
 #include "matrixFunction.hpp"
 
 using namespace std;
-using namespace Vector;
+using namespace gubg;
+using namespace gubg::Vector;
 
 class FunctionH: public Function<double,0,1>
   {

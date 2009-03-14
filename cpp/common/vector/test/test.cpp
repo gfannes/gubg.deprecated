@@ -4,8 +4,8 @@
 #include "vector.hpp"
 
 using namespace std;
-using namespace Vector;
-// using namespace Cube;
+using namespace gubg;
+using namespace gubg::Vector;
 
 int main()
 {

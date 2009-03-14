@@ -5,6 +5,7 @@
 #include "random.hpp"
 
 using namespace std;
+using namespace gubg;
 
 typedef struct
   {

@@ -1,5 +1,7 @@
 #include "datum.hpp"
 
+using namespace gubg;
+
 string Datum::fieldTypeToString(FieldTypeT ft)
 {
   switch (ft)
