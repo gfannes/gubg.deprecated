@@ -62,9 +62,15 @@ namespace gubg
 	{
 	    vec.resize(nr);
 	    long i;
-	    double delta=(max-min)/nr;
-	    for (i=0;i<nr;i++)
-		vec[i] = min+i*delta;
+	    if (1 == nr)
+		vec[0] = 0.5*(min+max);
+	    else if (nr > 1)
+	    {
+		double delta=(max-min)/(nr-1);
+		for (i=0;i<nr;i++)
+		    vec[i] = min+i*delta;
+	    } else
+		return false;
 	    return true;
 	}
 
