@@ -23,9 +23,9 @@ Dir.each('./', recursor) do |dir, fn|
     fileName = File.expand_path(fn, dir)
     if bFirst
       bFirst = false
-      system("#{binary} #{fileName}")
+      system("#{binary} \"#{fileName}\"")
     else
-      system("#{binary} -a #{fileName}")
+      system("#{binary} -a \"#{fileName}\"")
     end
   end
   nil
