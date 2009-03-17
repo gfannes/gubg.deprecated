@@ -91,7 +91,7 @@ class GenericBuild
   end
 
   def executeCommands
-    time("Executing all commands", true) do
+    time("Executing all commands (#{@commands.length})", true) do
       @commands.each do |command|
         command.execute
       end

@@ -47,7 +47,7 @@ class Tree# < IChainOfResponsibility
         # Link them into a library
         dirLib = File.expand_path("lib", @base)
         if File.exist?(dirLib)
-          libName = File.expand_path("#{name}.a", dirLib)
+          libName = File.expand_path("lib#{name}.a", dirLib)
           fileInfo = FileInfo.new(libName)
           fileInfo["libName"] = libName
           fileInfo["objects"] = commands.collect{|command|command.output}
@@ -78,7 +78,7 @@ class Tree# < IChainOfResponsibility
         fileInfo["internalHeaders"].each do |ih|
           im = ih
           im = im.gsub(/\.hpp$/, ".cpp") if type == :cpp
-          if internalFile?(im)
+          if internalFile?(im) and fullFileName(im) != @target
             fi = createCompilationFileInfo(type, :lib, fullFileName(im))
             objects << CompileCommand.new(fi, @@fileStore)
           end
