@@ -1,6 +1,4 @@
-This software is developed by Geert Fannes and copyright protected. All rights are reserved, except if you have specific permission from the author.
-
-Such a specific permission is granted to Bestray bvba. to use, distribute and modify the software internally. Modifications have to be reported back to the author.
+This software is developed by Geert Fannes and is released under the GPL.
 
 No waranty is granted whatsoever.
 
