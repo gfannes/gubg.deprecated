@@ -1,8 +1,8 @@
 git:
  push:
-  gfannes: github
+  gfannes: git@github.com:gfannes/gubg.git
   befanneg: github
  pull:
-  gfannes: github master
+  gfannes: git@github.com:gfannes/gubg.git master
   befanneg: github master
   tfannes: github master
