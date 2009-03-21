@@ -296,6 +296,45 @@ class String
       self
     end
   end
+
+  @@characterMap = Hash.new{|h, k|h[k] = (k < 128 ? k : ??)}
+  @@characterMap[130] = ' '[0]
+  @@characterMap[133] = ?a
+  @@characterMap[138] = ' '[0]
+  @@characterMap[141] = ?i
+  @@characterMap[146] = ?'
+  @@characterMap[150] = ?-
+  @@characterMap[171] = ?"
+  @@characterMap[176] = ' '[0]
+  @@characterMap[187] = ?"
+  @@characterMap[201] = ?E
+  @@characterMap[215] = ?x
+  @@characterMap[218] = ?U
+  @@characterMap[223] = ?Z
+  @@characterMap[224] = ?a
+  @@characterMap[225] = ?a
+  @@characterMap[226] = ?a
+  @@characterMap[231] = ?c
+  @@characterMap[232] = ?e
+  @@characterMap[233] = ?e
+  @@characterMap[234] = ?e
+  @@characterMap[238] = ?i
+  @@characterMap[241] = ?n
+  @@characterMap[243] = ?o
+  @@characterMap[244] = ?o
+  @@characterMap[245] = ?o
+  @@characterMap[249] = ?u
+  @@characterMap[250] = ?u
+  @@characterMap[251] = ?u
+  def to_ascii!
+    ix = -1
+    each_byte do |byte|
+      ix += 1
+      setbyte(ix, @@characterMap[byte])
+    end
+    self
+  end
+
 end
 
 class Hash
