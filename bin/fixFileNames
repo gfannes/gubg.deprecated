@@ -8,8 +8,14 @@ def stepInDir(startDir = "./", recursor = nil, permissionDenied = nil, level = 0
     startDir = File.expand_path(startDir) if level == 0
     Dir.foreach(startDir) do |entry|
       begin
-        raise "Invalid encoding for \"#{entry}\"" if !entry.valid_encoding?
-        raise "Invalid encoding for \"#{startDir}\"" if !startDir.valid_encoding?
+        [entry, startDir].each do |str|
+          if !str.valid_encoding?
+            puts("Invalid encoding for \"#{str}\"")
+            str.to_ascii!
+            puts("str = #{str}")
+            raise "STOP"
+          end
+        end
         fnDir = File.expand_path(entry, startDir)
         if fnDir.length > startDir.length
           if File.file?(fnDir)
