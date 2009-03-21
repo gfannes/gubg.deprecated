@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+require("fileutils")
+
+def stepInDir(startDir = "./", recursor = nil, permissionDenied = nil, level = 0)
+  subDirs = []
+  begin
+    startDir = File.expand_path(startDir) if level == 0
+    Dir.foreach(startDir) do |entry|
+      begin
+        fnDir = File.expand_path(entry, startDir)
+        if fnDir.length > startDir.length
+          if File.file?(fnDir)
+            puts("#{fnDir}")
+#             if File.readable?(fnDir)
+#               return if yield(startDir.dup, entry.dup)
+#             else
+#               permissionDenied << fnDir
+#             end
+          elsif File.directory?(fnDir)
+            subDirs << fnDir if !(recursor and !recursor.call(fnDir))
+          end
+        end
+#       rescue ArgumentError
+#         puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" because it does not seem to exist.")
+#         raise "STOP"
+      end
+    end
+    subDirs.each do |subDir|
+      stepInDir(subDir, recursor, permissionDenied, level + 1){|base, fn|return if yield(base, fn)}
+    end
+  rescue Errno::EACCES
+    permissionDenied << startDir if permissionDenied
+  end
+end
+
+stepInDir("./")
