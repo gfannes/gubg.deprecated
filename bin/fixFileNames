@@ -9,12 +9,12 @@ def stepInDir(startDir = "./", recursor = nil, permissionDenied = nil, level = 0
     startDir = File.expand_path(startDir) if level == 0
     Dir.foreach(startDir) do |entry|
       begin
-        [entry, startDir].each do |str|
-          if !str.valid_encoding?
-            puts("Invalid encoding for \"#{str}\"")
-            str.to_ascii!
-            puts("str = #{str}")
-            raise "STOP"
+        if !entry.valid_encoding?
+          oldEntry = entry.dup
+          entry.to_ascii!
+	  puts("Renaming entry \"#{oldEntry}\" to \n \"#{entry}\"")
+          Dir.chdir(startDir) do
+            system("mv \"#{oldEntry}\" \"#{entry}\"")
           end
         end
         fnDir = File.expand_path(entry, startDir)

@@ -297,35 +297,78 @@ class String
     end
   end
 
-  @@asciiMap = Hash.new{|h, k|h[k] = (k < 128 ? k : ??)}
-  @@asciiMap[130] = ' '[0]
-  @@asciiMap[133] = ?a
-  @@asciiMap[138] = ' '[0]
-  @@asciiMap[141] = ?i
-  @@asciiMap[146] = ?'
-  @@asciiMap[150] = ?-
-  @@asciiMap[171] = ?"
-  @@asciiMap[176] = ' '[0]
-  @@asciiMap[187] = ?"
-  @@asciiMap[201] = ?E
-  @@asciiMap[215] = ?x
-  @@asciiMap[218] = ?U
-  @@asciiMap[223] = ?Z
-  @@asciiMap[224] = ?a
-  @@asciiMap[225] = ?a
-  @@asciiMap[226] = ?a
-  @@asciiMap[231] = ?c
-  @@asciiMap[232] = ?e
-  @@asciiMap[233] = ?e
-  @@asciiMap[234] = ?e
-  @@asciiMap[238] = ?i
-  @@asciiMap[241] = ?n
-  @@asciiMap[243] = ?o
-  @@asciiMap[244] = ?o
-  @@asciiMap[245] = ?o
-  @@asciiMap[249] = ?u
-  @@asciiMap[250] = ?u
-  @@asciiMap[251] = ?u
+  @@asciiMap = Hash.new do |h, k|
+    if k < 128
+	h[k] = k
+    else
+	raise "Cannot convert ascii code \"#{k}\""
+    end
+  end
+  @@asciiMap[130] = ' '.ord
+  @@asciiMap[133] = ?a.ord
+  @@asciiMap[138] = ' '.ord
+  @@asciiMap[141] = ?i.ord
+  @@asciiMap[146] = ?'.ord
+  @@asciiMap[150] = ?-.ord
+  @@asciiMap[160] = ' '.ord
+  @@asciiMap[171] = ?".ord
+  @@asciiMap[176] = ' '.ord
+  @@asciiMap[183] = ?..ord
+  @@asciiMap[184] = ?,.ord
+  @@asciiMap[186] = ?o.ord
+  @@asciiMap[187] = ?".ord
+  @@asciiMap[191] = ??.ord
+  @@asciiMap[192] = ?A.ord
+  @@asciiMap[193] = ?A.ord
+  @@asciiMap[194] = ?A.ord
+  @@asciiMap[195] = ?A.ord
+  @@asciiMap[196] = ?A.ord
+  @@asciiMap[197] = ?A.ord
+  @@asciiMap[198] = ?A.ord
+  @@asciiMap[199] = ?C.ord
+  @@asciiMap[200] = ?E.ord
+  @@asciiMap[201] = ?E.ord
+  @@asciiMap[202] = ?E.ord
+  @@asciiMap[203] = ?E.ord
+  @@asciiMap[204] = ?I.ord
+  @@asciiMap[205] = ?I.ord
+  @@asciiMap[206] = ?I.ord
+  @@asciiMap[207] = ?I.ord
+  @@asciiMap[215] = ?x.ord
+  @@asciiMap[217] = ?U.ord
+  @@asciiMap[218] = ?U.ord
+  @@asciiMap[219] = ?U.ord
+  @@asciiMap[220] = ?U.ord
+  @@asciiMap[221] = ?Y.ord
+  @@asciiMap[222] = ?P.ord
+  @@asciiMap[223] = ?Z.ord
+  @@asciiMap[224] = ?a.ord
+  @@asciiMap[225] = ?a.ord
+  @@asciiMap[226] = ?a.ord
+  @@asciiMap[227] = ?a.ord
+  @@asciiMap[228] = ?a.ord
+  @@asciiMap[229] = ?a.ord
+  @@asciiMap[230] = ?a.ord
+  @@asciiMap[231] = ?c.ord
+  @@asciiMap[232] = ?e.ord
+  @@asciiMap[233] = ?e.ord
+  @@asciiMap[234] = ?e.ord
+  @@asciiMap[235] = ?e.ord
+  @@asciiMap[236] = ?i.ord
+  @@asciiMap[237] = ?i.ord
+  @@asciiMap[238] = ?i.ord
+  @@asciiMap[239] = ?i.ord
+  @@asciiMap[241] = ?n.ord
+  @@asciiMap[242] = ?o.ord
+  @@asciiMap[243] = ?o.ord
+  @@asciiMap[244] = ?o.ord
+  @@asciiMap[245] = ?o.ord
+  @@asciiMap[246] = ?o.ord
+  @@asciiMap[248] = ?o.ord
+  @@asciiMap[249] = ?u.ord
+  @@asciiMap[250] = ?u.ord
+  @@asciiMap[251] = ?u.ord
+  @@asciiMap[252] = ?u.ord
   def to_ascii!
     ix = -1
     each_byte do |byte|
@@ -468,6 +511,25 @@ class Collection < Array
       collection << el
     end
     collection
+  end
+end
+
+class << File
+  alias expand_path_old expand_path
+  def expand_path(entry, dir = nil)
+    if entry.encoding.name == "UTF-8" and dir and dir.encoding.name == "UTF-8"
+      res = nil
+      if dir[-1] == "/"
+	res = dir + entry
+      else
+        res = dir + "/" + entry
+      end
+      res.gsub!(/\/[^\/]+\/\.\./, "")
+      res.gsub!("/.", "")
+      return res
+    else
+      return expand_path_old(entry, dir)
+    end
   end
 end
 
