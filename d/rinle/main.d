@@ -6,6 +6,9 @@ import gubg.patterns.command;
 import gubg.patterns.chainOfResponsibility;
 
 import rinle.focus;
+import rinle.model.interfaces;
+import rinle.model.filesystem;
+import rinle.view.view;
 //import rinle.commands;
 
 class Rinle
@@ -18,6 +21,9 @@ class Rinle
 
             mFocusMgr = new FocusMgr(mInput, mOutput);
 	    mFocusMgr.push(new Focus);
+
+            mModel = new Dir;
+            mView = new View(mModel);
         }
     ~this()
         {
@@ -95,7 +101,8 @@ private:
 	bool undo(){return false;}
     }
 
-    // root, base, current
+    Dir mModel;
+    View mView;
     
     bool mProceed;
 

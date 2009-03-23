@@ -1,9 +1,21 @@
 module gubg.markup;
-    import gubg.puts;
+
+import gubg.puts;
 
 public import gubg.stack;
 
+// Template to be used for creating a tree of elements of type Content that have a markup Tag attached to them.
+// Define the following functions
+//  * void beforeCollect()
+//     * Called before collect() starts collecting info from the tree
+//  * void showBefore(ref Dest dest, Stack!(MetaTag) stack)
+//     * Dest is the type specified in collect, typically char[]
+//     * Add things before content is added to dest
+//  * void showAfter(ref Dest dest, Stack!(MetaTag) stack)
+//     * Add things after content is added to dest
+//  * void show(char[] content, ref char[] dest, Stack!(MetaTag) stack)
 // Node should be set to the class where this template is mixed-in
+// Constructors are provided by the template
 template Markup(Tag, Content, Node)
 {
     this ()
@@ -144,6 +156,10 @@ class XMLMarkup
     // Mixin the main markup functionality
     mixin Markup!(char[], char[], XMLMarkup);
 
+    void beforeCollect()
+        {
+        }
+
     void showBefore(ref char[] dest, Stack!(MetaTag) stack)
 	{
 	    dest ~= indent(stack.depth-1) ~ "<" ~ mTag ~ (isLeaf ? ">" : ">\n");
@@ -182,6 +198,7 @@ version (UnitTest)
 	p.add("Second line. ");
 	p.create("i", "eat this.");
 	p.add(" And we continue.");
+
 	char[] str;
 	m.collect(str);
 	puts("{}", str);

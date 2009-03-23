@@ -1,27 +1,74 @@
 // The composite pattern
 
-interface Interface(I): I
+// Interfaces
+interface IComponent(I): I
 {
-    bool getComponent(inout Interface!(I) component, uint ix);
-    bool setComponent(Interface!(I) component, uint ix);
+    bool getComponent(inout IComponent!(I) component, uint ix);
+    bool setComponent(IComponent!(I) component, uint ix);
+    bool getParent(inout IComposite!(I) parent);
+    void setParent(IComposite!(I) parent);
+}
+interface IComposite(I): I, IComponent!(I)
+{
+}
+interface ILeaf(I): I, IComponent!(I)
+{
 }
 
-template Composite(I)
+// Templates
+template TComposite(I)
 {
-    int opApply(int delegate(inout I) dg)
+    // getComponent and setComponent should be implemented
+    bool getParent(inout IComposite!(I) parent)
         {
+            parent = mParent;
+            return (parent !is null);
         }
+    void setParent(IComposite!(I) parent)
+        {
+            mParent = parent;
+        }
+private:
+    IComposite!(I) mParent;
 }
-
-template ArrayComposite(I)
+template TArrayComposite(I)
 {
+    // getComponent and setComponent use the index operations
+    bool getComponent(inout IComponent!(Component) component, uint ix)
+        {
+            bool found = true;
+            try
+            {
+                component = this[ix];
+            }
+            catch (ArrayBoundsError)
+            {
+                found = false;
+                component = null;
+            }
+            return found;
+        }
+    bool setComponent(IComponent!(Component) component, uint ix)
+        {
+            bool ok = true;
+            try
+            {
+                this[ix] = component;
+            }
+            catch (ArrayBoundsError)
+            {
+                ok = false;
+            }
+            return ok;
+        }
+    mixin TComposite!(I);
 }
-
-template Leaf(I)
+template TLeaf(I)
 {
-    bool getComponent(inout Interface!(I) component, uint ix){return false;}
-    bool setComponent(Interface!(I) component, uint ix){return false;}
-    mixin Composite!(I);
+    // getComponent and setComponent always return false
+    bool getComponent(inout IComponent!(I) component, uint ix){return false;}
+    bool setComponent(IComponent!(I) component, uint ix){return false;}
+    mixin TComposite!(I);
 }
 
 
@@ -32,23 +79,24 @@ version (UnitTest)
         void draw();
     }
 
-    class L: Interface!(Component)
+    class L: ILeaf!(Component)
     {
-        mixin Leaf!(Component);
+        mixin TLeaf!(Component);
         void draw(){}
     }
 
-    class C: Interface!(Component)
+    class C: IComposite!(Component)
     {
-        bool getComponent(inout Interface!(Component) component, uint ix)
+        bool getComponent(inout IComponent!(Component) component, uint ix)
         {
             return false;
         }
-        bool setComponent(Interface!(Component) component, uint ix)
+        bool setComponent(IComponent!(Component) component, uint ix)
         {
             return false;
         }
-        mixin Composite!(Component);
+        mixin TComposite!(Component);
+
         void draw(){}
     }
 
