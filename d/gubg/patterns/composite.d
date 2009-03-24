@@ -26,6 +26,7 @@ interface ILeaf(I): IComponent!(I)
 }
 
 // Templates
+// Provide parent()
 template TComposite(I)
 {
     // NOTE::Do not forget to set the parent in replaceComponent()
@@ -38,6 +39,9 @@ template TComposite(I)
 private:
     IComposite!(I) mParent;
 }
+// Provide replaceComponent() and parent() for classes that specify:
+//  * opIndex and opIndexAssign
+//  * nrComponents and setNrComponents
 template TIndexComposite(I)
 {
     IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode)
@@ -60,7 +64,7 @@ template TIndexComposite(I)
                 if (origComponent !is null)
                     origComponent.parent = null;
                 if (newComponent !is null)
-                    newComponent.parent = this;
+                    newComponent.parent(this);
                 this[ix] = newComponent;
                 break;
 
@@ -80,6 +84,7 @@ template TIndexComposite(I)
         }
     mixin TComposite!(I);
 }
+// Provide parent() and disabled replaceComponent() functionality
 template TLeaf(I)
 {
     uint nrComponents(){return 0;}
@@ -95,19 +100,24 @@ template TLeaf(I)
 
 version (UnitTest)
 {
+    // We want all our components to provide draw()
     interface ComponentMethods
     {
         void draw();
     }
+    // Component is our ComponentMethods interface, extended with the typical component methods
     alias IComponent!(ComponentMethods) Component;
 
+    // A leaf component
     class L: ILeaf!(ComponentMethods)
     {
         mixin TLeaf!(ComponentMethods);
 
+	// ComponentMethods
         void draw(){}
     }
 
+    // A general composite component
     class C: IComposite!(ComponentMethods)
     {
         uint nrComponents(){return 0;}
@@ -119,9 +129,11 @@ version (UnitTest)
         }
         mixin TComposite!(ComponentMethods);
 
+	// ComponentMethods
         void draw(){}
     }
 
+    // A composite component which provides opIndex and opIndexAssign
     class IC: IComposite!(ComponentMethods)
     {
         uint nrComponents(){return mArray.length;}
@@ -130,6 +142,7 @@ version (UnitTest)
         Component opIndexAssign(Component rhs, uint ix){return (mArray[ix] = rhs);}
         mixin TIndexComposite!(ComponentMethods);
 
+	// ComponentMethods
         void draw(){}
     private:
         Component mArray[];
@@ -140,7 +153,7 @@ version (UnitTest)
         auto l = new L();
         auto c = new C();
         auto ic = new IC();
-        ic.replaceComponent(l, 1,ReplaceMode.Create);
-        ic.replaceComponent(c, 0,ReplaceMode.Set);
+	ic.replaceComponent(l, 1, ReplaceMode.Create);
+	ic.replaceComponent(c, 0, ReplaceMode.Set);
     }
 }

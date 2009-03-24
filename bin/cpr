@@ -32,13 +32,18 @@ time("Copying the files", true) do
     targetDir = File.expand_path(Dir.relative(dir, srcPwd), destDir)
     targetFile = File.expand_path(fn, targetDir)
     if prevDir != targetDir
-      puts("\tFile #{targetDir}")
+      print("\tFile #{targetDir} ")
+      $stdout.flush
       prevDir = targetDir
     end
     begin
       if File.exist?(targetFile)
-        if File.size(sourceFile) != File.size(targetFile)
+        fileSize = File.size(sourceFile)
+        if fileSize != File.size(targetFile)
+          startTime = Time.now
           FileUtils::copy(sourceFile, targetFile)
+          stopTime = Time.now
+          puts("(#{fileSize/(stopTime - startTime)} bytes per sec)")
         end
       else
         FileUtils::copy(sourceFile, targetFile)
