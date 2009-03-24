@@ -1,108 +1,146 @@
+module gubg.patterns.composite;
 // The composite pattern
 
+import tango.core.Exception;
+
 // Interfaces
+enum ReplaceMode
+{
+    Create,
+        Remove,
+        Set,
+}
 interface IComponent(I): I
 {
-    bool getComponent(inout IComponent!(I) component, uint ix);
-    bool setComponent(IComponent!(I) component, uint ix);
-    bool getParent(inout IComposite!(I) parent);
-    void setParent(IComposite!(I) parent);
+    uint nrComponents();
+    void setNrComponents(uint nr);
+    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode);
+    IComposite!(I) parent();
+    IComposite!(I) parent(IComposite!(I) p);
 }
-interface IComposite(I): I, IComponent!(I)
+interface IComposite(I): IComponent!(I)
 {
 }
-interface ILeaf(I): I, IComponent!(I)
+interface ILeaf(I): IComponent!(I)
 {
 }
 
 // Templates
 template TComposite(I)
 {
-    // getComponent and setComponent should be implemented
-    bool getParent(inout IComposite!(I) parent)
+    // NOTE::Do not forget to set the parent in replaceComponent()
+    IComposite!(I) parent(){return mParent;}
+    IComposite!(I) parent(IComposite!(I) p)
         {
-            parent = mParent;
-            return (parent !is null);
-        }
-    void setParent(IComposite!(I) parent)
-        {
-            mParent = parent;
+            mParent = p;
+            return mParent;
         }
 private:
     IComposite!(I) mParent;
 }
-template TArrayComposite(I)
+template TIndexComposite(I)
 {
-    // getComponent and setComponent use the index operations
-    bool getComponent(inout IComponent!(Component) component, uint ix)
+    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode)
         {
-            bool found = true;
-            try
+            IComponent!(I) origComponent = null;
+            
+            uint nrComp = nrComponents;
+
+            switch (mode)
             {
-                component = this[ix];
+            case ReplaceMode.Create:
+                if (ix >= nrComp)
+                {
+                    nrComp = ix + 1;
+                    setNrComponents(nrComp);
+                }
+                // We fall-through to ReplaceMode.Set
+            case ReplaceMode.Set:
+                origComponent = this[ix];
+                if (origComponent !is null)
+                    origComponent.parent = null;
+                if (newComponent !is null)
+                    newComponent.parent = this;
+                this[ix] = newComponent;
+                break;
+
+            case ReplaceMode.Remove:
+                origComponent = this[ix];
+                if (origComponent !is null)
+                    origComponent.parent = null;
+                for (uint i = ix + 1; ix < nrComp; ++ix)
+                    this[i-1] = this[i];
+                --nrComp;
+                this[nrComp] = null;
+                setNrComponents(nrComp);
+                break;
             }
-            catch (ArrayBoundsError)
-            {
-                found = false;
-                component = null;
-            }
-            return found;
-        }
-    bool setComponent(IComponent!(Component) component, uint ix)
-        {
-            bool ok = true;
-            try
-            {
-                this[ix] = component;
-            }
-            catch (ArrayBoundsError)
-            {
-                ok = false;
-            }
-            return ok;
+
+            return origComponent;
         }
     mixin TComposite!(I);
 }
 template TLeaf(I)
 {
-    // getComponent and setComponent always return false
-    bool getComponent(inout IComponent!(I) component, uint ix){return false;}
-    bool setComponent(IComponent!(I) component, uint ix){return false;}
+    uint nrComponents(){return 0;}
+    void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
+    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode)
+        {
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+            return null;
+        }
     mixin TComposite!(I);
 }
 
 
 version (UnitTest)
 {
-    interface Component
+    interface ComponentMethods
     {
         void draw();
     }
+    alias IComponent!(ComponentMethods) Component;
 
-    class L: ILeaf!(Component)
+    class L: ILeaf!(ComponentMethods)
     {
-        mixin TLeaf!(Component);
+        mixin TLeaf!(ComponentMethods);
+
         void draw(){}
     }
 
-    class C: IComposite!(Component)
+    class C: IComposite!(ComponentMethods)
     {
-        bool getComponent(inout IComponent!(Component) component, uint ix)
+        uint nrComponents(){return 0;}
+        void setNrComponents(uint nr){}
+        Component replaceComponent(Component newComponent, uint ix, ReplaceMode mode)
         {
-            return false;
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+            return null;
         }
-        bool setComponent(IComponent!(Component) component, uint ix)
-        {
-            return false;
-        }
-        mixin TComposite!(Component);
+        mixin TComposite!(ComponentMethods);
 
         void draw(){}
+    }
+
+    class IC: IComposite!(ComponentMethods)
+    {
+        uint nrComponents(){return mArray.length;}
+        void setNrComponents(uint nr){mArray.length = nr;}
+        Component opIndex(uint ix){return mArray[ix];}
+        Component opIndexAssign(Component rhs, uint ix){return (mArray[ix] = rhs);}
+        mixin TIndexComposite!(ComponentMethods);
+
+        void draw(){}
+    private:
+        Component mArray[];
     }
 
     void main()
     {
-        L l = new L();
-        C c = new C();
+        auto l = new L();
+        auto c = new C();
+        auto ic = new IC();
+        ic.replaceComponent(l, 1,ReplaceMode.Create);
+        ic.replaceComponent(c, 0,ReplaceMode.Set);
     }
 }

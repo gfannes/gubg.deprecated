@@ -1,3 +1,5 @@
+module gubg.patterns.visitor;
+
 interface IVisitor
 {
     void visit(T)(inout T visited);
