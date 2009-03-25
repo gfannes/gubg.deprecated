@@ -4,12 +4,14 @@ import rinle.model.interfaces;
 
 import tango.io.FileSystem;
 
-class FSNode: INode
+class FSNode: ICompositeNode
 {
     this(char[] name)
 	{
 	    mName = name;
 	}
+
+    
 
 //     void render(Sink sink)
 //     {
