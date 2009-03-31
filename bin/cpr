@@ -25,6 +25,7 @@ time("Creating the directory structure", true) do
 end
 
 copyFailed = []
+prevTime = totalSize = nil
 time("Copying the files", true) do
   prevDir = nil
   Dir.each(srcDir) do |dir, fn|
@@ -32,16 +33,26 @@ time("Copying the files", true) do
     targetDir = File.expand_path(Dir.relative(dir, srcPwd), destDir)
     targetFile = File.expand_path(fn, targetDir)
     if prevDir != targetDir
-      puts("\tFile #{targetDir}")
+      currentTime = Time.now
+      if prevTime
+        puts("(#{totalSize.to_f/(currentTime - prevTime)} bytes per sec)")
+      end
+      prevTime = currentTime
+      totalSize = 0
+      print("\tFile #{targetDir} ")
+      $stdout.flush
       prevDir = targetDir
     end
     begin
+      fileSize = File.size(sourceFile)
       if File.exist?(targetFile)
-        if File.size(sourceFile) != File.size(targetFile)
+        if fileSize != File.size(targetFile)
           FileUtils::copy(sourceFile, targetFile)
+          totalSize += fileSize
         end
       else
         FileUtils::copy(sourceFile, targetFile)
+        totalSize += fileSize
       end
     rescue Errno::EIO
       puts("ERROR::Could not copy #{sourceFile}")
