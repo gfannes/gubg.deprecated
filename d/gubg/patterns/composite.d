@@ -1,7 +1,7 @@
 module gubg.patterns.composite;
 // The composite pattern
 
-import tango.core.Exception;
+public import tango.core.Exception;
 
 // Interfaces
 enum ReplaceMode
@@ -145,7 +145,7 @@ version (UnitTest)
 	// ComponentMethods
         void draw(){}
     private:
-        Component mArray[];
+        Component[] mArray;
     }
 
     void main()
