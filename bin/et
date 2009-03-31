@@ -9,18 +9,21 @@ reOK = /^.+\.[ch]p*$/
 reKO = /\.cloak\.c/
 
 recursor = Proc.new do |dir|
-  case dir
-  when /\.svn/
-    false
-  else
-    true
-  end
+  ok = case dir
+       when /\.svn/
+         false
+       else
+         true
+       end
+  puts("dir = #{dir} (#{ok})")
+  ok
 end
 
 bFirst = true
 Dir.each('./', recursor) do |dir, fn|
   if fn[reOK] and !fn[reKO]
     fileName = File.expand_path(fn, dir)
+    puts("\tChecking \"#{fileName}\" for tags")
     if bFirst
       bFirst = false
       system("#{binary} \"#{fileName}\"")

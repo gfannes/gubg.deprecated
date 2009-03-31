@@ -378,6 +378,21 @@ class String
     self
   end
 
+  def hexdump
+    width = 32
+    bytes = self.bytes.to_a
+    len = bytes.length
+    ix = 0
+    while ix < len
+      print(("0x%x ("%ix).rjust(9) + ("#{ix}): ".ljust(8)))
+      ix.upto(ix + width-1) do |i|
+        print(("%02x"%bytes[i]).ljust(3)) if i < len
+      end
+      ix += width
+      puts("")
+    end
+  end
+
 end
 
 class Hash
