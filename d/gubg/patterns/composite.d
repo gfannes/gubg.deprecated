@@ -9,6 +9,7 @@ enum ReplaceMode
     Create,
         Remove,
         Set,
+	Get,
 }
 interface IComponent(I): I
 {
@@ -66,6 +67,10 @@ template TIndexComposite(I)
                 if (newComponent !is null)
                     newComponent.parent(this);
                 this[ix] = newComponent;
+                break;
+
+            case ReplaceMode.Get:
+                origComponent = this[ix];
                 break;
 
             case ReplaceMode.Remove:

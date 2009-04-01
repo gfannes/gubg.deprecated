@@ -2,7 +2,6 @@ module rinle.view.view;
 
 import rinle.view.nodeInfo;
 import rinle.model.interfaces;
-import rinle.formatTree;
 
 class View
 {
@@ -29,7 +28,7 @@ private:
 	    // Recursively descent, if indicated by the corresponding node info
 	    if (mMgr.get(node).recurse)
 		for (uint i = 0; i < node.nrComponents; ++i)
-		    add2FormatTree(ft, node[i]);
+		    addTo(ft, node.replaceComponent(null, i, ReplaceMode.Get));
 	}
 
     INode mBase;

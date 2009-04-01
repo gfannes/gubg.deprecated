@@ -2,7 +2,6 @@ module rinle.model.filesystem;
 
 import gubg.puts;
 
-import rinle.formatTree;
 import rinle.model.interfaces;
 
 import gubg.patterns.composite;
@@ -20,6 +19,8 @@ abstract class FSNode: ICompositeNode
 
     void addTo(inout FormatTree ft)
     {
+	ft.add(mName);
+	ft.newline;
     }
 
 //     void render(Sink sink)
@@ -72,6 +73,7 @@ class Dir: FSNode
     this()
     {
         super(FileSystem.getDirectory);
+	mExpanded = false;
     }
 
     uint nrComponents(){return mFiles.length;}
@@ -86,8 +88,18 @@ class Dir: FSNode
     }
     mixin TIndexComposite!(NodeMethods);
 
+    void addTo(inout FormatTree ft)
+    {
+	expand;
+	ft.add(mName);
+	ft.newline;
+    }
+
     void expand()
     {
+	if (mExpanded)
+	    return;
+
         auto scan = new FileScan;
         scan(".", true);
         foreach (file; scan.files)
@@ -97,10 +109,12 @@ class Dir: FSNode
             scope d = new ChangeDir(dir.name);
             mFiles ~= [new Dir];
         }
+	mExpanded = true;
     }
 
 private:
     FSNode[] mFiles;
+    bool mExpanded;
 }
 
 version (UnitTest)
