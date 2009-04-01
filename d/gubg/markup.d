@@ -16,7 +16,7 @@ public import gubg.stack;
 //  * void show(char[] content, ref char[] dest, Stack!(MetaTag) stack)
 // Node should be set to the class where this template is mixed-in
 // Constructors are provided by the template
-template Markup(Tag, Content, Node)
+template TMarkup(Tag, Content, Node)
 {
     this ()
 	{
@@ -154,7 +154,7 @@ private:
 class XMLMarkup
 {
     // Mixin the main markup functionality
-    mixin Markup!(char[], char[], XMLMarkup);
+    mixin TMarkup!(char[], char[], XMLMarkup);
 
     void beforeCollect()
         {

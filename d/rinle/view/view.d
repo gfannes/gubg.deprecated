@@ -1,5 +1,6 @@
 module rinle.view.view;
 
+import rinle.view.nodeInfo;
 import rinle.model.interfaces;
 
 class View
@@ -8,9 +9,11 @@ class View
         {
             mBase = base;
             mCurrent = base;
+            mMgr = new Manager;
         }
 
 private:
     INode mBase;
     INode mCurrent;
+    Manager mMgr;
 }
