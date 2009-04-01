@@ -52,6 +52,7 @@ class Rinle
 
     void show()
         {
+	    mView.formatTree.collect(mOutput);
             mOutput.refresh;
         }
 

@@ -44,7 +44,7 @@ class NCurses: Input, Output
 	return true;
     }
     
-    bool print(char[] str, int lineIX, int colIX, ColorPair color)
+    bool print(char[] str, int lineIX, int colIX, ColorPair color = defaultPair)
     {
 	synchronized(this)
 	{
@@ -60,7 +60,7 @@ class NCurses: Input, Output
 	return true;
     }
     
-    int refresh()
+    void refresh()
     {
 	synchronized(this)
 	{

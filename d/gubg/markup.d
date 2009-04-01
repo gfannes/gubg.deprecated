@@ -13,7 +13,7 @@ public import gubg.stack;
 //     * Add things before content is added to dest
 //  * void showAfter(ref Dest dest, Stack!(MetaTag) stack)
 //     * Add things after content is added to dest
-//  * void show(char[] content, ref char[] dest, Stack!(MetaTag) stack)
+//  * void show(Content content, ref Dest dest, Stack!(MetaTag) stack)
 // Node should be set to the class where this template is mixed-in
 // Constructors are provided by the template
 template TMarkup(Tag, Content, Node)
@@ -48,6 +48,8 @@ template TMarkup(Tag, Content, Node)
 
     void add(Content content)
 	{
+	    if (isRoot)
+		throw new Exception("You cannot add content directly to the root");
 	    addContent(content);
 	}
     Node create(Tag tag)

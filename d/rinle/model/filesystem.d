@@ -2,7 +2,9 @@ module rinle.model.filesystem;
 
 import gubg.puts;
 
+import rinle.formatTree;
 import rinle.model.interfaces;
+
 import gubg.patterns.composite;
 import gubg.file;
 
@@ -16,7 +18,9 @@ abstract class FSNode: ICompositeNode
 	    mName = name;
 	}
 
-    
+    void addTo(inout FormatTree ft)
+    {
+    }
 
 //     void render(Sink sink)
 //     {

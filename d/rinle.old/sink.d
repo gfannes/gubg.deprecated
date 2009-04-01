@@ -25,7 +25,7 @@ class Sink
 	    mShowAsTree = false;
 	}
 
-    mixin Markup!(Tag, char[], Sink);
+    mixin TMarkup!(Tag, char[], Sink);
 
     void newline()
 	{
