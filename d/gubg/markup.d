@@ -6,17 +6,18 @@ public import gubg.stack;
 
 // Template to be used for creating a tree of elements of type Content that have a markup Tag attached to them.
 // Define the following functions
-//  * void beforeCollect()
+//  * void beforeCollect(Context context)
 //     * Called before collect() starts collecting info from the tree
-//  * void showBefore(ref Dest dest, Stack!(MetaTag) stack)
+//  * void showBefore(ref Dest dest, Stack!(MetaTag) stack, Context context)
 //     * Dest is the type specified in collect, typically char[]
 //     * Add things before content is added to dest
-//  * void showAfter(ref Dest dest, Stack!(MetaTag) stack)
+//  * void showAfter(ref Dest dest, Stack!(MetaTag) stack, Context context)
 //     * Add things after content is added to dest
-//  * void show(Content content, ref Dest dest, Stack!(MetaTag) stack)
+//  * void show(Content content, ref Dest dest, Stack!(MetaTag) stack, Context context)
 // Node should be set to the class where this template is mixed-in
 // Constructors are provided by the template
-template TMarkup(Tag, Content, Node)
+// Context is optional for the above methods, in case you want to have a place to keep things during collect
+template TMarkup(Tag, Content, Node, Context = void*)
 {
     this ()
 	{
@@ -72,12 +73,20 @@ template TMarkup(Tag, Content, Node)
 	    return child;
         }
 
-    void collect(Dest)(ref Dest dest, Stack!(MetaTag) stack = null)
+    void collect(Dest)(ref Dest dest, Stack!(MetaTag) stack = null, Context context = null)
 	{
 	    if (stack is null)
 	    {
-		stack = new Stack!(MetaTag);
-		beforeCollect();
+                stack = new Stack!(MetaTag);
+                static if (is(Context == void*))
+                {
+                    beforeCollect();
+                } else
+                {
+                    if (context is null)
+                        context = new Context;
+                    beforeCollect(context);
+                }
 	    }
 	    if (isRoot)
 		foreach(el; mElements)
@@ -88,15 +97,24 @@ template TMarkup(Tag, Content, Node)
 		metaTag.tag = mTag;
 		metaTag.meta.length = mElements.length;
 		Meta* meta = &(stack.push(metaTag).meta);
-		showBefore(dest, stack);
+                static if (is(Context == void*))
+                    showBefore(dest, stack);
+                else
+                    showBefore(dest, stack, context);
 		foreach(ix, el; mElements)
 		{
 		    meta.index = ix;
 		    meta.first = (ix == 0);
 		    meta.last = (ix == mElements.length-1);
-		    collectElement(el, dest, stack);
+                    static if (is(Context == void*))
+                        collectElement(el, dest, stack);
+                    else
+                        collectElement(el, dest, stack, context);
 		}
-		showAfter(dest, stack);
+                static if (is(Context == void*))
+                    showAfter(dest, stack);
+                else
+                    showAfter(dest, stack, context);
 		stack.pop;
 	    }
 	}
@@ -112,12 +130,21 @@ template TMarkup(Tag, Content, Node)
     Tag markupTag(){return mTag;}
 
 private:
-    void collectElement(Dest)(Element el, ref Dest dest, Stack!(MetaTag) stack)
+    void collectElement(Dest)(Element el, ref Dest dest, Stack!(MetaTag) stack, Context context = null)
 	{
-	    if (el.isChild)
-		el.u.child.collect(dest, stack);
-	    else
-		show(el.u.content, dest, stack);
+            static if (is(Context == void*))
+            {
+                if (el.isChild)
+                    el.u.child.collect(dest, stack);
+                else
+                    show(el.u.content, dest, stack);
+            } else
+            {
+                if (el.isChild)
+                    el.u.child.collect(dest, stack, context);
+                else
+                    show(el.u.content, dest, stack, context);
+            }
 	}
     void addChild(Node child)
 	{

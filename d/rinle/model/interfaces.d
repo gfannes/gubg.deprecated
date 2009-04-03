@@ -32,59 +32,74 @@ struct Tag
 	}
 }
 
+class Context
+{
+    this (){reset;}
+
+    void reset()
+        {
+            rowIX = colIX = 0;
+            newline = false;
+        }
+
+    int rowIX;
+    int colIX;
+    bool newline;
+}
+
 class FormatTree
 {
     // Mixin the markup functionality
-    mixin TMarkup!(Tag, char[], FormatTree);
+    mixin TMarkup!(Tag, char[], FormatTree, Context);
 
     void newline(){add("\n");}
 
 private:
-    void beforeCollect()
+    void beforeCollect(Context ctx)
 	{
-	    sColIX = sRowIX = 0;
+            ctx.reset;
 	}
-    void showBefore(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack)
+    void showBefore(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack, Context ctx)
 	{
-	    if (sRowIX < dest.height)
+	    if (ctx.rowIX < dest.height)
 	    {
-		if (sNewline)
+		if (ctx.newline)
 		{
 		    mIndent = indent(stack);
 		} else
 		{
-		    mIndent.length = sColIX;
+		    mIndent.length = ctx.colIX;
 		    foreach (inout c; mIndent)
 			c = ' ';
 		}
 	    }
 	}
-    void showAfter(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack)
+    void showAfter(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack, Context ctx)
 	{
 	}
-    void show(Dest: Output)(char[] content, ref Dest dest, Stack!(MetaTag) stack)
+    void show(Dest: Output)(char[] content, ref Dest dest, Stack!(MetaTag) stack, Context ctx)
 	{
 	    auto tag = stack.top.tag;
 	    ColorPair cp = {tag.color, (tag.color != Color.black ? Color.black : Color.red)};
-	    if (sRowIX < dest.height)
+	    if (ctx.rowIX < dest.height)
 	    {
-		if (sNewline)
+		if (ctx.newline)
 		{
-		    sNewline = false;
-		    dest[++sRowIX] = mIndent;
-		    sColIX = mIndent.length;
+		    ctx.newline = false;
+		    dest[++ctx.rowIX] = mIndent;
+		    ctx.colIX = mIndent.length;
 		}
 		if (content == "\n")
-		    sNewline = true;
+		    ctx.newline = true;
 		else
 		{
 		    if (tag.spaceBefore)
 		    {
-			dest.print(" ", sRowIX, sColIX);
-			++sColIX;
+			dest.print(" ", ctx.rowIX, ctx.colIX);
+			++ctx.colIX;
 		    }
-		    dest.print(content, sRowIX, sColIX, cp);
-		    sColIX += content.length;
+		    dest.print(content, ctx.rowIX, ctx.colIX, cp);
+		    ctx.colIX += content.length;
 		}
 	    }
 	}
@@ -104,11 +119,6 @@ private:
 	    
 	    return ind;
 	}
-
-    // Warning, these static variables are not thread-safe.
-    static int sRowIX;
-    static int sColIX;
-    static bool sNewline;
     char[] mIndent;
 }
 
