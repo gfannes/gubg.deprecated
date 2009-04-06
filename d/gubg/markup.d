@@ -17,22 +17,10 @@ public import gubg.stack;
 // Node should be set to the class where this template is mixed-in
 // Constructors are provided by the template
 // Context is optional for the above methods, in case you want to have a place to keep things during collect
-template TMarkup(Tag, Content, Node, Context = void*)
+
+class Collector(Node)
 {
-    this ()
-	{
-	    isRoot = true;
-	}
-    this (Tag tag)
-        {
-	    isRoot = false;
-            mTag = tag;
-        }
-    this (Tag tag, Content content)
-        {
-            this(tag);
-	    addContent(content);
-        }
+    alias Node.TagT Tag;
 
     struct Meta
     {
@@ -46,6 +34,75 @@ template TMarkup(Tag, Content, Node, Context = void*)
 	Meta meta;
 	Tag tag;
     }
+
+    void opCall(Dest, Node)(inout Dest dest, Node node)
+	{
+	}
+    
+    void collect(Dest)(ref Dest dest, Stack!(MetaTag) stack = null)
+	{
+	    if (stack is null)
+	    {
+                stack = new Stack!(MetaTag);
+		beforeCollect();
+	    }
+	    if (isRoot)
+		foreach(el; mElements)
+		    collectElement(el, dest, stack);
+	    else
+	    {
+		MetaTag metaTag;
+		metaTag.tag = mTag;
+		metaTag.meta.length = mElements.length;
+		Meta* meta = &(stack.push(metaTag).meta);
+		showBefore(dest, stack);
+		foreach(ix, el; mElements)
+		{
+		    meta.index = ix;
+		    meta.first = (ix == 0);
+		    meta.last = (ix == mElements.length-1);
+		    collectElement(el, dest, stack);
+		}
+		showAfter(dest, stack);
+		stack.pop;
+	    }
+	}
+
+    void collectElement(Dest)(Element el, ref Dest dest, Stack!(MetaTag) stack, Context context = null)
+	{
+            static if (is(Context == void*))
+            {
+                if (el.isChild)
+                    el.u.child.collect(dest, stack);
+                else
+                    show(el.u.content, dest, stack);
+            } else
+            {
+                if (el.isChild)
+                    el.u.child.collect(dest, stack, context);
+                else
+                    show(el.u.content, dest, stack, context);
+            }
+	}
+}
+
+template TMarkupNode(Tag, Content, Node)
+{
+    alias Tag TagT;
+    this()
+	{
+	    isRoot = true;
+	}
+    this (Tag tag)
+        {
+	    isRoot = false;
+            mTag = tag;
+        }
+    this (Tag tag, Content content)
+        {
+            this(tag);
+	    addContent(content);
+        }
 
     void add(Content content)
 	{
@@ -73,52 +130,6 @@ template TMarkup(Tag, Content, Node, Context = void*)
 	    return child;
         }
 
-    void collect(Dest)(ref Dest dest, Stack!(MetaTag) stack = null, Context context = null)
-	{
-	    if (stack is null)
-	    {
-                stack = new Stack!(MetaTag);
-                static if (is(Context == void*))
-                {
-                    beforeCollect();
-                } else
-                {
-                    if (context is null)
-                        context = new Context;
-                    beforeCollect(context);
-                }
-	    }
-	    if (isRoot)
-		foreach(el; mElements)
-		    collectElement(el, dest, stack);
-	    else
-	    {
-		MetaTag metaTag;
-		metaTag.tag = mTag;
-		metaTag.meta.length = mElements.length;
-		Meta* meta = &(stack.push(metaTag).meta);
-                static if (is(Context == void*))
-                    showBefore(dest, stack);
-                else
-                    showBefore(dest, stack, context);
-		foreach(ix, el; mElements)
-		{
-		    meta.index = ix;
-		    meta.first = (ix == 0);
-		    meta.last = (ix == mElements.length-1);
-                    static if (is(Context == void*))
-                        collectElement(el, dest, stack);
-                    else
-                        collectElement(el, dest, stack, context);
-		}
-                static if (is(Context == void*))
-                    showAfter(dest, stack);
-                else
-                    showAfter(dest, stack, context);
-		stack.pop;
-	    }
-	}
-
     bool isLeaf()
 	{
 	    bool leaf = true;
@@ -130,22 +141,6 @@ template TMarkup(Tag, Content, Node, Context = void*)
     Tag markupTag(){return mTag;}
 
 private:
-    void collectElement(Dest)(Element el, ref Dest dest, Stack!(MetaTag) stack, Context context = null)
-	{
-            static if (is(Context == void*))
-            {
-                if (el.isChild)
-                    el.u.child.collect(dest, stack);
-                else
-                    show(el.u.content, dest, stack);
-            } else
-            {
-                if (el.isChild)
-                    el.u.child.collect(dest, stack, context);
-                else
-                    show(el.u.content, dest, stack, context);
-            }
-	}
     void addChild(Node child)
 	{
 	    U u;
@@ -180,22 +175,26 @@ private:
     Element[] mElements;
 }
 
-class XMLMarkup
+class XMLNode
 {
     // Mixin the main markup functionality
-    mixin TMarkup!(char[], char[], XMLMarkup);
+    mixin TMarkupNode!(char[], char[], XMLNode);
+}
+
+class XMLCollector: Collector!(XMLNode)
+{
 
     void beforeCollect()
         {
         }
 
-    void showBefore(ref char[] dest, Stack!(MetaTag) stack)
+    void showBefore(ref char[] dest, XMLNode node, Stack!(MetaTag) stack)
 	{
-	    dest ~= indent(stack.depth-1) ~ "<" ~ mTag ~ (isLeaf ? ">" : ">\n");
+	    dest ~= indent(stack.depth-1) ~ "<" ~ node.tag ~ (node.isLeaf ? ">" : ">\n");
 	}
-    void showAfter(ref char[] dest, Stack!(MetaTag) stack)
+    void showAfter(ref char[] dest, XMLNode node, Stack!(MetaTag) stack)
 	{
-	    dest ~= (isLeaf ? "" : indent(stack.depth-1)) ~ "</" ~ mTag ~ ">\n";
+	    dest ~= (node.isLeaf ? "" : indent(stack.depth-1)) ~ "</" ~ node.tag ~ ">\n";
 	}
     void show(char[] content, ref char[] dest, Stack!(MetaTag) stack)
 	{
@@ -218,7 +217,7 @@ version (UnitTest)
 
     void main()
     {
-	auto m = new XMLMarkup;
+	auto m = new XMLNode;
 	auto html = m.create("html");
 	auto bdy = html.create("body");
 	bdy.create("h1", "Welcome everybody");
@@ -229,7 +228,8 @@ version (UnitTest)
 	p.add(" And we continue.");
 
 	char[] str;
-	m.collect(str);
+	auto collector = new XMLCollector;
+	collector(str, m);
 	puts("{}", str);
     }
 }
