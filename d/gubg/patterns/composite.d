@@ -15,9 +15,10 @@ interface IComponent(I): I
 {
     uint nrComponents();
     void setNrComponents(uint nr);
-    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode);
+    IComponent!(I) replaceComponent(ReplaceMode mode, uint ix, IComponent!(I) newComponent);
     IComposite!(I) parent();
     IComposite!(I) parent(IComposite!(I) p);
+    bool isLeaf();
 }
 interface IComposite(I): IComponent!(I)
 {
@@ -28,7 +29,7 @@ interface ILeaf(I): IComponent!(I)
 
 // Templates
 // Provide parent()
-template TComposite(I)
+template TParent(I)
 {
     // NOTE::Do not forget to set the parent in replaceComponent()
     IComposite!(I) parent(){return mParent;}
@@ -40,12 +41,18 @@ template TComposite(I)
 private:
     IComposite!(I) mParent;
 }
+// Composite
+template TComposite(I)
+{
+    mixin TParent!(I);
+    bool isLeaf(){return false;}
+}
 // Provide replaceComponent() and parent() for classes that specify:
 //  * opIndex and opIndexAssign
 //  * nrComponents and setNrComponents
 template TIndexComposite(I)
 {
-    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode)
+    IComponent!(I) replaceComponent(ReplaceMode mode, uint ix, IComponent!(I) newComponent)
         {
             IComponent!(I) origComponent = null;
             
@@ -94,12 +101,13 @@ template TLeaf(I)
 {
     uint nrComponents(){return 0;}
     void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
-    IComponent!(I) replaceComponent(IComponent!(I) newComponent, uint ix, ReplaceMode mode)
+    IComponent!(I) replaceComponent(ReplaceMode mode, uint ix, IComponent!(I) newComponent)
         {
             throw new ArrayBoundsException(__FILE__, __LINE__);
             return null;
         }
-    mixin TComposite!(I);
+    bool isLeaf(){return true;}
+    mixin TParent!(I);
 }
 
 
@@ -127,7 +135,7 @@ version (UnitTest)
     {
         uint nrComponents(){return 0;}
         void setNrComponents(uint nr){}
-        Component replaceComponent(Component newComponent, uint ix, ReplaceMode mode)
+        Component replaceComponent(ReplaceMode mode, uint ix, Component newComponent)
         {
             throw new ArrayBoundsException(__FILE__, __LINE__);
             return null;
@@ -158,7 +166,7 @@ version (UnitTest)
         auto l = new L();
         auto c = new C();
         auto ic = new IC();
-	ic.replaceComponent(l, 1, ReplaceMode.Create);
-	ic.replaceComponent(c, 0, ReplaceMode.Set);
+	ic.replaceComponent(ReplaceMode.Create, 1, l);
+	ic.replaceComponent(ReplaceMode.Set, 0, c);
     }
 }
