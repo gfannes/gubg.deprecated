@@ -16,6 +16,7 @@ interface IComponent(I): I
     uint nrComponents();
     void setNrComponents(uint nr);
     IComponent!(I) replaceComponent(ReplaceMode mode, uint ix, IComponent!(I) newComponent);
+    int opApply(int delegate(IComponent!(I) el) dg);
     IComposite!(I) parent();
     IComposite!(I) parent(IComposite!(I) p);
     bool isLeaf();
@@ -41,10 +42,21 @@ template TParent(I)
 private:
     IComposite!(I) mParent;
 }
+template TOpApply(I)
+{
+    int opApply(int delegate(IComponent!(I) el) dg)
+	{
+	    int res = 0;
+	    for (uint i = 0; res == 0 && i < nrComponents; ++i)
+		res = dg(replaceComponent(ReplaceMode.Get, i, null));
+	    return res;
+	}
+}
 // Composite
 template TComposite(I)
 {
     mixin TParent!(I);
+    mixin TOpApply!(I);
     bool isLeaf(){return false;}
 }
 // Provide replaceComponent() and parent() for classes that specify:
@@ -94,6 +106,7 @@ template TIndexComposite(I)
 
             return origComponent;
         }
+
     mixin TComposite!(I);
 }
 // Provide parent() and disabled replaceComponent() functionality
@@ -107,6 +120,10 @@ template TLeaf(I)
             return null;
         }
     bool isLeaf(){return true;}
+    int opApply(int delegate(IComponent!(I) el) dg)
+	{
+	    return 0;
+	}
     mixin TParent!(I);
 }
 
