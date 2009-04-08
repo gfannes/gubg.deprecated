@@ -21,7 +21,7 @@ abstract class Collector(Tag, Content)
         Tag tag;
     }
 
-    void opCall(TagTree!(Tag, Content) tagTree)
+    void opCall(ITagTree!(Tag, Content) tagTree)
         {
             collect(tagTree);
         }
@@ -33,7 +33,7 @@ abstract class Collector(Tag, Content)
     abstract void show(Content content, Stack!(MetaTag) stack);
 
 private:    
-    void collect(TagTree!(Tag, Content) tagTree, Stack!(MetaTag) stack = null)
+    void collect(ITagTree!(Tag, Content) tagTree, Stack!(MetaTag) stack = null)
         {
             bool rootCall = false;
             if (stack is null)
@@ -63,7 +63,7 @@ private:
                     show(leaf.content, stack);
                 } else
                 {
-                    auto composite = cast(TagTree!(Tag, Content))el;
+                    auto composite = cast(ITagTree!(Tag, Content))el;
                     collect(composite, stack);
                 }
             }
@@ -76,15 +76,26 @@ private:
         }
 }
 
-// Component methods of a TagTree
+// Component methods of a ITagTree
 interface ITagTreeMethods(Tag, Content)
 {
 }
 
 // This is the composite
-class TagTree(Tag, Content): IComposite!(ITagTreeMethods!(Tag, Content))
+interface ITagTree(Tag, Content): IComposite!(ITagTreeMethods!(Tag, Content))
+{
+    Tag tag();
+    void add(Content content);
+    void add(ITagTree tt);
+}
+class TagTree(Tag, Content): ITagTree!(Tag, Content)
+{
+    mixin TTagTree!(Tag, Content);
+}
+template TTagTree(Tag, Content)
 {
     alias IComponent!(ITagTreeMethods!(Tag, Content)) Component;
+    alias ITagTree!(Tag, Content) ITT;
     this(Tag tag)
     {
         mTag = tag;
@@ -99,26 +110,26 @@ class TagTree(Tag, Content): IComposite!(ITagTreeMethods!(Tag, Content))
     {
         replaceComponent(ReplaceMode.Create, nrComponents, new ContentLeaf!(Tag, Content)(content));
     }
-    void add(TagTree tt)
+    void add(ITT tt)
     {
         replaceComponent(ReplaceMode.Create, nrComponents, tt);
     }
 
-    TagTree create(Tag tag)
+    typeof(this) create(Tag tag)
     {
-        auto child = new TagTree(tag);
+        auto child = new typeof(this)(tag);
         add(child);
         return child;
     }
-    TagTree create(Tag tag, Content content)
+    typeof(this) create(Tag tag, Content content)
     {
-        auto child = new TagTree(tag, content);
+        auto child = new typeof(this)(tag, content);
         add(child);
         return child;
     }
-    TagTree create(Tag tag, void delegate(TagTree child) yield)
+    typeof(this) create(Tag tag, void delegate(ITT child) yield)
     {
-        auto child = new TagTree(tag);
+        auto child = new typeof(this)(tag);
         yield(child);
         add(child);
         return child;
@@ -164,7 +175,7 @@ version (UnitTest)
 {
     class XMLCollector: Collector!(char[], char[])
     {
-        alias TagTree!(char[], char[]) TT;
+        alias ITagTree!(char[], char[]) ITT;
         char[] str;
         uint indentLevel;
         void beforeCollect()

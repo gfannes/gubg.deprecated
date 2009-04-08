@@ -1,8 +1,9 @@
 module rinle.model.interfaces;
 
 public import gubg.patterns.composite;
-import gubg.markup;
+import gubg.tagTree;
 public import gubg.ui;
+import gubg.puts;
 
 // All methods we require to be present for a Rinle node
 interface NodeMethods
@@ -32,94 +33,92 @@ struct Tag
 	}
 }
 
-class Context
+class FormatTree: ITagTree!(Tag, char[])
 {
-    this (){reset;}
-
-    void reset()
-        {
-            rowIX = colIX = 0;
-            newline = false;
-        }
-
-    int rowIX;
-    int colIX;
-    bool newline;
-}
-
-class FormatTree
-{
-    // Mixin the markup functionality
-    mixin TMarkup!(Tag, char[], FormatTree, Context);
+    mixin TTagTree!(Tag, char[]);
 
     void newline(){add("\n");}
+}
 
+class OutputCollector: Collector!(Tag, char[])
+{
+    this (Output output)
+    {
+	_output = output;
+    }
+    void beforeCollect()
+    {
+	_indentLevel = 0;
+	_rowIX = _colIX = 0;
+    }
+    void beforeTag(Tag tag, Stack!(MetaTag) stack)
+    {
+	_colorPair = color(tag);
+	if (tag.spaceBefore)
+	{
+	    _output.print(" ", _rowIX, _colIX);
+	    ++_colIX;
+	}
+	_currentIndent = indent(stack);
+    }
+    void afterTag(Tag tag, Stack!(MetaTag) stack)
+    {
+	MetaTag metaTag;
+	if (stack.pop(metaTag) && stack.top !is null)
+	{
+	    auto t = stack.top.tag;
+	    _colorPair = color(t);
+	    _currentIndent = indent(stack);
+	    stack.push(metaTag);
+	}
+    }
+    void show(char[] content, Stack!(MetaTag) stack)
+    {
+	if (_rowIX < _output.height)
+	{
+	    if (_newline)
+	    {
+		_newline = false;
+		_output[++_rowIX] = _currentIndent;
+		_colIX = _currentIndent.length;
+	    }
+	    if (content == "\n")
+		_newline = true;
+	    else
+	    {
+		_output.print(content, _rowIX, _colIX, _colorPair);
+		_colIX += content.length;
+	    }
+	}
+    }
 private:
-    void beforeCollect(Context ctx)
-	{
-            ctx.reset;
-	}
-    void showBefore(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack, Context ctx)
-	{
-	    if (ctx.rowIX < dest.height)
-	    {
-		if (ctx.newline)
-		{
-		    mIndent = indent(stack);
-		} else
-		{
-		    mIndent.length = ctx.colIX;
-		    foreach (inout c; mIndent)
-			c = ' ';
-		}
-	    }
-	}
-    void showAfter(Dest: Output)(ref Dest dest, Stack!(MetaTag) stack, Context ctx)
-	{
-	}
-    void show(Dest: Output)(char[] content, ref Dest dest, Stack!(MetaTag) stack, Context ctx)
-	{
-	    auto tag = stack.top.tag;
-	    ColorPair cp = {tag.color, (tag.color != Color.black ? Color.black : Color.red)};
-	    if (ctx.rowIX < dest.height)
-	    {
-		if (ctx.newline)
-		{
-		    ctx.newline = false;
-		    dest[++ctx.rowIX] = mIndent;
-		    ctx.colIX = mIndent.length;
-		}
-		if (content == "\n")
-		    ctx.newline = true;
-		else
-		{
-		    if (tag.spaceBefore)
-		    {
-			dest.print(" ", ctx.rowIX, ctx.colIX);
-			++ctx.colIX;
-		    }
-		    dest.print(content, ctx.rowIX, ctx.colIX, cp);
-		    ctx.colIX += content.length;
-		}
-	    }
-	}
     char[] indent(Stack!(MetaTag) stack)
-	{
-	    char[] ind;
+    {
+	char[] ind;
+	uint nr = 0;
+	stack.each((MetaTag mt, uint d)
+		   {
+		       if (d > 0 && mt.tag.indent)
+			   nr += 3;
+		   });
+	ind.length = nr;
+	foreach (inout ch; ind)
+	    ch = ' ';
+	return ind;
+    }
+    ColorPair color(Tag tag)
+    {
+	ColorPair cp = {tag.color, (tag.color != Color.black ? Color.black : Color.red)};
+	return cp;
+    }
 
-	    uint nr = 0;
-	    stack.each((MetaTag mt, uint d)
-		       {
-			   if (d > 0 && mt.tag.indent)
-			       nr += 3;
-		       });
-	    ind.length = nr;
-	    foreach (inout ch; ind)
-		ch = ' ';
-	    
-	    return ind;
-	}
-    char[] mIndent;
+    Output _output;
+    ColorPair _colorPair;
+    uint _indentLevel;
+    uint _rowIX;
+    uint _colIX;
+    char[] _currentIndent;
+    bool _newline;
 }
 
 version (UnitTest)
@@ -147,14 +146,18 @@ version (UnitTest)
 	// Output to ncurses
 	{	
 	    scope nc = new NCurses;
-	    ft.collect(nc);
+	    scope collector = new OutputCollector(nc);
+	    collector(ft);
 	    nc.refresh;
 	    nc.getKey;
 	}
 	
 	// Output to StdOutput
-	scope output = new StdOutput;
-	ft.collect(output);
-	output.refresh;
+	{
+	    scope output = new StdOutput;
+ 	    auto collector = new OutputCollector(output);
+ 	    collector(ft);
+ 	    output.refresh;
+	}
     }
 }
