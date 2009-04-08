@@ -6,6 +6,76 @@ import gubg.patterns.composite;
 
 public import gubg.stack;
 
+abstract class Collector(Tag, Content)
+{
+    struct Meta
+    {
+        uint index;
+        uint length;
+        bool first;
+        bool last;
+    }
+    struct MetaTag
+    {
+        Meta meta;
+        Tag tag;
+    }
+
+    void opCall(TagTree!(Tag, Content) tagTree)
+        {
+            collect(tagTree);
+        }
+
+    void beforeCollect(){}
+    void afterCollect(){}
+    void beforeTag(Tag tag, Stack!(MetaTag) stack){}
+    void afterTag(Tag tag, Stack!(MetaTag) stack){}
+    abstract void show(Content content, Stack!(MetaTag) stack);
+
+private:    
+    void collect(TagTree!(Tag, Content) tagTree, Stack!(MetaTag) stack = null)
+        {
+            bool rootCall = false;
+            if (stack is null)
+            {
+                rootCall = true;
+                stack = new Stack!(MetaTag);
+                beforeCollect();
+            }
+
+            MetaTag metaTag;
+            metaTag.tag = tagTree.tag;
+            metaTag.meta.length = tagTree.nrComponents;
+            Meta* meta = &(stack.push(metaTag).meta);
+
+            beforeTag(tagTree.tag, stack);
+
+            for (uint ix = 0; ix < tagTree.nrComponents; ++ix)
+            {
+                meta.index = ix;
+                meta.first = (ix == 0);
+                meta.last = (ix == tagTree.nrComponents-1);
+
+                auto el = tagTree.replaceComponent(ReplaceMode.Get, ix, null);
+                if (el.isLeaf)
+                {
+                    auto leaf = cast(ContentLeaf!(Tag, Content))el;
+                    show(leaf.content, stack);
+                } else
+                {
+                    auto composite = cast(TagTree!(Tag, Content))el;
+                    collect(composite, stack);
+                }
+            }
+
+            afterTag(tagTree.tag, stack);
+            stack.pop;
+
+            if (rootCall)
+                afterCollect();
+        }
+}
+
 // Component methods of a TagTree
 interface ITagTreeMethods(Tag, Content)
 {
@@ -90,94 +160,40 @@ private:
     Content mContent;
 }
 
-abstract class Collector(Tag, Content)
-{
-    struct Meta
-    {
-        uint index;
-        uint length;
-        bool first;
-        bool last;
-    }
-    struct MetaTag
-    {
-        Meta meta;
-        Tag tag;
-    }
-
-    void opCall(TagTree!(Tag, Content) tagTree)
-        {
-            collect(tagTree);
-        }
-
-    void beforeCollect(){}
-    void afterCollect(){}
-    abstract void beforeTag(Tag tag, Stack!(MetaTag) stack);
-    abstract void afterTag(Tag tag, Stack!(MetaTag) stack);
-    abstract void show(Content content, Stack!(MetaTag) stack);
-
-private:    
-    void collect(TagTree!(Tag, Content) tagTree, Stack!(MetaTag) stack = null)
-        {
-            bool rootCall = false;
-            if (stack is null)
-            {
-                rootCall = true;
-                stack = new Stack!(MetaTag);
-                beforeCollect();
-            }
-
-            MetaTag metaTag;
-            metaTag.tag = tagTree.tag;
-            metaTag.meta.length = tagTree.nrComponents;
-            Meta* meta = &(stack.push(metaTag).meta);
-
-            beforeTag(tagTree.tag, stack);
-
-            for (uint ix = 0; ix < tagTree.nrComponents; ++ix)
-            {
-                meta.index = ix;
-                meta.first = (ix == 0);
-                meta.last = (ix == tagTree.nrComponents-1);
-
-                auto el = tagTree.replaceComponent(ReplaceMode.Get, ix, null);
-                if (el.isLeaf)
-                {
-                    auto leaf = cast(ContentLeaf!(Tag, Content))el;
-                    show(leaf.content, stack);
-                } else
-                {
-                    auto composite = cast(TagTree!(Tag, Content))el;
-                    collect(composite, stack);
-                }
-            }
-
-            afterTag(tagTree.tag, stack);
-            stack.pop;
-
-            if (rootCall)
-                afterCollect();
-        }
-}
-
 version (UnitTest)
 {
     class XMLCollector: Collector!(char[], char[])
     {
         alias TagTree!(char[], char[]) TT;
         char[] str;
+        uint indentLevel;
         void beforeCollect()
         {
             str.length = 0;
+            indentLevel = 0;
         }
         void beforeTag(char[] tag, Stack!(MetaTag) stack)
         {
+            str ~= indent ~ "<" ~ tag ~ ">\n";
+            ++indentLevel;
         }
         void afterTag(char[] tag, Stack!(MetaTag) stack)
         {
+            --indentLevel;
+            str ~= indent ~ "</" ~ tag ~ ">\n";
         }
         void show(char[] content, Stack!(MetaTag) stack)
         {
+            str ~= indent ~ content ~ "\n";
+        }
+    private:
+        char[] indent()
+        {
+            char[] id;
+            id.length = indentLevel*2;
+            foreach (inout c; id)
+                c = ' ';
+            return id;
         }
     }
 
