@@ -7,21 +7,23 @@ import rinle.model.interfaces;
 import gubg.patterns.composite;
 import gubg.file;
 
+import tango.io.FilePath;
 import tango.io.FileSystem;
-import tango.io.FileScan;
 
 abstract class FSNode: ICompositeNode
 {
     this(char[] name)
 	{
-	    mName = name;
+	    _name = name;
 	}
 
     void addTo(inout FormatTree ft)
     {
-	ft.add(mName);
+	ft.add(_name);
 	ft.newline;
     }
+
+    char[] name(){return _name;}
 
 //     void render(Sink sink)
 //     {
@@ -30,14 +32,14 @@ abstract class FSNode: ICompositeNode
 // 	    Tag tag;
 // 	    tag.node = this;
 // 	    tag.color = (select ? 1 : 0);
-// 	    auto h = sink.create(tag, mName);
+// 	    auto h = sink.create(tag, _name);
 // 	    h.newline;
 // 	    foreach (ix, ch; childs)
 // 		ch.render(h);
 // 	}
 //     }
 
-//     char[] name(){return mName;}
+//     char[] name(){return _name;}
 
 //     char[] path()
 //     {
@@ -46,16 +48,16 @@ abstract class FSNode: ICompositeNode
 //         while (f !is null)
 //         {
 // 	    if (path.length == 0)
-// 		path = f.mName;
+// 		path = f._name;
 // 	    else
-// 		path = f.mName ~ "/" ~ path;
+// 		path = f._name ~ "/" ~ path;
 //             f = cast(FSNode)f.parent;
 //         }
 //         return path;
 //     }
 
 private:
-    char[] mName;
+    char[] _name;
 }
 
 class File: FSNode
@@ -76,22 +78,22 @@ class Dir: FSNode
 	mExpanded = false;
     }
 
-    uint nrComponents(){return mFiles.length;}
-    void setNrComponents(uint nr){mFiles.length = nr;}
-    INode opIndex(uint ix){return mFiles[ix];}
+    uint nrComponents(){return mFSNodes.length;}
+    void setNrComponents(uint nr){mFSNodes.length = nr;}
+    INode opIndex(uint ix){return mFSNodes[ix];}
     INode opIndexAssign(INode rhs, uint ix)
     {
         FSNode fsNode = cast(FSNode)rhs;
         if (fsNode is null)
             throw new Exception("Assignment of non-FSNode to Dir.");
-        return (mFiles[ix] = fsNode);
+        return (mFSNodes[ix] = fsNode);
     }
     mixin TIndexComposite!(NodeMethods);
 
     void addTo(inout FormatTree ft)
     {
 	expand;
-	ft.add(mName);
+	ft.add(_name);
 	ft.newline;
     }
 
@@ -100,20 +102,22 @@ class Dir: FSNode
 	if (mExpanded)
 	    return;
 
-        auto scan = new FileScan;
-        scan(".", true);
-        foreach (file; scan.files)
-            mFiles ~= [new File(file.name)];
-        foreach (dir; scan.folders)
+        foreach (fileInfo; FilePath(_name))
         {
-            scope d = new ChangeDir(dir.name);
-            mFiles ~= [new Dir];
+            auto newName = fileInfo.path ~ fileInfo.name;
+            if (fileInfo.folder)
+            {
+                scope d = new ChangeDir(newName);
+                mFSNodes ~= [new Dir];
+            } else
+                mFSNodes ~= [new File(newName)];
         }
+
 	mExpanded = true;
     }
 
 private:
-    FSNode[] mFiles;
+    FSNode[] mFSNodes;
     bool mExpanded;
 }
 
