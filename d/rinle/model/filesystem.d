@@ -12,9 +12,10 @@ import tango.io.FileSystem;
 
 abstract class FSNode: ICompositeNode
 {
-    this(char[] name)
+    this(char[] path, char[] name)
 	{
-	    _name = name;
+	    _path = path.dup;
+	    _name = name.dup;
 	}
 
     void addTo(inout FormatTree ft)
@@ -23,6 +24,7 @@ abstract class FSNode: ICompositeNode
 	ft.newline;
     }
 
+    char[] path(){return _path;}
     char[] name(){return _name;}
 
 //     void render(Sink sink)
@@ -57,14 +59,15 @@ abstract class FSNode: ICompositeNode
 //     }
 
 private:
+    char[] _path;
     char[] _name;
 }
 
 class File: FSNode
 {
-    this (char[] name)
+    this (char[] path, char[] name)
     {
-        super(name);
+        super(path, name);
     }
 
     mixin TLeaf!(NodeMethods);
@@ -72,9 +75,16 @@ class File: FSNode
 
 class Dir: FSNode
 {
-    this()
+    this ()
     {
-        super(FileSystem.getDirectory);
+	auto dir = FileSystem.getDirectory;
+	dir.length = dir.length-1;
+	auto fp = FilePath(dir);
+	super(fp.parent ~ "/", fp.file);
+    }
+    this (char[] path, char[] name)
+    {
+        super(path, name);
 	mExpanded = false;
     }
 
@@ -102,15 +112,13 @@ class Dir: FSNode
 	if (mExpanded)
 	    return;
 
-        foreach (fileInfo; FilePath(_name))
+        foreach (fileInfo; FilePath(_path ~ _name))
         {
-            auto newName = fileInfo.path ~ fileInfo.name;
             if (fileInfo.folder)
             {
-                scope d = new ChangeDir(newName);
-                mFSNodes ~= [new Dir];
+                mFSNodes ~= [new Dir(fileInfo.path, fileInfo.name)];
             } else
-                mFSNodes ~= [new File(newName)];
+                mFSNodes ~= [new File(fileInfo.path, fileInfo.name)];
         }
 
 	mExpanded = true;
