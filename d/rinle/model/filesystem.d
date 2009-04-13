@@ -103,8 +103,10 @@ class Dir: FSNode
     void addTo(inout FormatTree ft)
     {
 	expand;
+	ft = ft.create(Tag.create(this, Color.blue, true));
 	ft.add(_name);
 	ft.newline;
+	ft = ft.create(Tag.create(this, Color.white, false));
     }
 
     void expand()
