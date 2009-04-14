@@ -3,25 +3,33 @@ module gubg.puts;
 import tango.util.log.Trace;
 import tango.text.convert.Layout;
 private import tango.io.Console;
-import tango.io.stream.FileStream;
+import tango.io.device.File;
 import tango.io.model.IConduit;
+import tango.io.Path;
 
 static this ()
 {
-    mOutputStream = Cout.stream;
+    _outputStream = Cout.stream;
+    _deleteAtEnd = false;
 }
 
 static ~this ()
 {
-    mOutputStream.close;
+    _outputStream.close;
+    if (_deleteAtEnd)
+	FS.remove(_path);
 }
 
-OutputStream mOutputStream;
-public void putsFile(char[] path)
+OutputStream _outputStream;
+char[] _path;
+bool _deleteAtEnd;
+public void putsFile(char[] path, bool deleteAtEnd = true)
 {
-    if (cast(FileOutput)mOutputStream !is null)
-	mOutputStream.close;
-    mOutputStream = new FileOutput(path);
+    if (cast(File)_outputStream !is null)
+	_outputStream.close;
+    _outputStream = new File(path, File.ReadWriteCreate);
+    _path = path.dup;
+    _deleteAtEnd = deleteAtEnd;
 }
 
 // Write to stdout with trailing newline
@@ -32,11 +40,11 @@ public void puts(char[] fmt, ...)
 	Layout!(char) layout = new Layout!(char);
 	uint sink (char[] s)
 	{
-	    return mOutputStream.write(s);
+	    return _outputStream.write(s);
 	}
 	layout.convert (&sink, _arguments, _argptr, fmt);
-	mOutputStream.write("\n");
-	mOutputStream.flush;
+	_outputStream.write("\n");
+	_outputStream.flush;
     }
 }
 

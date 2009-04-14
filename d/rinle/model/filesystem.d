@@ -20,6 +20,7 @@ abstract class FSNode: ICompositeNode
 
     void addTo(inout FormatTree ft)
     {
+	ft = ft.create(Tag.create(this, Color.white, false));
 	ft.add(_name);
 	ft.newline;
     }
@@ -88,15 +89,15 @@ class Dir: FSNode
 	mExpanded = false;
     }
 
-    uint nrComponents(){return mFSNodes.length;}
-    void setNrComponents(uint nr){mFSNodes.length = nr;}
-    INode opIndex(uint ix){return mFSNodes[ix];}
+    uint nrComponents(){return _fsNodes.length;}
+    void setNrComponents(uint nr){_fsNodes.length = nr;}
+    INode opIndex(uint ix){return _fsNodes[ix];}
     INode opIndexAssign(INode rhs, uint ix)
     {
         FSNode fsNode = cast(FSNode)rhs;
         if (fsNode is null)
             throw new Exception("Assignment of non-FSNode to Dir.");
-        return (mFSNodes[ix] = fsNode);
+        return (_fsNodes[ix] = fsNode);
     }
     mixin TIndexComposite!(NodeMethods);
 
@@ -106,7 +107,6 @@ class Dir: FSNode
 	ft = ft.create(Tag.create(this, Color.blue, true));
 	ft.add(_name);
 	ft.newline;
-	ft = ft.create(Tag.create(this, Color.white, false));
     }
 
     void expand()
@@ -118,16 +118,18 @@ class Dir: FSNode
         {
             if (fileInfo.folder)
             {
-                mFSNodes ~= [new Dir(fileInfo.path, fileInfo.name)];
+                _fsNodes ~= [new Dir(fileInfo.path, fileInfo.name)];
             } else
-                mFSNodes ~= [new File(fileInfo.path, fileInfo.name)];
+                _fsNodes ~= [new File(fileInfo.path, fileInfo.name)];
         }
+	foreach (fsNode; _fsNodes)
+	    fsNode.parent(this);
 
 	mExpanded = true;
     }
 
 private:
-    FSNode[] mFSNodes;
+    FSNode[] _fsNodes;
     bool mExpanded;
 }
 

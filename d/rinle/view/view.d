@@ -20,6 +20,7 @@ class View
 
     void show(Output output)
         {
+	    puts("show: _base = {}, _current = {}, _current.parent = {}", cast(void*)_base, cast(void*)_current, cast(void*)_current.parent);
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
 	    addTo(ft, _base);
             auto collector = new OutputCollector(output);
@@ -29,6 +30,7 @@ class View
 
     void move(char[] dir)
         {
+	    puts("Moving {}", dir);
             INode newCurrent;
             switch (dir)
             {
@@ -39,14 +41,14 @@ class View
 //                _view.moveDown();
                 break;
             case "in":
-                newCurrent = _current.replaceComponent(ReplaceMode.Get, 0, null);
+		if (_current.nrComponents > 0)
+		    newCurrent = _current.replaceComponent(ReplaceMode.Get, 0, null);
                 break;
             case "out":
                 newCurrent = _current.parent;
-                if (newCurrent is null)
-                    puts("Parent is null");
                 break;
             }
+	    puts("_current = {}, newCurrent = {}, parent = {}", cast(void*)_current, cast(void*)newCurrent, cast(void*)_current.parent);
             if (newCurrent !is null)
                 _current = newCurrent;
         }

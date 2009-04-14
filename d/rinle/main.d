@@ -15,6 +15,7 @@ class Rinle
 {
     this()
         {
+	    puts("Starting Rinle");
             _nCurses = new NCurses;
             _input = _nCurses;
             _output = _nCurses;
@@ -27,6 +28,7 @@ class Rinle
         }
     ~this()
         {
+	    puts("Stopping Rinle");
             delete _nCurses;
 	    _focusMgr.pop;
         }
@@ -141,10 +143,14 @@ private:
     FocusMgr _focusMgr;
 }
 
+import gubg.puts;
+
 import tango.core.Thread;
 
 int main()
 {
+    putsFile("/tmp/rinle.output");
+
     scope rinle = new Rinle;
 
     rinle.run;
