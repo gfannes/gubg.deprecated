@@ -3,20 +3,33 @@
 require("tools/utils")
 require("fileutils")
 
+verbose = false
+
 baseDir, sourceDir, targetDir = nil, nil, nil
-doReal = false
+action = :nothing
 arguments = ARGV.dup
 if arguments[0] == "-r"
-  doReal = true
+  action = :merge
   arguments.shift
+elsif arguments[0] == "-v"
+  action = :view
+  arguments.shift
+end
+filter = /.*/
+if arguments[0] == "-f"
+  arguments.shift
+  filter = Regexp.new(arguments.shift)
+  puts("I will use this filter: #{filter}")
 end
 if arguments.length == 3
   baseDir = arguments.shift
   sourceDir = arguments.shift
   targetDir = arguments.shift
 else
-  puts(%Q@#{__FILE__} [-r] baseDir sourceDir targetDir
+  puts(%Q@#{__FILE__} [-r|-v] [-f <filter>] baseDir sourceDir targetDir
 \t-r\tPerform actual merge
+\t-r\tView changes
+\t-f filter\tUse \"filter\" to filter files
 \tbaseDir\tThe most common ancestor
 \tsourceDir\tThe directory containing local changes that should be incorporated
 \ttargetDir\tThe directory where these changes should be copied to@)
@@ -42,24 +55,26 @@ def collectInfo(dir, fn, baseDir, sourceDir, targetDir)
 end
 
 # Look for files that where changed or added in the sourceDir compared to the baseDir
-time("Looking for new and changed files", true) do
+time("Looking for new and changed files", verbose) do
   Dir.each(sourceDir, recursor) do |dir, fn|
-    relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
-    if !md5Base
-      puts("\tAdded by us: \"#{relativeName}\"")
-      newFiles << relativeName
-    elsif md5Base != md5Source
-      if md5Base != md5Target
-        if md5Target
-          puts("\tChanged by us and target: \"#{relativeName}\"")
-          conflictFiles << relativeName
+    if fn[filter]
+      relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
+      if !md5Base
+        puts("\tAdded by us: \"#{relativeName}\"") if verbose
+        newFiles << relativeName
+      elsif md5Base != md5Source
+        if md5Base != md5Target
+          if md5Target
+            puts("\tChanged by us and target: \"#{relativeName}\"") if verbose
+            conflictFiles << relativeName
+          else
+            puts("\tChanged by us but deleted by target: \"#{relativeName}\"") if verbose
+            changedTargetDeleted << relativeName
+          end
         else
-          puts("\tChanged by us but deleted by target: \"#{relativeName}\"")
-          changedTargetDeleted << relativeName
+          puts("\tChanged by us: \"#{relativeName}\"") if verbose
+          changedFiles << relativeName
         end
-      else
-        puts("\tChanged by us: \"#{relativeName}\"")
-        changedFiles << relativeName
       end
     end
     nil
@@ -67,17 +82,20 @@ time("Looking for new and changed files", true) do
 end
 
 # Look for files that where deleted in the sourceDir compared to the baseDir
-time("\nLooking for deleted files", true) do
+puts("") if verbose
+time("Looking for deleted files", verbose) do
   Dir.each(baseDir, recursor) do |dir, fn|
-    relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
-    if !md5Source
-      if md5Base == md5Target
-        puts("\tDeleted by us: \"#{relativeName}\"")
-        deletedFiles << relativeName
-      else
-        puts("\tDeleted by us but changed by target: \"#{relativeName}\"")
-        deletedTargetChanged << relativeName
-      end if md5Target
+    if fn[filter]
+      relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
+      if !md5Source
+        if md5Base == md5Target
+          puts("\tDeleted by us: \"#{relativeName}\"") if verbose
+          deletedFiles << relativeName
+        else
+          puts("\tDeleted by us but changed by target: \"#{relativeName}\"") if verbose
+          deletedTargetChanged << relativeName
+        end if md5Target
+      end
     end
     nil
   end
@@ -104,7 +122,8 @@ printFiles("Files changed by us but deleted by target", changedTargetDeleted)
 printFiles("Files deleted by us but changed by target", deletedTargetChanged)
 puts("End of summary.\n\n")
 
-if doReal
+case action
+when :merge
   # Copy new files
   newFiles.each do |relativeName|
     fnTarget = File.expand_path(relativeName, targetDir)
@@ -131,7 +150,14 @@ if doReal
     fnBase, fnSource, fnTarget = *[baseDir, sourceDir, targetDir].collect{|dirH|File.expand_path(relativeName, dirH)}
     `kdiff3 -m -o #{fnTarget} #{fnBase} #{fnSource} #{fnTarget}`
   end
-else
+when :view
+  # Copy changed files
+  puts("Showing changes:")
+  changedFiles.each do |relativeName|
+    puts("\t#{relativeName}")
+    fnBase, fnSource, fnTarget = *[baseDir, sourceDir, targetDir].collect{|dirH|File.expand_path(relativeName, dirH)}
+    `kdiff3 #{fnBase} #{fnSource} #{fnTarget}`
+  end
   # Show conflicts
   puts("Showing conflicts:")
   conflictFiles.each do |relativeName|

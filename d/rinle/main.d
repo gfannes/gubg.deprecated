@@ -15,26 +15,26 @@ class Rinle
 {
     this()
         {
-            mNCurses = new NCurses;
-            mInput = mNCurses;
-            mOutput = mNCurses;
+            _nCurses = new NCurses;
+            _input = _nCurses;
+            _output = _nCurses;
 
-            mFocusMgr = new FocusMgr(mInput, mOutput);
-	    mFocusMgr.push(new Focus);
+            _focusMgr = new FocusMgr(_input, _output);
+	    _focusMgr.push(new Focus);
 
-            mModel = new Dir;
-            mView = new View(mModel);
+            _model = new Dir;
+            _view = new View(_model);
         }
     ~this()
         {
-            delete mNCurses;
-	    mFocusMgr.pop;
+            delete _nCurses;
+	    _focusMgr.pop;
         }
 
     void run()
         {
-            mProceed = true;
-            while (mProceed)
+            _proceed = true;
+            while (_proceed)
             {
                 show;
                 ICommand command = getCommand;
@@ -46,14 +46,14 @@ class Rinle
     ICommand getCommand()
         {
             ICommand command;
-            mFocusMgr.handle(command);
+            _focusMgr.handle(command);
             return command;
         }
 
     void show()
         {
-	    mView.show(mOutput);
-            mOutput.refresh;
+	    _view.show(_output);
+            _output.refresh;
         }
 
     class Focus: IFocus
@@ -61,16 +61,28 @@ class Rinle
         // IFocus
         void setIO(Input input, Output output)
         {
-            mInput = input;
-            mOutput = output;
+            _input = input;
+            _output = output;
         }
         bool handle(inout ICommand command)
         {
             int key;
-            switch (key = mInput.getKey)
+            switch (key = _input.getKey)
             {
             case 'q':
                 command = new QuitCommand;
+                break;
+            case 'w':
+                command = new MoveCommand("up");
+                break;
+            case 's':
+                command = new MoveCommand("down");
+                break;
+            case 'a':
+                command = new MoveCommand("out");
+                break;
+            case 'd':
+                command = new MoveCommand("in");
                 break;
             default:
 		// This is the last level, we don't try to delegate to our successor
@@ -82,13 +94,13 @@ class Rinle
         void successor(IChainOfResponsibility!(ICommand) handler){};
 
     private:
-        Input mInput;
-        Output mOutput;
+        Input _input;
+        Output _output;
     }
 
     void quit()
         {
-            mProceed = false;
+            _proceed = false;
         }
 
 private:
@@ -102,16 +114,31 @@ private:
 	bool undo(){return false;}
     }
 
-    Dir mModel;
-    View mView;
+    class MoveCommand: ICommand
+        {
+            this (char[] dir)
+            {
+                _dir = dir;
+            }
+            bool execute()
+            {
+                _view.move(_dir);
+                return true;
+            }
+            bool undo(){return false;}
+            char[] _dir;
+        }
+
+    Dir _model;
+    View _view;
     
-    bool mProceed;
+    bool _proceed;
 
-    NCurses mNCurses;
-    Input mInput;
-    Output mOutput;
+    NCurses _nCurses;
+    Input _input;
+    Output _output;
 
-    FocusMgr mFocusMgr;
+    FocusMgr _focusMgr;
 }
 
 import tango.core.Thread;

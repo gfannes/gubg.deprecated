@@ -22,6 +22,7 @@ struct Tag
     Color color;
     bool indent = true;
     bool spaceBefore = false;
+    bool invert = false;
     static Tag create(INode n = null, Color c = Color.white, bool i = true, bool s = false)
 	{
 	    Tag tag;
@@ -109,6 +110,12 @@ private:
     ColorPair color(Tag tag)
     {
 	ColorPair cp = {tag.color, (tag.color != Color.black ? Color.black : Color.red)};
+        if (tag.invert)
+        {
+            auto tmp = cp.foreground;
+            cp.foreground = cp.background;
+            cp.background = tmp;
+        }
 	return cp;
     }
 

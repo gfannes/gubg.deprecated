@@ -85,6 +85,7 @@ interface ITagTreeMethods(Tag, Content)
 interface ITagTree(Tag, Content): IComposite!(ITagTreeMethods!(Tag, Content))
 {
     Tag tag();
+    void setTag(Tag tag);
     void add(Content content);
     void add(ITagTree tt);
 }
@@ -128,17 +129,21 @@ template TTagTree(Tag, Content)
         return child;
     }
     typeof(this) create(Tag tag, void delegate(ITT child) yield)
-    {
-        auto child = new typeof(this)(tag);
-        yield(child);
-        add(child);
-        return child;
-    }
-
+        {
+            auto child = new typeof(this)(tag);
+            yield(child);
+            add(child);
+            return child;
+        }
+    
     Tag tag()
-    {
-        return mTag;
-    }
+        {
+            return mTag;
+        }
+    void setTag(Tag tag)
+        {
+            mTag = tag;
+        }
 
     // Create the specific composite methods
     uint nrComponents(){return mElements.length;}
