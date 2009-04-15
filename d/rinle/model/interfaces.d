@@ -39,6 +39,19 @@ class FormatTree: ITagTree!(Tag, char[])
     mixin TTagTree!(Tag, char[]);
 
     void newline(){add("\n");}
+
+    static bool indexOfParent(T)(T node, inout uint ix)
+    {
+	auto p = node.parent;
+	if (p is null)
+	    return false;
+	for (ix = 0; ix < p.nrComponents; ++ix)
+	    if (p.replaceComponent(ReplaceMode.Get, ix, null) == node)
+		break;
+	if (ix >= p.nrComponents)
+	    return false;
+	return true;
+    }
 }
 
 class OutputCollector: Collector!(Tag, char[])

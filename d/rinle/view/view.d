@@ -35,10 +35,14 @@ class View
             switch (dir)
             {
             case "up":
-//                _view.moveUp();
+		uint ix;
+		if (FormatTree.indexOfParent(_current, ix) && ix > 0)
+		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, --ix, null);
                 break;
             case "down":
-//                _view.moveDown();
+		uint ix;
+		if (FormatTree.indexOfParent(_current, ix) && ix < _current.parent.nrComponents-1)
+		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, ++ix, null);
                 break;
             case "in":
 		if (_current.nrComponents > 0)
