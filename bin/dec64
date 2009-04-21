@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require("base64")
-require("hexdump")
 require("tools/utils")
 
 str = nil
@@ -24,5 +23,5 @@ puts("**********DECODING START (STRING)**********")
 puts dec
 puts("**********DECODING END (STRING)**********")
 puts("**********DECODING START (HEXDUMP)**********")
-dec.hexdump(true)
+dec.hexdump
 puts("**********DECODING END (HEXDUMP)**********")

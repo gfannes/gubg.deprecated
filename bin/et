@@ -23,7 +23,7 @@ bFirst = true
 Dir.each('./', recursor) do |dir, fn|
   if fn[reOK] and !fn[reKO]
     fileName = File.expand_path(fn, dir)
-    puts("\tChecking \"#{fileName}\" for tags")
+#    puts("\tChecking \"#{fileName}\" for tags")
     if bFirst
       bFirst = false
       system("#{binary} \"#{fileName}\"")
