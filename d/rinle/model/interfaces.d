@@ -9,6 +9,7 @@ import gubg.puts;
 interface NodeMethods
 {
     void addTo(inout FormatTree ft);
+    void expand();
 }
 // Some convenient aliases for working with composites
 alias IComponent!(NodeMethods) INode;

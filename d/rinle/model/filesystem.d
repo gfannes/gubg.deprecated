@@ -20,18 +20,17 @@ abstract class FSNode: ICompositeNode
 
     void addTo(inout FormatTree ft)
     {
-	expand;
-	ft = ft.create(Tag.create(this, Color.blue, true));
+	ft = ft.create(tag);
 	ft.add(_name);
 	ft.newline;
     }
+    abstract void expand();
 
     char[] path(){return _path;}
     char[] name(){return _name;}
 
 protected:
     abstract Tag tag();
-    abstract void expand();
 
     char[] _path;
     char[] _name;
@@ -46,13 +45,13 @@ class File: FSNode
 
     mixin TLeaf!(NodeMethods);
 
-protected:
-    Tag tag(){return Tag.create(this, Color.white, false);}
-
     void expand()
     {
 	
     }
+
+protected:
+    Tag tag(){return Tag.create(this, Color.white, false);}
 
 private:
 }
@@ -84,9 +83,6 @@ class Dir: FSNode
     }
     mixin TIndexComposite!(NodeMethods);
 
-protected:
-    Tag tag(){return Tag.create(this, Color.blue, true);}
-
     void expand()
     {
 	if (_expanded)
@@ -106,7 +102,11 @@ protected:
 	_expanded = true;
     }
 
+
 protected:
+    Tag tag(){return Tag.create(this, Color.blue, true);}
+
+private:
     FSNode[] _fsNodes;
     bool _expanded;
 }

@@ -67,8 +67,11 @@ private:
 
 	    // Recursively descent, if indicated by the corresponding node info
 	    if (_mgr.get(node).recurse)
+            {
+                node.expand;
 		for (uint i = 0; i < node.nrComponents; ++i)
 		    addTo(ft, node.replaceComponent(ReplaceMode.Get, i, null));
+            }
 	    ft = saveFT;
 	}
 
