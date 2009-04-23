@@ -44,6 +44,10 @@ class FileInfo
     end
     res
   end
+
+  def to_s
+    canonicalize
+  end
 end
 
 class FileStore

@@ -45,13 +45,12 @@ class File: FSNode
     }
 
 
-    uint nrComponents(){return (_syntaxTree is null ? 0 : 1);}
+    uint nrComponents(){return ((_syntaxTree is null) ? 0 : 1);}
     void setNrComponents(uint nr){}
     INode opIndex(uint ix)
     {
-        if (ix == 0 && _syntaxTree !is null)
+        if (ix == 0)
             return _syntaxTree;
-        return null;
     }
     INode opIndexAssign(INode rhs, uint ix)
     {
@@ -68,7 +67,7 @@ class File: FSNode
         switch (extension)
         {
         case "d":
-            _syntaxTree = new DModule(path, name);
+	    replaceComponent(ReplaceMode.Set, 0, new DModule(path, name));
             break;
         default:
             break;

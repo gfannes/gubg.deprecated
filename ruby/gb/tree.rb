@@ -70,9 +70,10 @@ class Tree# < IChainOfResponsibility
 
       when Collection.from([@@cppFile, @@dFile])
         # Build test or main application
-        type = @target[/\.([^\.]+)$/, 1]. to_sym
+        type = @target[/\.([^\.]+)$/, 1].to_sym
         #  Compile the target
         fileInfo = createCompilationFileInfo(type, (unitTest? ? :unitTest : :lib), @target)
+        allHeaders = fileInfo["internalHeaders"] + fileInfo["externalHeaders"]
         objects = [CompileCommand.new(fileInfo, @@fileStore)]
         #  Compile all the referenced modules
         fileInfo["internalHeaders"].each do |ih|
@@ -81,15 +82,18 @@ class Tree# < IChainOfResponsibility
           if internalFile?(im) and fullFileName(im) != @target
             fi = createCompilationFileInfo(type, :lib, fullFileName(im))
             objects << CompileCommand.new(fi, @@fileStore)
+            allHeaders += fi["internalHeaders"] + fi["externalHeaders"]
           end
         end
         commands += objects
+        allHeaders.uniq!
+        allHeaders.sort!
         #  Link all the object files
         linkInfo = FileInfo.new(execName)
         linkInfo["execName"] = execName
         linkInfo["linker"] = @@linkerPerType[type]
         linkInfo["objectFiles"] = objects.collect{|obj|obj.output}
-        linkInfo["settings"] = linkSettings(type, fileInfo["internalHeaders"] + fileInfo["externalHeaders"])
+        linkInfo["settings"] = linkSettings(type, allHeaders)
         commands << LinkCommand.new(linkInfo, @@fileStore)
 
       else

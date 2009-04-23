@@ -53,7 +53,7 @@ class View
                 newCurrent = _current.parent;
                 break;
             }
-	    puts("_current = {}, newCurrent = {}, parent = {}", cast(void*)_current, cast(void*)newCurrent, cast(void*)_current.parent);
+	    puts("_current = {}, newCurrent = {}, _current.parent = {}", cast(void*)_current, cast(void*)newCurrent, cast(void*)_current.parent);
             if (newCurrent !is null)
                 _current = newCurrent;
         }
