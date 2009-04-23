@@ -22,6 +22,7 @@ class View
         {
 	    puts("show: _base = {}, _current = {}, _current.parent = {}", cast(void*)_base, cast(void*)_current, cast(void*)_current.parent);
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
+            _current.expand;
 	    addTo(ft, _base);
             auto collector = new OutputCollector(output);
             setSelected(ft);
@@ -68,7 +69,6 @@ private:
 	    // Recursively descent, if indicated by the corresponding node info
 	    if (_mgr.get(node).recurse)
             {
-                node.expand;
 		for (uint i = 0; i < node.nrComponents; ++i)
 		    addTo(ft, node.replaceComponent(ReplaceMode.Get, i, null));
             }
