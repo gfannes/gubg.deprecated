@@ -2,15 +2,14 @@ module gubg.parser;
 
 template TParser(T)
 {
-    T parse(char[] buffer)//, obj = nil)
+    T parse(char[] buffer, T obj = null)
 	{
-	    T res;
 	    _globalBuffer = buffer.dup;
 	    _ixs = [0];
 	    prepareParsing;
-	    complete!(T)(res);
+	    complete!(T)(obj);
 	    finishedParsing;
-	    return res;
+	    return obj;
 	}
 
     char[] buffer()
@@ -18,10 +17,27 @@ template TParser(T)
 	    return _globalBuffer[_ixs[$-1] .. $];
 	}
 
-    bool matches(char[] s)
+    bool matches(char[] s, bool cons = false)
 	{
-	    return (buffer()[0 .. s.length] == s);
+	    if (buffer()[0 .. s.length] != s)
+		return false;
+	    if (cons)
+		consume(s.length);
+	    return true;
 	}
+
+    bool before(inout char[] b, char[] s, bool cons = false)
+	{
+	    char[] buf = buffer;
+	    uint matchIX = locatePattern(buf, s);
+	    if (matchIX >= buf.length)
+		return false;
+	    b = buf[0 .. matchIX];
+	    if (cons)
+		consume(matchIX + s.length);
+	    return true;
+	}
+
 //   def matches(s, e = nil)
 //     case s
 //     when String

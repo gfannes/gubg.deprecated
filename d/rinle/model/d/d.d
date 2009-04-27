@@ -1,6 +1,6 @@
-module rinle.model.d;
+module rinle.model.d.d;
 
-import rinle.model.interfaces;
+public import rinle.model.interfaces;
 
 class DModule: ICompositeNode
 {
@@ -46,4 +46,41 @@ class DDeclaration: ILeafNode
     }
 
     mixin TLeaf!(NodeMethods);
+}
+
+class DModuleDeclaration: DDeclaration
+{
+    this (char[] name)
+    {
+	_name = name.dup;
+    }
+private:
+    char[] _name;
+}
+
+class DImportDeclaration: DDeclaration
+{
+    this (char[] name)
+    {
+	_name = name.dup;
+    }
+private:
+    char[] _name;
+}
+
+class DClassDeclaration: DDeclaration
+{
+    this (char[] name)
+    {
+	_name = name.dup;
+    }
+private:
+    char[] _name;
+}
+
+version (UnitTest)
+{
+    void main()
+    {
+    }
 }

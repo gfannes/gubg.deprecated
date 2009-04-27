@@ -96,6 +96,41 @@ public void errn(char[] fmt, ...)
     }
 }
 
+scope class Log
+{
+    static this ()
+	{
+	    _level = 0;
+	}
+    this (char[] msg)
+	{
+	    _msg = msg.dup;
+	    .puts(indent() ~ ">>> " ~ _msg);
+	    ++_level;
+	}
+    ~this ()
+	{
+	    --_level;
+	    .puts(indent() ~ "<<< " ~ _msg);
+	}
+
+    void puts(char[] msg)
+	{
+	    .puts(indent() ~ msg);
+	}
+private:
+    char[] _msg;
+    static uint _level;
+    char[] indent()
+	{
+	    char[] id;
+	    id.length = _level*2;
+	    foreach (inout ch; id)
+		ch = ' ';
+	    return id;
+	}
+}
+
 version (UnitTest)
 {
     void main()

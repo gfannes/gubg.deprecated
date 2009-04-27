@@ -3,7 +3,7 @@ module rinle.model.filesystem;
 import gubg.puts;
 
 import rinle.model.interfaces;
-import rinle.model.d;
+import rinle.model.d.d;
 
 import gubg.patterns.composite;
 import gubg.file;
