@@ -1,42 +1,49 @@
 module rinle.view.nodeInfo;
 
 import rinle.model.interfaces;
+import rinle.model.filesystem;
 
 class Manager
 {
-    this (bool defaultRecurse = true)
+    this (bool defaultRecurse = true, bool defaultExpandBeforeShow = true)
         {
-            mDefaultRecurse = defaultRecurse;
+            _defaultRecurse = defaultRecurse;
+            _defaultExpandBeforeShow = defaultExpandBeforeShow;
         }
 
     NodeInfo get(INode node)
         {
             NodeInfo nodeInfo;
-            NodeInfo* p = (cast(void*)node in mNodeInfo);
+            NodeInfo* p = (cast(void*)node in _nodeInfo);
             if (p !is null)
                 nodeInfo = *p;
+            else if (cast(Dir)node !is null)
+                nodeInfo = new NodeInfo(_defaultRecurse, false);
             else
-                nodeInfo = new NodeInfo(mDefaultRecurse);
+                nodeInfo = new NodeInfo(_defaultRecurse, _defaultExpandBeforeShow);
             return nodeInfo;
         }
     void set(NodeInfo ni, INode node)
         {
-            mNodeInfo[cast(void*)node] = ni;
+            _nodeInfo[cast(void*)node] = ni;
         }
 
 private:
-    bool mDefaultRecurse;
-    NodeInfo[void*] mNodeInfo;
+    bool _defaultRecurse;
+    bool _defaultExpandBeforeShow;
+    NodeInfo[void*] _nodeInfo;
 }
 
 class NodeInfo
 {
-    this (bool r)
+    this (bool r, bool ebs)
         {
             recurse = r;
+            expandBeforeShow = ebs;
         }
 
     bool recurse;
+    bool expandBeforeShow;
 }
 
 version (UnitTest)

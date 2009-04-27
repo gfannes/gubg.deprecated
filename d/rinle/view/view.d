@@ -22,7 +22,8 @@ class View
         {
 	    puts("show: _base = {}, _current = {}, _current.parent = {}", cast(void*)_base, cast(void*)_current, cast(void*)_current.parent);
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
-            _current.expand;
+	    if (_mgr.get(_current).expandBeforeShow)
+                _current.expand;
 	    addTo(ft, _base);
             auto collector = new OutputCollector(output);
             setSelected(ft);
@@ -46,6 +47,7 @@ class View
 		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, ++ix, null);
                 break;
             case "in":
+                _current.expand;
 		if (_current.nrComponents > 0)
 		    newCurrent = _current.replaceComponent(ReplaceMode.Get, 0, null);
                 break;
