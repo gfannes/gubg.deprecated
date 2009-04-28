@@ -8,7 +8,7 @@ import tango.text.Util;
 
 class DParser
 {
-    mixin TParser!(DModule);
+    mixin TParser;
 
     void prepareParsing(){}
     void finishedParsing(){}
@@ -73,6 +73,7 @@ version (UnitTest)
 	loadFile(content, "parser.d");
 
 	auto parser = new DParser;
-	auto dmodule = parser.parse(content, new DModule("./", "parser.d"));
+        DModule dmodule = new DModule("./", "parser.d");
+	parser.parse(dmodule, content);
     }
 }

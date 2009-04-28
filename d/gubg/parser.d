@@ -1,8 +1,8 @@
 module gubg.parser;
 
-template TParser(T)
+template TParser()
 {
-    T parse(char[] buffer, T obj = null)
+    T parse(T)(inout T obj, char[] buffer)
 	{
 	    _globalBuffer = buffer.dup;
 	    _ixs = [0];
@@ -86,6 +86,8 @@ private:
 
 version (UnitTest)
 {
+    import tango.text.Util;
+
     class XMLNode
     {
 	this (char[] tag)
@@ -107,7 +109,7 @@ version (UnitTest)
 
     class XMLParser
     {
-	mixin TParser!(XMLNode);
+	mixin TParser;
 
 	void prepareParsing(){}
 	void finishedParsing(){}
@@ -152,7 +154,8 @@ version (UnitTest)
     void main()
     {
 	auto parser = new XMLParser;
-	auto xml = parser.parse("<html><a></a><b></b></html>");
+        XMLNode xml;
+	parser.parse(xml, "<html><a></a><b></b></html>");
 	puts("xml = {}", xml);
     }
 }
