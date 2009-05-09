@@ -21,9 +21,9 @@ namespace gubg
 	    Output(Primitive *primitive);
 	    virtual ~Output();
 
-	    virtual void newLevel(const std::string &tag) = 0;
+	    virtual void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag) = 0;
 	    virtual void closeLevel(const std::string &tag) = 0;
-	    virtual void newLine() = 0;
+	    virtual void newLine(const std::string &fileName, unsigned int lineNr) = 0;
 	    virtual void closeLine() = 0;
 	    virtual Output &operator<<(const std::string &str) = 0;
 
@@ -44,10 +44,10 @@ namespace gubg
 	class Scope
 	{
 	public:
-	    Scope(const std::string &msg);
+	    Scope(const std::string &fileName, unsigned int lineNr, const std::string &msg);
 	    ~Scope();
+	    Scope &operator()(const std::string &fileName, unsigned int lineNr, const std::string &msg);
 	    Scope &operator<<(const std::string &msg);
-	    Scope &operator()(const std::string &msg);
 
 	private:
 	    std::string _msg;
@@ -60,11 +60,11 @@ namespace gubg
 
 	static void add(Output *output);
 
-	void newLevel(const std::string &tag);
+	void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag);
 	void closeLevel(const std::string &tag);
-	void newLine();
+	void newLine(const std::string &fileName, unsigned int lineNr);
 	void closeLine();
-	Output &operator<<(const std::string &str);
+	Log &operator<<(const std::string &str);
 
     private:
 	// Singleton: disallow constructor

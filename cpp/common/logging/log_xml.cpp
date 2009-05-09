@@ -10,7 +10,7 @@ XMLOutput::XMLOutput(Log::Output::Primitive *primitive):
 {
 }
 
-void XMLOutput::newLevel(const std::string &tag)
+void XMLOutput::newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag)
 {
     indent();
     write("<" + tag + ">" + "\n");
@@ -24,14 +24,15 @@ void XMLOutput::closeLevel(const std::string &tag)
     write("</" + tag + ">" + "\n");
 }
 
-void XMLOutput::newLine()
+void XMLOutput::newLine(const std::string &fileName, unsigned int lineNr)
 {
     indent();
+    write("<Line fileName = \"" + fileName + "\", lineNr = \"" + fileName + "\">");
 }
 
 void XMLOutput::closeLine()
 {
-    write("\n");
+    write("</Line>\n");
 }
 
 Log::Output &XMLOutput::operator<<(const std::string &str)
