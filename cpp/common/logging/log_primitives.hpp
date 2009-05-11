@@ -3,11 +3,15 @@
 
 #include "log.hpp"
 
+#include <fstream>
+
 namespace gubg
 {
     class COutPrimitive: public Log::Output::Primitive
     {
     public:
+	virtual ~COutPrimitive();
+
 	virtual void write(const std::string &str);
     };
 
@@ -15,8 +19,12 @@ namespace gubg
     {
     public:
 	FilePrimitive(const std::string &fileName);
+ 	virtual ~FilePrimitive();
 
 	virtual void write(const std::string &str);
+
+    private:
+	std::ofstream _outputFile;
     };
 }
 

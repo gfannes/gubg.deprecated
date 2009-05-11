@@ -1,6 +1,8 @@
 #include "log_xml.hpp"
 #include "log_primitives.hpp"
 
+#include <sstream>
+
 using namespace gubg;
 
 unsigned int XMLOutput::_indentLevel = 0;
@@ -13,7 +15,9 @@ XMLOutput::XMLOutput(Log::Output::Primitive *primitive):
 void XMLOutput::newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag)
 {
     indent();
-    write("<" + tag + ">" + "\n");
+    std::ostringstream str;
+    str << "<Scope tag = \"" << tag << "\">" << std::endl;
+    write(str.str());
     ++_indentLevel;
 }
 
@@ -21,13 +25,15 @@ void XMLOutput::closeLevel(const std::string &tag)
 {
     --_indentLevel;
     indent();
-    write("</" + tag + ">" + "\n");
+    write("</Scope>\n");
 }
 
 void XMLOutput::newLine(const std::string &fileName, unsigned int lineNr)
 {
     indent();
-    write("<Line fileName = \"" + fileName + "\", lineNr = \"" + fileName + "\">");
+    std::ostringstream str;
+    str << "<Line fileName = \"" << fileName << "\", lineNr = \"" << lineNr << "\">";
+    write(str.str());
 }
 
 void XMLOutput::closeLine()

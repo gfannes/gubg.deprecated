@@ -1,5 +1,9 @@
 #include "log.hpp"
 
+#include "log_primitives.hpp"
+#include "log_xml.hpp"
+#include "log_tree.hpp"
+
 using namespace gubg;
 
 Log::Log()
@@ -18,8 +22,36 @@ Log &Log::instance()
     return log;
 }
 
-void Log::add(Log::Output *output)
+void Log::add(Log::LogFormat logFormat, Log::LogSink logSink, const std::string &fileName)
 {
+    Output::Primitive *primitive = 0;
+    switch (logSink)
+    {
+    case COut:
+	primitive = new COutPrimitive();
+	break;
+    case File:
+	primitive = new FilePrimitive(fileName);
+	break;
+    default:
+	throw new std::exception();
+	break;
+    }
+
+    Output *output = 0;
+    switch (logFormat)
+    {
+    case XML:
+	output = new XMLOutput(primitive);
+	break;
+    case Tree:
+	output = new TreeOutput(primitive);
+	break;
+    default:
+	throw new std::exception();
+	break;
+    }
+
     Log &log = Log::instance();
     log._outputs.push_back(output);
 }
@@ -139,7 +171,7 @@ Log::Scope &Log::Scope::operator<<(const std::string &msg)
 #include "log_primitives.hpp"
 int main()
 {
-    Log::add(new gubg::XMLOutput(new gubg::COutPrimitive));
+    Log::add(Log::XML, Log::COut, "test.log");
     {
 	Log::Scope scope(__FILE__, __LINE__, "Scope1");
 	{

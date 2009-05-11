@@ -15,6 +15,8 @@ namespace gubg
 	    class Primitive
 	    {
 	    public:
+		virtual ~Primitive(){};
+
 		virtual void write(const std::string &str) = 0;
 	    };
 
@@ -58,7 +60,17 @@ namespace gubg
 
 	static Log &instance();
 
-	static void add(Output *output);
+	enum LogFormat
+	{
+	    XML,
+	    Tree,
+	};
+	enum LogSink
+	{
+	    COut,
+	    File,
+	};
+	static void add(LogFormat logFormat, LogSink logSink, const std::string &fileName = "");
 
 	void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag);
 	void closeLevel(const std::string &tag);
