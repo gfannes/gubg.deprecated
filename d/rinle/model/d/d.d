@@ -1,6 +1,11 @@
 module rinle.model.d.d;
 
 public import rinle.model.interfaces;
+import rinle.model.d.parser;
+
+import gubg.puts;
+import gubg.file;
+import gubg.parser;
 
 class DModule: ICompositeNode
 {
@@ -8,6 +13,7 @@ class DModule: ICompositeNode
     {
         _path = path.dup;
         _name = name.dup;
+        _expanded = false;
     }
 
     uint nrComponents(){return _declarations.length;}
@@ -24,9 +30,20 @@ class DModule: ICompositeNode
 
     void addTo(inout FormatTree ft)
     {
+	ft = ft.create(Tag.create(this, Color.white, true));
     }
     void expand()
     {
+        if (_expanded)
+            return;
+
+	char[] content;
+	loadFile(content, _path ~ _name);
+
+	auto parser = new DParser;
+	parser.parse(this, content);
+
+        _expanded = true;
     }
 
 private:
@@ -34,6 +51,7 @@ private:
     char[] _name;
 
     DDeclaration[] _declarations;
+    bool _expanded;
 }
 
 class DDeclaration: ILeafNode
@@ -98,6 +116,13 @@ class DModuleDeclaration: DDeclaration
     {
 	_name = name.dup;
     }
+
+    void addTo(inout FormatTree ft)
+    {
+	ft = ft.create(Tag.create(this, Color.white, false));
+	ft.add("module " ~ _name ~ ";");
+	ft.newline;
+    }
 private:
     char[] _name;
 }
@@ -107,6 +132,13 @@ class DImportDeclaration: DDeclaration
     this (char[] name)
     {
 	_name = name.dup;
+    }
+
+    void addTo(inout FormatTree ft)
+    {
+        ft = ft.create(Tag.create(this, Color.red, false), "import ");
+        ft.create(Tag.create(this, Color.white, false), _name);
+	ft.newline;
     }
 private:
     char[] _name;
@@ -127,6 +159,13 @@ class DClassDeclaration: DDeclaration
     void setName(DIdentifier name)
     {
 	_name = name;
+        _name
+    }
+
+    void addTo(inout FormatTree ft)
+    {
+	ft = ft.create(Tag.create(this, Color.red, false));
+	ft.add("class");
     }
 private:
     DIdentifier _name;

@@ -2,6 +2,7 @@ module rinle.model.d.parser;
 
 import rinle.model.d.d;
 
+import gubg.puts;
 import gubg.parser;
 
 import tango.text.Util;
@@ -140,25 +141,31 @@ class DParser
 		obj = classDecl;
 	    } else
 	    {
-		l.puts("ERROR::Found something else starting with \"" ~ buffer[0 .. 10] ~ "...\"");
-		throw new Exception("STOP");
+                // Remove this else clause when debugging is over
+                char[] buf = buffer();
+                if (buf.length > 10)
+                {
+                    buf = buf[0 .. 10] ~ "...";
+                }
+		l.puts("WARNING::Could not create DDeclaration from \"" ~ buf ~ "\"");
 	    }
 
-	    return true;
+	    return (obj !is null);
 	}
 }
 
 version (UnitTest)
 {
-    import gubg.puts;
     import gubg.file;
     void main()
     {
+        char[] fileName = "sample.d";
+
 	char[] content;
-	loadFile(content, "parser.d");
+	loadFile(content, fileName);
 
 	auto parser = new DParser;
-        DModule dmodule = new DModule("./", "parser.d");
+        DModule dmodule = new DModule("./", fileName);
 	parser.parse(dmodule, content);
     }
 }

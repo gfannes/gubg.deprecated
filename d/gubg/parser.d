@@ -19,7 +19,8 @@ template TParser()
 
     bool matches(char[] s, bool cons = false)
 	{
-	    if (buffer()[0 .. s.length] != s)
+            char[] buf = buffer();
+	    if (buf.length < s.length || buf[0 .. s.length] != s)
 		return false;
 	    if (cons)
 		consume(s.length);
