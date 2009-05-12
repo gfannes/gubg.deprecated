@@ -5,16 +5,22 @@ import gubg.tagTree;
 public import gubg.ui;
 import gubg.puts;
 
-// All methods we require to be present for a Rinle node
-interface NodeMethods
+interface IFormatInfo
 {
-    void addTo(inout FormatTree ft);
+    bool show();
+    bool recurse();
+}
+
+// All methods we require to be present for a Rinle node
+interface INodeMethods
+{
+    void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
 }
 // Some convenient aliases for working with composites
-alias IComponent!(NodeMethods) INode;
-alias IComposite!(NodeMethods) ICompositeNode;
-alias ILeaf!(NodeMethods) ILeafNode;
+alias IComponent!(INodeMethods) INode;
+alias IComposite!(INodeMethods) ICompositeNode;
+alias ILeaf!(INodeMethods) ILeafNode;
 
 // Tag information used for a FormatTree
 struct Tag

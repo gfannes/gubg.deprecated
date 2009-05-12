@@ -19,20 +19,13 @@ abstract class FSNode: ICompositeNode
 	    _name = name.dup;
 	}
 
-    void addTo(inout FormatTree ft)
-    {
-	ft = ft.create(tag);
-	ft.add(_name);
-	ft.newline;
-    }
+    abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     abstract void expand();
 
     char[] path(){return _path;}
     char[] name(){return _name;}
 
 protected:
-    abstract Tag tag();
-
     char[] _path;
     char[] _name;
 }
@@ -58,8 +51,19 @@ class File: FSNode
             return (_syntaxTree = rhs);
         return null;
     }
-    mixin TIndexComposite!(NodeMethods);
+    mixin TIndexComposite!(INodeMethods);
 
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
+    {
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.white, false));
+	    lft.add(_name);
+	    lft.newline;
+	    if (_syntaxTree !is null && formatInfo(this).recurse)
+		_syntaxTree.addTo(lft, formatInfo);
+	}
+    }    
     void expand()
     {
 	if (_syntaxTree !is null)
@@ -73,9 +77,6 @@ class File: FSNode
             break;
         }
     }
-
-protected:
-    Tag tag(){return Tag.create(this, Color.white, false);}
 
 private:
     char[] extension()
@@ -111,8 +112,20 @@ class Dir: FSNode
             throw new Exception("Assignment of non-FSNode to Dir.");
         return (_fsNodes[ix] = fsNode);
     }
-    mixin TIndexComposite!(NodeMethods);
+    mixin TIndexComposite!(INodeMethods);
 
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
+    {
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.blue, true));
+	    lft.add(_name);
+	    lft.newline;
+	    if (formatInfo(this).recurse)
+		foreach (fsNode; _fsNodes)
+		    fsNode.addTo(lft, formatInfo);
+	}
+    }    
     void expand()
     {
 	if (_expanded)
@@ -131,10 +144,6 @@ class Dir: FSNode
 
 	_expanded = true;
     }
-
-
-protected:
-    Tag tag(){return Tag.create(this, Color.blue, true);}
 
 private:
     FSNode[] _fsNodes;

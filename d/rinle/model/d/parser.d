@@ -101,6 +101,7 @@ class DParser
 	    DScope scop;
 	    if (!complete(scop))
 		throw new Exception("Could not find the class' body.");
+	    obj.setBody(scop);
 	    return true;
 	}
 

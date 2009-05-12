@@ -5,8 +5,9 @@ import rinle.model.filesystem;
 
 class Manager
 {
-    this (bool defaultRecurse = true, bool defaultExpandBeforeShow = true)
+    this (bool defaultShow = true, bool defaultRecurse = true, bool defaultExpandBeforeShow = true)
         {
+	    _defaultShow = defaultShow;
             _defaultRecurse = defaultRecurse;
             _defaultExpandBeforeShow = defaultExpandBeforeShow;
         }
@@ -18,32 +19,44 @@ class Manager
             if (p !is null)
                 nodeInfo = *p;
             else if (cast(Dir)node !is null)
-                nodeInfo = new NodeInfo(_defaultRecurse, false);
+                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, false);
             else
-                nodeInfo = new NodeInfo(_defaultRecurse, _defaultExpandBeforeShow);
+                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, _defaultExpandBeforeShow);
             return nodeInfo;
         }
+    IFormatInfo getFormatInfo(INode node)
+	{
+	    return get(node);
+	}
     void set(NodeInfo ni, INode node)
         {
             _nodeInfo[cast(void*)node] = ni;
         }
 
 private:
+    bool _defaultShow;
     bool _defaultRecurse;
     bool _defaultExpandBeforeShow;
     NodeInfo[void*] _nodeInfo;
 }
 
-class NodeInfo
+class NodeInfo: IFormatInfo
 {
-    this (bool r, bool ebs)
+    this (bool s, bool r, bool ebs)
         {
-            recurse = r;
-            expandBeforeShow = ebs;
+	    _show = s;
+            _recurse = r;
+            _expandBeforeShow = ebs;
         }
 
-    bool recurse;
-    bool expandBeforeShow;
+    bool show(){return _show;}
+    bool recurse(){return _recurse;}
+    bool expandBeforeShow(){return _expandBeforeShow;}
+
+private:
+    bool _show;
+    bool _recurse;
+    bool _expandBeforeShow;
 }
 
 version (UnitTest)

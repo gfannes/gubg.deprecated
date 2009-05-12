@@ -26,11 +26,17 @@ class DModule: ICompositeNode
             throw new Exception("Assignment of non-DDeclaration to DModule.");
         return (_declarations[ix] = declaration);
     }
-    mixin TIndexComposite!(NodeMethods);
+    mixin TIndexComposite!(INodeMethods);
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
-	ft = ft.create(Tag.create(this, Color.white, true));
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.white, true));
+	    if (formatInfo(this).recurse)
+		foreach (decl; _declarations)
+		    decl.addTo(lft, formatInfo);
+	}
     }
     void expand()
     {
@@ -56,14 +62,11 @@ private:
 
 class DDeclaration: ILeafNode
 {
-    void addTo(inout FormatTree ft)
-    {
-    }
+    abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     void expand()
     {
     }
-
-    mixin TLeaf!(NodeMethods);
+    mixin TLeaf!(INodeMethods);
 }
 
 class DIdentifier: ILeafNode
@@ -73,13 +76,15 @@ class DIdentifier: ILeafNode
 	_identifier = identifier.dup;
     }
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
+	if (formatInfo(this).show)
+	    ft.create(Tag.create(this, Color.white, false), _identifier);
     }
     void expand()
     {
     }
-    mixin TLeaf!(NodeMethods);
+    mixin TLeaf!(INodeMethods);
 
 private:
     char[] _identifier;
@@ -97,10 +102,21 @@ class DScope: ICompositeNode
             throw new Exception("Assignment of non-DDeclaration to DScope.");
         return (_declarations[ix] = declaration);
     }
-    mixin TIndexComposite!(NodeMethods);
+    mixin TIndexComposite!(INodeMethods);
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.white, true));
+	    lft.add("{");
+	    lft.newline;
+	    if (formatInfo(this).recurse)
+		foreach (decl; _declarations)
+		    decl.addTo(lft, formatInfo);
+	    lft.add("}");
+	    lft.newline;
+	}
     }
     void expand()
     {
@@ -117,11 +133,14 @@ class DModuleDeclaration: DDeclaration
 	_name = name.dup;
     }
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
-	ft = ft.create(Tag.create(this, Color.white, false));
-	ft.add("module " ~ _name ~ ";");
-	ft.newline;
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.red, false), "module ");
+	    lft.create(Tag.create(this, Color.white, false), _name ~ ";");
+	    lft.newline;
+	}
     }
 private:
     char[] _name;
@@ -134,11 +153,14 @@ class DImportDeclaration: DDeclaration
 	_name = name.dup;
     }
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
-        ft = ft.create(Tag.create(this, Color.red, false), "import ");
-        ft.create(Tag.create(this, Color.white, false), _name);
-	ft.newline;
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.red, false), "import ");
+	    lft.create(Tag.create(this, Color.white, false), _name ~ ";");
+	    lft.newline;
+	}
     }
 private:
     char[] _name;
@@ -150,6 +172,16 @@ class DMixinDeclaration: DDeclaration
     {
 	_name = name.dup;
     }
+
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
+    {
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.red, false), "mixin ");
+	    lft.create(Tag.create(this, Color.white, false), _name ~ ";");
+	    lft.newline;
+	}
+    }
 private:
     char[] _name;
 }
@@ -159,13 +191,21 @@ class DClassDeclaration: DDeclaration
     void setName(DIdentifier name)
     {
 	_name = name;
-        _name
+    }
+    void setBody(DScope bdy)
+    {
+	_body = bdy;
     }
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
-	ft = ft.create(Tag.create(this, Color.red, false));
-	ft.add("class");
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(this, Color.red, false), "class ");
+	    _name.addTo(lft, formatInfo);
+	    lft.newline;
+	    _body.addTo(lft, formatInfo);
+	}
     }
 private:
     DIdentifier _name;
@@ -184,9 +224,9 @@ class DBaseClasses: ICompositeNode
             throw new Exception("Assignment of non-DIdentifier to DBaseClasses.");
         return (_baseClasses[ix] = baseClass);
     }
-    mixin TIndexComposite!(NodeMethods);
+    mixin TIndexComposite!(INodeMethods);
 
-    void addTo(inout FormatTree ft)
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
     }
     void expand()

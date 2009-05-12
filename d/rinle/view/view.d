@@ -24,7 +24,7 @@ class View
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
 	    if (_mgr.get(_current).expandBeforeShow)
                 _current.expand;
-	    addTo(ft, _base);
+	    _base.addTo(ft, &_mgr.getFormatInfo);
             auto collector = new OutputCollector(output);
             setSelected(ft);
             collector(ft);
@@ -61,22 +61,6 @@ class View
         }
 
 private:
-
-    void addTo(inout FormatTree ft, INode node)
-	{
-	    auto saveFT = ft;
-	    // Add this node to the format tree
-	    node.addTo(ft);
-
-	    // Recursively descent, if indicated by the corresponding node info
-	    if (_mgr.get(node).recurse)
-            {
-		for (uint i = 0; i < node.nrComponents; ++i)
-		    addTo(ft, node.replaceComponent(ReplaceMode.Get, i, null));
-            }
-	    ft = saveFT;
-	}
-
     void setSelected(FormatTree ft, bool select = false)
         {
             if (ft.tag.node == _current)
