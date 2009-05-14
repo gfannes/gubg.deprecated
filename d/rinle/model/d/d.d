@@ -60,13 +60,26 @@ private:
     bool _expanded;
 }
 
-class DDeclaration: ILeafNode
+class DDeclaration: INode
 {
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     void expand()
     {
     }
-    mixin TLeaf!(INodeMethods);
+
+    uint nrComponents(){return 0;}
+    void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
+    IComponent!(INodeMethods) replaceComponent(ReplaceMode mode, uint ix, IComponent!(INodeMethods) newComponent)
+        {
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+            return null;
+        }
+    bool isLeaf(){return true;}
+    int opApply(int delegate(IComponent!(INodeMethods) el) dg)
+	{
+	    return 0;
+	}
+    mixin TParent!(INodeMethods);
 }
 
 class DIdentifier: ILeafNode
@@ -186,7 +199,7 @@ private:
     char[] _name;
 }
 
-class DClassDeclaration: DDeclaration
+class DClassDeclaration: DDeclaration, ICompositeNode
 {
     void setName(DIdentifier name)
     {
@@ -207,8 +220,55 @@ class DClassDeclaration: DDeclaration
 	    _body.addTo(lft, formatInfo);
 	}
     }
+
+    INode opIndex(uint ix)
+    {
+        switch (ix)
+        {
+        case 0:
+            return _name;
+            break;
+        case 1:
+            return _baseClasses;
+            break;
+        case 2:
+            return _body;
+            break;
+        default:
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+            break;
+        }
+    }
+    INode opIndexAssign(INode rhs, uint ix)
+    {
+        switch (ix)
+        {
+        case 0:
+            return (_name = cast(DIdentifier)rhs);
+            break;
+        case 1:
+            return (_baseClasses = cast(DBaseClasses)rhs);
+            break;
+        case 2:
+            return (_body = cast(DScope)rhs);
+            break;
+        default:
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+            return null;
+            break;
+        }
+    }
+    uint nrComponents(){return 3;}
+    void setNrComponents(uint nr)
+    {
+        if (nr != 3)
+            throw new ArrayBoundsException(__FILE__, __LINE__);
+    }
+    mixin TIndexComposite!(INodeMethods);
+
 private:
     DIdentifier _name;
+    DBaseClasses _baseClasses;
     DScope _body;
 }
 

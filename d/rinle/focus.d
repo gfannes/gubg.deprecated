@@ -13,36 +13,36 @@ class FocusMgr: IChainOfResponsibility!(ICommand)
 {
     this(Input input, Output output)
         {
-            mInput = input;
-            mOutput = output;
+            _input = input;
+            _output = output;
         }
 
     bool handle(inout ICommand command)
     {
-	if (mHandlers.length == 0)
+	if (_handlers.length == 0)
 	    return false;
-	return mHandlers[$-1].handle(command);
+	return _handlers[$-1].handle(command);
     }
     void successor(IChainOfResponsibility!(ICommand) handler){};
 
     bool push(IFocus handler)
     {
 	auto catcher = new Catcher;
-	if (mHandlers.length > 0)
+	if (_handlers.length > 0)
 	{
-	    catcher.successor = mHandlers[$-1];
+	    catcher.successor = _handlers[$-1];
 	    handler.successor = catcher;
 	}
         // For now, just set the normal one. This should be replaced with a cached input variant.
-        handler.setIO(mInput, mOutput);
-	mHandlers ~= [handler];
+        handler.setIO(_input, _output);
+	_handlers ~= [handler];
 	return true;
     }
     bool pop()
     {
-	if (mHandlers.length == 0)
+	if (_handlers.length == 0)
 	    return false;
-	mHandlers.length = mHandlers.length-1;
+	_handlers.length = _handlers.length-1;
 	return true;
     }
 
@@ -57,7 +57,7 @@ private:
 	mixin ChainOfResponsibility!(ICommand);
     }
 
-    Input mInput;
-    Output mOutput;
-    IFocus mHandlers[];
+    Input _input;
+    Output _output;
+    IFocus _handlers[];
 }

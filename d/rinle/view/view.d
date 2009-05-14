@@ -20,7 +20,6 @@ class View
 
     void show(Output output)
         {
-	    puts("show: _base = {}, _current = {}, _current.parent = {}", cast(void*)_base, cast(void*)_current, cast(void*)_current.parent);
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
 	    if (_mgr.get(_current).expandBeforeShow)
                 _current.expand;
@@ -55,9 +54,27 @@ class View
                 newCurrent = _current.parent;
                 break;
             }
-	    puts("_current = {}, newCurrent = {}, _current.parent = {}", cast(void*)_current, cast(void*)newCurrent, cast(void*)_current.parent);
             if (newCurrent !is null)
                 _current = newCurrent;
+        }
+
+    void insert(char[] location, Input input, Output output)
+        {
+	    puts("Inserting {}", location);
+            INode newNode;
+            switch (location)
+            {
+            case "end":
+                if (!_current.isLeaf && _current.create(newNode, _current.nrComponents))
+                    _current.replaceComponent(ReplaceMode.Create, _current.nrComponents, newNode);
+                break;
+            case "after":
+                break;
+            case "before":
+                break;
+            case "replace":
+                break;
+            }
         }
 
 private:

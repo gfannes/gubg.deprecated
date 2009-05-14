@@ -86,6 +86,18 @@ class Rinle
             case 'd':
                 command = new MoveCommand("in");
                 break;
+            case 'i':
+                command = new InsertCommand("end", _input, _output);
+                break;
+            case 'o':
+                command = new InsertCommand("after", _input, _output);
+                break;
+            case 'u':
+                command = new InsertCommand("before", _input, _output);
+                break;
+            case 'r':
+                command = new InsertCommand("replace", _input, _output);
+                break;
             default:
 		// This is the last level, we don't try to delegate to our successor
                 return false;
@@ -107,14 +119,14 @@ class Rinle
 
 private:
     class QuitCommand: ICommand
-    {
-	bool execute()
-	{
-	    quit();
-	    return true;
-	}
-	bool undo(){return false;}
-    }
+        {
+            bool execute()
+            {
+                quit();
+                return true;
+            }
+            bool undo(){return false;}
+        }
 
     class MoveCommand: ICommand
         {
@@ -129,6 +141,25 @@ private:
             }
             bool undo(){return false;}
             char[] _dir;
+        }
+
+    class InsertCommand: ICommand
+        {
+            this (char[] location, Input input, Output output)
+            {
+                _location = location;
+                _input = input;
+                _output = output;
+            }
+            bool execute()
+            {
+                _view.insert(_location, _input, _output);
+                return true;
+            }
+            bool undo(){return false;}
+            char[] _location;
+            Input _input;
+            Output _output;
         }
 
     Dir _model;

@@ -11,11 +11,17 @@ interface IFormatInfo
     bool recurse();
 }
 
+interface IUI
+{
+    bool getString(inout char[] str, char[] msg);
+}
+
 // All methods we require to be present for a Rinle node
 interface INodeMethods
 {
     void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
+    bool create(inout IComponent!(INodeMethods) node, uint ix, IUI ui);
 }
 // Some convenient aliases for working with composites
 alias IComponent!(INodeMethods) INode;
