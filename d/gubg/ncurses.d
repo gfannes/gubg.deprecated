@@ -150,8 +150,8 @@ version (UnitTest)
 	    }
 	}
 
-// 	auto key = input.getKey;
-// 	output.print(Format("Key = {} ", key), 2, 3, cp);
+	auto key = input.getKey;
+	output.print(Format("Key = {} ", key), 2, 3, cp);
 
 	input.getKey;
 	return 0;

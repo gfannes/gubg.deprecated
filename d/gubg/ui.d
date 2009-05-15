@@ -10,6 +10,18 @@ interface Input
     void clearKeyBuffer();
 }
 
+enum Key: int
+{
+    enter = 10,
+        esc = 27,
+        left = 68,
+        right = 67,
+        up = 65,
+        down = 66,
+        tab = 9,
+        backspace = 127,
+        }
+
 enum Color: int
 {
     black,
