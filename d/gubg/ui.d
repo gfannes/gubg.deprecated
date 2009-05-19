@@ -4,7 +4,7 @@ import gubg.puts;
 
 import tango.io.Stdout;
 
-interface Input
+interface IInput
 {
     int getKey();
     void clearKeyBuffer();
@@ -42,58 +42,92 @@ struct ColorPair
 
 const ColorPair defaultPair = {foreground: Color.white, background: Color.black};
 
-interface Output
+interface IOutput
 {
+    interface ISavePoint
+    {
+	void restore();
+    }
     int width();
     int height();
     bool opIndexAssign(char[] str, int lineIX);
     bool print(char[] str, int lineIX, int colIX, ColorPair pair = defaultPair);
     void refresh();
+    ISavePoint save();
 }
 
-class StdOutput: Output
+class StdOutput: IOutput
 {
     this (int w = 114, int h = 30)
 	{
-	    mWidth = w;
-	    mHeight = h;
-	    mLines.length = mHeight;
-	    foreach (inout line; mLines)
+	    _width = w;
+	    _height = h;
+	    _lines.length = _height;
+	    foreach (inout line; _lines)
 	    {
-		line.length = mWidth;
+		line.length = _width;
 		foreach (inout c; line)
 		    c = ' ';
 	    }
 	}
-    int width(){return mWidth;}
-    int height(){return mHeight;}
+    int width(){return _width;}
+    int height(){return _height;}
     bool opIndexAssign(char[] str, int lineIX)
 	{
-	    if (lineIX < 0 || lineIX >= mHeight)
+	    if (lineIX < 0 || lineIX >= _height)
 		return false;
-	    int len = min(mWidth, str.length);
-	    mLines[lineIX][0..len] = str[0..len];
-	    if (len < mWidth)
-		foreach (inout c; mLines[lineIX][len..mWidth])
+	    int len = min(_width, str.length);
+	    _lines[lineIX][0..len] = str[0..len];
+	    if (len < _width)
+		foreach (inout c; _lines[lineIX][len.._width])
 		    c = ' ';
 	    return true;
 	}
 
     bool print(char[] str, int lineIX, int colIX, ColorPair pair = defaultPair)
 	{
-	    if (lineIX < 0 || lineIX >= mHeight || colIX < 0)
+	    if (lineIX < 0 || lineIX >= _height || colIX < 0)
 		return false;
-	    int len = min(mWidth-colIX, str.length);
+	    int len = min(_width-colIX, str.length);
 	    if (len > 0)
-		mLines[lineIX][colIX..(colIX+len)] = str[0..len];
+		_lines[lineIX][colIX..(colIX+len)] = str[0..len];
 	    return true;
 	}
     void refresh()
 	{
 	    puts("");
-	    foreach (line; mLines)
+	    foreach (line; _lines)
 		puts(line);
 	}
+
+    class SavePoint: ISavePoint
+    {
+	this(char[][] lines)
+	{
+	    _lines.length = lines.length;
+	    foreach (ix, inout line; _lines)
+	    {
+		line.length = lines[ix].length;
+		line[] = lines[ix][];
+	    }
+	}
+	void restore()
+	{
+	    this.outer._lines.length = _lines.length;
+	    foreach (ix, inout line; this.outer._lines)
+	    {
+		line.length = _lines[ix].length;
+		line[] = _lines[ix][];
+	    }
+	}
+
+    private:
+	char[][] _lines;
+    }
+    SavePoint save()
+    {
+	return new SavePoint(_lines);
+    }
 
 private:
     static int min(int a, int b)
@@ -101,9 +135,9 @@ private:
 	    return (a < b ? a : b);
 	}
 
-    int mWidth;
-    int mHeight;
-    char[][] mLines;
+    int _width;
+    int _height;
+    char[][] _lines;
 }
 
 version (UnitTest)
@@ -111,6 +145,9 @@ version (UnitTest)
     void main()
     {
 	auto output = new StdOutput;
+
+	auto sp1 = output.save;
+
 	output[1] = "abc";
 	output.print("ABC", 10, 20);
 	char[] line;
@@ -118,6 +155,14 @@ version (UnitTest)
 	foreach (inout c; line)
 	    c = '.';
 	output[output.height-1] = line;
+	output.refresh;
+
+	auto sp2 = output.save;
+
+	sp1.restore;
+	output.refresh;
+
+	sp2.restore;
 	output.refresh;
     }
 }
