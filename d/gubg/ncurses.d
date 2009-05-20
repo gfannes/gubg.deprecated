@@ -4,7 +4,7 @@ import gubg.ui;
 
 import NC = gubg.ncurses_c;
 
-class NCurses: Input, Output
+class NCurses: IInput, IOutput
 {
     static this()
     {
@@ -17,6 +17,9 @@ class NCurses: Input, Output
 	NC.cbreak();
 	NC.noecho();
 	NC.start_color();
+        _currentColorPair = getColorPair(Color.white, Color.black);
+        // Initialize the lines and color buffers for SavePoint
+        initializeSavePoint;
     }
     ~this()
     {
@@ -26,36 +29,34 @@ class NCurses: Input, Output
     int width(){return NC.COLS;}
     int height(){return NC.LINES;}
     
-    bool opIndexAssign(char[] str, int lineIX)
+    bool opIndexAssign(char[] str, uint lineIX)
     {
 	synchronized(this)
 	{
-	    if (lineIX < 0 || lineIX >= height)
+	    if (lineIX >= height)
 		return false;
 	    
 	    for (int colIX = 0; colIX < width; ++colIX)
 	    {
 		if (colIX < str.length)
-		    NC.mvaddch(lineIX, colIX, str[colIX]);
+		    mvaddch(lineIX, colIX, str[colIX]);
 		else
-		    NC.mvaddch(lineIX, colIX, ' ');
+		    mvaddch(lineIX, colIX, ' ');
 	    }
 	}
 	return true;
     }
     
-    bool print(char[] str, int lineIX, int colIX, ColorPair color = defaultPair)
+    bool print(char[] str, uint lineIX, uint colIX, ColorPair color = defaultPair)
     {
 	synchronized(this)
 	{
-	    if (lineIX < 0 || lineIX >= height)
+	    if (lineIX >= height)
 		return false;
 
-	    short colorPair = getColorPair(color.foreground, color.background);
-	    NC.attron(NC.COLOR_PAIR(colorPair));
+            scope cp = new UseColorPair(color.foreground, color.background);
 	    for (int ix = 0; colIX < width && ix < str.length; ++colIX, ++ix)
-		NC.mvaddch(lineIX, colIX, str[ix]);
-	    NC.attroff(NC.COLOR_PAIR(colorPair));
+		mvaddch(lineIX, colIX, str[ix]);
 	}
 	return true;
     }
@@ -75,19 +76,75 @@ class NCurses: Input, Output
 	while (getKey != -1){}
 	NC.nodelay(mWindow, false);
     }
+
+    class SavePoint: ISavePoint
+    {
+        this(uint[][] lines, short[][] colors)
+        {
+            _lines.length = lines.length;
+            foreach (ix, inout line; _lines)
+            {
+                line.length = lines[ix].length;
+                line[] = lines[ix][];
+            }
+            _colors.length = colors.length;
+            foreach (ix, inout color; _colors)
+            {
+                color.length = colors[ix].length;
+                color[] = colors[ix][];
+            }
+        }
+
+	void restore()
+	{
+            foreach (lineIX, line; _lines)
+            {
+                auto cols = _colors[lineIX];
+                foreach (colIX, ch; line)
+                {
+                    auto col = cols[colIX];
+                    NC.attron(NC.COLOR_PAIR(col));
+                    mvaddch(lineIX, colIX, ch);
+                    NC.attroff(NC.COLOR_PAIR(col));
+                }
+            }
+	}
+    private:
+        uint[][] _lines;
+        short[][] _colors;
+    }
+    SavePoint save()
+    {
+	return new SavePoint(_currentLines, _currentColors);
+    }
     
 private:
+    class UseColorPair
+    {
+        this(Color fg, Color bg)
+            {
+                _colorPair = getColorPair(fg, bg);
+                _currentColorPair = _colorPair;
+                NC.attron(NC.COLOR_PAIR(_colorPair));
+            }
+        ~this()
+            {
+                NC.attroff(NC.COLOR_PAIR(_colorPair));
+            }
+    private:
+        short _colorPair;
+    }
     short getColorPair(Color fg, Color bg)
     {
-	short color;
+        short color;
         short[Color]* pMap = null;
         short* pColor = null;
-
+        
         // Check if the color already exists
         pMap = (bg in sKnownColors);
         if (pMap !is null)
             pColor = (fg in *pMap);
-
+        
         if (pColor is null)
         {
             // Color does not exist yet: create and save it
@@ -98,7 +155,17 @@ private:
         } else
             color = *pColor;
         
-	return color;
+        return color;
+    }
+    
+    void mvaddch(uint lineIX, uint colIX, uint ch)
+    {
+        if (lineIX < height && colIX < width)
+        {
+            NC.mvaddch(lineIX, colIX, ch);
+            _currentLines[lineIX][colIX] = ch;
+            _currentColors[lineIX][colIX] = _currentColorPair;
+        }
     }
     
     static void buildColorMap()
@@ -122,6 +189,27 @@ private:
     static short sNextColor;
     
     NC.WINDOW* mWindow;
+
+    void initializeSavePoint()
+    {
+        _currentLines.length = height;
+        foreach (inout line; _currentLines)
+        {
+            line.length = width;
+            foreach (inout ch; line)
+                ch = ' ';
+        }
+        _currentColors.length = height;
+        foreach (inout colors; _currentColors)
+        {
+            colors.length = width;
+            foreach (inout cp; colors)
+                cp = _currentColorPair;
+        }
+    }
+    uint[][] _currentLines;
+    short[][] _currentColors;
+    short _currentColorPair;
 }
 
 version (UnitTest)
@@ -130,8 +218,11 @@ version (UnitTest)
     int main()
     {
 	scope ncurses = new NCurses;
-	Input input = ncurses;
-	Output output = ncurses;
+	IInput input = ncurses;
+	IOutput output = ncurses;
+
+        // Take a snapshot of the clean window
+        auto sp1 = output.save;
 
 	auto line = new char[output.width];
 	foreach (inout ch; line)
@@ -150,10 +241,23 @@ version (UnitTest)
 	    }
 	}
 
+        // Take a snapshot of the colored window
+        auto sp2 = output.save;
+
 	auto key = input.getKey;
 	output.print(Format("Key = {} ", key), 2, 3, cp);
-
 	input.getKey;
+
+        // Put back the clean-window snapshot
+        sp1.restore;
+        output.refresh;
+	input.getKey;
+
+        // Put back the colored snapshot
+        sp2.restore;
+        output.refresh;
+	input.getKey;
+
 	return 0;
     }
 }

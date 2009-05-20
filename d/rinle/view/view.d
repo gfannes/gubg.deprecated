@@ -18,7 +18,7 @@ class View
             _mgr = new Manager;
         }
 
-    void show(Output output)
+    void show(IOutput output)
         {
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
 	    if (_mgr.get(_current).expandBeforeShow)
@@ -58,7 +58,7 @@ class View
                 _current = newCurrent;
         }
 
-    void insert(char[] location, Input input, Output output)
+    void insert(char[] location, IInput input, IOutput output)
         {
 	    puts("Inserting {}", location);
             INode newNode;

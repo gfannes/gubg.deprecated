@@ -70,7 +70,7 @@ class FormatTree: ITagTree!(Tag, char[])
 
 class OutputCollector: Collector!(Tag, char[])
 {
-    this (Output output)
+    this (IOutput output)
     {
 	_output = output;
     }
@@ -146,7 +146,7 @@ private:
 	return cp;
     }
 
-    Output _output;
+    IOutput _output;
     ColorPair _colorPair;
     uint _indentLevel;
     uint _rowIX;

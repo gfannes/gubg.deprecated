@@ -61,7 +61,7 @@ class Rinle
     class Focus: IFocus
     {
         // IFocus
-        void setIO(Input input, Output output)
+        void setIO(IInput input, IOutput output)
         {
             _input = input;
             _output = output;
@@ -108,8 +108,8 @@ class Rinle
         void successor(IChainOfResponsibility!(ICommand) handler){};
 
     private:
-        Input _input;
-        Output _output;
+        IInput _input;
+        IOutput _output;
     }
 
     void quit()
@@ -145,7 +145,7 @@ private:
 
     class InsertCommand: ICommand
         {
-            this (char[] location, Input input, Output output)
+            this (char[] location, IInput input, IOutput output)
             {
                 _location = location;
                 _input = input;
@@ -158,8 +158,8 @@ private:
             }
             bool undo(){return false;}
             char[] _location;
-            Input _input;
-            Output _output;
+            IInput _input;
+            IOutput _output;
         }
 
     Dir _model;
@@ -168,8 +168,8 @@ private:
     bool _proceed;
 
     NCurses _nCurses;
-    Input _input;
-    Output _output;
+    IInput _input;
+    IOutput _output;
 
     FocusMgr _focusMgr;
 }

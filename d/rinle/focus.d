@@ -6,12 +6,12 @@ import gubg.patterns.chainOfResponsibility;
 
 interface IFocus: IChainOfResponsibility!(ICommand)
 {
-    void setIO(Input input, Output output);
+    void setIO(IInput input, IOutput output);
 }
 
 class FocusMgr: IChainOfResponsibility!(ICommand)
 {
-    this(Input input, Output output)
+    this(IInput input, IOutput output)
         {
             _input = input;
             _output = output;
@@ -57,7 +57,7 @@ private:
 	mixin ChainOfResponsibility!(ICommand);
     }
 
-    Input _input;
-    Output _output;
+    IInput _input;
+    IOutput _output;
     IFocus _handlers[];
 }

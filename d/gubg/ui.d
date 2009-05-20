@@ -50,8 +50,8 @@ interface IOutput
     }
     int width();
     int height();
-    bool opIndexAssign(char[] str, int lineIX);
-    bool print(char[] str, int lineIX, int colIX, ColorPair pair = defaultPair);
+    bool opIndexAssign(char[] str, uint lineIX);
+    bool print(char[] str, uint lineIX, uint colIX, ColorPair pair = defaultPair);
     void refresh();
     ISavePoint save();
 }
@@ -72,9 +72,9 @@ class StdOutput: IOutput
 	}
     int width(){return _width;}
     int height(){return _height;}
-    bool opIndexAssign(char[] str, int lineIX)
+    bool opIndexAssign(char[] str, uint lineIX)
 	{
-	    if (lineIX < 0 || lineIX >= _height)
+	    if (lineIX >= _height)
 		return false;
 	    int len = min(_width, str.length);
 	    _lines[lineIX][0..len] = str[0..len];
@@ -84,9 +84,9 @@ class StdOutput: IOutput
 	    return true;
 	}
 
-    bool print(char[] str, int lineIX, int colIX, ColorPair pair = defaultPair)
+    bool print(char[] str, uint lineIX, uint colIX, ColorPair pair = defaultPair)
 	{
-	    if (lineIX < 0 || lineIX >= _height || colIX < 0)
+	    if (lineIX >= _height)
 		return false;
 	    int len = min(_width-colIX, str.length);
 	    if (len > 0)

@@ -5,7 +5,7 @@ import gubg.ui;
 
 class UI: IUI
 {
-    this(Input input, Output output)
+    this(IInput input, IOutput output)
     {
         _input = input;
         _output = output;
@@ -139,8 +139,8 @@ private:
         _output.refresh;
     }
     
-    Input _input;
-    Output _output;    
+    IInput _input;
+    IOutput _output;    
 }
 
 version (UnitTest)
