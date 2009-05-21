@@ -58,14 +58,14 @@ class View
                 _current = newCurrent;
         }
 
-    void insert(char[] location, IInput input, IOutput output)
+    void insert(char[] location, IUI ui)
         {
 	    puts("Inserting {}", location);
             INode newNode;
             switch (location)
             {
             case "end":
-                if (!_current.isLeaf && _current.create(newNode, _current.nrComponents))
+                if (!_current.isLeaf && _current.create(newNode, _current.nrComponents, ui))
                     _current.replaceComponent(ReplaceMode.Create, _current.nrComponents, newNode);
                 break;
             case "after":

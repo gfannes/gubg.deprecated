@@ -15,6 +15,8 @@ interface IUI
 {
     bool getString(inout char[] str, char[] msg);
     bool selectString(inout uint ix, char[] msg, char[][] options);
+    IInput input();
+    IOutput output();
 }
 
 // All methods we require to be present for a Rinle node

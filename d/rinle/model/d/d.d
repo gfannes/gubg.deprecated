@@ -51,6 +51,10 @@ class DModule: ICompositeNode
 
         _expanded = true;
     }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
+    }
 
 private:
     char[] _path;
@@ -65,6 +69,10 @@ class DDeclaration: INode
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     void expand()
     {
+    }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
     }
 
     uint nrComponents(){return 0;}
@@ -88,6 +96,7 @@ class DIdentifier: ILeafNode
     {
 	_identifier = identifier.dup;
     }
+    mixin TLeaf!(INodeMethods);
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
@@ -97,7 +106,10 @@ class DIdentifier: ILeafNode
     void expand()
     {
     }
-    mixin TLeaf!(INodeMethods);
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
+    }
 
 private:
     char[] _identifier;
@@ -133,6 +145,10 @@ class DScope: ICompositeNode
     }
     void expand()
     {
+    }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
     }
 
 private:
@@ -292,6 +308,11 @@ class DBaseClasses: ICompositeNode
     void expand()
     {
     }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
+    }
+
 private:
     DIdentifier[] _baseClasses;
 }

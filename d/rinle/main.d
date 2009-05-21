@@ -1,15 +1,15 @@
 module rinle.main;
 
-import gubg.ui;
-import gubg.ncurses;
-import gubg.patterns.command;
-import gubg.patterns.chainOfResponsibility;
-
 import rinle.focus;
 import rinle.model.interfaces;
 import rinle.model.filesystem;
 import rinle.view.view;
+import rinle.view.ui;
 //import rinle.commands;
+
+import gubg.ncurses;
+import gubg.patterns.command;
+import gubg.patterns.chainOfResponsibility;
 
 class Rinle
 {
@@ -17,10 +17,9 @@ class Rinle
         {
 	    puts("Starting Rinle");
             _nCurses = new NCurses;
-            _input = _nCurses;
-            _output = _nCurses;
+	    _ui = new UI(_nCurses, _nCurses);
 
-            _focusMgr = new FocusMgr(_input, _output);
+            _focusMgr = new FocusMgr(_ui);
 	    _focusMgr.push(new Focus);
 
             _model = new Dir;
@@ -54,22 +53,21 @@ class Rinle
 
     void show()
         {
-	    _view.show(_output);
-            _output.refresh;
+	    _view.show(_ui.output);
+            _ui.output.refresh;
         }
 
     class Focus: IFocus
     {
         // IFocus
-        void setIO(IInput input, IOutput output)
+        void setUI(IUI ui)
         {
-            _input = input;
-            _output = output;
+	    _ui = ui;
         }
         bool handle(inout ICommand command)
         {
             int key;
-            switch (key = _input.getKey)
+            switch (key = _ui.input.getKey)
             {
             case 'q':
                 command = new QuitCommand;
@@ -87,16 +85,16 @@ class Rinle
                 command = new MoveCommand("in");
                 break;
             case 'i':
-                command = new InsertCommand("end", _input, _output);
+                command = new InsertCommand("end", _ui);
                 break;
             case 'o':
-                command = new InsertCommand("after", _input, _output);
+                command = new InsertCommand("after", _ui);
                 break;
             case 'u':
-                command = new InsertCommand("before", _input, _output);
+                command = new InsertCommand("before", _ui);
                 break;
             case 'r':
-                command = new InsertCommand("replace", _input, _output);
+                command = new InsertCommand("replace", _ui);
                 break;
             default:
 		// This is the last level, we don't try to delegate to our successor
@@ -108,8 +106,7 @@ class Rinle
         void successor(IChainOfResponsibility!(ICommand) handler){};
 
     private:
-        IInput _input;
-        IOutput _output;
+	IUI _ui;
     }
 
     void quit()
@@ -145,21 +142,19 @@ private:
 
     class InsertCommand: ICommand
         {
-            this (char[] location, IInput input, IOutput output)
+            this (char[] location, IUI ui)
             {
                 _location = location;
-                _input = input;
-                _output = output;
+		_ui = ui;
             }
             bool execute()
             {
-                _view.insert(_location, _input, _output);
+                _view.insert(_location, _ui);
                 return true;
             }
             bool undo(){return false;}
             char[] _location;
-            IInput _input;
-            IOutput _output;
+	    IUI _ui;
         }
 
     Dir _model;
@@ -168,8 +163,7 @@ private:
     bool _proceed;
 
     NCurses _nCurses;
-    IInput _input;
-    IOutput _output;
+    IUI _ui;
 
     FocusMgr _focusMgr;
 }

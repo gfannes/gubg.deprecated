@@ -77,6 +77,10 @@ class File: FSNode
             break;
         }
     }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
+    }
 
 private:
     char[] extension()
@@ -143,6 +147,10 @@ class Dir: FSNode
 	    fsNode.parent(this);
 
 	_expanded = true;
+    }
+    bool create(inout INode node, uint ix, IUI ui)
+    {
+	return false;
     }
 
 private:

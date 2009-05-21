@@ -1,20 +1,20 @@
 module rinle.focus;
 
-import gubg.ui;
+import rinle.model.interfaces;
+
 import gubg.patterns.command;
 import gubg.patterns.chainOfResponsibility;
 
 interface IFocus: IChainOfResponsibility!(ICommand)
 {
-    void setIO(IInput input, IOutput output);
+    void setUI(IUI ui);
 }
 
 class FocusMgr: IChainOfResponsibility!(ICommand)
 {
-    this(IInput input, IOutput output)
+    this(IUI ui)
         {
-            _input = input;
-            _output = output;
+            _ui = ui;
         }
 
     bool handle(inout ICommand command)
@@ -34,7 +34,7 @@ class FocusMgr: IChainOfResponsibility!(ICommand)
 	    handler.successor = catcher;
 	}
         // For now, just set the normal one. This should be replaced with a cached input variant.
-        handler.setIO(_input, _output);
+        handler.setUI(_ui);
 	_handlers ~= [handler];
 	return true;
     }
@@ -57,7 +57,6 @@ private:
 	mixin ChainOfResponsibility!(ICommand);
     }
 
-    IInput _input;
-    IOutput _output;
+    IUI _ui;
     IFocus _handlers[];
 }

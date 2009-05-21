@@ -10,15 +10,21 @@ class UI: IUI
         _input = input;
         _output = output;
     }
+
+    IInput input(){return _input;}
+    IOutput output(){return _output;}
+
     bool getString(inout char[] str, char[] msg)
     {
-        _output.print(msg, _output.height/2, (_output.width-msg.length)/2);
-        _output.refresh;
+	scope sp = new SavePoint;
         bool finished = false;
         bool inputOK = true;
         bool escPressed = false;
         while (!finished)
         {
+	    clear;
+	    _output.print(msg, _output.height/2, (_output.width-msg.length)/2);
+	    _output.refresh;
             printInput(str);
             auto key = _input.getKey;
             if (key == Key.esc)
@@ -55,8 +61,7 @@ class UI: IUI
 
     bool selectString(inout uint ix, char[] msg, char[][] options)
     {
-        _output.print(msg, 1, (_output.width-msg.length)/2);
-        _output.refresh;
+	scope sp = new SavePoint;
         bool finished = false;
         bool inputOK = false;
         bool escPressed = false;
@@ -64,7 +69,7 @@ class UI: IUI
         while (!finished)
         {
             char[][] validOptions = filterOptions(options, str);
-            printOptionsAndInput(validOptions, str);
+            printMsgOptionsAndInput(msg, validOptions, str);
             auto key = _input.getKey;
             if (key == Key.esc)
             {
@@ -103,8 +108,23 @@ class UI: IUI
         return inputOK;
     }
 
-
 private:
+    scope class SavePoint
+    {
+	this()
+	    {
+		_savePoint = _output.save;
+	    }
+	~this()
+	    {
+		_savePoint.restore;
+		delete _savePoint;
+	    }
+
+    private:
+	IOutput.ISavePoint _savePoint;
+    }
+
     void printBlank(uint rowIX)
     {
         static char[] blankLine;
@@ -116,6 +136,11 @@ private:
         }
         _output.print(blankLine, rowIX, 0);
     }
+    void clear()
+    {
+	for (uint rowIX = 0; rowIX < _output.height; ++rowIX)
+	    printBlank(rowIX);
+    }
 
     void printInput(char[] str)
     {
@@ -126,16 +151,22 @@ private:
 
     char[][] filterOptions(char[][] options, char[] str)
     {
-        return options;
+	char[][] ret;
+	foreach (option; options)
+	    if (str.length <= option.length && str == option[0 .. str.length])
+		ret ~= [option];
+        return ret;
     }
-    void printOptionsAndInput(char[][] options, char[] str)
+    void printMsgOptionsAndInput(char[] msg, char[][] options, char[] str)
     {
+	clear;
+	_output.print(msg, 1, (_output.width-msg.length)/2);
         foreach (ix, option; options)
         {
-            _output.print(option, 1 + ix, 1);
+            _output.print(option, 2 + ix, 1);
         }
-        printBlank(1 + options.length);
-        _output.print(str, 1 + options.length, (_output.width-str.length)/2);
+        printBlank(2 + options.length);
+        _output.print(str, 2 + options.length, (_output.width-str.length)/2);
         _output.refresh;
     }
     
