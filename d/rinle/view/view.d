@@ -37,12 +37,12 @@ class View
             {
             case "up":
 		uint ix;
-		if (FormatTree.indexOfParent(_current, ix) && ix > 0)
+		if (FormatTree.indexOfParent!(INode)(_current, ix) && ix > 0)
 		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, --ix, null);
                 break;
             case "down":
 		uint ix;
-		if (FormatTree.indexOfParent(_current, ix) && ix < _current.parent.nrComponents-1)
+		if (FormatTree.indexOfParent!(INode)(_current, ix) && ix < _current.parent.nrComponents-1)
 		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, ++ix, null);
                 break;
             case "in":
@@ -55,7 +55,11 @@ class View
                 break;
             }
             if (newCurrent !is null)
+            {
                 _current = newCurrent;
+                puts("_current changed to {}", cast(void*)_current);
+            } else
+                puts("WARNING::newCurrent is null.");
         }
 
     void insert(char[] location, IUI ui)
@@ -80,7 +84,7 @@ class View
 private:
     void setSelected(FormatTree ft, bool select = false)
         {
-            if (ft.tag.node == _current)
+            if (ft.tag.node.uid == _current.uid)
                 select = true;
             if (select)
             {

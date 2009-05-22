@@ -6,7 +6,9 @@ import gubg.parser;
 
 import tango.text.Util;
 
-class DParser
+class DParser: BaseClassA, BaseClassB
 {
     mixin TParser;
 }
+
+import tango.text.Util;

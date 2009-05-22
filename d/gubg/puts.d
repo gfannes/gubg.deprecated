@@ -114,9 +114,21 @@ scope class Log
 	    .puts(indent() ~ "<<< " ~ _msg);
 	}
 
-    void puts(char[] msg)
+    void puts(char[] fmt, ...)
 	{
-	    .puts(indent() ~ msg);
+            synchronized(Trace)
+            {
+                _outputStream.write(indent());
+                Layout!(char) layout = new Layout!(char);
+                uint sink (char[] s)
+                {
+                    return _outputStream.write(s);
+                }
+                layout.convert (&sink, _arguments, _argptr, fmt);
+                _outputStream.write("\n");
+                _outputStream.flush;
+            }
+//	    .puts(indent() ~ msg);
 	}
 private:
     char[] _msg;

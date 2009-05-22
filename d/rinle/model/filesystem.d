@@ -21,6 +21,7 @@ abstract class FSNode: ICompositeNode
 
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     abstract void expand();
+    mixin TUID;
 
     char[] path(){return _path;}
     char[] name(){return _name;}

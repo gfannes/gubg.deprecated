@@ -55,6 +55,7 @@ class DModule: ICompositeNode
     {
 	return false;
     }
+    mixin TUID;
 
 private:
     char[] _path;
@@ -74,20 +75,21 @@ class DDeclaration: INode
     {
 	return false;
     }
+    mixin TUID;
 
-    uint nrComponents(){return 0;}
-    void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
-    IComponent!(INodeMethods) replaceComponent(ReplaceMode mode, uint ix, IComponent!(INodeMethods) newComponent)
-        {
-            throw new ArrayBoundsException(__FILE__, __LINE__);
-            return null;
-        }
-    bool isLeaf(){return true;}
-    int opApply(int delegate(IComponent!(INodeMethods) el) dg)
-	{
-	    return 0;
-	}
-    mixin TParent!(INodeMethods);
+//     uint nrComponents(){return 0;}
+//     void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
+//     IComponent!(INodeMethods) replaceComponent(ReplaceMode mode, uint ix, IComponent!(INodeMethods) newComponent)
+//         {
+//             throw new ArrayBoundsException(__FILE__, __LINE__);
+//             return null;
+//         }
+//     bool isLeaf(){return true;}
+//     int opApply(int delegate(IComponent!(INodeMethods) el) dg)
+// 	{
+// 	    return 0;
+// 	}
+//     mixin TParent!(INodeMethods);
 }
 
 class DIdentifier: ILeafNode
@@ -110,6 +112,7 @@ class DIdentifier: ILeafNode
     {
 	return false;
     }
+    mixin TUID;
 
 private:
     char[] _identifier;
@@ -150,17 +153,19 @@ class DScope: ICompositeNode
     {
 	return false;
     }
+    mixin TUID;
 
 private:
     DDeclaration[] _declarations;
 }
 
-class DModuleDeclaration: DDeclaration
+class DModuleDeclaration: DDeclaration, ILeafNode
 {
     this (char[] name)
     {
 	_name = name.dup;
     }
+    mixin TLeaf!(INodeMethods);
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
@@ -175,12 +180,13 @@ private:
     char[] _name;
 }
 
-class DImportDeclaration: DDeclaration
+class DImportDeclaration: DDeclaration, ILeafNode
 {
     this (char[] name)
     {
 	_name = name.dup;
     }
+    mixin TLeaf!(INodeMethods);
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
@@ -195,12 +201,13 @@ private:
     char[] _name;
 }
 
-class DMixinDeclaration: DDeclaration
+class DMixinDeclaration: DDeclaration, ILeafNode
 {
     this (char[] name)
     {
 	_name = name.dup;
     }
+    mixin TLeaf!(INodeMethods);
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
@@ -219,11 +226,15 @@ class DClassDeclaration: DDeclaration, ICompositeNode
 {
     void setName(DIdentifier name)
     {
-	_name = name;
+        replaceComponent(ReplaceMode.Set, 0, name);
+    }
+    void setBaseClasses(DBaseClasses baseClasses)
+    {
+        replaceComponent(ReplaceMode.Set, 1, baseClasses);
     }
     void setBody(DScope bdy)
     {
-	_body = bdy;
+        replaceComponent(ReplaceMode.Set, 2, bdy);
     }
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
@@ -232,6 +243,7 @@ class DClassDeclaration: DDeclaration, ICompositeNode
 	{
 	    auto lft = ft.create(Tag.create(this, Color.red, false), "class ");
 	    _name.addTo(lft, formatInfo);
+	    _baseClasses.addTo(lft, formatInfo);
 	    lft.newline;
 	    _body.addTo(lft, formatInfo);
 	}
@@ -304,6 +316,17 @@ class DBaseClasses: ICompositeNode
 
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
+	if (formatInfo(this).show)
+	{
+	    auto lft = ft.create(Tag.create(cast(INode)this, Color.red, false), (_baseClasses.length > 0 ? ": " : " "));
+	    if (formatInfo(this).recurse)
+		foreach (ix, baseClass; _baseClasses)
+                {
+                    if (ix > 0)
+                        lft.add(", ");
+		    baseClass.addTo(lft, formatInfo);
+                }
+	}
     }
     void expand()
     {
@@ -312,6 +335,7 @@ class DBaseClasses: ICompositeNode
     {
 	return false;
     }
+    mixin TUID;
 
 private:
     DIdentifier[] _baseClasses;

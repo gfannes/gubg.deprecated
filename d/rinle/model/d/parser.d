@@ -23,6 +23,7 @@ class DParser
 	    DDeclaration decl;
 	    while (complete(decl))
 	    {
+                l.puts("decl = {}", cast(void*)decl);
 		obj.replaceComponent(ReplaceMode.Create, obj.nrComponents, decl);
 		decl = null;
 	    }
@@ -81,13 +82,17 @@ class DParser
 
 	    if (obj is null)
 		return false;
+
+            // Parse the class name
 	    DIdentifier name;
 	    if (!complete(name))
 		throw new Exception("Could not find the class name.");
 	    obj.setName(name);
+
+            // Parse the base classes
+            auto baseClasses = new DBaseClasses;
 	    if (matches(":", true))
 	    {
-		auto baseClasses = new DBaseClasses;
 		DIdentifier baseClass;
 		while (complete(baseClass))
 		{
@@ -96,8 +101,10 @@ class DParser
 		    if (!matches(",", true))
 			break;
 		}
-		obj.replaceComponent(ReplaceMode.Create, obj.nrComponents, baseClasses);
 	    }
+            obj.setBaseClasses(baseClasses);
+
+            // Parse the scope
 	    DScope scop;
 	    if (!complete(scop))
 		throw new Exception("Could not find the class' body.");
@@ -138,6 +145,7 @@ class DParser
 	    {
 		l.puts("Found class");
 		auto classDecl = new DClassDeclaration;
+                l.puts("classDecl = {}", cast(void*)classDecl);
 		complete(classDecl);
 		obj = classDecl;
 	    } else
