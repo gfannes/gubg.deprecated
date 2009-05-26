@@ -59,16 +59,18 @@ class UI: IUI
         return inputOK;
     }
 
-    bool selectString(inout uint ix, char[] msg, char[][] options)
+    bool selectString(inout uint ix, char[] msg, char[][] options, bool confirm)
     {
 	scope sp = new SavePoint;
         bool finished = false;
         bool inputOK = false;
         bool escPressed = false;
+        bool enterPressed = false;
         char[] str;
-        while (!finished)
+        // We start with all options valid
+        char[][] validOptions = options;
+        do
         {
-            char[][] validOptions = filterOptions(options, str);
             printMsgOptionsAndInput(msg, validOptions, str);
             auto key = _input.getKey;
             if (key == Key.esc)
@@ -94,7 +96,7 @@ class UI: IUI
                 switch (key)
                 {
                 case Key.enter:
-                    finished = true;
+                    enterPressed = true;
                     break;
                 case Key.backspace:
                     str.length = str.length-1;
@@ -104,7 +106,24 @@ class UI: IUI
                     break;
                 }
             }
-        }
+
+            // Re-evaluate our options and exit if possible
+            validOptions = filterOptions(options, str);
+            if (enterPressed || (!confirm && validOptions.length == 1))
+            {
+                if (validOptions.length == 1)
+                {
+                    for (ix = 0; ix < options.length; ++ix)
+                        if (options[ix] == validOptions[0])
+                            break;
+                    if (ix == options.length)
+                        throw new Exception("Could not find the selected option.");
+                    inputOK = true;
+                }
+                finished = true;
+            }
+        } while (!finished);
+
         return inputOK;
     }
 
@@ -201,7 +220,7 @@ version (UnitTest)
             {
                 scope ncurses = new NCurses;
                 auto ui = new UI(ncurses, ncurses);
-                ok = ui.selectString(ix, "Please select a string:", ["A", "a", "AA", "BBBBBB"]);
+                ok = ui.selectString(ix, "Please select a string:", ["A", "a", "AA", "BBBBBB"], false);
             }
             puts("You selected \"{}\", ok = {}", ix, ok);
         }

@@ -14,7 +14,7 @@ interface IFormatInfo
 interface IUI
 {
     bool getString(inout char[] str, char[] msg);
-    bool selectString(inout uint ix, char[] msg, char[][] options);
+    bool selectString(inout uint ix, char[] msg, char[][] options, bool confirm);
     IInput input();
     IOutput output();
 }

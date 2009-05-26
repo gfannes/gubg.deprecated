@@ -186,7 +186,7 @@ class Tree# < IChainOfResponsibility
 
   def linkSettings(type, includes)
     settings = []
-    includes.each do |incl|
+    (["always"] + includes).each do |incl|
       cs = linkSetting(type, incl)
       settings << cs if cs
     end
