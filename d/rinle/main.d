@@ -4,7 +4,6 @@ import rinle.model.interfaces;
 import rinle.model.filesystem;
 import rinle.view.view;
 import rinle.view.ui;
-//import rinle.commands;
 
 import gubg.ncurses;
 import gubg.patterns.command;
