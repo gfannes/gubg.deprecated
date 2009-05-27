@@ -1,6 +1,8 @@
 module gubg.patterns.composite;
 // The composite pattern
 
+public import gubg.uid;
+
 public import tango.core.Exception;
 
 // Interfaces
@@ -20,6 +22,7 @@ interface IComponent(I): I
     IComposite!(I) parent();
     IComposite!(I) parent(IComposite!(I) p);
     bool isLeaf();
+    uint uid();
 }
 interface IComposite(I): IComponent!(I)
 {
@@ -33,14 +36,26 @@ interface ILeaf(I): IComponent!(I)
 template TParent(I)
 {
     // NOTE::Do not forget to set the parent in replaceComponent()
-    IComposite!(I) parent(){return mParent;}
+    IComposite!(I) parent(){return _parent;}
     IComposite!(I) parent(IComposite!(I) p)
         {
-            mParent = p;
-            return mParent;
+            _parent = p;
+            return _parent;
         }
 private:
-    IComposite!(I) mParent;
+    IComposite!(I) _parent;
+}
+// Provide uid()
+template TUID()
+{
+    uint uid()
+        {
+            if (0 == _uid)
+                _uid = generateUID("composite");
+            return _uid;
+        }
+private:
+    uint  _uid;
 }
 template TOpApply(I)
 {
@@ -56,6 +71,7 @@ template TOpApply(I)
 template TComposite(I)
 {
     mixin TParent!(I);
+    mixin TUID;
     mixin TOpApply!(I);
     bool isLeaf(){return false;}
 }
@@ -125,6 +141,7 @@ template TLeaf(I)
 	    return 0;
 	}
     mixin TParent!(I);
+    mixin TUID;
 }
 
 
@@ -166,16 +183,16 @@ version (UnitTest)
     // A composite component which provides opIndex and opIndexAssign
     class IC: IComposite!(ComponentMethods)
     {
-        uint nrComponents(){return mArray.length;}
-        void setNrComponents(uint nr){mArray.length = nr;}
-        Component opIndex(uint ix){return mArray[ix];}
-        Component opIndexAssign(Component rhs, uint ix){return (mArray[ix] = rhs);}
+        uint nrComponents(){return _array.length;}
+        void setNrComponents(uint nr){_array.length = nr;}
+        Component opIndex(uint ix){return _array[ix];}
+        Component opIndexAssign(Component rhs, uint ix){return (_array[ix] = rhs);}
         mixin TIndexComposite!(ComponentMethods);
 
 	// ComponentMethods
         void draw(){}
     private:
-        Component[] mArray;
+        Component[] _array;
     }
 
     void main()

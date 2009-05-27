@@ -25,7 +25,6 @@ interface INodeMethods
     void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
     bool create(inout IComponent!(INodeMethods) node, uint ix, IUI ui);
-    uint uid();
 }
 // Some convenient aliases for working with composites
 alias IComponent!(INodeMethods) INode;
@@ -63,7 +62,7 @@ class FormatTree: ITagTree!(Tag, char[])
 	if (p is null)
 	    return false;
 	for (ix = 0; ix < p.nrComponents; ++ix)
-	    if (p.replaceComponent(ReplaceMode.Get, ix, null) == node)
+	    if (p.replaceComponent(ReplaceMode.Get, ix, null).uid == node.uid)
 		break;
 	if (ix >= p.nrComponents)
         {
@@ -164,26 +163,6 @@ private:
     uint _colIX;
     char[] _currentIndent;
     bool _newline;
-}
-
-// Can never generate 0, this is assumed
-uint generateUID()
-{
-    static uint sCurrentUID = 0;
-    ++sCurrentUID;
-    return sCurrentUID;
-}
-
-template TUID()
-{
-    uint uid()
-        {
-            if (0 == _uid)
-                _uid = generateUID;
-            return _uid;
-        }
-protected:
-    uint _uid;
 }
 
 version (UnitTest)
