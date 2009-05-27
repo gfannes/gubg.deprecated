@@ -1,21 +1,15 @@
-module rinle.focus;
+module rinle.view.focusMgr;
 
 import rinle.model.interfaces;
 
 import gubg.patterns.command;
-import gubg.patterns.chainOfResponsibility;
-
-interface IFocus: IChainOfResponsibility!(ICommand)
-{
-    void setUI(IUI ui);
-}
 
 class FocusMgr: IChainOfResponsibility!(ICommand)
 {
     this(IUI ui)
-        {
-            _ui = ui;
-        }
+    {
+	_ui = ui;
+    }
 
     bool handle(inout ICommand command)
     {

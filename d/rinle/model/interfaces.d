@@ -1,9 +1,16 @@
 module rinle.model.interfaces;
 
 public import gubg.patterns.composite;
+public import gubg.patterns.chainOfResponsibility;
+import gubg.patterns.command;
 import gubg.tagTree;
 public import gubg.ui;
 import gubg.puts;
+
+interface IFocus: IChainOfResponsibility!(ICommand)
+{
+    void setUI(IUI ui);
+}
 
 interface IFormatInfo
 {

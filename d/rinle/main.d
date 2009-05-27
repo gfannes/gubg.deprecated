@@ -1,6 +1,5 @@
 module rinle.main;
 
-import rinle.focus;
 import rinle.model.interfaces;
 import rinle.model.filesystem;
 import rinle.view.view;
@@ -16,20 +15,20 @@ class Rinle
     this()
         {
 	    puts("Starting Rinle");
+            _model = new Dir;
             _nCurses = new NCurses;
 	    _ui = new UI(_nCurses, _nCurses);
-
-            _focusMgr = new FocusMgr(_ui);
-	    _focusMgr.push(new Focus);
-
-            _model = new Dir;
-            _view = new View(_model);
+	    _focus = new Focus;
+	    _view = new View(_model, _ui, _focus);
         }
     ~this()
         {
 	    puts("Stopping Rinle");
+	    delete _view;
+	    delete _focus;
+	    delete _ui;
             delete _nCurses;
-	    _focusMgr.pop;
+	    delete _model;
         }
 
     void run()
@@ -47,7 +46,7 @@ class Rinle
     ICommand getCommand()
         {
             ICommand command;
-            _focusMgr.handle(command);
+            _view.handle(command);
             return command;
         }
 
@@ -165,7 +164,7 @@ private:
     NCurses _nCurses;
     IUI _ui;
 
-    FocusMgr _focusMgr;
+    Focus _focus;
 }
 
 import gubg.puts;

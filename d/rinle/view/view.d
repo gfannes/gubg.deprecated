@@ -1,7 +1,8 @@
 module rinle.view.view;
 
-import rinle.view.nodeInfo;
 import rinle.model.interfaces;
+import rinle.view.nodeInfo;
+import rinle.view.focusMgr;
 
 import gubg.ui;
 
@@ -9,21 +10,28 @@ import tango.text.convert.Format;
 
 import gubg.puts;
 
-class View
+class View: FocusMgr
 {
-    this (INode base)
+    this (INode base, IUI ui, IFocus defaultFocus)
         {
             _base = base;
             _current = base;
-            _mgr = new Manager;
+	    _ui = ui;
+	    super(_ui);
+	    push(defaultFocus);
+            _nodeInfoMgr = new NodeInfoMgr;
         }
+    ~this ()
+	{
+	    delete _nodeInfoMgr;
+	}
 
     void show(IOutput output)
         {
 	    auto ft = new FormatTree(Tag.create(_base, Color.white, false));
-	    if (_mgr.get(_current).expandBeforeShow)
+	    if (_nodeInfoMgr.get(_current).expandBeforeShow)
                 _current.expand;
-	    _base.addTo(ft, &_mgr.getFormatInfo);
+	    _base.addTo(ft, &_nodeInfoMgr.getFormatInfo);
             auto collector = new OutputCollector(output);
             setSelected(ft);
             collector(ft);
@@ -102,5 +110,6 @@ private:
 
     INode _base;
     INode _current;
-    Manager _mgr;
+    IUI _ui;
+    NodeInfoMgr _nodeInfoMgr;
 }

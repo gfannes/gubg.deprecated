@@ -3,7 +3,7 @@ module rinle.view.nodeInfo;
 import rinle.model.interfaces;
 import rinle.model.filesystem;
 
-class Manager
+class NodeInfoMgr
 {
     this (bool defaultShow = true, bool defaultRecurse = true, bool defaultExpandBeforeShow = true)
         {
@@ -64,7 +64,7 @@ version (UnitTest)
     import gubg.puts;
     void main()
     {
-        auto mgr = new Manager;
+        auto mgr = new NodeInfoMgr;
         NodeInfo ni;
         ni = mgr.get(null);
         puts("ni = {}", cast(void*)ni);
