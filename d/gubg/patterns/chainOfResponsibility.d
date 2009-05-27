@@ -14,20 +14,20 @@ template ChainOfResponsibility(Request)
     {
 	if (handle4COR(request))
 	    return true;
-	if (mSuccessor is null)
+	if (_successor is null)
 	{
 	    throw new Exception("ERROR::Cannot handle the request, successor is null.");
 	    return false;
 	}
-	return mSuccessor.handle(request);
+	return _successor.handle(request);
     }
     void successor(IChainOfResponsibility!(Request) succ)
     {
-	mSuccessor = succ;
+	_successor = succ;
     }
 
 private:
-    IChainOfResponsibility!(Request) mSuccessor;
+    IChainOfResponsibility!(Request) _successor;
 }
 
 version (UnitTest)

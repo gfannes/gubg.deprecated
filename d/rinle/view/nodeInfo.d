@@ -19,7 +19,7 @@ class NodeInfoMgr
             if (p !is null)
                 nodeInfo = *p;
             else if (cast(Dir)node !is null)
-                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, false);
+                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, true);
             else
                 nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, _defaultExpandBeforeShow);
             return nodeInfo;

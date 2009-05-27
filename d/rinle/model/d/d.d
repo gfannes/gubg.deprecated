@@ -7,7 +7,16 @@ import gubg.puts;
 import gubg.file;
 import gubg.parser;
 
-class DModule: ICompositeNode
+abstract class DNode: INode
+{
+    bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
+    {
+	return false;
+    }
+    abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);    
+}
+
+class DModule: DNode, ICompositeNode
 {
     this (char[] path, char[] name)
     {
@@ -65,7 +74,7 @@ private:
     bool _expanded;
 }
 
-class DDeclaration: INode
+class DDeclaration: DNode
 {
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     void expand()
@@ -92,7 +101,7 @@ class DDeclaration: INode
 //     mixin TParent!(INodeMethods);
 }
 
-class DIdentifier: ILeafNode
+class DIdentifier: DNode, ILeafNode
 {
     this (char[] identifier)
     {
@@ -118,7 +127,7 @@ private:
     char[] _identifier;
 }
 
-class DScope: ICompositeNode
+class DScope: DNode, ICompositeNode
 {
     uint nrComponents(){return _declarations.length;}
     void setNrComponents(uint nr){_declarations.length = nr;}
@@ -300,7 +309,7 @@ private:
     DScope _body;
 }
 
-class DBaseClasses: ICompositeNode
+class DBaseClasses: DNode, ICompositeNode
 {
     uint nrComponents(){return _baseClasses.length;}
     void setNrComponents(uint nr){_baseClasses.length = nr;}

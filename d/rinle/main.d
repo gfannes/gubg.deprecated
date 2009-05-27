@@ -17,14 +17,12 @@ class Rinle
             _model = new Dir;
             _nCurses = new NCurses;
 	    _ui = new UI(_nCurses, _nCurses);
-	    _focus = new Focus;
-	    _view = new View(_model, _ui, _focus);
+	    _view = new View(_model, _ui, &topLevelCommander);
         }
     ~this()
         {
 	    puts("Stopping Rinle");
 	    delete _view;
-	    delete _focus;
 	    delete _ui;
             delete _nCurses;
 	    delete _model;
@@ -45,7 +43,7 @@ class Rinle
     ICommand getCommand()
         {
             ICommand command;
-            _view.handle(command);
+            _view.create(command);
             return command;
         }
 
@@ -55,14 +53,7 @@ class Rinle
             _ui.output.refresh;
         }
 
-    class Focus: IFocus
-    {
-        // IFocus
-        void setUI(IUI ui)
-        {
-	    _ui = ui;
-        }
-        bool handle(inout ICommand command)
+    bool topLevelCommander(inout ICommand command)
         {
             int key;
             switch (key = _ui.input.getKey)
@@ -101,12 +92,7 @@ class Rinle
             }
             return true;
         }
-        void successor(IChainOfResponsibility!(ICommand) handler){};
-
-    private:
-	IUI _ui;
-    }
-
+    
     void quit()
         {
             _proceed = false;
@@ -162,8 +148,6 @@ private:
 
     NCurses _nCurses;
     IUI _ui;
-
-    Focus _focus;
 }
 
 import gubg.puts;

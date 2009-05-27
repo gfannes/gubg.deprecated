@@ -21,6 +21,10 @@ abstract class FSNode: ICompositeNode
 
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     abstract void expand();
+    bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
+    {
+	return false;
+    }
     mixin TUID;
 
     char[] path(){return _path;}
@@ -153,8 +157,45 @@ class Dir: FSNode
     {
 	return false;
     }
+    bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
+    {
+	int key;
+	switch (key = ui.input.getKey)
+	{
+	case 'f':
+	    command = new FindCommand(ui, setCurrent);
+	    break;
+	default:
+	    return false;
+	    break;
+	}
+	return true;
+    }
 
 private:
+    class FindCommand: ICommand
+        {
+            this (IUI ui, bool delegate(INode node) setCurrent)
+            {
+                _ui = ui;
+		_setCurrent = setCurrent;
+            }
+            bool execute()
+            {
+		uint ix;
+		char[][] elements;
+		elements.length = _fsNodes.length;
+		foreach (i, inout element; elements)
+		    element = _fsNodes[i].name;
+		if (_ui.selectString(ix, "Please select the file or directory.", elements, false))
+		    return _setCurrent(_fsNodes[ix]);
+                return false;
+            }
+            bool undo(){return false;}
+	    IUI _ui;
+	    bool delegate(INode node) _setCurrent;
+        }
+
     FSNode[] _fsNodes;
     bool _expanded;
 }
