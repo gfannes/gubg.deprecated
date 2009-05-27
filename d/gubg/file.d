@@ -1,12 +1,11 @@
 module gubg.file;
 
-import tango.io.File;
+import tango.io.device.File;
 import tango.io.FileSystem;
 
 bool loadFile(out char[] content, in char[] fileName)
 {
-    File file = new File(fileName);
-    content = cast(char[])file.read();
+    content = cast(char[])File.get(fileName);
     return true;
 }
 
