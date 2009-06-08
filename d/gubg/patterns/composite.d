@@ -31,6 +31,17 @@ interface ILeaf(I): IComponent!(I)
 {
 }
 
+bool indexOfParent(T)(inout uint ix, T node)
+{
+    auto p = node.parent;
+    if (p is null)
+	return false;
+    for (ix = 0; ix < p.nrComponents; ++ix)
+	if (p.replaceComponent(ReplaceMode.Get, ix, null).uid == node.uid)
+	    break;
+    return (ix < p.nrComponents);
+}
+
 // Templates
 // Provide parent()
 template TParent(I)
