@@ -39,6 +39,7 @@ class GlobalController: IController
     }
     void show()
     {
+	clear;
 	_view.show();
     }
 
@@ -49,6 +50,15 @@ private:
 	    return;
 	_current = current;
 	_view.setCurrent(_current);
+    }
+
+    void clear()
+    {
+	static IOutput.ISavePoint savePoint;
+	if (savePoint is null)
+	    savePoint = _ui.output.save;
+	else
+	    savePoint.restore;
     }
 
     bool getGlobalCommand(inout ICommand command)

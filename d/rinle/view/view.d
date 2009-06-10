@@ -48,6 +48,7 @@ class View: IView
     void setCurrent(INode node)
     {
 	_current = node;
+	_nodeInfoMgr.setCurrent(_current);
 	puts("_current changed to {}", cast(void*)_current);
     }
 

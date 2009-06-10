@@ -3,25 +3,45 @@ module rinle.view.nodeInfo;
 import rinle.model.interfaces;
 import rinle.model.filesystem;
 
+import gubg.puts;
+
 class NodeInfoMgr
 {
-    this (bool defaultShow = true, bool defaultRecurse = true, bool defaultExpandBeforeShow = true)
-        {
-	    _defaultShow = defaultShow;
-            _defaultRecurse = defaultRecurse;
-            _defaultExpandBeforeShow = defaultExpandBeforeShow;
-        }
-
     NodeInfo get(INode node)
         {
             NodeInfo nodeInfo;
-            NodeInfo* p = (cast(void*)node in _nodeInfo);
-            if (p !is null)
-                nodeInfo = *p;
-            else if (cast(Dir)node !is null)
-                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, true);
-            else
-                nodeInfo = new NodeInfo(_defaultShow, _defaultRecurse, _defaultExpandBeforeShow);
+	    if (areSiblings(_current, node))
+		nodeInfo = new NodeInfo(true, false, false);
+	    else
+	    {
+		uint distance;
+		if (distanceToRoot(distance, _current, node))
+		{
+		    puts("towards root");
+		    nodeInfo = new NodeInfo(true, true, false);
+		} else if (distanceToRoot(distance, node, _current))
+		{
+		    puts("distanceToRoot is true");
+		    if (cast(Dir)node !is null)
+		    {
+			if (distance == 0)
+			    nodeInfo = new NodeInfo(true, true, true);
+			else
+			    nodeInfo = new NodeInfo(true, false, false);
+		    } else
+		    {
+			NodeInfo* p = (cast(void*)node in _nodeInfo);
+			if (p !is null)
+			    nodeInfo = *p;
+			else
+			    nodeInfo = new NodeInfo(true, true, true);
+		    }
+		} else
+		{
+		    puts("distanceToRoot is false");
+		    nodeInfo = new NodeInfo(false, false, false);
+		}
+	    }
             return nodeInfo;
         }
     IFormatInfo getFormatInfo(INode node)
@@ -32,12 +52,14 @@ class NodeInfoMgr
         {
             _nodeInfo[cast(void*)node] = ni;
         }
+    void setCurrent(INode current)
+	{
+	    _current = current;
+	}
 
 private:
-    bool _defaultShow;
-    bool _defaultRecurse;
-    bool _defaultExpandBeforeShow;
     NodeInfo[void*] _nodeInfo;
+    INode _current;
 }
 
 class NodeInfo: IFormatInfo
