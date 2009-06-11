@@ -1,9 +1,17 @@
-module rinle.view.ui;
+module rinle.controller.ui;
 
-import rinle.model.interfaces;
+//import rinle.model.interfaces;
 import gubg.ui;
 
-class UI: IUI
+// interface IUI
+// {
+//     bool getString(inout char[] str, char[] msg);
+//     bool selectString(inout uint ix, char[] msg, char[][] options, bool confirm);
+//     IInput input();
+//     IOutput output();
+// }
+
+class UI//: IUI
 {
     this(IInput input, IOutput output)
     {

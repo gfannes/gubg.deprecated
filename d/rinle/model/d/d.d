@@ -9,10 +9,10 @@ import gubg.parser;
 
 abstract class DNode: INode
 {
-    bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
-    {
-	return false;
-    }
+//     bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
+//     {
+// 	return false;
+//     }
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);    
 }
 
@@ -60,10 +60,10 @@ class DModule: DNode, ICompositeNode
 
         _expanded = true;
     }
-    bool create(inout INode node, uint ix, IUI ui)
-    {
-	return false;
-    }
+//     bool create(inout INode node, uint ix, IUI ui)
+//     {
+// 	return false;
+//     }
     mixin TUID;
 
 private:
@@ -80,10 +80,10 @@ class DDeclaration: DNode
     void expand()
     {
     }
-    bool create(inout INode node, uint ix, IUI ui)
-    {
-	return false;
-    }
+//     bool create(inout INode node, uint ix, IUI ui)
+//     {
+// 	return false;
+//     }
     mixin TUID;
 
 //     uint nrComponents(){return 0;}
@@ -117,10 +117,10 @@ class DIdentifier: DNode, ILeafNode
     void expand()
     {
     }
-    bool create(inout INode node, uint ix, IUI ui)
-    {
-	return false;
-    }
+//     bool create(inout INode node, uint ix, IUI ui)
+//     {
+// 	return false;
+//     }
     mixin TUID;
 
 private:
@@ -158,10 +158,10 @@ class DScope: DNode, ICompositeNode
     void expand()
     {
     }
-    bool create(inout INode node, uint ix, IUI ui)
-    {
-	return false;
-    }
+//     bool create(inout INode node, uint ix, IUI ui)
+//     {
+// 	return false;
+//     }
     mixin TUID;
 
 private:
@@ -340,10 +340,10 @@ class DBaseClasses: DNode, ICompositeNode
     void expand()
     {
     }
-    bool create(inout INode node, uint ix, IUI ui)
-    {
-	return false;
-    }
+//     bool create(inout INode node, uint ix, IUI ui)
+//     {
+// 	return false;
+//     }
     mixin TUID;
 
 private:

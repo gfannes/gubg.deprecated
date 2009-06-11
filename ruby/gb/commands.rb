@@ -2,6 +2,7 @@ require("digest/md5")
 require("fileutils")
 
 require("patterns/command")
+require("tools/utils")
 
 require("gb/dependency")
 
@@ -17,6 +18,11 @@ class GitCommand < ICommand
     when "pull"
       cmd = "git pull #{@tree.pullURL}"
     when "s"
+      puts("Local number of lines = #{localNrLines}")
+      globalCount = globalNrLines do |base, count|
+        puts("\tSubtree #{base} = #{count}")
+      end
+      puts("Global number of lines = #{globalCount}")
       cmd = "git status"
     when "c"
       cmd = "git commit -a"
@@ -27,6 +33,25 @@ class GitCommand < ICommand
     Dir.chdir(@tree.base) do
       system(cmd)
     end
+  end
+  def localNrLines
+    numberOfLines(@tree)
+  end
+  def globalNrLines
+    nr = 0
+    Tree.allTrees(@tree.base).each do |tree|
+      count = numberOfLines(tree)
+      yield(tree.base, count)
+      nr += count
+    end
+    nr
+  end
+  def numberOfLines(tree)
+    nr = 0
+    tree.each(false) do |dir, fn|
+      nr += Array.load(dir + '/' + fn).length
+    end
+    nr
   end
 end
 

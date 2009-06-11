@@ -13,21 +13,13 @@ interface IFormatInfo
     bool recurse();
 }
 
-interface IUI
-{
-    bool getString(inout char[] str, char[] msg);
-    bool selectString(inout uint ix, char[] msg, char[][] options, bool confirm);
-    IInput input();
-    IOutput output();
-}
-
 // All methods we require to be present for a Rinle node
 interface INodeMethods
 {
     void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
-    bool create(inout IComponent!(INodeMethods) node, uint ix, IUI ui);
-    bool create(inout ICommand command, IUI ui, bool delegate(IComponent!(INodeMethods) node) setCurrent);
+//     bool create(inout IComponent!(INodeMethods) node, uint ix, IUI ui);
+//     bool create(inout ICommand command, IUI ui, bool delegate(IComponent!(INodeMethods) node) setCurrent);
 }
 // Some convenient aliases for working with composites
 alias IComponent!(INodeMethods) INode;
@@ -58,27 +50,6 @@ class FormatTree: ITagTree!(Tag, char[])
     mixin TTagTree!(Tag, char[]);
 
     void newline(){add("\n");}
-
-    static bool indexOfParent(T)(T node, inout uint ix)
-    {
-	auto p = node.parent;
-	if (p is null)
-	    return false;
-	for (ix = 0; ix < p.nrComponents; ++ix)
-	    if (p.replaceComponent(ReplaceMode.Get, ix, null).uid == node.uid)
-		break;
-	if (ix >= p.nrComponents)
-        {
-            puts("Could not find node {}", cast(void*)node);
-            for (uint i = 0; i < p.nrComponents; ++i)
-            {
-                T n = p.replaceComponent(ReplaceMode.Get, i, null);
-                puts("\t[{}] = {}", i, cast(void*)n);
-            }            
-	    return false;
-        }
-	return true;
-    }
 }
 
 class OutputCollector: Collector!(Tag, char[])

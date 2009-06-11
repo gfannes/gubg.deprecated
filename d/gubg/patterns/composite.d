@@ -31,6 +31,65 @@ interface ILeaf(I): IComponent!(I)
 {
 }
 
+bool indexOfParent(T)(inout uint ix, T node)
+{
+    auto p = node.parent;
+    if (p is null)
+	return false;
+    for (ix = 0; ix < p.nrComponents; ++ix)
+	if (p.replaceComponent(ReplaceMode.Get, ix, null).uid == node.uid)
+	    break;
+    return (ix < p.nrComponents);
+}
+
+bool areSiblings(T)(T n1, T n2)
+{
+    if (n1 is null || n2 is null)
+	return false;
+    if (n1.uid == n2.uid)
+	return false;
+    if (n1.parent is null)
+	return n2.parent is null;
+    if (n2.parent is null)
+	return false;
+    return n1.parent.uid == n2.parent.uid;
+}
+
+bool distanceToRoot(T)(inout uint distance, T from, T to = null)
+{
+    if (from is null)
+	return false;
+
+    bool found = false;
+    if (to is null)
+    {
+	distance = 0;
+	auto parent = from.parent;
+	while (parent !is null)
+	{
+	    ++distance;
+	    parent = parent.parent;
+	}
+	found = true;
+    } else
+    {
+	uint targetUID = to.uid;
+	uint tmpDistance = 0;
+	auto current = from;
+	while (current !is null && current.uid != targetUID)
+	{
+	    ++tmpDistance;
+	    current = current.parent;
+	}
+	if (current !is null)
+	{
+	    distance = tmpDistance;
+	    found = true;
+	}
+    }
+    return found;
+}
+
 // Templates
 // Provide parent()
 template TParent(I)
