@@ -385,11 +385,15 @@ class String
     ix = 0
     while ix < len
       print(("0x%x ("%ix).rjust(9) + ("#{ix}): ".ljust(8)))
+      chars = []
       ix.upto(ix + width-1) do |i|
-        print(("%02x"%bytes[i]).ljust(3)) if i < len
+        if i < len
+          print(("%02x"%bytes[i]).ljust(3))
+          chars << "%c"%(bytes[i])
+        end
       end
       ix += width
-      puts("")
+      puts(chars.join(''))
     end
   end
 
