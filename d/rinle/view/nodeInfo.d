@@ -10,7 +10,13 @@ class NodeInfoMgr
     NodeInfo get(INode node)
         {
             NodeInfo nodeInfo;
-	    if (areSiblings(_current, node))
+            if (_current is null)
+                throw new Exception("_current is null");
+            if (node is null)
+                throw new Exception("node is null");
+            if (node.uid == _current.uid)
+                nodeInfo = new NodeInfo(true, true, true);
+            else if (areSiblings(_current, node))
 		nodeInfo = new NodeInfo(true, false, false);
 	    else
 	    {

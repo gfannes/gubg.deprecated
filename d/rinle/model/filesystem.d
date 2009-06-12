@@ -10,6 +10,7 @@ import gubg.file;
 
 import tango.io.FilePath;
 import tango.io.FileSystem;
+import tango.core.Array;
 
 abstract class FSNode: ICompositeNode
 {
@@ -127,7 +128,7 @@ class Dir: FSNode
     {
 	if (formatInfo(this).show)
 	{
-	    auto lft = ft.create(Tag.create(this, Color.blue, true));
+	    auto lft = ft.create(Tag.create(this, Color.green, true));
 	    lft.add(_name);
 	    lft.newline;
 	    if (formatInfo(this).recurse)
@@ -148,6 +149,7 @@ class Dir: FSNode
             } else
                 _fsNodes ~= [new File(fileInfo.path, fileInfo.name)];
         }
+        sort(_fsNodes, delegate bool(FSNode lhs, FSNode rhs){return lhs.name < rhs.name;});
 	foreach (fsNode; _fsNodes)
 	    fsNode.parent(this);
 

@@ -14,9 +14,9 @@ class View: IView
 {
     this (INode base)
     {
-	_base = base;
-	_current = base;
 	_nodeInfoMgr = new NodeInfoMgr;
+	_base = base;
+        setCurrent(base);
 	_hide = false;
     }
     ~this ()
