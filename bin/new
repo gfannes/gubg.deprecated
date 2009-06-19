@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+# Creates and opens a new file, prepending it with the current date
+
+if ARGV.length != 1
+  puts(%Q@new <filename>
+Creates and opens the file <filename>, prepending it with the current date in "yyymmdd"-format.@)
+end
+
+name = ARGV[0].dup
+fileName = Time.now.strftime("%Y%m%d") + "." + name
+
+system("touch #{fileName}")
+system("e #{fileName}")

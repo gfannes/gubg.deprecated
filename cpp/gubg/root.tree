@@ -1,4 +1,4 @@
-include: ../root.tree
+include: ../../root.tree
 cpp:
  compilation:
   SDL/SDL.h: `sdl-config --cflags`
