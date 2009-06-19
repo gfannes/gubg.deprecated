@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+#define gubgLogScope(message) gubg::Log::Scope gubg_Log_Scope(__FILE__, __LINE__, message)
+#define gubgLog(message) gubg_Log_Scope(__FILE__, __LINE__, message)
+
 namespace gubg
 {
     class Log
@@ -50,6 +53,9 @@ namespace gubg
 	    ~Scope();
 	    Scope &operator()(const std::string &fileName, unsigned int lineNr, const std::string &msg);
 	    Scope &operator<<(const std::string &msg);
+	    Scope &operator<<(int value);
+	    Scope &operator<<(unsigned int value);
+	    Scope &operator<<(void *ptr);
 
 	private:
 	    std::string _msg;

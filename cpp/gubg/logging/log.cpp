@@ -4,6 +4,8 @@
 #include "log_xml.hpp"
 #include "log_tree.hpp"
 
+#include <sstream>
+
 using namespace gubg;
 
 Log::Log()
@@ -163,6 +165,39 @@ Log::Scope &Log::Scope::operator<<(const std::string &msg)
     if (!_lineIsOpen)
 	throw new std::exception();
     log << " " << msg;
+    return *this;
+}
+
+Log::Scope &Log::Scope::operator<<(int value)
+{
+    Log &log = Log::instance();
+    if (!_lineIsOpen)
+	throw new std::exception();
+    std::ostringstream str;
+    str << " " << value;
+    log << str.str();
+    return *this;
+}
+
+Log::Scope &Log::Scope::operator<<(unsigned int value)
+{
+    Log &log = Log::instance();
+    if (!_lineIsOpen)
+	throw new std::exception();
+    std::ostringstream str;
+    str << " 0x" << std::hex << value;
+    log << str.str();
+    return *this;
+}
+
+Log::Scope &Log::Scope::operator<<(void *ptr)
+{
+    Log &log = Log::instance();
+    if (!_lineIsOpen)
+	throw new std::exception();
+    std::ostringstream str;
+    str << " ptr 0x" << std::hex << ptr;
+    log << str.str();
     return *this;
 }
 
