@@ -26,6 +26,7 @@ FilePrimitive::~FilePrimitive()
 void FilePrimitive::write(const std::string &str)
 {
     _outputFile << str;
+    _outputFile.flush();
 }
 
 #ifdef UNIT_TEST

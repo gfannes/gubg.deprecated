@@ -5,6 +5,7 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
+#include <stdlib.h>
 
 using namespace std;
 
