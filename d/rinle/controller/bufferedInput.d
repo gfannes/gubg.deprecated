@@ -37,6 +37,7 @@ class BufferedInput: IInput
     {
 	_alreadyPressed.length = 0;
     }
+
 private:
     IInput _input;
     int[] _toBeUsed;
