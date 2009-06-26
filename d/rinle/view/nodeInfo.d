@@ -23,11 +23,9 @@ class NodeInfoMgr
 		uint distance;
 		if (distanceToRoot(distance, _current, node))
 		{
-		    puts("towards root");
 		    nodeInfo = new NodeInfo(true, true, false);
 		} else if (distanceToRoot(distance, node, _current))
 		{
-		    puts("distanceToRoot is true");
 		    if (cast(Dir)node !is null)
 		    {
 			if (distance == 0)
@@ -44,7 +42,6 @@ class NodeInfoMgr
 		    }
 		} else
 		{
-		    puts("distanceToRoot is false");
 		    nodeInfo = new NodeInfo(false, false, false);
 		}
 	    }

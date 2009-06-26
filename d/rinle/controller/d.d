@@ -29,17 +29,17 @@ class DCommander: ICommander
 	switch (key = _input.getKey)
 	{
 	case 'i':
-	    createInsertCommand(command, node, "end");
+            command = new InsertCommand(node, "end");
 	    break;
 	case 'o':
-	    createInsertCommand(command, node, "after");
+            command = new InsertCommand(node, "after");
 	    break;
 	case 'u':
-	    createInsertCommand(command, node, "before");
+            command = new InsertCommand(node, "before");
 	    break;
-	case 'r':
-	    createInsertCommand(command, node, "replace");
-	    break;
+// 	case 'r':
+//             command = new InsertCommand(node, "replace");
+// 	    break;
 	default:
 	    _input.reset;
 	    return false;
@@ -50,42 +50,106 @@ class DCommander: ICommander
     }
 
 private:
-    void createInsertCommand(inout ICommand command, DNode node, char[] where)
+    class InsertCommand: ICommand
     {
-	uint ix;
-	switch (where)
+	this (DNode node, char[] where)
 	{
-	case "end":
-	    ix = node.nrComponents;
-	    break;
-	case "after":
-	    DNode parent = cast(DNode)node.parent;
-	    if (parent is null)
-		return;
-	    if (!indexOfParent!(INode)(ix, node))
-		return;
-	    break;
-	default:
-	    return;
-	    break;
+            _node = node;
+            _where = where;
 	}
-	createInsertCommand(command, node, ix);
-    }
-    void createInsertCommand(inout ICommand command, DNode node, uint ix)
-    {
-	foreach (type; Tuple!(DModule))//, ...
+	bool execute()
 	{
-	    type t = cast(type)node;
+	    puts("Creating at {}", _where);
+
+            // Find the ix where the newNode should be created
+            uint ix;
+	    switch (_where)
+	    {
+	    case "end":
+                ix = _node.nrComponents;
+		break;
+            case "after":
+                DNode parent = cast(DNode)_node.parent;
+                if (parent is null)
+                    return false;
+                if (!indexOfParent!(INode)(ix, _node))
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+	    }
+            puts("I will create at ix {}", ix);
+
+            // Create newNode
+            DNode newNode;
+            if (!createNode(newNode, _node, ix))
+                return false;
+
+            _node.replaceComponent(ReplaceMode.Create, ix, newNode);
+
+//             if (newNode !is null)
+//                 _mover.setCurrent(newNode);
+	    return true;
+	}
+	bool undo(){return false;}
+        DNode _node;
+	char[] _where;
+    }
+    bool createNode(inout DNode newNode, DNode node, uint ix)
+    {
+	foreach (T; Tuple!(DModule))//, ...
+	{
+	    T t = cast(T)node;
 	    if (t !is null)
 	    {
-		createInsertCommand(command, t, ix);
+		createNode(newNode, t, ix);
+                return (newNode !is null);
 		break;
 	    }
 	}
+        return false;
     }
-    void createInsertCommand(inout ICommand command, DModule node, uint ix)
+    void createNode(inout DNode newNode, DModule node, uint ix)
     {
-	puts("Creating insert command for DModule");
+	puts("Creating new node for DModule");
+
+        char[][] options = ["module", "import", "class"];
+        alias Tuple!(DModuleDeclaration, DImportDeclaration, DClassDeclaration) Types;
+        
+        uint selection;
+        if (!_ui.selectString(selection, "Select the declaration you want to create:", options, false))
+            return;
+
+	foreach (i, T; Types)
+	{
+            if (selection == i)
+            {
+                T t;
+                createNode(t);
+                newNode = t;
+                break;;
+            }
+        }
+    }
+
+    void createNode(inout DImportDeclaration node)
+    {
+        char[] name;
+        if (!_ui.getString(name, "Import: "))
+            return;
+        node = new DImportDeclaration(name);
+    }
+    void createNode(inout DModuleDeclaration node)
+    {
+        char[] name;
+        if (!_ui.getString(name, "Module: "))
+            return;
+        node = new DModuleDeclaration(name);
+    }
+    void createNode(inout DClassDeclaration node)
+    {
+        node = new DClassDeclaration();
     }
 
     BufferedInput _input;

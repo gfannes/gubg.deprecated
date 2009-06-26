@@ -158,7 +158,8 @@ private:
 		newCurrent = current.parent;
 		break;
 	    }
-	    _mover.setCurrent(newCurrent);
+            if (newCurrent !is null)
+                _mover.setCurrent(newCurrent);
 	    return true;
 	}
 	bool undo(){return false;}
