@@ -6,24 +6,49 @@ arguments = ARGV.dup
 action = :print
 if ARGV.length == 0
   puts(%Q@fr [option] <pattern>
+\t-i\t\tSearch case-insensitive
 \t-o\t\tOpen the files in emacs that match the <pattern>
 \t-r string\tShow how the <pattern> would be replaced, but do not actually replace
 \t-R string\tSame as -r, but now <pattern> is actually replaced
 Geert Fannes.
 @)
-exit
-elsif ARGV.length == 2 and arguments[0] == "-o"
-  action = :open
-  arguments.shift
-  files2Open = []
-elsif ARGV.length == 3 and arguments[0][/^-[rR]$/]
-  action = :replace
-  option = arguments.shift
-  replace = option["R"]
-  newValue = arguments.shift
+  exit
 end
 
-lookFor = Regexp.compile(arguments[0])
+caseInsensitive = nil
+action = :print
+files2Open = nil
+replace = nil
+newValue = nil
+
+arguments = ARGV.dup
+foundOption = nil
+begin
+  foundOption = true
+  case arguments[0]
+  when "-i"
+    arguments.shift
+    caseInsensitive = true
+  when "-o"
+    arguments.shift
+    action = :open
+    files2Open = []
+  when "-r"
+    arguments.shift
+    action = :replace
+    replace = false
+    newValue = arguments.shift
+  when "-R"
+    arguments.shift
+    action = :replace
+    replace = true
+    newValue = arguments.shift
+  else
+    foundOption = false
+  end
+end while foundOption
+
+lookFor = Regexp.new(arguments[0], caseInsensitive)
 
 recursor = Proc.new do |dir|
   case File.basename(dir)
@@ -36,7 +61,7 @@ recursor = Proc.new do |dir|
   end
 end
 
-unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c]
+unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c cloak.cpp]
 str = unwantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
 reUnwantedExtensions = Regexp.compile("(#{str})"+'$')
 
