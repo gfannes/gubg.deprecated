@@ -6,6 +6,7 @@ import rinle.model.interfaces;
 import rinle.view.view;
 import rinle.controller.local;
 import rinle.controller.bufferedInput;
+import rinle.controller.mover;
 
 import gubg.ui;
 
@@ -18,23 +19,19 @@ class GlobalController: IController
 	_unbufferedInput = input;
 	_bufferedInput = new BufferedInput(input);
 	_ui = new UI(_bufferedInput, output);
-	_model = model;
-	_current = model;
+	_mover = new Mover(model, &setCurrentDelegate);
+	_view = new View(model);
 	_quit = quit;
-	_view = new View(_model);
 	_view.setOutput(_ui.output);
-	_localCommander = new LocalCommander(_bufferedInput, _ui.output);
+	_localCommander = new LocalCommander(_bufferedInput, _ui.output, _mover);
     }
 
     // IController methods
     bool getCommand(inout ICommand command)
     {
 	_bufferedInput.clear;
-	if (_localCommander !is null)
-	    if (_localCommander.getCommand(command))
-		return true;
-	    else
-		_bufferedInput.reset;
+	if (_localCommander.getCommand(command))
+	    return true;
 	return getGlobalCommand(command);
     }
     void show()
@@ -44,12 +41,14 @@ class GlobalController: IController
     }
 
 private:
-    void setCurrent(INode current)
+    void setCurrentDelegate(INode cur)
     {
-	if (current is null)
-	    return;
-	_current = current;
-	_view.setCurrent(_current);
+	if (cur !is null)
+	    _view.setCurrent(cur);
+    }
+    INode current()
+    {
+	return _mover.current;
     }
 
     void clear()
@@ -63,7 +62,7 @@ private:
 
     bool getGlobalCommand(inout ICommand command)
     {
-	int key = _ui.input.getKey;
+	int key = _bufferedInput.getKey;
 	switch (key)
 	{
 	case 'q':
@@ -108,8 +107,8 @@ private:
 // 	switch (location)
 // 	{
 // 	case "end":
-// 	    if (!_current.isLeaf && _current.create(newNode, _current.nrComponents, ui))
-// 		_current.replaceComponent(ReplaceMode.Create, _current.nrComponents, newNode);
+// 	    if (!current.isLeaf && current.create(newNode, current.nrComponents, ui))
+// 		current.replaceComponent(ReplaceMode.Create, current.nrComponents, newNode);
 // 	    break;
 // 	case "after":
 // 	    break;
@@ -143,23 +142,23 @@ private:
 	    switch (_dir)
 	    {
 	    case "up":
-		if (indexOfParent!(INode)(_ix, _current) && _ix > 0)
-		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, --_ix, null);
+		if (indexOfParent!(INode)(_ix, current) && _ix > 0)
+		    newCurrent = current.parent.replaceComponent(ReplaceMode.Get, --_ix, null);
 		break;
 	    case "down":
-		if (indexOfParent!(INode)(_ix, _current) && _ix < _current.parent.nrComponents-1)
-		    newCurrent = _current.parent.replaceComponent(ReplaceMode.Get, ++_ix, null);
+		if (indexOfParent!(INode)(_ix, current) && _ix < current.parent.nrComponents-1)
+		    newCurrent = current.parent.replaceComponent(ReplaceMode.Get, ++_ix, null);
 		break;
 	    case "in":
-		_current.expand;
-		if (_current.nrComponents > 0)
-		    newCurrent = _current.replaceComponent(ReplaceMode.Get, _ix, null);
+		current.expand;
+		if (current.nrComponents > 0)
+		    newCurrent = current.replaceComponent(ReplaceMode.Get, _ix, null);
 		break;
 	    case "out":
-		newCurrent = _current.parent;
+		newCurrent = current.parent;
 		break;
 	    }
-	    setCurrent(newCurrent);
+	    _mover.setCurrent(newCurrent);
 	    return true;
 	}
 	bool undo(){return false;}
@@ -185,8 +184,7 @@ private:
 //         }
 
     IView _view;
-    INode _model;
-    INode _current;
+    IMover _mover;
     void delegate() _quit;
     UI _ui;
     IInput _unbufferedInput;

@@ -35,7 +35,7 @@ class Rinle
             {
                 _controller.show;
                 ICommand command;
-                if (_controller.getCommand(command) && command !is null)
+                if (_controller.getCommand(command))
                     command.execute;
             }
         }

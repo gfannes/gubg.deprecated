@@ -1,24 +1,32 @@
 module rinle.controller.local;
 
 import rinle.controller.interfaces;
+import rinle.controller.bufferedInput;
+import rinle.controller.d;
 import gubg.ui;
 
 import gubg.puts;
 
 class LocalCommander: ICommander
 {
-    this (IInput input, IOutput output)
+    this (BufferedInput input, IOutput output, IMover mover)
     {
 	_input = input;
 	_output = output;
+	_mover = mover;
+	_commanders = [new DCommander(_input, _output, _mover)];
     }
 
     // ICommander methods
     bool getCommand(inout ICommand command)
     {
-	int key;
-	switch (key = _input.getKey)
-	{
+	foreach (commander; _commanders)
+	    if (commander.getCommand(command))
+		return true;
+	return false;
+// 	int key;
+// 	switch (key = _input.getKey)
+// 	{
 // 	case 'q':
 // 	    command = new QuitCommand;
 // 	    break;
@@ -46,15 +54,17 @@ class LocalCommander: ICommander
 //             case 'r':
 //                 command = new InsertCommand("replace", _ui);
 //                 break;
-	default:
-	    // This is the last level, we don't try to delegate to our successor
-	    return false;
-	    break;
-	}
-	return true;
+// 	default:
+// 	    // This is the last level, we don't try to delegate to our successor
+// 	    return false;
+// 	    break;
+// 	}
+// 	return true;
     }
 
 private:
-    IInput _input;
+    BufferedInput _input;
     IOutput _output;
+    ICommander[] _commanders;
+    IMover _mover;
 }
