@@ -14,6 +14,8 @@ abstract class DNode: INode
 // 	return false;
 //     }
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);    
+    void remove(){}
+    mixin TCompact!(INodeMethods);
 }
 
 class DModule: DNode, ICompositeNode
@@ -30,8 +32,8 @@ class DModule: DNode, ICompositeNode
     INode opIndex(uint ix){return _declarations[ix];}
     INode opIndexAssign(INode rhs, uint ix)
     {
-        DDeclaration declaration = cast(DDeclaration)rhs;
-        if (declaration is null)
+        DDeclaration declaration = cast(DDeclaration)rhs;;
+	if (rhs !is null && declaration is null)
             throw new Exception("Assignment of non-DDeclaration to DModule.");
         return (_declarations[ix] = declaration);
     }
@@ -251,10 +253,13 @@ class DClassDeclaration: DDeclaration, ICompositeNode
 	if (formatInfo(this).show)
 	{
 	    auto lft = ft.create(Tag.create(this, Color.red, false), "class ");
-	    _name.addTo(lft, formatInfo);
-	    _baseClasses.addTo(lft, formatInfo);
+	    if (_name !is null)
+		_name.addTo(lft, formatInfo);
+	    if (_baseClasses !is null)
+		_baseClasses.addTo(lft, formatInfo);
 	    lft.newline;
-	    _body.addTo(lft, formatInfo);
+	    if (_body !is null)
+		_body.addTo(lft, formatInfo);
 	}
     }
 

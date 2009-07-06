@@ -1,6 +1,7 @@
 module rinle.controller.interfaces;
 
-public import gubg.patterns.command;
+public import rinle.command;
+
 public import rinle.model.interfaces;
 
 interface ICommander

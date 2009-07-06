@@ -12,9 +12,11 @@ import gubg.ui;
 
 import gubg.puts;
 
+import tango.util.container.CircularList;
+
 class GlobalController: IController
 {
-    this (IInput input, IOutput output, INode model, void delegate() quit)
+    this (IInput input, IOutput output, INode model, CircularList!(ICommand) commandHistory, void delegate() quit)
     {
 	_unbufferedInput = input;
 	_bufferedInput = new BufferedInput(input);
@@ -24,6 +26,7 @@ class GlobalController: IController
 	_quit = quit;
 	_view.setOutput(_ui.output);
 	_localCommander = new LocalCommander(_bufferedInput, _ui.output, _mover);
+	_commandHistory = commandHistory;
     }
 
     // IController methods
@@ -80,6 +83,12 @@ private:
 	case 'd':
 	    command = new MoveCommand("in");
 	    break;
+	case 'x':
+	    command = new RemoveCommand(_mover.current);
+	    break;
+	case 'z':
+	    command = new UndoCommand();
+	    break;
 //             case 'i':
 //                 command = new InsertCommand("end", _ui);
 //                 break;
@@ -126,6 +135,7 @@ private:
 	    return true;
 	}
 	bool undo(){return false;}
+	bool undoable(){return false;}
     }
 
     class MoveCommand: ICommand
@@ -163,26 +173,100 @@ private:
 	    return true;
 	}
 	bool undo(){return false;}
+	bool undoable(){return false;}
 	char[] _dir;
 	uint _ix;
     }
 
-//     class InsertCommand: ICommand
-//         {
-//             this (char[] location, IUI ui)
-//             {
-//                 _location = location;
-// 		_ui = ui;
-//             }
-//             bool execute()
-//             {
-//                 _view.insert(_location, _ui);
-//                 return true;
-//             }
-//             bool undo(){return false;}
-//             char[] _location;
-// 	    IUI _ui;
-//         }
+    class RemoveCommand: ICommand
+    {
+	this (INode node)
+	{
+            _node = node;
+	}
+	bool execute()
+	{
+	    if (_parent !is null || !indexOfParent!(INode)(_ix, _node))
+		return false;
+	    _parent = _node.parent;
+	    puts("Removing node");
+	    _node.remove;
+	    puts("Setting location to null");
+	    _parent.replaceComponent(ReplaceMode.Set, _ix, null);
+	    // Find the new current after the removed node, or before, or the parent
+	    INode newCurrent;
+	    for (uint i = _ix+1; i < _parent.nrComponents; ++i)
+	    {
+		puts("Looking for new current after");
+		newCurrent = _parent.replaceComponent(ReplaceMode.Get, i, null);
+		if (newCurrent !is null)
+		    break;
+	    }
+	    if (newCurrent is null)
+		for (uint i = _ix; i > 0;)
+		{
+		    --i;
+		    puts("Looking for new current before");
+		    newCurrent = _parent.replaceComponent(ReplaceMode.Get, i, null);
+		    if (newCurrent !is null)
+			break;
+		}
+	    if (newCurrent is null)
+	    {
+		puts("Parent will be new current");
+		newCurrent = _parent;
+	    }
+	    _mover.setCurrent(newCurrent);
+	    puts("Before compact");
+	    _parent.compact;
+	    return true;
+	}
+	bool undo()
+	{
+	    if (_parent is null)
+		return false;
+
+	    if (_parent.nrComponents <= _ix)
+		_parent.replaceComponent(ReplaceMode.Create, _ix, _node);
+	    else
+	    {
+		if (_parent.replaceComponent(ReplaceMode.Get, _ix, null) !is null)
+		{
+		    // Create an empty element at the back
+		    _parent.replaceComponent(ReplaceMode.Create, _parent.nrComponents, null);
+		    for (uint i = _parent.nrComponents; i > _ix+1;)
+		    {
+			--i;
+			auto n = _parent.replaceComponent(ReplaceMode.Set, i-1, null);
+			_parent.replaceComponent(ReplaceMode.Set, i, n);
+		    }
+		}
+		// Set the node back
+		_parent.replaceComponent(ReplaceMode.Set, _ix, _node);
+	    }
+	    _mover.setCurrent(_node);
+	    return true;
+	}
+	bool undoable(){return true;}
+	INode _parent;		// If _parent !is null, the node was removed
+        INode _node;
+	uint _ix;
+    }
+
+    class UndoCommand: ICommand
+    {
+	bool execute()
+	{
+	    if (_commandHistory.isEmpty)
+		return false;
+	    auto command = _commandHistory.removeTail;
+	    if (command is null)
+		return false;
+	    return command.undo;
+	}
+	bool undo(){return false;}
+	bool undoable(){return false;}
+    }
 
     IView _view;
     IMover _mover;
@@ -191,6 +275,7 @@ private:
     IInput _unbufferedInput;
     BufferedInput _bufferedInput;
     LocalCommander _localCommander;
+    CircularList!(ICommand) _commandHistory;
 }
 
 version (UnitTest)

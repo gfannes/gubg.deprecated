@@ -13,7 +13,7 @@ class Dependency
         end
       end
     when :d
-      re = /^(private|public)? *import +(.+);.*$/
+      re = /^(private|public|static)? *import +(.+);.*$/
       String.loadLines(fileName).each do |line|
         if md = re.match(line)
           res << md[2]

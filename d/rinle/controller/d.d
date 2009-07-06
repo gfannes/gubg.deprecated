@@ -93,6 +93,7 @@ private:
 	    return true;
 	}
 	bool undo(){return false;}
+	bool undoable(){return true;}
         DNode _node;
 	char[] _where;
     }
@@ -149,7 +150,22 @@ private:
     }
     void createNode(inout DClassDeclaration node)
     {
-        node = new DClassDeclaration();
+        node = new DClassDeclaration;
+	auto name = createDIdentifier("Class name: ");
+	if (name is null)
+	    return;
+	node.setName(name);
+	node.setBaseClasses(new DBaseClasses);
+	node.setBody(new DScope);
+    }
+
+    DIdentifier createDIdentifier(char[] msg)
+    {
+	char[] str;
+	if (!_ui.getString(str, msg))
+	    return null;
+	auto ident = new DIdentifier(str);
+	return ident;
     }
 
     BufferedInput _input;

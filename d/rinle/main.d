@@ -10,6 +10,7 @@ import gubg.patterns.chainOfResponsibility;
 import gubg.puts;
 
 import tango.core.Thread;
+import tango.util.container.CircularList;
 
 class Rinle
 {
@@ -18,12 +19,14 @@ class Rinle
 	    puts("Starting Rinle");
             _nCurses = new NCurses;
             _model = new Dir;
-	    _controller = new GlobalController(_nCurses, _nCurses, _model, &quit);
+	    _commandHistory = new CircularList!(ICommand);
+	    _controller = new GlobalController(_nCurses, _nCurses, _model, _commandHistory, &quit);
         }
     ~this()
         {
 	    puts("Stopping Rinle");
 	    delete _controller;
+	    delete _commandHistory;
 	    delete _model;
             delete _nCurses;
         }
@@ -36,7 +39,12 @@ class Rinle
                 _controller.show;
                 ICommand command;
                 if (_controller.getCommand(command))
+		{
                     command.execute;
+		    if (command.undoable)
+			_commandHistory.append(command);
+		    puts("command history is now {} long", _commandHistory.size);
+		}
             }
         }
     
@@ -52,6 +60,8 @@ private:
     IController _controller;
 
     NCurses _nCurses;
+
+    CircularList!(ICommand) _commandHistory;
 }
 
 int main()

@@ -23,6 +23,7 @@ interface IComponent(I): I
     IComposite!(I) parent(IComposite!(I) p);
     bool isLeaf();
     uint uid();
+    void compact();
 }
 interface IComposite(I): IComponent!(I)
 {
@@ -116,6 +117,31 @@ template TUID()
 private:
     uint  _uid;
 }
+// Provide compact()
+template TCompact(I)
+{
+    void compact()
+        {
+	    uint offset = 0;
+	    auto nrComp = nrComponents;
+	    for (uint i = 0; i < nrComp; ++i)
+	    {
+		IComponent!(I) node = replaceComponent(ReplaceMode.Get, i, null);
+		puts("In compact: i = {}, node = {}, offset = {}", i, cast(void*)node, offset);
+		if (node is null)
+		    ++offset;
+		else if (offset > 0)
+		{
+		    node = replaceComponent(ReplaceMode.Set, i, null);
+		    replaceComponent(ReplaceMode.Set, i - offset, node);
+		}
+	    }
+	    if (offset > 0)
+		setNrComponents(nrComp - offset);
+        }
+private:
+    uint  _uid;
+}
 template TOpApply(I)
 {
     int opApply(int delegate(IComponent!(I) el) dg)
@@ -131,6 +157,7 @@ template TComposite(I)
 {
     mixin TParent!(I);
     mixin TUID;
+    mixin TCompact!(I);
     mixin TOpApply!(I);
     bool isLeaf(){return false;}
 }
@@ -201,6 +228,7 @@ template TLeaf(I)
 	}
     mixin TParent!(I);
     mixin TUID;
+    void compact(){}
 }
 
 

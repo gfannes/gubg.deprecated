@@ -22,11 +22,13 @@ abstract class FSNode: ICompositeNode
 
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     abstract void expand();
+    abstract void remove();
 //     bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
 //     {
 // 	return false;
 //     }
     mixin TUID;
+    mixin TCompact!(INodeMethods);
 
     char[] path(){return _path;}
     char[] name(){return _name;}
@@ -83,6 +85,10 @@ class File: FSNode
             break;
         }
     }
+    void remove()
+    {
+	// TODO::Remove this file
+    }
 //     bool create(inout INode node, uint ix, IUI ui)
 //     {
 // 	return false;
@@ -118,7 +124,7 @@ class Dir: FSNode
     INode opIndexAssign(INode rhs, uint ix)
     {
         FSNode fsNode = cast(FSNode)rhs;
-        if (fsNode is null)
+        if (rhs !is null && fsNode is null)
             throw new Exception("Assignment of non-FSNode to Dir.");
         return (_fsNodes[ix] = fsNode);
     }
@@ -154,6 +160,10 @@ class Dir: FSNode
 	    fsNode.parent(this);
 
 	_expanded = true;
+    }
+    void remove()
+    {
+	// TODO::Remove this directory
     }
 //     bool create(inout INode node, uint ix, IUI ui)
 //     {

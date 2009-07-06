@@ -2,7 +2,6 @@ module rinle.model.interfaces;
 
 public import gubg.patterns.composite;
 public import gubg.patterns.chainOfResponsibility;
-public import gubg.patterns.command;
 import gubg.tagTree;
 public import gubg.ui;
 import gubg.puts;
@@ -18,8 +17,7 @@ interface INodeMethods
 {
     void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
-//     bool create(inout IComponent!(INodeMethods) node, uint ix, IUI ui);
-//     bool create(inout ICommand command, IUI ui, bool delegate(IComponent!(INodeMethods) node) setCurrent);
+    void remove();
 }
 // Some convenient aliases for working with composites
 alias IComponent!(INodeMethods) INode;
