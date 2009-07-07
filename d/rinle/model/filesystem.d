@@ -22,11 +22,9 @@ abstract class FSNode: ICompositeNode
 
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);
     abstract void expand();
-    abstract void remove();
-//     bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
-//     {
-// 	return false;
-//     }
+    abstract void cut();
+    abstract void paste();
+
     mixin TUID;
     mixin TCompact!(INodeMethods);
 
@@ -52,6 +50,7 @@ class File: FSNode
     {
         if (ix == 0)
             return _syntaxTree;
+	return null;
     }
     INode opIndexAssign(INode rhs, uint ix)
     {
@@ -85,14 +84,14 @@ class File: FSNode
             break;
         }
     }
-    void remove()
+    void cut()
     {
 	// TODO::Remove this file
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
+    void paste()
+    {
+	// TODO::Put back this file
+    }
 
 private:
     char[] extension()
@@ -161,52 +160,16 @@ class Dir: FSNode
 
 	_expanded = true;
     }
-    void remove()
+    void cut()
     {
 	// TODO::Remove this directory
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
-//     bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
-//     {
-// 	int key;
-// 	switch (key = ui.input.getKey)
-// 	{
-// 	case 'f':
-// 	    command = new FindCommand(ui, setCurrent);
-// 	    break;
-// 	default:
-// 	    return false;
-// 	    break;
-// 	}
-// 	return true;
-//     }
+    void paste()
+    {
+	// TODO::Put back this directory
+    }
 
 private:
-//     class FindCommand: ICommand
-//         {
-//             this (IUI ui, bool delegate(INode node) setCurrent)
-//             {
-//                 _ui = ui;
-// 		_setCurrent = setCurrent;
-//             }
-//             bool execute()
-//             {
-// 		uint ix;
-// 		char[][] elements;
-// 		elements.length = _fsNodes.length;
-// 		foreach (i, inout element; elements)
-// 		    element = _fsNodes[i].name;
-// 		if (_ui.selectString(ix, "Please select the file or directory.", elements, false))
-// 		    return _setCurrent(_fsNodes[ix]);
-//                 return false;
-//             }
-//             bool undo(){return false;}
-// 	    IUI _ui;
-// 	    bool delegate(INode node) _setCurrent;
-//         }
 
     FSNode[] _fsNodes;
     bool _expanded;

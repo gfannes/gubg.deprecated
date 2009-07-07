@@ -17,7 +17,8 @@ interface INodeMethods
 {
     void addTo(inout FormatTree ft, IFormatInfo delegate(IComponent!(INodeMethods) node) formatInfo);
     void expand();
-    void remove();
+    void cut();
+    void paste();
 }
 // Some convenient aliases for working with composites
 alias IComponent!(INodeMethods) INode;

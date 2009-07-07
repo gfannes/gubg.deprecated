@@ -40,8 +40,9 @@ class Rinle
                 ICommand command;
                 if (_controller.getCommand(command))
 		{
-                    command.execute;
-		    if (command.undoable)
+                    if (!command.execute)
+			puts("Failed to execute command.");
+		    else if (command.undoable)
 			_commandHistory.append(command);
 		    puts("command history is now {} long", _commandHistory.size);
 		}

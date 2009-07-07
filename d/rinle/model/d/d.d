@@ -9,12 +9,9 @@ import gubg.parser;
 
 abstract class DNode: INode
 {
-//     bool create(inout ICommand command, IUI ui, bool delegate(INode node) setCurrent)
-//     {
-// 	return false;
-//     }
     abstract void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo);    
-    void remove(){}
+    void cut(){}
+    void paste(){}
     mixin TCompact!(INodeMethods);
 }
 
@@ -62,10 +59,7 @@ class DModule: DNode, ICompositeNode
 
         _expanded = true;
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
+
     mixin TUID;
 
 private:
@@ -82,25 +76,8 @@ class DDeclaration: DNode
     void expand()
     {
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
-    mixin TUID;
 
-//     uint nrComponents(){return 0;}
-//     void setNrComponents(uint nr){throw new ArrayBoundsException(__FILE__, __LINE__);}
-//     IComponent!(INodeMethods) replaceComponent(ReplaceMode mode, uint ix, IComponent!(INodeMethods) newComponent)
-//         {
-//             throw new ArrayBoundsException(__FILE__, __LINE__);
-//             return null;
-//         }
-//     bool isLeaf(){return true;}
-//     int opApply(int delegate(IComponent!(INodeMethods) el) dg)
-// 	{
-// 	    return 0;
-// 	}
-//     mixin TParent!(INodeMethods);
+    mixin TUID;
 }
 
 class DIdentifier: DNode, ILeafNode
@@ -119,10 +96,7 @@ class DIdentifier: DNode, ILeafNode
     void expand()
     {
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
+
     mixin TUID;
 
 private:
@@ -160,10 +134,7 @@ class DScope: DNode, ICompositeNode
     void expand()
     {
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
+
     mixin TUID;
 
 private:
@@ -345,10 +316,7 @@ class DBaseClasses: DNode, ICompositeNode
     void expand()
     {
     }
-//     bool create(inout INode node, uint ix, IUI ui)
-//     {
-// 	return false;
-//     }
+
     mixin TUID;
 
 private:
