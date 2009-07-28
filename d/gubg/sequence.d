@@ -16,6 +16,7 @@ class Sequence
 	    _move = move;
 	    _reset = reset;
 	    _probs = probs;
+            normalizeL1(_probs);
 	    _currentValues = new real[nrStates];
 	    foreach (inout v; _currentValues)
 		v = 0.0;
@@ -23,15 +24,16 @@ class Sequence
     
     real[] probs(){return _probs;}
 
-    real[] update(real dT)
+    void update(real dT)
 	{
-	    auto res = targetValues;
-	    foreach (ix, inout p; res)
-		p = exp(_currentValues[ix] + dT*(p - _currentValues[ix]));
-	    auto invSum = 1.0/sum(res);
-	    foreach (inout p; res)
-		p *= invSum;
-	    return res;
+	    auto newProbs = targetValues;
+	    foreach (ix, inout currentValue; _currentValues)
+            {
+                currentValue += dT*(newProbs[ix] - currentValue);
+		newProbs[ix] = exp(currentValue);
+            }
+            normalizeL1(newProbs);
+            _probs = newProbs;
 	}
 
     real[] targetValues()
@@ -45,7 +47,7 @@ class Sequence
 		else
 		    res[ix] += _move*_probs[ix-1];
 	    }
-	    normalize(res);
+	    res.shiftMeanTo(0.0);
 	    return res;
 	}
 
@@ -55,17 +57,28 @@ private:
     real _stay;
     real _move;
     real _reset;
-    rea[] _probs;
+    real[] _probs;
     real[] _currentValues;
 }
 
 version (UnitTest)
 {
+    import gubg.timer;
+    import tango.core.Thread;
     void main()
     {
-	real[] values = [10, 11, 9];
-	auto seq = new Sequence(values);
+        real stay = 1.0, move = 0.2, reset = 2;
+        real[] probs = [0.1, 0.2, 0.3];
+	auto seq = new Sequence(stay, move, reset, probs);
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
-	puts("values = {}", values);
+        
+        auto timer = new Timer;
+        for (uint i = 0; i < 100; ++i)
+        {
+            seq.update(timer.difference);
+            auto p = seq.probs;
+            puts("probs = {:g9}, {:g9}, {:g9}, sum = {}", p[0], p[1], p[2], sum(seq.probs));
+            Thread.sleep(0.1);
+        }
     }
 }

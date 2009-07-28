@@ -2,39 +2,50 @@
 
 require("tools/utils")
 require("fileutils")
+require("optparse")
+require("ostruct")
 
-verbose = false
-
-baseDir, sourceDir, targetDir = nil, nil, nil
-action = :nothing
-arguments = ARGV.dup
-if arguments[0] == "-r"
-  action = :merge
-  arguments.shift
-elsif arguments[0] == "-v"
-  action = :view
-  arguments.shift
-end
-filter = /.*/
-if arguments[0] == "-f"
-  arguments.shift
-  filter = Regexp.new(arguments.shift)
-  puts("I will use this filter: #{filter}")
-end
-if arguments.length == 3
-  baseDir = arguments.shift
-  sourceDir = arguments.shift
-  targetDir = arguments.shift
-else
-  puts(%Q@#{__FILE__} [-r|-v] [-f <filter>] baseDir sourceDir targetDir
-\t-r\tPerform actual merge
-\t-r\tView changes
-\t-f filter\tUse \"filter\" to filter files
+# Parse options
+options = OpenStruct.new
+options.verbose = false
+options.action = :nothing
+options.filterOK = /.*/
+options.filterKO = /^$/
+OptionParser.new do |opts|
+  opts.banner = %Q@Usage: treeMerge [options] <baseDir> <sourceDir> <targetDir>
 \tbaseDir\tThe most common ancestor
 \tsourceDir\tThe directory containing local changes that should be incorporated
-\ttargetDir\tThe directory where these changes should be copied to@)
-  exit
+\ttargetDir\tThe directory where these changes should be copied to@
+  
+  opts.on("-r", "--real", "Actually merge") do |v|
+    options.action = :merge
+  end
+  
+  opts.on("-v", "--view", "View") do |v|
+    options.action = :view
+  end
+  
+  opts.on("-f", "--filterOK [TEXT]", "Filter for files to process") do |v|
+    options.filterOK = Regexp.new(v)
+    puts("I will use this filterOK: #{options.filterOK}")
+  end
+  
+  opts.on("-F", "--filterKO [TEXT]", "Filter for files NOT to process") do |v|
+    options.filterKO = Regexp.new(v)
+    puts("I will use this filterKO: #{options.filterKO}")
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts(opts)
+    exit
+  end
+end.parse!
+
+# Set the three dirs
+if ARGV.length != 3
+  raise "I expected baseDir, sourceDir and targetDir"
 end
+baseDir, sourceDir, targetDir = ARGV[0], ARGV[1], ARGV[2]
 
 recursor = Proc.new do |dir|
   case dir
@@ -55,24 +66,24 @@ def collectInfo(dir, fn, baseDir, sourceDir, targetDir)
 end
 
 # Look for files that where changed or added in the sourceDir compared to the baseDir
-time("Looking for new and changed files", verbose) do
+time("Looking for new and changed files", options.verbose) do
   Dir.each(sourceDir, recursor) do |dir, fn|
-    if fn[filter]
+    if (fn[options.filterOK] and !fn[options.filterKO])
       relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
       if !md5Base
-        puts("\tAdded by us: \"#{relativeName}\"") if verbose
+        puts("\tAdded by us: \"#{relativeName}\"") if options.verbose
         newFiles << relativeName
       elsif md5Base != md5Source
         if md5Base != md5Target
           if md5Target
-            puts("\tChanged by us and target: \"#{relativeName}\"") if verbose
+            puts("\tChanged by us and target: \"#{relativeName}\"") if options.verbose
             conflictFiles << relativeName
           else
-            puts("\tChanged by us but deleted by target: \"#{relativeName}\"") if verbose
+            puts("\tChanged by us but deleted by target: \"#{relativeName}\"") if options.verbose
             changedTargetDeleted << relativeName
           end
         else
-          puts("\tChanged by us: \"#{relativeName}\"") if verbose
+          puts("\tChanged by us: \"#{relativeName}\"") if options.verbose
           changedFiles << relativeName
         end
       end
@@ -82,17 +93,17 @@ time("Looking for new and changed files", verbose) do
 end
 
 # Look for files that where deleted in the sourceDir compared to the baseDir
-puts("") if verbose
-time("Looking for deleted files", verbose) do
+puts("") if options.verbose
+time("Looking for deleted files", options.verbose) do
   Dir.each(baseDir, recursor) do |dir, fn|
-    if fn[filter]
+    if (fn[options.filterOK] and !fn[options.filterKO])
       relativeName, md5Base, md5Source, md5Target = collectInfo(dir, fn, baseDir, sourceDir, targetDir)
       if !md5Source
         if md5Base == md5Target
-          puts("\tDeleted by us: \"#{relativeName}\"") if verbose
+          puts("\tDeleted by us: \"#{relativeName}\"") if options.verbose
           deletedFiles << relativeName
         else
-          puts("\tDeleted by us but changed by target: \"#{relativeName}\"") if verbose
+          puts("\tDeleted by us but changed by target: \"#{relativeName}\"") if options.verbose
           deletedTargetChanged << relativeName
         end if md5Target
       end
@@ -106,6 +117,9 @@ changedFiles.reject!{|relativeName|relativeName == "./deliver_status"}
 
 # Print the summary
 puts("\nSummary\n-------\n")
+puts("baseDir = \"#{baseDir}\"")
+puts("sourceDir = \"#{sourceDir}\"")
+puts("targetDir = \"#{targetDir}\"")
 def printFiles(message, ary)
   if !ary.empty?
     puts("#{message} (#{ary.length}):")
@@ -122,7 +136,7 @@ printFiles("Files changed by us but deleted by target", changedTargetDeleted)
 printFiles("Files deleted by us but changed by target", deletedTargetChanged)
 puts("End of summary.\n\n")
 
-case action
+case options.action
 when :merge
   # Copy new files
   newFiles.each do |relativeName|

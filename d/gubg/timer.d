@@ -31,7 +31,7 @@ class Timer
 	    }
 	    ulong diff;
 	    difference(diff);
-	    return _secondsPerTick;
+	    return _secondsPerTick*diff;
 	}
 
     void difference(inout ulong diff)
@@ -85,7 +85,7 @@ import tango.core.Thread;
 	foreach (inout v; vals)
 	{
 	    v = timer.difference;
-//	    Thread.sleep(0.5);
+	    Thread.sleep(0.5);
 	}
 	foreach (v; vals)
 	    puts("{:e6}", v);

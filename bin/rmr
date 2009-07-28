@@ -55,6 +55,7 @@ end
 if bDir
   nr = 0
   Dir.eachDir('./') do |dir|
+    puts("dir = \"#{dir}\"")
     if dir[pattern]
       puts(dir)
       if File.exist?(dir)

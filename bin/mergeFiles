@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+require("tools/utils")
+require("fileutils")
+require("optparse")
+require("ostruct")
+
+# Parse options
+options = OpenStruct.new
+options.merge = false
+OptionParser.new do |opts|
+  opts.banner = "Usage: mergeFiles [options] <fileList> <fromDir> <toDir>"
+  
+  opts.on("-m", "--merge", "Merge files") do |v|
+    options.merge = true
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts(opts)
+    exit
+  end
+end.parse!
+
+# Extract mandatory arguments
+if ARGV.length != 3
+  raise "I expected a fileList, fromDir and toDir"
+end
+fileList = ARGV[0]
+fromDir = ARGV[1]
+toDir = ARGV[2]
+
+# Do something
+String.loadLines(fileList).each do |fileName|
+  fromFile = File.expand_path(fileName, fromDir)
+  toFile = File.expand_path(fileName, toDir)
+  if options.merge
+    command = "kdiff3 -m -o #{toFile} #{fromFile} #{toFile}"
+  else
+    command = "kdiff3 #{fromFile} #{toFile}"
+  end
+  system(command)
+end

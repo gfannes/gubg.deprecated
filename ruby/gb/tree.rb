@@ -394,6 +394,7 @@ class Tree# < IChainOfResponsibility
     if @settingsFile == "root.tree"
       fnSettings = File.expand_path(@settingsFile, @base)
       @settings = YAML::load(File.open(fnSettings))
+      raise "ERROR::Empty settings file found." if !@settings
       if @settings["include"]
         fnExtraSettings = File.expand_path(@settings["include"], @base)
         @settings.merge!(YAML::load(File.open(fnExtraSettings))) do |k, ov, nv|
@@ -403,6 +404,10 @@ class Tree# < IChainOfResponsibility
       if @settings["cpp"]
         @settings["cpp"]["compilation"] = {} if @settings["cpp"]["compilation"].nil?
         @settings["cpp"]["linking"] = {} if @settings["cpp"]["linking"].nil?
+      end
+      if @settings["c"]
+        @settings["c"]["compilation"] = {} if @settings["c"]["compilation"].nil?
+        @settings["c"]["linking"] = {} if @settings["c"]["linking"].nil?
       end
       if @settings["d"]
         @settings["d"]["compilation"] = {} if @settings["d"]["compilation"].nil?

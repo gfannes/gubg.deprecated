@@ -39,9 +39,18 @@ real mean(real[] values)
     return sum(values)/values.length;
 }
 
-void normalize(real[] values)
+void shiftMeanTo(real[] values, real wantedMean = 0.0)
 {
-    auto m = mean(values);
+    real diff = wantedMean - mean(values);
     foreach (inout v; values)
-	v -= m;
+	v += diff;
+}
+
+void normalizeL1(real[] values)
+{
+    real sumAbs = 0.0;
+    foreach (v; values)
+	sumAbs += (v >= 0 ? v : -v);
+    foreach (inout v; values)
+        v /= sumAbs;
 }

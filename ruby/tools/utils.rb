@@ -205,8 +205,12 @@ class Dir
       return if yield(startDir)
       if File.exist?(startDir)
         Dir.foreach(startDir) do |entry|
+          puts("entry = #{entry}")
+          puts("startDir = \"#{startDir}\"")
           fnDir = File.expand_path(entry, startDir)
+          puts("fnDir = #{fnDir}")
           if fnDir.length > startDir.length and File.directory?(fnDir)
+            puts("OK")
             subDirs << fnDir if !(recursor and !recursor.call(fnDir))
           end
         end
