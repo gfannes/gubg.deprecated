@@ -9,6 +9,11 @@ import tango.math.Math;
 // model: log(p_i*cte) = x_i
 // cte = (p_0*...*p_n)^(1/n) => sum_j(x_j) = 0
 // p_i = exp(x_i)/sum_j(exp(x_j))
+
+// q(dT) = prob to stay in state during dT timespan
+// q(dT) = q(1)^dT
+// j(dT) = prob to jump to state j in timespan dT
+// j(dT) = j(1)*(1-q(dT))/(1-q(1))
 class Sequence
 {
     this (real stay, real move, real reset, real[] probs)
