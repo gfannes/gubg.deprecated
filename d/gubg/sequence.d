@@ -18,53 +18,30 @@ class Sequence
 {
     this (real stay, real move, real reset, real[] probs)
 	{
-	    _stay = stay;
-	    _move = move;
-	    _reset = reset;
+            auto sum = stay+move+reset;
+	    _stay = stay/sum;
+	    _move = move/sum;
+	    _reset = reset/sum;
 	    _probs = probs;
             normalizeL1(_probs);
-	    _currentValues = new real[nrStates];
-	    foreach (inout v; _currentValues)
-		v = 0.0;
 	}
     
     real[] probs(){return _probs;}
 
     void update(real dT)
 	{
-	    auto newProbs = targetValues;
-	    foreach (ix, inout currentValue; _currentValues)
-            {
-                currentValue += dT*(newProbs[ix] - currentValue);
-		newProbs[ix] = exp(currentValue);
-            }
-            normalizeL1(newProbs);
-            _probs = newProbs;
-	}
-
-    real[] targetValues()
-	{
-	    real[] res = new real[nrStates];
-	    
-	    foreach (ix, inout v; res)
-	    {
-		res[ix] = _stay*_probs[ix];
-		if (ix == 0)
-		    res[ix] += _reset + _move*_probs[$-1];
-		else
-		    res[ix] += _move*_probs[ix-1];
-	    }
-
-	    auto maxIX = maxIndex(_probs);
-	    puts("\nmaxIX = {}", maxIX);
-	    puts("_probs = {}", _probs);
-	    puts("targetValues before extra = {}", res);
-	    res[(maxIX+1)%$] += 0.8*_move*_probs[maxIX];
-//	    res[maxIX] -= 0.8*_stay*_probs[maxIX];
-
-	    puts("targetValues before shift = {}", res);
-	    res.shiftMeanTo(0.0);
-	    return res;
+            auto oldProbs = new real[nrStates];
+            scope(exit) delete oldProbs;
+            oldProbs[] = _probs[];
+            real stayProb = pow(_stay, dT);
+            real moveProb = _move*(1.0-stayProb)/(1.0-_stay);
+            real resetProb = _reset*(1.0-stayProb)/(1.0-_stay);
+            foreach (ix, inout p; _probs)
+                if (ix == 0)
+                    p = oldProbs[ix]*stayProb + oldProbs[$-1]*moveProb + (1.0-oldProbs[ix])*resetProb;
+                else
+                    p = oldProbs[ix]*stayProb + oldProbs[ix-1]*moveProb;
+            normalizeL1(_probs);
 	}
 
     uint nrStates(){return _probs.length;}
@@ -77,29 +54,29 @@ private:
     real[] _currentValues;
 }
 
-version (UnitTest2)
+version (UnitTest)
 {
     import gubg.timer;
     import tango.core.Thread;
     void main()
     {
-        real stay = 1.0, move = 0.2, reset = 0.1;
-        real[] probs = [0.1, 0.2, 0.3];
+        real stay = 0.1, move = 0.2, reset = 0.0;
+        real[] probs = [1.0, 0.0, 0.0];
 	auto seq = new Sequence(stay, move, reset, probs);
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
         
         auto timer = new Timer;
-        for (uint i = 0; i < 100; ++i)
+        for (uint i = 0; i < 1000; ++i)
         {
             seq.update(timer.difference);
             auto p = seq.probs;
-//            puts("probs = {:g9}, {:g9}, {:g9}, sum = {}", p[0], p[1], p[2], sum(seq.probs));
-//            Thread.sleep(0.1);
+            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}", p[0], p[1], p[2], maxIndex(seq.probs));
+            Thread.sleep(0.1);
         }
     }
 }
 
-version (UnitTest)
+version (UnitTest2)
 {
     import gubg.timer;
     import tango.core.Thread;
