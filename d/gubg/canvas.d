@@ -211,8 +211,12 @@ version(UnitTest)
 {
     void main()
     {
-	ConsoleCanvas canvas = new ConsoleCanvas;
-	canvas.drawLine([1,2], [3,4]);
+// 	auto canvas = new ConsoleCanvas;
+	auto canvas = new SDLCanvas(100, 100);
+	canvas.initialize;
+// 	canvas.drawLine([1,2], [3,4]);
 	canvas.drawCircle([5,6], 7);
+	canvas.finalize;
+	puts("Finished");
     }
 }

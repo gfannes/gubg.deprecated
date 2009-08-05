@@ -1,26 +1,31 @@
 require("tools/utils")
 
 class Dependency
+  @@cache = Hash.new{|h, k|h[k] = {}}
   def Dependency.includedFiles(type, fileName)
-    res = []
-    case type
-    when :cpp
-      re = /^\#include +[<\"](.+)[>\"]/
-      String.loadLines(fileName).each do |line|
-        case line
-        when re
-          res << line[re, 1]
+    res = @@cache[type][fileName]
+    if res.nil?
+      res = []
+      case type
+      when :cpp
+        re = /^\#include +[<\"](.+)[>\"]/
+          String.loadLines(fileName).each do |line|
+          case line
+          when re
+            res << line[re, 1]
+          end
         end
-      end
-    when :d
-      re = /^(private|public|static)? *import +(.+);.*$/
-      String.loadLines(fileName).each do |line|
-        if md = re.match(line)
-          res << md[2]
+      when :d
+        re = /^(private|public|static)? *import +(.+);.*$/
+        String.loadLines(fileName).each do |line|
+          if md = re.match(line)
+            res << md[2]
+          end
         end
+      else
+        raise "Unknown type \"#{type}\""
       end
-    else
-      raise "Unknown type \"#{type}\""
+      @@cache[type][fileName] = res
     end
     res
   end

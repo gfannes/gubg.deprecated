@@ -22,6 +22,13 @@ class Sequence
 	    _stay = stay/sum;
 	    _move = move/sum;
 	    _reset = reset/sum;
+
+	    move *= 2.0;
+	    sum = stay+move+reset;
+	    _maxStay = stay/sum;
+	    _maxMove = move/sum;
+	    _maxReset = reset/sum;
+
 	    _probs = probs;
             normalizeL1(_probs);
 	}
@@ -36,11 +43,24 @@ class Sequence
             real stayProb = pow(_stay, dT);
             real moveProb = _move*(1.0-stayProb)/(1.0-_stay);
             real resetProb = _reset*(1.0-stayProb)/(1.0-_stay);
+            real maxStayProb = pow(_maxStay, dT);
+            real maxMoveProb = _maxMove*(1.0-maxStayProb)/(1.0-_maxStay);
+            real maxResetProb = _maxReset*(1.0-maxStayProb)/(1.0-_maxStay);
+	    uint mix = maxIndex(oldProbs);
             foreach (ix, inout p; _probs)
-                if (ix == 0)
-                    p = oldProbs[ix]*stayProb + oldProbs[$-1]*moveProb + (1.0-oldProbs[ix])*resetProb;
-                else
-                    p = oldProbs[ix]*stayProb + oldProbs[ix-1]*moveProb;
+		if (ix == mix)
+		{
+		    if (ix == 0)
+			p = oldProbs[ix]*maxStayProb + oldProbs[$-1]*maxMoveProb + (1.0-oldProbs[ix])*maxResetProb;
+		    else
+			p = oldProbs[ix]*maxStayProb + oldProbs[ix-1]*maxMoveProb;
+		} else
+		{
+		    if (ix == 0)
+			p = oldProbs[ix]*stayProb + oldProbs[$-1]*moveProb + (1.0-oldProbs[ix])*resetProb;
+		    else
+			p = oldProbs[ix]*stayProb + oldProbs[ix-1]*moveProb;
+		}
             normalizeL1(_probs);
 	}
 
@@ -50,6 +70,9 @@ private:
     real _stay;
     real _move;
     real _reset;
+    real _maxStay;
+    real _maxMove;
+    real _maxReset;
     real[] _probs;
     real[] _currentValues;
 }

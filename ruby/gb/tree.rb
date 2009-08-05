@@ -4,6 +4,8 @@ require("patterns/chainOfResponsibility")
 require("tools/utils")
 require("tools/filestore")
 
+$verbose = false
+
 class Tree# < IChainOfResponsibility
   attr :rootTree, true
   attr :base, true
@@ -34,20 +36,23 @@ class Tree# < IChainOfResponsibility
 
       when NilClass
         # Compile all object files
+        type = nil
         each do |dir, fn|
           fileInfo = nil
           case fn
           when @@cppFile
             fileInfo = createCompilationFileInfo(:cpp, :lib, File.expand_path(fn, dir))
+            type = (type.nil? or type == "cpp") ? "cpp" : "mixed"
           when @@dFile
             fileInfo = createCompilationFileInfo(:d, :lib, File.expand_path(fn, dir))
+            type = (type.nil? or type == "d") ? "d" : "mixed"
           end
           commands << CompileCommand.new(fileInfo, @@fileStore) if fileInfo
         end
         # Link them into a library
         dirLib = File.expand_path("lib", @base)
         if File.exist?(dirLib)
-          libName = File.expand_path("lib#{name}.a", dirLib)
+          libName = File.expand_path("lib#{name}-#{type}.a", dirLib)
           fileInfo = FileInfo.new(libName)
           fileInfo["libName"] = libName
           fileInfo["objects"] = commands.collect{|command|command.output}
@@ -135,6 +140,10 @@ class Tree# < IChainOfResponsibility
 
     # Create the settings based on the included files
     internalHeaders, externalHeaders, includeDirs = findIncludeFilesAndDirs(type, fileName)
+    if $verbose
+      puts("Internal headers: #{internalHeaders}")
+      puts("External headers: #{externalHeaders}")
+    end
     settings = [compilationSetting(type, "always")]
     (internalHeaders + externalHeaders).each do |incl|
       settings << compilationSetting(type, incl)
@@ -249,6 +258,8 @@ class Tree# < IChainOfResponsibility
     externalHeaders = {}
     files2Check = Dependency.includedFiles(type, fn)
     while !files2Check.empty?
+      files2Check.uniq!
+      #       puts("I have #{files2Check.length} files to check")
       newFiles2Check = []
       files2Check.each do |file|
         if internalFile?(file)
