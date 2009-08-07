@@ -23,7 +23,7 @@ class Sequence
 	    _move = move/sum;
 	    _reset = reset/sum;
 
-	    move *= 2.0;
+	    move *= 20.0;
 	    sum = stay+move+reset;
 	    _maxStay = stay/sum;
 	    _maxMove = move/sum;
@@ -47,6 +47,7 @@ class Sequence
             real maxMoveProb = _maxMove*(1.0-maxStayProb)/(1.0-_maxStay);
             real maxResetProb = _maxReset*(1.0-maxStayProb)/(1.0-_maxStay);
 	    uint mix = maxIndex(oldProbs);
+	    puts("mix = {}", mix);
             foreach (ix, inout p; _probs)
 		if (ix == mix)
 		{
