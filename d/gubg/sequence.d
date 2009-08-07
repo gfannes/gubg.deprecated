@@ -23,11 +23,17 @@ class Sequence
 	    _move = move/sum;
 	    _reset = reset/sum;
 
-	    move *= 20.0;
+	    move *= 0.2;
 	    sum = stay+move+reset;
-	    _maxStay = stay/sum;
-	    _maxMove = move/sum;
-	    _maxReset = reset/sum;
+	    _mixStay = stay/sum;
+	    _mixMove = move/sum;
+	    _mixReset = reset/sum;
+
+	    move *= 0.2;
+	    sum = stay+move+reset;
+	    _nmixStay = stay/sum;
+	    _nmixMove = move/sum;
+	    _nmixReset = reset/sum;
 
 	    _probs = probs;
             normalizeL1(_probs);
@@ -40,28 +46,29 @@ class Sequence
             auto oldProbs = new real[nrStates];
             scope(exit) delete oldProbs;
             oldProbs[] = _probs[];
-            real stayProb = pow(_stay, dT);
-            real moveProb = _move*(1.0-stayProb)/(1.0-_stay);
-            real resetProb = _reset*(1.0-stayProb)/(1.0-_stay);
-            real maxStayProb = pow(_maxStay, dT);
-            real maxMoveProb = _maxMove*(1.0-maxStayProb)/(1.0-_maxStay);
-            real maxResetProb = _maxReset*(1.0-maxStayProb)/(1.0-_maxStay);
+            real cachedStayProb = pow(_stay, dT);
+            real cachedMoveProb = _move*(1.0-cachedStayProb)/(1.0-_stay);
+            real cachedResetProb = _reset*(1.0-cachedStayProb)/(1.0-_stay);
 	    uint mix = maxIndex(oldProbs);
-	    puts("mix = {}", mix);
-            foreach (ix, inout p; _probs)
+	    _probs.setSame(0.0);
+            foreach (ix, inout p; oldProbs)
+	    {
+		real stayProb = cachedStayProb, moveProb = cachedMoveProb, resetProb = cachedResetProb;
 		if (ix == mix)
 		{
-		    if (ix == 0)
-			p = oldProbs[ix]*maxStayProb + oldProbs[$-1]*maxMoveProb + (1.0-oldProbs[ix])*maxResetProb;
-		    else
-			p = oldProbs[ix]*maxStayProb + oldProbs[ix-1]*maxMoveProb;
-		} else
+		    stayProb = pow(_mixStay, dT);
+		    moveProb = _mixMove*(1.0-stayProb)/(1.0-_mixStay);
+		    resetProb = _mixReset*(1.0-stayProb)/(1.0-_mixStay);
+		} else if (ix == (mix+1)%nrStates)
 		{
-		    if (ix == 0)
-			p = oldProbs[ix]*stayProb + oldProbs[$-1]*moveProb + (1.0-oldProbs[ix])*resetProb;
-		    else
-			p = oldProbs[ix]*stayProb + oldProbs[ix-1]*moveProb;
+		    stayProb = pow(_nmixStay, dT);
+		    moveProb = _nmixMove*(1.0-stayProb)/(1.0-_nmixStay);
+		    resetProb = _nmixReset*(1.0-stayProb)/(1.0-_nmixStay);
 		}
+		_probs[0] += p * resetProb;
+		_probs[ix] += p * stayProb;
+		_probs[(ix+1)%$] += p * moveProb;
+	    }
             normalizeL1(_probs);
 	}
 
@@ -71,9 +78,12 @@ private:
     real _stay;
     real _move;
     real _reset;
-    real _maxStay;
-    real _maxMove;
-    real _maxReset;
+    real _mixStay;
+    real _mixMove;
+    real _mixReset;
+    real _nmixStay;
+    real _nmixMove;
+    real _nmixReset;
     real[] _probs;
     real[] _currentValues;
 }
@@ -90,12 +100,12 @@ version (UnitTest)
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
         
         auto timer = new Timer;
-        for (uint i = 0; i < 1000; ++i)
+        for (uint i = 0; i < 10000; ++i)
         {
             seq.update(timer.difference);
             auto p = seq.probs;
             puts("probs = {:g9}, {:g9}, {:g9}, ix = {}", p[0], p[1], p[2], maxIndex(seq.probs));
-            Thread.sleep(0.1);
+            Thread.sleep(0.01);
         }
     }
 }

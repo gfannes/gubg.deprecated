@@ -23,6 +23,12 @@ uint maxIndex(real[] values)
     return res;
 }
 
+void setSame(real[] values, real value)
+{
+    foreach (v; values)
+	v = value;
+}
+
 version (UnitTest)
 {
     import gubg.puts;
