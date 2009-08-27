@@ -94,7 +94,7 @@ version (UnitTest)
     import tango.core.Thread;
     void main()
     {
-        real stay = 0.1, move = 0.2, reset = 0.0;
+        real stay = 0.001, move = 100.0, reset = 0.0;
         real[] probs = [1.0, 0.0, 0.0];
 	auto seq = new Sequence(stay, move, reset, probs);
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
@@ -102,9 +102,10 @@ version (UnitTest)
         auto timer = new Timer;
         for (uint i = 0; i < 10000; ++i)
         {
-            seq.update(timer.difference);
+	    real dT = timer.difference;
+            seq.update(dT);
             auto p = seq.probs;
-            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}", p[0], p[1], p[2], maxIndex(seq.probs));
+            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}, dT = {:e9}", p[0], p[1], p[2], maxIndex(seq.probs), dT);
             Thread.sleep(0.01);
         }
     }
