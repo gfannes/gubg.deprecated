@@ -23,11 +23,11 @@ class Sequence
 	    _move = move/sum;
 	    _reset = reset/sum;
 
-	    move *= 2.0;
+	    move *= 20.0;
 	    sum = stay+move+reset;
-	    _maxStay = stay/sum;
-	    _maxMove = move/sum;
-	    _maxReset = reset/sum;
+	    _mixStay = stay/sum;
+	    _mixMove = move/sum;
+	    _mixReset = reset/sum;
 
 	    _probs = probs;
             normalizeL1(_probs);
@@ -43,24 +43,18 @@ class Sequence
             real stayProb = pow(_stay, dT);
             real moveProb = _move*(1.0-stayProb)/(1.0-_stay);
             real resetProb = _reset*(1.0-stayProb)/(1.0-_stay);
-            real maxStayProb = pow(_maxStay, dT);
-            real maxMoveProb = _maxMove*(1.0-maxStayProb)/(1.0-_maxStay);
-            real maxResetProb = _maxReset*(1.0-maxStayProb)/(1.0-_maxStay);
+            real mixStayProb = pow(_mixStay, dT);
+            real mixMoveProb = _mixMove*(1.0-mixStayProb)/(1.0-_mixStay);
+            real mixResetProb = _mixReset*(1.0-mixStayProb)/(1.0-_mixStay);
 	    uint mix = maxIndex(oldProbs);
             foreach (ix, inout p; _probs)
-		if (ix == mix)
-		{
-		    if (ix == 0)
-			p = oldProbs[ix]*maxStayProb + oldProbs[$-1]*maxMoveProb + (1.0-oldProbs[ix])*maxResetProb;
-		    else
-			p = oldProbs[ix]*maxStayProb + oldProbs[ix-1]*maxMoveProb;
-		} else
-		{
-		    if (ix == 0)
-			p = oldProbs[ix]*stayProb + oldProbs[$-1]*moveProb + (1.0-oldProbs[ix])*resetProb;
-		    else
-			p = oldProbs[ix]*stayProb + oldProbs[ix-1]*moveProb;
-		}
+                if (ix == 0)
+                    p = oldProbs[ix]*(mix == 0 ? mixStayProb : stayProb) +
+                        oldProbs[$-1]*(mix == nrStates-1 ? mixMoveProb : moveProb) + 
+                        oldProbs[mix]*mixResetProb + (1.0 - oldProbs[mix])*resetProb;                        
+                else
+                    p = oldProbs[ix]*(mix == ix ? mixStayProb : stayProb) +
+                        oldProbs[ix-1]*(mix == ix-1 ? mixMoveProb : moveProb);
             normalizeL1(_probs);
 	}
 
@@ -70,9 +64,9 @@ private:
     real _stay;
     real _move;
     real _reset;
-    real _maxStay;
-    real _maxMove;
-    real _maxReset;
+    real _mixStay;
+    real _mixMove;
+    real _mixReset;
     real[] _probs;
     real[] _currentValues;
 }
@@ -83,7 +77,7 @@ version (UnitTest)
     import tango.core.Thread;
     void main()
     {
-        real stay = 0.1, move = 0.2, reset = 0.0;
+        real stay = 10.0, move = 0.2, reset = 0.0;
         real[] probs = [1.0, 0.0, 0.0];
 	auto seq = new Sequence(stay, move, reset, probs);
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
