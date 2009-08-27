@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require("tools/utils")
+
+inputFile = ARGV[0]
+outputFile = inputFile + '.bin'
+
+# Load the secret is ascii
+hex = String.load(inputFile)
+hex = hex.split("\n").collect{|line|line.split(/ +/)}.flatten.reject{|str|str.nil? or str == ""}
+
+bin = hex.collect{|h|h.hex}.pack("C*")
+bin.export(outputFile)
+
+
