@@ -2,7 +2,7 @@ module gubg.ncurses;
 
 import gubg.ui;
 
-import NC = gubg.ncurses_c;
+import NC = gubg.bindings.ncurses;
 
 class NCurses: IInput, IOutput
 {

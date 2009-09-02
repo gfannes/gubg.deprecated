@@ -3,7 +3,7 @@ module gubg.canvas;
 import gubg.style;
 import gubg.puts;
 
-interface Canvas
+interface ICanvas
 {
     // Called once or more before any other call
     bool initialize();
@@ -30,7 +30,7 @@ interface Canvas
     bool setFillStyle(Style style);
 }
 
-class ConsoleCanvas: Canvas
+class ConsoleCanvas: ICanvas
 {
     bool initialize()
     {
@@ -71,23 +71,21 @@ class ConsoleCanvas: Canvas
 }
 
 import derelict.sdl.sdl;
-import cairo.ImageSurface;
-import cairo.Context;
-import gtkc.cairotypes;
+import Cairo = gubg.cairo;
 
-class SDLCanvas: Canvas
+class SDLCanvas: ICanvas
 {
     this(int width, int height)
     {
-	mWidth = width;
-	mHeight = height;
-	mInitialized = false;
-	mSDLSurface = null;
+	_width = width;
+	_height = height;
+	_initialized = false;
+	_SDLSurface = null;
     }
 
     bool initialize()
     {
-	if (mInitialized)
+	if (_initialized)
 	    return true;
 
 	DerelictSDL.load();
@@ -99,123 +97,130 @@ class SDLCanvas: Canvas
 	    return false;
 	}
 	// Create the screen surface (window)
-	mSDLSurface = SDL_SetVideoMode(mWidth, mHeight, 32, SDL_SWSURFACE);
-	if (mSDLSurface is null)
+	_SDLSurface = SDL_SetVideoMode(_width, _height, 32, SDL_SWSURFACE);
+	if (_SDLSurface is null)
 	{
-	    err("Unable to set {} x {} video: {}\n", mWidth, mHeight, SDL_GetError());
+	    err("Unable to set {} x {} video: {}\n", _width, _height, SDL_GetError());
 	    SDL_Quit();
 	    return false;
 	}
 
-	mCairoSurface = ImageSurface.createForData(cast(ubyte*)(mSDLSurface.pixels), cairo_format_t.ARGB32, mWidth, mHeight, 4*mWidth);
-	mCairoContext = Context.create(mCairoSurface);
+	_cairo = new Cairo.Context(cast(ubyte*)(_SDLSurface.pixels), _width, _height);
 
-	mInitialized = true;
+	_initialized = true;
 	return true;
     }
     bool finalize()
     {
-	if (mInitialized)
+	if (_initialized)
 	    SDL_Quit();
 	return true;
     }
 
     bool initializeDraw()
     {
-	if (SDL_MUSTLOCK(mSDLSurface))
-	    if (SDL_LockSurface(mSDLSurface) < 0)
+	if (SDL_MUSTLOCK(_SDLSurface))
+	    if (SDL_LockSurface(_SDLSurface) < 0)
 		return false;
 	clear();
 	return true;
     }
-    void clear(uint rgb = 0x123456){SDL_FillRect( mSDLSurface, null, rgb);}
+    void clear(uint rgb = 0x123456){SDL_FillRect( _SDLSurface, null, rgb);}
 
     void finalizeDraw()
     {
-	if (SDL_MUSTLOCK(mSDLSurface))
-	    SDL_UnlockSurface(mSDLSurface);
-	SDL_UpdateRect(mSDLSurface, 0, 0, mWidth, mHeight);
+	if (SDL_MUSTLOCK(_SDLSurface))
+	    SDL_UnlockSurface(_SDLSurface);
+	SDL_UpdateRect(_SDLSurface, 0, 0, _width, _height);
     }
     void flip()
     {
-	SDL_Flip(mSDLSurface);
+	SDL_Flip(_SDLSurface);
     }
 
-    int width(){return mWidth;}
-    int height(){return mHeight;}
+    int width(){return _width;}
+    int height(){return _height;}
 
     bool drawLine(real[] sco, real[] eco)
     {
-	mCairoContext.moveTo(sco[0], mHeight-1-sco[1]);
-	mCairoContext.lineTo(eco[0], mHeight-1-eco[1]);
-	mCairoContext.stroke();
+        _cairo.moveTo(sco[0], _height-1-sco[1]);
+        _cairo.lineTo(eco[0], _height-1-eco[1]);
+        _cairo.stroke();
 	return true;
     }
     bool drawCircle(real[] center, real radius)
     {
-	mCairoContext.arc(center[0], mHeight-1-center[1], radius, 0.0, 6.28318530717959);
-	mCairoContext.stroke();
+        _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
+        _cairo.stroke();
 	return true;
     }
     bool fillCircle(real[] center, real radius)
     {
-	mCairoContext.arc(center[0], mHeight-1-center[1], radius, 0.0, 6.28318530717959);
-	mCairoContext.fill();
+        _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
+        _cairo.fill();
 	return true;
     }
     bool drawRectangle(real[] lbco, real[] trco)
     {
-	mCairoContext.moveTo(lbco[0], mHeight-1-lbco[1]);
-	mCairoContext.lineTo(lbco[0], mHeight-1-trco[1]);
-	mCairoContext.lineTo(trco[0], mHeight-1-trco[1]);
-	mCairoContext.lineTo(trco[0], mHeight-1-lbco[1]);
-	mCairoContext.lineTo(lbco[0], mHeight-1-lbco[1]);
-	mCairoContext.stroke();
+        _cairo.moveTo(lbco[0], _height-1-lbco[1]);
+        _cairo.lineTo(lbco[0], _height-1-trco[1]);
+        _cairo.lineTo(trco[0], _height-1-trco[1]);
+        _cairo.lineTo(trco[0], _height-1-lbco[1]);
+        _cairo.lineTo(lbco[0], _height-1-lbco[1]);
+        _cairo.stroke();
 	return true;
     }
     bool fillRectangle(real[] lbco, real[] trco)
     {
-	mCairoContext.moveTo(lbco[0], mHeight-1-lbco[1]);
-	mCairoContext.lineTo(lbco[0], mHeight-1-trco[1]);
-	mCairoContext.lineTo(trco[0], mHeight-1-trco[1]);
-	mCairoContext.lineTo(trco[0], mHeight-1-lbco[1]);
-	mCairoContext.lineTo(lbco[0], mHeight-1-lbco[1]);
-	mCairoContext.fill();
+        _cairo.moveTo(lbco[0], _height-1-lbco[1]);
+        _cairo.lineTo(lbco[0], _height-1-trco[1]);
+        _cairo.lineTo(trco[0], _height-1-trco[1]);
+        _cairo.lineTo(trco[0], _height-1-lbco[1]);
+        _cairo.lineTo(lbco[0], _height-1-lbco[1]);
+        _cairo.fill();
 	return true;
     }
 
 
     bool setStrokeStyle(Style style)
     {
-	mCairoContext.setLineWidth(style.strokeWidth);
-	mCairoContext.setSourceRgb(style.strokeColor().red, style.strokeColor().green, style.strokeColor().blue);
+        _cairo.setLineWidth(style.strokeWidth);
+        _cairo.setSourceRGB(style.strokeColor().red, style.strokeColor().green, style.strokeColor().blue);
 	return true;
     }
     bool setFillStyle(Style style)
     {
-	mCairoContext.setSourceRgb(style.fillColor().red, style.fillColor().green, style.fillColor().blue);
+        _cairo.setSourceRGB(style.fillColor().red, style.fillColor().green, style.fillColor().blue);
 	return true;
     }
 
 private:
-    SDL_Surface* mSDLSurface;
-    ImageSurface mCairoSurface;
-    Context mCairoContext;
+    SDL_Surface* _SDLSurface;
+    Cairo.Context _cairo;
     
-    int mWidth;
-    int mHeight;
-    bool mInitialized;
+    int _width;
+    int _height;
+    bool _initialized;
 }
 
 version(UnitTest)
 {
+    import tango.core.Thread;
+    import gubg.puts;
+
     void main()
     {
 // 	auto canvas = new ConsoleCanvas;
 	auto canvas = new SDLCanvas(100, 100);
 	canvas.initialize;
-// 	canvas.drawLine([1,2], [3,4]);
-	canvas.drawCircle([5,6], 7);
+	canvas.clear;
+	canvas.setStrokeStyle(Style.defaultStyle);
+	puts("Before drawLine");
+ 	canvas.drawLine([1, 2], [90, 90]);
+	puts("After drawLine");
+	canvas.fillCircle([5,6], 7);
+	canvas.flip;
+	Thread.sleep(3);
 	canvas.finalize;
 	puts("Finished");
     }

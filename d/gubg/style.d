@@ -54,11 +54,11 @@ class Style
 {
     this(bool stroke, real strokeWid, Color strokeCol, bool fill = false, Color fillCol = Color.Invalid)
 	{
-	    mStroke = stroke;
-	    mStrokeWidth = strokeWid;
-	    mStrokeColor = strokeCol;
-	    mFill = fill;
-	    mFillColor = fillCol;
+	    _stroke = stroke;
+	    _strokeWidth = strokeWid;
+	    _strokeColor = strokeCol;
+	    _fill = fill;
+	    _fillColor = fillCol;
 	}
     static Style defaultStyle()
 	{
@@ -67,41 +67,41 @@ class Style
 	}
 
     // Getters
-    bool stroke(){return mStroke;}
-    real strokeWidth(){synchronized(this){return mStrokeWidth;}}
-    Color strokeColor(){synchronized(this){return mStrokeColor;}}
-    bool fill(){synchronized(this){return mFill;}}
-    Color fillColor(){synchronized(this){return mFillColor;}}
+    bool stroke(){return _stroke;}
+    real strokeWidth(){synchronized(this){return _strokeWidth;}}
+    Color strokeColor(){synchronized(this){return _strokeColor;}}
+    bool fill(){synchronized(this){return _fill;}}
+    Color fillColor(){synchronized(this){return _fillColor;}}
 
     // Setters
-    void setStroke(bool stroke){synchronized(this){mStroke = stroke;}}
-    void setStrokeWidth(real strokeWidth){synchronized(this){mStrokeWidth = strokeWidth;}}
-    void setStrokeColor(Color color){synchronized(this){mStrokeColor = color;}}
-    void setFill(bool fill){synchronized(this){mFill = fill;}}
-    void setFillColor(Color color){synchronized(this){mFillColor = color;}}
+    void setStroke(bool stroke){synchronized(this){_stroke = stroke;}}
+    void setStrokeWidth(real strokeWidth){synchronized(this){_strokeWidth = strokeWidth;}}
+    void setStrokeColor(Color color){synchronized(this){_strokeColor = color;}}
+    void setFill(bool fill){synchronized(this){_fill = fill;}}
+    void setFillColor(Color color){synchronized(this){_fillColor = color;}}
 
     // duplicate
     Style dup()
 	{
-	    return new Style(mStroke, mStrokeWidth, mStrokeColor, mFill, mFillColor);
+	    return new Style(_stroke, _strokeWidth, _strokeColor, _fill, _fillColor);
 	}
 
     void print()
 	{
 	    puts("Style:");
-	    if (mStroke)
+	    if (_stroke)
 	    {
-		putsn("\tStroke color:\t"); mStrokeColor.print();
-		puts("\tStroke width:\t{}", mStrokeWidth);
+		putsn("\tStroke color:\t"); _strokeColor.print();
+		puts("\tStroke width:\t{}", _strokeWidth);
 	    }
-	    if (mFill)
-		putsn("\tFill color:\t"); mFillColor.print();
+	    if (_fill)
+		putsn("\tFill color:\t"); _fillColor.print();
 	}
 
 private:
-    bool mStroke;
-    real mStrokeWidth;
-    Color mStrokeColor;
-    bool mFill;
-    Color mFillColor;
+    bool _stroke;
+    real _strokeWidth;
+    Color _strokeColor;
+    bool _fill;
+    Color _fillColor;
 }

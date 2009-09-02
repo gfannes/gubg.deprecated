@@ -19,7 +19,14 @@ class Dependency
         re = /^(private|public|static)? *import +(.+);.*$/
         String.loadLines(fileName).each do |line|
           if md = re.match(line)
-            res << md[2]
+            modName = md[2]
+
+            # Check for renamed imports
+            re2 = /(.+)=(.+)/
+            modName = modName[re2, 2] if modName[re2]
+            
+            modName.strip!
+            res << modName
           end
         end
       else

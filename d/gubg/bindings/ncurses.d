@@ -1,4 +1,4 @@
-module gubg.ncurses_c;
+module gubg.bindings.ncurses;
 
 alias void WINDOW;
 alias uint chtype;

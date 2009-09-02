@@ -3,5 +3,5 @@ d:
  compilation:
   always: -I/home/gfannes/d/src -I/home/befanneg/personal/d/src
  linking:
-  always: -L-lncurses
+  always: -L-lncurses -L-lcairo
   derelict.sdl.sdl:  -L-lderelict-d -L-L$DSRC/derelict/lib -L-lsrc-d -L-L$DSRC/gtkD/src/lib
