@@ -1,27 +1,29 @@
-module gubg.scene;
+module gubg.graphics.scene;
 
 import tango.core.sync.Mutex;
 
 import gubg.tree;
 import gubg.coordinate;
-import gubg.drawable;
-import gubg.style;
-import gubg.canvas;
+
+import gubg.graphics.drawable;
+import gubg.graphics.style;
+import gubg.graphics.canvas;
+
 import gubg.puts;
 
 class Scene
 {
-    this(Canvas canvas)
+    this(ICanvas canvas)
 	{
 	    if (!canvas.initialize())
 		err("Failed to initialize the canvas");
 	    else
 	    {
-		mCanvas = canvas;
+		_canvas = canvas;
 		auto transfo = new Transformation([0.5*canvas.width(),0.5*canvas.height()], [canvas.width()-1, canvas.height()-1]);
-		mCurrentCoSystem = new CoSystem(transfo);
-		mCurrentStyle = Style.defaultStyle();
-		mTree = new Tree!(CoSystem)(mCurrentCoSystem);
+		_currentCoSystem = new CoSystem(transfo);
+		_currentStyle = Style.defaultStyle();
+		_tree = new Tree!(CoSystem)(_currentCoSystem);
 	    }
 	}
     bool draw()
@@ -30,13 +32,13 @@ class Scene
 	    {
 		synchronized(drawable)
 		{
-		    drawable.draw(mCanvas, mCurrentCoSystem.transformation());
+		    drawable.draw(_canvas, _currentCoSystem.transformation());
 		}
 	    }
-	    if (mCanvas.initializeDraw())
+	    if (_canvas.initializeDraw())
 	    {
-		mCurrentCoSystem.eachDrawable(&drawDrawable);
-		mCanvas.finalizeDraw();
+		_currentCoSystem.eachDrawable(&drawDrawable);
+		_canvas.finalizeDraw();
 	    } else
 	    {
 		err("Failed to initialize the canvas for drawing");
@@ -45,9 +47,9 @@ class Scene
 	}
     bool add(Drawable drawable, Style style = null)
 	{
-	    return mCurrentCoSystem.addDrawable(drawable, (style is null ? mCurrentStyle.dup() : style));
+	    return _currentCoSystem.addDrawable(drawable, (style is null ? _currentStyle.dup() : style));
 	}
-    Style currentStyle(){return mCurrentStyle;}
+    Style currentStyle(){return _currentStyle;}
 
     class CoSystem
     {
@@ -56,25 +58,25 @@ class Scene
 	bool addDrawable(Drawable drawable, Style style)
 	    {
 		drawable.setStyle(style);
-		mDrawables ~= [drawable];
+		_drawables ~= [drawable];
 		return true;
 	    }
 	void eachDrawable(void delegate(Drawable drawable) callback)
 	    {
-		foreach(drawable; mDrawables)
+		foreach(drawable; _drawables)
 		{
 		    callback(drawable);
 		}
 	    }
     private:
 	Transformation mTransformation;
-	Drawable[] mDrawables;
+	Drawable[] _drawables;
     }
 private:
-    Canvas mCanvas;
-    CoSystem mCurrentCoSystem;
-    Style mCurrentStyle;
-    Tree!(CoSystem) mTree;
+    ICanvas _canvas;
+    CoSystem _currentCoSystem;
+    Style _currentStyle;
+    Tree!(CoSystem) _tree;
 }
 
 version(UnitTest)
@@ -83,8 +85,8 @@ version(UnitTest)
 
     void main()
     {
-//	Canvas canvas = new ConsoleCanvas;
-	Canvas canvas = new SDLCanvas(640, 480);
+//	ICanvas canvas = new ConsoleCanvas;
+	ICanvas canvas = new SDLCanvas(640, 480);
 	Scene scene = new Scene(canvas);
 	scene.add(new Line([1,2], [3,4]));
 	scene.add(new Line([10,20], [30,40]));

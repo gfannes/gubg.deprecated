@@ -1,6 +1,10 @@
-module gubg.canvas;
+module gubg.graphics.canvas;
 
-import gubg.style;
+import gubg.graphics.style;
+
+import derelict.sdl.sdl;
+import Cairo = gubg.graphics.cairo;
+
 import gubg.puts;
 
 interface ICanvas
@@ -20,10 +24,8 @@ interface ICanvas
 
     // Drawing primitives
     bool drawLine(real[] sco, real[] eco);
-    bool drawCircle(real[] center, real radius);
-    bool fillCircle(real[] center, real radius);
-    bool drawRectangle(real[] lbco, real[] trco);
-    bool fillRectangle(real[] lbco, real[] trco);
+    bool drawCircle(real[] center, real radius, bool fill);
+    bool drawRectangle(real[] lbco, real[] trco, bool fill);
 
     // Style settings
     bool setStrokeStyle(Style style);
@@ -53,25 +55,16 @@ class ConsoleCanvas: ICanvas
 	puts("Drawing line from {} to {}", sco, eco);
 	return true;
     }
-    bool drawCircle(real[] center, real radius)
+    bool drawCircle(real[] center, real radius, bool fill)
     {
-	puts("Drawing circle with center {} and radius {}", center, radius);
+	puts("Drawing circle with center {} and radius {}, fill {}", center, radius, fill);
 	return true;
     }
-    bool fillCircle(real[] center, real radius)
-    {
-	puts("Filling circle with center {} and radius {}", center, radius);
-	return true;
-    }
-    bool drawRectangle(real[] lbco, real[] trco){return true;}
-    bool fillRectangle(real[] lbco, real[] trco){return true;}
+    bool drawRectangle(real[] lbco, real[] trco, bool fill){return true;}
 
     bool setStrokeStyle(Style style){return true;}
     bool setFillStyle(Style style){return true;}
 }
-
-import derelict.sdl.sdl;
-import Cairo = gubg.cairo;
 
 class SDLCanvas: ICanvas
 {
@@ -148,39 +141,28 @@ class SDLCanvas: ICanvas
         _cairo.stroke();
 	return true;
     }
-    bool drawCircle(real[] center, real radius)
+    bool drawCircle(real[] center, real radius, bool fill)
     {
         _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
-        _cairo.stroke();
+	if (fill)
+	    _cairo.fill();
+	else
+	    _cairo.stroke();
 	return true;
     }
-    bool fillCircle(real[] center, real radius)
-    {
-        _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
-        _cairo.fill();
-	return true;
-    }
-    bool drawRectangle(real[] lbco, real[] trco)
+    bool drawRectangle(real[] lbco, real[] trco, bool fill)
     {
         _cairo.moveTo(lbco[0], _height-1-lbco[1]);
         _cairo.lineTo(lbco[0], _height-1-trco[1]);
         _cairo.lineTo(trco[0], _height-1-trco[1]);
         _cairo.lineTo(trco[0], _height-1-lbco[1]);
         _cairo.lineTo(lbco[0], _height-1-lbco[1]);
-        _cairo.stroke();
+	if (fill)
+	    _cairo.fill();
+	else
+	    _cairo.stroke();
 	return true;
     }
-    bool fillRectangle(real[] lbco, real[] trco)
-    {
-        _cairo.moveTo(lbco[0], _height-1-lbco[1]);
-        _cairo.lineTo(lbco[0], _height-1-trco[1]);
-        _cairo.lineTo(trco[0], _height-1-trco[1]);
-        _cairo.lineTo(trco[0], _height-1-lbco[1]);
-        _cairo.lineTo(lbco[0], _height-1-lbco[1]);
-        _cairo.fill();
-	return true;
-    }
-
 
     bool setStrokeStyle(Style style)
     {

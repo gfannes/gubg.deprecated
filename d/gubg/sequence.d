@@ -113,8 +113,6 @@ version (UnitTest)
 
 version (UnitTest2)
 {
-    import gubg.timer;
-    import tango.core.Thread;
 
     class NewtonSpring
     {

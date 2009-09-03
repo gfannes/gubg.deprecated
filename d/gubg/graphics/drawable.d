@@ -1,8 +1,9 @@
-module gubg.drawable;
+module gubg.graphics.drawable;
 
-import gubg.canvas;
 import gubg.coordinate;
-import gubg.style;
+
+import gubg.graphics.canvas;
+import gubg.graphics.style;
 
 class Drawable
 {
@@ -11,7 +12,7 @@ class Drawable
 	{
 	    _style = style;
 	}
-    abstract bool draw(Canvas canvas, Transformation transfo);
+    abstract bool draw(ICanvas canvas, Transformation transfo);
 private:
     Style _style;
 }
@@ -26,7 +27,7 @@ class Line: Drawable
 
     void setCoordinates(real[] sco, real[] eco){synchronized(this){_origSCo = sco; _origECo = eco;}}
 
-    bool draw(Canvas canvas, Transformation transfo)
+    bool draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
@@ -48,7 +49,7 @@ class Rectangle: Line
 	super(lbco, trco);
     }
 
-    bool draw(Canvas canvas, Transformation transfo)
+    bool draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
@@ -58,12 +59,12 @@ class Rectangle: Line
 	    if (_style.fill())
 	    {
 		canvas.setFillStyle(_style);
-		canvas.fillRectangle(sco, eco);
+		canvas.drawRectangle(sco, eco, true);
 	    }
 	    if (_style.stroke())
 	    {
 		canvas.setStrokeStyle(_style);
-		canvas.drawRectangle(sco, eco);
+		canvas.drawRectangle(sco, eco, false);
 	    }
 	    return true;
 	}
@@ -81,7 +82,7 @@ class Circle: Drawable
     void setCenter(real[] center){synchronized(this){_origCenter = center;}}
     void setRadius(real radius){synchronized(this){_origRadius = radius;}}
 
-    bool draw(Canvas canvas, Transformation transfo)
+    bool draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
@@ -91,12 +92,12 @@ class Circle: Drawable
 	    if (_style.fill())
 	    {
 		canvas.setFillStyle(_style);
-		canvas.fillCircle(center, 0.5*(radiuss[0]+radiuss[1]));
+		canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]),true);
 	    }
 	    if (_style.stroke())
 	    {
 		canvas.setStrokeStyle(_style);
-		canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]));
+		canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]), false);
 	    }
 	    return true;
 	}

@@ -1,4 +1,4 @@
-module gubg.cairo;
+module gubg.graphics.cairo;
 
 import gubg.bindings.cairo;
 

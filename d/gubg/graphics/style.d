@@ -1,4 +1,4 @@
-module gubg.style;
+module gubg.graphics.style;
 
 import gubg.puts;
 
@@ -95,7 +95,9 @@ class Style
 		puts("\tStroke width:\t{}", _strokeWidth);
 	    }
 	    if (_fill)
+	    {
 		putsn("\tFill color:\t"); _fillColor.print();
+	    }
 	}
 
 private:
