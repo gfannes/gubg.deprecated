@@ -1,8 +1,8 @@
-include: ../root.tree
+include: ../../root.tree
 name: gubg-d
 d:
  compilation:
-  always: -I/home/gfannes/d/src -I/home/befanneg/personal/d/src
+  always: -I$HOME/d/src -I/home/befanneg/personal/d/src
  linking:
   always: -L-lncurses -L-lcairo
   derelict.sdl.sdl:  -L-lderelict -L-L$DSRC/derelict/lib -L-gtkD -L-L$DSRC/gtkD/src/lib

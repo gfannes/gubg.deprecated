@@ -7,18 +7,18 @@ import tango.time.StopWatch;
 import gubg.graphics.scene;
 import gubg.graphics.canvas;
 public import gubg.graphics.drawable;
-import gubg.graphics.style;
+public import gubg.graphics.style;
 import gubg.puts;
 
 class Visu
 {
-    this (int width, int height)
+    this (int width, int height, real[] newOrig = null, real[] newOne = null)
 	{
 	    _width = width;
 	    _height = height;
 
 	    _canvas = new SDLCanvas(_width, _height);
-	    _scene = new Scene(_canvas);
+	    _scene = new Scene(_canvas, newOrig, newOne);
 	    _quit = false;
 	}
 
@@ -115,9 +115,9 @@ class Visu
 	    return circle;
 	}
 
-    Drawable addRectangle(real[] lb, real[] tr)
+    Rectangle addRectangle(real[] lb, real[] tr)
 	{
-	    Drawable rectangle = new Rectangle(lb, tr);
+	    auto rectangle = new Rectangle(lb, tr);
 	    _scene.add(rectangle);
 	    return rectangle;
 	}
