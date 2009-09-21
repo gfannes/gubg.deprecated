@@ -52,7 +52,7 @@ class Tree# < IChainOfResponsibility
         # Link them into a library
         dirLib = File.expand_path("lib", @base)
         if File.exist?(dirLib)
-          libName = File.expand_path("lib#{name}-#{type}.a", dirLib)
+          libName = File.expand_path("lib#{name}.a", dirLib)
           fileInfo = FileInfo.new(libName)
           fileInfo["libName"] = libName
           fileInfo["objects"] = commands.collect{|command|command.output}
@@ -129,7 +129,11 @@ class Tree# < IChainOfResponsibility
     !@target.nil? && !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === File.basename(@target))
   end
   def name
-    File.basename(@base)
+    if !@settings.nil? and @settings.has_key?("name")
+      @settings["name"]
+    else
+      File.basename(@base)
+    end
   end
   def execName
     @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit.exec" : ".exec"))
@@ -280,12 +284,21 @@ class Tree# < IChainOfResponsibility
     return internalHeaders.keys.sort, externalHeaders.keys.sort, tmp
   end
 
+  def excludedDirs
+    if !@settings.nil? and @settings.has_key?("exclude")
+      [File.expand_path(@settings["exclude"], @base)]
+    else
+      []
+    end
+  end
+
   def each(recurse = true)
     recursor = Proc.new do |dir|
       res = true
       @@definingFiles.each do |fn|
         res = false if File.exist?(File.expand_path(fn, dir))
       end
+      res = false if excludedDirs.include?(dir)
       res = false if Collection.from(["lib", "include"]) === File.basename(dir)
       res
     end

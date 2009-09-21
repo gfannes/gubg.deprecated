@@ -8,6 +8,8 @@ import gubg.random;
 
 import tango.time.Clock;
 
+import gubg.puts;
+
 class World
 {
     this ()

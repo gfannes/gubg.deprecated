@@ -4,7 +4,8 @@ import gubg.physics.interfaces;
 
 class Force
 {
-    real[] getForce(Item item)
+    real[] getForce(IItem item)
 	{
+	    return null;
 	}
 }

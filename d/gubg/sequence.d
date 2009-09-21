@@ -2,6 +2,7 @@ module gubg.sequence;
 
 import gubg.math;
 import gubg.vector;
+import gubg.array;
 import gubg.puts;
 
 import tango.math.Math;
@@ -50,7 +51,7 @@ class Sequence
             real cachedMoveProb = _move*(1.0-cachedStayProb)/(1.0-_stay);
             real cachedResetProb = _reset*(1.0-cachedStayProb)/(1.0-_stay);
 	    uint mix = maxIndex(oldProbs);
-	    _probs.setSame(0.0);
+	    setSame!(real)(_probs, 0.0);
             foreach (ix, inout p; oldProbs)
 	    {
 		real stayProb = cachedStayProb, moveProb = cachedMoveProb, resetProb = cachedResetProb;

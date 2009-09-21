@@ -13,14 +13,18 @@ import gubg.puts;
 
 class Scene
 {
-    this(ICanvas canvas)
+    this(ICanvas canvas, real[] newOrig = null, real[] newOne = null)
 	{
 	    if (!canvas.initialize())
 		err("Failed to initialize the canvas");
 	    else
 	    {
 		_canvas = canvas;
-		auto transfo = new Transformation([0.5*canvas.width(),0.5*canvas.height()], [canvas.width()-1, canvas.height()-1]);
+		if (newOrig is null)
+		    newOrig = [0.5*canvas.width(),0.5*canvas.height()];
+		if (newOne is null)
+		    newOne = [canvas.width()-1, canvas.height()-1];
+		auto transfo = new Transformation(newOrig, newOne);
 		_currentCoSystem = new CoSystem(transfo);
 		_currentStyle = Style.defaultStyle();
 		_tree = new Tree!(CoSystem)(_currentCoSystem);
