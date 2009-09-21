@@ -428,6 +428,19 @@ class Tree# < IChainOfResponsibility
       @settings = nil
     end
   end
+
+  def Tree.createDefaultRootFile
+    File.open("root.tree", "w") do |fo|
+      fo.puts(%q@#Uncomment lines you want to use, filling in the <>'s
+#name: <name>
+d:
+ compilation:
+#  always: -I<path-to-include>
+ linking:
+#  always: -L-l<lib-name> -L-L<path-to-libs>
+@)
+    end
+  end
 end
 
 if __FILE__ == $0

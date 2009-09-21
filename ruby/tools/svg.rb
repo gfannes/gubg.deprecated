@@ -21,7 +21,7 @@ module SVG
       xml = Builder::XmlMarkup.new(:target => target,:indent=>2)
       xml.instruct!("xml version=\"1.0\" standalone=\"no\"")
       xml << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">"
-      xml.svg("width" => @width, "height" => @height, "version" => "1.1", "xmlns" => "http://www.w3.org/2000/svg") do |svg|
+      xml.svg("width" => @width, "height" => @height, "version" => "1.1", "xmlns" => "http://www.w3.org/2000/svg", "xmlns:xlink" => "http://www.w3.org/1999/xlink") do |svg|
         svg.g do |g|
           @shapes.each do |shape|
             shape.generate(g, @transform)
@@ -147,6 +147,19 @@ module SVG
       x,y = transform.coordinates(@x,@y)
       parent.text(createStyle(@style, transform), "x" => x, "y" => y) do |text|
         text << @text
+      end
+    end
+  end
+
+  # A hyperlink object
+  class Link
+    # Set target to "" to open over the current page
+    def initialize(url, node, target = "_blank")
+      @url, @node, @target = url, node, target
+    end
+    def generate(parent, transform)
+      parent.a("xlink:href" => @url, "target" => @target) do |a|
+        @node.generate(a, transform)
       end
     end
   end

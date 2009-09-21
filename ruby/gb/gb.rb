@@ -31,6 +31,9 @@ class GenericBuild
         when Collection.from(%w[f format])
           # Format using astyle
           setCommand(:format, argument)
+        when "create"
+          # Create a default root.tree file
+          setCommand(:create, argument)
         else
           location = File.expand_path(argument)
         end
@@ -83,6 +86,8 @@ class GenericBuild
       trees.each do |tree|
         @commands += tree.formatCommands
       end
+    when :create
+      Tree.createDefaultRootFile
     when :unknownCommand
       print(:unknownCommand, @command)
     else
@@ -112,6 +117,7 @@ class GenericBuild
 #{indent(1)}Other commands:
 #{indent(2)} * clean: Clean all objects from /tmp/gb
 #{indent(2)} * f: Format the code
+#{indent(2)} * create: Generate a default root.tree file
 Created by Geert Fannes under GPL.
 @)
     when :unknownCommand
