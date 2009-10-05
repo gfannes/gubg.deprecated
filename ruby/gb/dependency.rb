@@ -37,3 +37,7 @@ class Dependency
     res
   end
 end
+
+if __FILE__ == $0
+  puts Dependency.includedFiles(:d, "/home/gfannes/gubg/d/rinle/command.d")
+end

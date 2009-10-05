@@ -547,7 +547,7 @@ class << File
       else
         res = dir + "/" + entry
       end
-      res.gsub!(/\/[^\/]+\/\.\./, "")
+      while res.gsub!(/\/[^\/]+\/\.\./, "") do end
       res.gsub!("/.", "")
       return res
     else

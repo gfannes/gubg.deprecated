@@ -136,7 +136,11 @@ class Tree# < IChainOfResponsibility
     end
   end
   def execName
-    @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit.exec" : ".exec"))
+    if !@settings.nil? and @settings.has_key?("name") and @@definingFiles.include?(@settings["name"])
+      @settings["name"]
+    else
+      @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit.exec" : ".exec"))
+    end
   end
 
   def createCompilationFileInfo(type, subType, fileName)
@@ -258,6 +262,7 @@ class Tree# < IChainOfResponsibility
   end
 
   def findIncludeFilesAndDirs(type, fn)
+    puts("\nLooking for includes for #{fn}") if $verbose
     internalHeaders = {}
     externalHeaders = {}
     files2Check = Dependency.includedFiles(type, fn)
@@ -281,7 +286,14 @@ class Tree# < IChainOfResponsibility
       dirPerFile(file)
     end
     tmp = tmp.uniq.sort
-    return internalHeaders.keys.sort, externalHeaders.keys.sort, tmp
+    internalHeaders = internalHeaders.keys.sort
+    externalHeaders = externalHeaders.keys.sort
+    if $verbose
+      puts("\tinternalHeaders = #{internalHeaders}")
+      puts("\texternalHeaders = #{externalHeaders}")
+      puts("\ttmp = #{tmp}")
+    end
+    return internalHeaders, externalHeaders, tmp
   end
 
   def excludedDirs
@@ -342,15 +354,17 @@ class Tree# < IChainOfResponsibility
     base = pwd
     foundRoot = false
     while !foundRoot
-      base, file = Tree.findBaseFile(base, definingFiles)
-      case file
-      when "root.tree"
-        foundRoot = true
-        settingsFile = file
-      when "disabled.tree"
-        raise "You are inside a disabled tree"
-      else
-        target ||= File.expand_path(file, base)
+      base, files = Tree.findBaseFiles(base, definingFiles)
+      files.each do |file|
+        case file
+        when "root.tree"
+          foundRoot = true
+          settingsFile = file
+        when "disabled.tree"
+          raise "You are inside a disabled tree"
+        else
+          target ||= File.expand_path(file, base)
+        end
       end
       if res.nil?
         prevTree = res = Tree.new(base, settingsFile, target)
@@ -364,26 +378,25 @@ class Tree# < IChainOfResponsibility
     res
   end
 
-  def Tree.findBaseFile(pwd, files)
-    base, file = nil, nil
-    # Recursively descend until one of these files has been found
+  def Tree.findBaseFiles(pwd, definingFiles)
+    base, files = nil, []
+    # Recursively descend until at least one defining file has been found
     here = pwd
     while base.nil?
       # Try to find a match
-      files.each do |lfile|
+      definingFiles.each do |lfile|
         if File.exist?(File.expand_path(lfile, here))
           base = here
-          file = lfile
-          break
+          files << lfile
         end
       end
       break if !base.nil?
       # No match was found, decrease "here" if possible
       tmp = File.dirname(here)
-      raise "Could not find any basefile from \"#{pwd}\" (possibilities: #{files})" if tmp == here
+      raise "Could not find any basefile from \"#{pwd}\" (possibilities: #{definingFiles})" if tmp == here
       here = tmp
     end
-    return base, file
+    return base, files
   end
 
   def pushURL

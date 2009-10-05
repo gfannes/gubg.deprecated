@@ -29,7 +29,7 @@ class DModule: DNode, ICompositeNode
     INode opIndex(uint ix){return _declarations[ix];}
     INode opIndexAssign(INode rhs, uint ix)
     {
-        DDeclaration declaration = cast(DDeclaration)rhs;;
+        DDeclaration declaration = cast(DDeclaration)rhs;
 	if (rhs !is null && declaration is null)
             throw new Exception("Assignment of non-DDeclaration to DModule.");
         return (_declarations[ix] = declaration);
