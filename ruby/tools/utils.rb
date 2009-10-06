@@ -177,7 +177,7 @@ class Dir
               if File.readable?(fnDir)
                 return if yield(startDir.dup, entry.dup)
               else
-                permissionDenied << fnDir
+                permissionDenied << fnDir if permissionDenied
               end
             elsif File.directory?(fnDir)
               subDirs << fnDir if !(recursor and !recursor.call(fnDir))

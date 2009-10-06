@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
-require("gb/gb")
+require("gi/gi")
 
-gb = GenericBuild.new
+gi = GenericInstaller.new
 
 begin
-  gb.parseArguments(ARGV)
+  gi.parseArguments(ARGV)
 rescue RuntimeError => msg
   puts("Parsing error::#{msg}")
 end
 
 begin
-  gb.executeCommands
+  gi.executeCommands
 rescue RuntimeError => msg
   puts("Execution error::#{msg}")
 end
