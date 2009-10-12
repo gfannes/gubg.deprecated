@@ -6,6 +6,7 @@ import gubg.puts;
 import gubg.parser;
 
 import tango.text.Util;
+import tango.core.Tuple;
 
 class ProgParser
 {
@@ -21,11 +22,23 @@ class ProgParser
 	    if (obj !is null)
 		return false;
 
+// 	    {
+// 		ProgIdentifier progID;
+// 		if (complete(progID))
+// 		{
+// 		    obj = progID;
+// 		    return true;
+// 		}
+// 	    }
+	    foreach (type; Tuple!(ProgIdentifier,
+				  ProgSymbol))
 	    {
-		ProgIdentifier progID;
-		if (complete(progID))
-		    obj = progID;
-		return true;
+		type tmp;
+		if (complete(tmp))
+		{
+		    obj = tmp;
+		    return true;
+		}
 	    }
 	    
 	    return false;
@@ -49,7 +62,7 @@ class ProgParser
 
     bool complete4Parser(T: ProgIdentifier)(inout T obj)
 	{
- 	    scope l = new Log("complete4Parser for DIdentifier");
+ 	    scope l = new Log("complete4Parser for ProgIdentifier");
 
 	    if (obj !is null)
 		return false;
@@ -57,13 +70,47 @@ class ProgParser
 	    uint nr = 0;
 	    foreach (ch; buf)
 	    {
-		if (('a' <= ch && ch <= 'z') ||('A' <= ch && ch <= 'Z') || ch == '_')
+		if (('a' <= ch && ch <= 'z') ||('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9') || ch == '_')
 		    ++nr;
 		else
 		    break;
 	    }
-	    l.puts("Found identifier " ~ buf[0 .. nr]);
+	    if (nr == 0)
+		return false;
+	    l.puts("Found identifier \"" ~ buf[0 .. nr] ~ "\"");
 	    obj = new ProgIdentifier(buf[0 .. nr]);
+	    consume(nr);
+
+	    return true;
+	}
+
+    bool complete4Parser(T: ProgSymbol)(inout T obj)
+	{
+	    static char[] symbols = ".,;:!?=|%&*+-/~\\'\"{}()[]<>";
+	    
+ 	    scope l = new Log("complete4Parser for ProgSymbol");
+
+	    if (obj !is null)
+		return false;
+	    auto buf = buffer;
+	    uint nr = 0;
+	    foreach (ch; buf)
+	    {
+		bool found = false;
+		foreach (symb; symbols)
+		    if (ch == symb)
+		    {
+			++nr;
+			found = true;
+			break;
+		    }
+		if (!found)
+		    break;
+	    }
+	    if (nr == 0)
+		return false;
+	    l.puts("Found symbol \"" ~ buf[0 .. nr] ~ "\"");
+	    obj = new ProgSymbol(buf[0 .. nr]);
 	    consume(nr);
 
 	    return true;
@@ -99,13 +146,13 @@ version (UnitTest)
     import gubg.file;
     void main()
     {
-        char[] fileName = "sample.d";
+        char[] fileName = "parser.d";
 
 	char[] content;
 	loadFile(content, fileName);
 
-	auto parser = new DParser;
-        DModule dmodule = new DModule("./", fileName);
-	parser.parse(dmodule, content);
+	auto parser = new ProgParser;
+	auto mod = new ProgModule("./", fileName);
+	parser.parse(mod, content);
     }
 }

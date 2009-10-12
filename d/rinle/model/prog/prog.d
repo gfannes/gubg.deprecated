@@ -93,6 +93,29 @@ private:
     char[] _identifier;
 }
 
+class ProgSymbol: ProgNode, ILeafNode
+{
+    this (char[] symbol)
+    {
+	_symbol = symbol.dup;
+    }
+    mixin TLeaf!(INodeMethods);
+
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
+    {
+	if (formatInfo(this).show)
+	    ft.create(Tag.create(this, Color.white, false), _symbol);
+    }
+    void expand()
+    {
+    }
+
+    mixin TUID;
+
+private:
+    char[] _symbol;
+}
+
 class ProgScope: ProgNode, ICompositeNode
 {
     uint nrComponents(){return _nodes.length;}
