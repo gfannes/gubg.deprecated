@@ -143,7 +143,7 @@ version (UnitTest)
     import gubg.ncurses;
     void main()
     {
-	auto ft = new FormatTree(Tag.create);
+	auto ft = new FormatTree(Tag.create(null, Color.black, false));
 	ft.add("Line 1");
 	ft.add("Line 1.1");
 	ft.newline;
@@ -151,6 +151,8 @@ version (UnitTest)
 	ft.add("Line 2.1");
 	auto sb = ft.create(Tag.create(null, Color.black, false, true));
 	sb.add("Koekjes");
+	sb.newline;
+	sb.add("En nog meer koekjes");
 	sb.newline;
 
 	auto l1 = ft.create(Tag.create(null, Color.green, true));
@@ -161,6 +163,7 @@ version (UnitTest)
 	l2.add("l2l2l2");
 
 	// Output to ncurses
+	if (false)
 	{	
 	    scope nc = new NCurses;
 	    scope collector = new OutputCollector(nc);

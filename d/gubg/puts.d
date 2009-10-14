@@ -47,6 +47,16 @@ public void puts(char[] fmt, ...)
 	_outputStream.flush;
     }
 }
+// Write to stdout without formatting and with trailing newline
+public void putsNoFormat(char[] str)
+{
+    synchronized(Trace)
+    {
+	_outputStream.write(str);
+	_outputStream.write("\n");
+	_outputStream.flush;
+    }
+}
 
 // Write to stdout without trailing newline
 public void putsn(char[] fmt, ...)
@@ -125,6 +135,17 @@ scope class Log
                     return _outputStream.write(s);
                 }
                 layout.convert (&sink, _arguments, _argptr, fmt);
+                _outputStream.write("\n");
+                _outputStream.flush;
+            }
+//	    .puts(indent() ~ msg);
+	}
+    void putsNoFormat(char[] str)
+	{
+            synchronized(Trace)
+            {
+                _outputStream.write(indent());
+		_outputStream.write(str);
                 _outputStream.write("\n");
                 _outputStream.flush;
             }

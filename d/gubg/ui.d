@@ -95,9 +95,9 @@ class StdOutput: IOutput
 	}
     void refresh()
 	{
-	    puts("");
+	    putsNoFormat("");
 	    foreach (line; _lines)
-		puts(line);
+		putsNoFormat(line);
 	}
 
     class SavePoint: ISavePoint
@@ -148,7 +148,7 @@ version (UnitTest)
 
 	auto sp1 = output.save;
 
-	output[1] = "abc";
+	output[1] = "abc{";
 	output.print("ABC", 10, 20);
 	char[] line;
 	line.length = output.width;

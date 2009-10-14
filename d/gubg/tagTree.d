@@ -99,7 +99,7 @@ template TTagTree(Tag, Content)
     alias ITagTree!(Tag, Content) ITT;
     this(Tag tag)
     {
-        mTag = tag;
+        _tag = tag;
     }
     this (Tag tag, Content content)
     {
@@ -138,11 +138,11 @@ template TTagTree(Tag, Content)
     
     Tag tag()
         {
-            return mTag;
+            return _tag;
         }
     void setTag(Tag tag)
         {
-            mTag = tag;
+            _tag = tag;
         }
 
     // Create the specific composite methods
@@ -153,7 +153,7 @@ template TTagTree(Tag, Content)
     mixin TIndexComposite!(ITagTreeMethods!(Tag, Content));
 
 private:
-    Tag mTag;
+    Tag _tag;
     Component[] mElements;
 }
 
@@ -280,7 +280,7 @@ collectElement(el, dest, stack);
 else
 {
 MetaTag metaTag;
-metaTag.tag = mTag;
+metaTag.tag = _tag;
 metaTag.meta.length = mElements.length;
 Meta* meta = &(stack.push(metaTag).meta);
 showBefore(dest, stack);
@@ -324,7 +324,7 @@ isRoot = true;
 this (Tag tag)
 {
 isRoot = false;
-mTag = tag;
+_tag = tag;
 }
 this (Tag tag, Content content)
 {
@@ -366,7 +366,7 @@ leaf = leaf && (!el.isChild);
 return leaf;
 }
 
-Tag markupTag(){return mTag;}
+Tag markupTag(){return _tag;}
 
 private:
 void addChild(Node child)
@@ -389,7 +389,7 @@ mElements ~= [el];
 }
     
 bool isRoot;
-Tag mTag;
+Tag _tag;
 union U
 {
 Content content;

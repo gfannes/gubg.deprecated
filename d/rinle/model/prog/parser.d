@@ -12,6 +12,11 @@ class ProgParser
 {
     mixin TParser;
 
+    this ()
+	{
+	    setWhitespaceSymbols(" \t");
+	}
+
     void prepareParsing(){}
     void finishedParsing(){}
 
@@ -22,16 +27,9 @@ class ProgParser
 	    if (obj !is null)
 		return false;
 
-// 	    {
-// 		ProgIdentifier progID;
-// 		if (complete(progID))
-// 		{
-// 		    obj = progID;
-// 		    return true;
-// 		}
-// 	    }
 	    foreach (type; Tuple!(ProgIdentifier,
-				  ProgSymbol))
+				  ProgSymbol,
+				  ProgNewline))
 	    {
 		type tmp;
 		if (complete(tmp))
@@ -53,7 +51,6 @@ class ProgParser
 	    ProgNode node;
 	    while (complete(node))
 	    {
-                l.puts("node = {}", cast(void*)node);
 		obj.replaceComponent(ReplaceMode.Create, obj.nrComponents, node);
 		node = null;
 	    }
@@ -109,9 +106,25 @@ class ProgParser
 	    }
 	    if (nr == 0)
 		return false;
-	    l.puts("Found symbol \"" ~ buf[0 .. nr] ~ "\"");
+	    l.putsNoFormat("Found symbol \"" ~ buf[0 .. nr] ~ "\"");
 	    obj = new ProgSymbol(buf[0 .. nr]);
 	    consume(nr);
+
+	    return true;
+	}
+
+    bool complete4Parser(T: ProgNewline)(inout T obj)
+	{
+ 	    scope l = new Log("complete4Parser for ProgNewline");
+
+	    if (obj !is null)
+		return false;
+	    auto buf = buffer;
+	    if (buf.length == 0 || buf[0] != '\n')
+		return false;
+	    l.puts("Found newline");
+	    obj = new ProgNewline;
+	    consume(1);
 
 	    return true;
 	}
@@ -146,13 +159,37 @@ version (UnitTest)
     import gubg.file;
     void main()
     {
-        char[] fileName = "parser.d";
+	// The file we will parse and print
+	char[] fileName = "parser.d";
 
+	// Load the file from disk
 	char[] content;
 	loadFile(content, fileName);
 
+	// Parse the file into mod
 	auto parser = new ProgParser;
 	auto mod = new ProgModule("./", fileName);
 	parser.parse(mod, content);
+
+	// Print out mod
+	auto ft = new FormatTree(Tag.create(null, Color.white, false));
+	IFormatInfo showAll(INode node)
+	{
+	    class FormatInfo: IFormatInfo
+	    {
+		bool show(){return true;}
+		bool recurse(){return true;}
+	    }
+	    return new FormatInfo;
+	}
+	mod.addTo(ft,&showAll);
+	// Output to StdOutput
+	{
+	    scope output = new StdOutput;
+ 	    auto collector = new OutputCollector(output);
+ 	    collector(ft);
+ 	    output.refresh;
+	}
+
     }
 }

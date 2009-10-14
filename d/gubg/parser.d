@@ -65,8 +65,20 @@ template TParser()
 	    if (_ixs.length <= 1)
 		throw new Exception("I cannot consume when I'm not parsing");
 	    _ixs[$-1] +=  + nr;
-	    for (char[] buf = buffer; buf.length > 0 && (buf[0] == ' ' || buf[0] == '\n' || buf[0] == '\t'); buf = buffer)
+	    for (char[] buf = buffer; buf.length > 0 && isWhitespace(buf[0]); buf = buffer)
 		_ixs[$-1] += 1;
+	}
+    bool isWhitespace(char ch)
+	{
+	    foreach (c; _whitespaceSymbols)
+		if (ch == c)
+		    return true;
+	    return false;
+	}
+    void setWhitespaceSymbols(char[] whitespaceSymbols)
+	{
+	    _whitespaceSymbols.length = whitespaceSymbols.length;
+	    _whitespaceSymbols[] = whitespaceSymbols[];
 	}
   
     bool complete(U)(inout U obj = null)
@@ -83,6 +95,7 @@ template TParser()
 private:
     char[] _globalBuffer;
     uint[] _ixs;
+    char[] _whitespaceSymbols;
 }
 
 version (UnitTest)

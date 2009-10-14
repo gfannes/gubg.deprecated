@@ -13,6 +13,7 @@ abstract class ProgNode: INode
     void cut(){}
     void paste(){}
     mixin TCompact!(INodeMethods);
+    static bool __previousNodeWasIdentifier;
 }
 
 class ProgModule: ProgNode, ICompositeNode
@@ -40,7 +41,8 @@ class ProgModule: ProgNode, ICompositeNode
     {
 	if (formatInfo(this).show)
 	{
-	    auto lft = ft.create(Tag.create(this, Color.white, true));
+	    __previousNodeWasIdentifier = false;
+	    auto lft = ft.create(Tag.create(this, Color.white, false));
 	    if (formatInfo(this).recurse)
 		foreach (decl; _nodes)
 		    decl.addTo(lft, formatInfo);
@@ -81,7 +83,10 @@ class ProgIdentifier: ProgNode, ILeafNode
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
 	if (formatInfo(this).show)
-	    ft.create(Tag.create(this, Color.white, false), _identifier);
+	{
+	    ft.create(Tag.create(this, Color.white, false, __previousNodeWasIdentifier), _identifier);
+	    __previousNodeWasIdentifier = true;
+	}
     }
     void expand()
     {
@@ -104,7 +109,10 @@ class ProgSymbol: ProgNode, ILeafNode
     void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
     {
 	if (formatInfo(this).show)
+	{
 	    ft.create(Tag.create(this, Color.white, false), _symbol);
+	    __previousNodeWasIdentifier = false;
+	}
     }
     void expand()
     {
@@ -114,6 +122,26 @@ class ProgSymbol: ProgNode, ILeafNode
 
 private:
     char[] _symbol;
+}
+
+class ProgNewline: ProgNode, ILeafNode
+{
+    this (){}
+    mixin TLeaf!(INodeMethods);
+
+    void addTo(inout FormatTree ft, IFormatInfo delegate(INode node) formatInfo)
+    {
+	if (formatInfo(this).show)
+	{
+	    ft.newline;
+	    __previousNodeWasIdentifier = false;
+	}
+    }
+    void expand()
+    {
+    }
+
+    mixin TUID;
 }
 
 class ProgScope: ProgNode, ICompositeNode
@@ -134,14 +162,14 @@ class ProgScope: ProgNode, ICompositeNode
     {
 	if (formatInfo(this).show)
 	{
-	    auto lft = ft.create(Tag.create(this, Color.white, true));
+	    auto lft = ft.create(Tag.create(this, Color.white, false));
 	    lft.add("{");
-	    lft.newline;
+	    __previousNodeWasIdentifier = false;
 	    if (formatInfo(this).recurse)
 		foreach (decl; _nodes)
 		    decl.addTo(lft, formatInfo);
 	    lft.add("}");
-	    lft.newline;
+	    __previousNodeWasIdentifier = false;
 	}
     }
     void expand()
