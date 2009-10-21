@@ -4,6 +4,7 @@ import gubg.puts;
 
 import rinle.model.interfaces;
 import rinle.model.d.d;
+import rinle.model.prog.prog;
 
 import gubg.patterns.composite;
 import gubg.file;
@@ -78,7 +79,8 @@ class File: FSNode
         switch (extension)
         {
         case "d":
-	    replaceComponent(ReplaceMode.Set, 0, new DModule(path, name));
+//	    replaceComponent(ReplaceMode.Set, 0, new DModule(path, name));
+	    replaceComponent(ReplaceMode.Set, 0, new ProgModule(path, name));
             break;
         default:
             break;
