@@ -5,12 +5,14 @@ require("tools/utils")
 
 binary = (ARGV[0]=="-vi" ? "ctags" : "etags")
 
-reOK = /^.+\.[ch]p*$/
-reKO = /\.cloak\.c/
+reOK = /^.+\.([ch]p*|idl)$/
+reKO = /\._c\.cpp/
 
 recursor = Proc.new do |dir|
   ok = case dir
        when /\.svn/
+         false
+       when /CVS/
          false
        else
          true
