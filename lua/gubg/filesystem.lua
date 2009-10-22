@@ -28,11 +28,13 @@ local function iter(state, file)
 		  nextFile = name
 	       elseif attr.mode == "directory" then
 		  print("\t=> directory")
-		  local ii = _G.lfs.dir(newPath)
-		  prevState = {iter = state.iter, path = state.path, prev = state.prev}
-		  state.iter = ii
-		  state.path = newPath
-		  state.prev = prevState
+		  if state.recursor(name) then
+		     local ii = _G.lfs.dir(newPath)
+		     prevState = {iter = state.iter, path = state.path, prev = state.prev}
+		     state.iter = ii
+		     state.path = newPath
+		     state.prev = prevState
+		  end
 	       end
 	    end
 	 end
@@ -51,13 +53,16 @@ local function iter(state, file)
 	 end
       end
    end
-   return state.path, nextFile
+   return nextFile, state.path
 end
 
 -- Returns an recursive iterator for all files in path
-function each(path)
+function eachFile(path, ...)
    local i, s, control = _G.lfs.dir(path)
-   local state = {iter = i, path = path, prev = nil}
+   local recursor = arg.recursor or function (dir)
+				       return not _G.string.find(dir, "^%.")
+				    end
+   local state = {recursor = recursor, iter = i, path = path, prev = nil}
    return iter, state, control
 end
 
