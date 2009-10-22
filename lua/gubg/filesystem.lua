@@ -66,4 +66,17 @@ function eachFile(path, ...)
    return iter, state, control
 end
 
+function loadLines(fileName)
+   local lines = {}
+   local file = _G.assert(_G.io.open(fileName))
+   for line in file:lines() do
+      _G.table.insert(lines, line)
+   end
+   return lines
+end
+
+function fullPath(file, dir)
+   return dir .. "/" .. file
+end
+
 return gubg
