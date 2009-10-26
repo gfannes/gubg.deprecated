@@ -459,6 +459,13 @@ class Collection < Array
   def initialize(*elements)
     @elements = elements
   end
+  def Collection.from(ary)
+    collection = Collection.new
+    ary.each do |el|
+      collection << el
+    end
+    collection
+  end
   def ===(rhs)
     @elements.any?{|el|el===rhs}
   end
@@ -522,19 +529,6 @@ end
 def md5sum(fileName)
   require("digest/md5")
   return Digest::MD5.hexdigest(String.load(fileName))
-end
-
-class Collection < Array
-  def ===(rhs)
-    any?{|el|el === rhs}
-  end
-  def Collection.from(ary)
-    collection = Collection.new
-    ary.each do |el|
-      collection << el
-    end
-    collection
-  end
 end
 
 class << File
