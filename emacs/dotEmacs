@@ -1,0 +1,195 @@
+;;some automatic settings set using xemacs
+(custom-set-variables
+  ;; custom-set-variables was added by Custom -- don't edit or cut/paste it!
+  ;; Your init file should contain only one such instance.
+ '(auto-compression-mode t nil (jka-compr))
+ '(case-fold-search t)
+ '(current-language-environment "UTF-8")
+ '(default-input-method "rfc1345")
+ '(global-font-lock-mode t nil (font-lock))
+ '(show-paren-mode t nil (paren))
+ '(transient-mark-mode t))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
+  ;; Your init file should contain only one such instance.
+ )
+
+;;manually added by gfannes
+;;(w32-unregister-hot-key [M-tab])
+;;(global-unset-key "\M-\t")
+;;(setq w32-pass-alt-to-system t)
+;;(setq w32-recognize-altgr nil)
+(global-unset-key "\M-r")
+(setq inhibit-startup-message t)
+;;'(font-lock-comment-delimiter-face ((default (:inherit font-lock-comment-face :weight bold)) (((class color) (min-colors 16)) nil)))
+;;'(font-lock-comment-face ((t (font-lock-comment-delimiter-face "blue"))))
+(setq font-lock-comment-face 'font-lock-comment-delimiter-face)
+(define-key ctl-x-map "g" 'goto-line)
+;;let emacs put a final newline automatically
+(setq require-final-newline t)
+;;don't let emacs run /usr/share/emacs/site-lisp/default.el which sets require-final-newline to `query
+(setq inhibit-default-init t)
+;;put the full path in the modeline
+(set-default 'mode-line-buffer-identification
+           '(buffer-file-name ("%f") ("%b")))
+(defun scroll-one-line-ahead ()
+ "Scroll one line ahead."
+ (interactive)
+ (scroll-up 1))
+(defun scroll-one-line-behind ()
+ "Scroll one line ahead."
+ (interactive)
+ (scroll-down 1))
+(global-set-key '[(control j)] 'scroll-one-line-ahead)
+(global-set-key '[(control h)] 'scroll-one-line-behind)
+(defun other-window-backward ()
+  "Select the previous window"
+  (interactive)
+  (other-window -1))
+(global-set-key '[(meta z)] 'other-window)
+(global-set-key '[(meta a)] 'other-window-backward)
+(global-set-key '[(meta q)] 'speedbar-get-focus)
+(global-set-key '[(meta kp-decimal)] 'find-tag)
+(global-set-key '[(meta kp-multiply)] 'pop-tag-mark)
+(defun find-next-tag ()
+  "Find the next tag"
+  (interactive)
+  (find-tag nil 1))
+(defun find-prev-tag ()
+  "Find the prev tag"
+  (interactive)
+  (find-tag nil -1))
+(global-set-key '[(meta kp-0) (meta kp-decimal)] 'find-next-tag)
+(global-set-key '[(meta kp-1) (meta kp-decimal)] 'find-prev-tag)
+(setq gdb-speedbar-auto-raise t)
+(setq gdb-many-windows t)
+
+;; Firefox-like zooming of fonts.
+(setq default-font-zoom-index 2)
+(setq font-zoom-index default-font-zoom-index)
+(setq font-zoom-list
+      (list "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"
+            "-*-courier-medium-r-*-*-14-*-*-*-*-*-*-*"
+            "-*-courier-medium-r-*-*-17-*-*-*-*-*-*-*"
+            "-*-courier-medium-r-*-*-18-*-*-*-*-*-*-*"
+            "-*-courier-medium-r-*-*-24-*-*-*-*-*-*-*"))
+(setq initial-frame-alist
+      `((left . 0) (top . 0)
+        (width . 155) (height . 52)))
+(defun font-zoom-increase-font-size ()
+  (interactive)
+  (progn
+    (setq font-zoom-index (min (- (length font-zoom-list) 1)
+                               (+ font-zoom-index 1)))
+    (set-frame-font (nth font-zoom-index font-zoom-list))))
+(defun font-zoom-decrease-font-size ()
+  (interactive)
+  (progn
+    (setq font-zoom-index (max 0
+                               (- font-zoom-index 1)))
+    (set-frame-font (nth font-zoom-index font-zoom-list))))
+(defun font-zoom-reset-font-size ()
+  (interactive)
+  (progn
+    (setq font-zoom-index default-font-zoom-index)
+    (set-frame-font (nth font-zoom-index font-zoom-list))))
+(define-key global-map (read-kbd-macro "C--") 'font-zoom-decrease-font-size)
+(define-key global-map (read-kbd-macro "C-=") 'font-zoom-increase-font-size)
+(define-key global-map (read-kbd-macro "C-0") 'font-zoom-reset-font-size)
+(set-frame-font (nth font-zoom-index font-zoom-list))
+
+;; D
+(autoload 'd-mode "c:/.emacsrc/emacs-d/d-gfannes.el" "Major mode for editing D code." t)
+(add-to-list 'auto-mode-alist '("\\.d[i]?\\'" . d-mode))
+
+;; Lua
+(autoload 'lua-mode "c:/.emacsrc/emacs-lua/lua-gfannes.el" "Major mode for editing Lua code." t)
+(setq auto-mode-alist
+      (cons '("\\.lua$" . lua-mode) auto-mode-alist))
+
+
+;;ruby
+(setq auto-mode-alist
+      (cons '("\\.rb$" . ruby-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.rhtml$" . ruby-mode) auto-mode-alist))
+(setq interpreter-mode-alist
+      (cons '("ruby" . ruby-mode)
+            interpreter-mode-alist))
+;(autoload 'ruby-mode "/usr/share/emacs/site-lisp/ruby-mode.elc" "Ruby editing mode." t)
+;(autoload 'ruby-mode "/home/gfannes/emacs/ruby-gfannes.el" "Ruby editing mode." t)
+;(autoload 'ruby-mode "ruby-gfannes" "Ruby editing mode." t)
+(autoload 'ruby-mode "c:/.emacsrc/emacs-ruby/ruby-gfannes.el" "Ruby editing mode." t)
+
+;;C
+(setq c-default-style
+      '((c++-mode . "linux") (other . "linux")))
+;;(setq c-basic-offset 4)
+
+(setq auto-mode-alist
+      (cons '("\\.c$" . c-mode) auto-mode-alist))
+(autoload 'c-mode "c:/.emacsrc/emacs-c/c-gfannes.el" "C editing mode." t)
+
+(autoload 'gud-mode "c:/.emacsrc/emacs-gud/gud-gfannes.el" "GUD editing mode." t)
+(gud-mode)
+
+;; C++
+(setq auto-mode-alist
+      (cons '("\\.cpp$" . c++-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.hpp$" . c++-mode) auto-mode-alist))
+(autoload 'c++-mode "c:/.emacsrc/emacs-c++/c++-gfannes.el" "C++ editing mode." t)
+
+;; Markdown
+(setq auto-mode-alist
+      (cons '("\\.txt$" . markdown-mode) auto-mode-alist))
+(autoload 'markdown-mode "c:/.emacsrc/emacs-markdown/markdown-mode.el" "Markdown editing mode." t)
+
+;;;;enforced coding standards for nautilus
+;;;;
+;;;; c++-mode (emacs)
+;;;;
+;;(setq auto-mode-alist
+;;	(append '(("\\.sc$"   . c++-mode)
+;;		  ("\\.c$"    . c++-mode)
+;;		  ("\\.h$"    . c++-mode)) auto-mode-alist))
+;;
+;;(defconst my-c-style
+;;	'((c-indent-level               .  4)
+;;	(c-continued-statement-offset .  4)
+;;	(c-continued-brace-offset     . -4)
+;;	(c-brace-offset               . -4)
+;;	(c-brace-imaginary-offset     .  0)
+;;	(c-argdecl-indent             .  0)
+;;	(c-label-offset               . -4)
+;;	(c-auto-newline               . nil))
+;;	"my-c-style")
+;;
+;;(add-hook 'c-mode-common-hook
+;;	'(lambda ()
+;;	(c-add-style "my-c-style" my-c-style t)
+;;	(c-set-style "my-c-style")
+;;	(setq c-tab-always-indent t)
+;;	(setq indent-tabs-mode nil)))
+;;
+;; c-mode (xyzzy)
+;;
+;(push '("\\.sc$" . c-mode) auto-mode-alist)
+;(push '("\\.c$" . c-mode) auto-mode-alist)
+;(push '("\\.h$" . c-mode) auto-mode-alist)
+;
+;(setq c-indent-level 4)
+;(setq c-continued-statement-offset 4)
+;(setq c-continued-brace-offset -4)
+;(setq c-brace-offset -4)
+;(setq c-brace-imaginary-offset 0)
+;(setq c-argdecl-indent 0)
+;(setq c-label-offset -4)
+
+;;(global-set-key \C-F8
+;;	'(lambda ()
+;;		(interactive)
+;;		(indent-region (point-min) (point-max))
+;;		(message "indent buffer")))
+
+(w32-unregister-hot-key [M-tab])
