@@ -99,11 +99,11 @@
 (set-frame-font (nth font-zoom-index font-zoom-list))
 
 ;; D
-(autoload 'd-mode "c:/.emacsrc/emacs-d/d-gfannes.el" "Major mode for editing D code." t)
+(autoload 'd-mode (concat (getenv "EMACSRC") "/emacs-d/d-gfannes.el") "Major mode for editing D code." t)
 (add-to-list 'auto-mode-alist '("\\.d[i]?\\'" . d-mode))
 
 ;; Lua
-(autoload 'lua-mode "c:/.emacsrc/emacs-lua/lua-gfannes.el" "Major mode for editing Lua code." t)
+(autoload 'lua-mode (concat (getenv "EMACSRC") "/emacs-lua/lua-gfannes.el") "Major mode for editing Lua code." t)
 (setq auto-mode-alist
       (cons '("\\.lua$" . lua-mode) auto-mode-alist))
 
@@ -119,7 +119,7 @@
 ;(autoload 'ruby-mode "/usr/share/emacs/site-lisp/ruby-mode.elc" "Ruby editing mode." t)
 ;(autoload 'ruby-mode "/home/gfannes/emacs/ruby-gfannes.el" "Ruby editing mode." t)
 ;(autoload 'ruby-mode "ruby-gfannes" "Ruby editing mode." t)
-(autoload 'ruby-mode "c:/.emacsrc/emacs-ruby/ruby-gfannes.el" "Ruby editing mode." t)
+(autoload 'ruby-mode (concat (getenv "EMACSRC") "/emacs-ruby/ruby-gfannes.el") "Ruby editing mode." t)
 
 ;;C
 (setq c-default-style
@@ -128,9 +128,9 @@
 
 (setq auto-mode-alist
       (cons '("\\.c$" . c-mode) auto-mode-alist))
-(autoload 'c-mode "c:/.emacsrc/emacs-c/c-gfannes.el" "C editing mode." t)
+(autoload 'c-mode (concat (getenv "EMACSRC") "/emacs-c/c-gfannes.el") "C editing mode." t)
 
-(autoload 'gud-mode "c:/.emacsrc/emacs-gud/gud-gfannes.el" "GUD editing mode." t)
+(autoload 'gud-mode (concat (getenv "EMACSRC") "/emacs-gud/gud-gfannes.el") "GUD editing mode." t)
 (gud-mode)
 
 ;; C++
@@ -138,12 +138,12 @@
       (cons '("\\.cpp$" . c++-mode) auto-mode-alist))
 (setq auto-mode-alist
       (cons '("\\.hpp$" . c++-mode) auto-mode-alist))
-(autoload 'c++-mode "c:/.emacsrc/emacs-c++/c++-gfannes.el" "C++ editing mode." t)
+(autoload 'c++-mode (concat (getenv "EMACSRC") "/emacs-c++/c++-gfannes.el") "C++ editing mode." t)
 
 ;; Markdown
 (setq auto-mode-alist
       (cons '("\\.txt$" . markdown-mode) auto-mode-alist))
-(autoload 'markdown-mode "c:/.emacsrc/emacs-markdown/markdown-mode.el" "Markdown editing mode." t)
+(autoload 'markdown-mode (concat (getenv "EMACSRC") "/emacs-markdown/markdown-mode.el") "Markdown editing mode." t)
 
 ;;;;enforced coding standards for nautilus
 ;;;;
