@@ -1,0 +1,34 @@
+;; .emacs
+
+;;; uncomment this line to disable loading of "default.el" at startup
+;; (setq inhibit-default-init t)
+
+;; turn on font-lock mode
+(global-font-lock-mode t)
+
+;; enable visual feedback on selections
+(setq transient-mark-mode t)
+
+(autoload 'matlab-mode "matlab.el" "Enter Matlab mode." t)
+(setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
+(autoload 'matlab-shell "matlab.el" "Interactive Matlab mode." t)
+
+(setq auto-mode-alist
+      (cons '("\\.rb$" . ruby-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.rhtml$" . ruby-mode) auto-mode-alist))
+(setq interpreter-mode-alist
+      (cons '("ruby" . ruby-mode)
+            interpreter-mode-alist))
+;(autoload 'ruby-mode "/usr/share/emacs/site-lisp/ruby-mode.elc" "Ruby editing mode." t)
+;(autoload 'ruby-mode "/home/gfannes/emacs/ruby-gfannes.el" "Ruby editing mode." t)
+;(autoload 'ruby-mode "ruby-gfannes" "Ruby editing mode." t)
+(autoload 'ruby-mode "/usr/share/emacs/site-lisp/emacs-ruby/ruby-gfannes.el" "Ruby editing mode." t)
+
+(setq c-default-style
+      '((c++-mode . "linux") (other . "linux")))
+(setq c-basic-offset 2)
+(global-set-key "\C-xg" 'goto-line)
+;(global-unset-key "\C-n")
+;(global-set-key "\C-n" 'bury-buffer)
+

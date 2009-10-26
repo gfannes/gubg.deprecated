@@ -1,0 +1,1 @@
+Put this directory with its content in /usr/share/emacs/site-lisp and copy the dotEmacs to ~/.emacs.
