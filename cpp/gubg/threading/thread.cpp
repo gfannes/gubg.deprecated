@@ -3,7 +3,7 @@
 int Thread::start()
 {
   setRunning(true);
-  return pthread_create(&mThread, NULL, staticDummy, (void *)this);
+  return pthread_create(&_thread, NULL, staticDummy, (void *)this);
 }
 
 void *Thread::staticDummy(void *data)
@@ -15,5 +15,5 @@ void *Thread::staticDummy(void *data)
 
 void Thread::finish()
 {
-  pthread_join(mThread, NULL);
+  pthread_join(_thread, NULL);
 }

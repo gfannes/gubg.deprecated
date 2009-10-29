@@ -7,46 +7,55 @@ class Thread
 {
 public:
     Thread():
-        mRunning(false){};
+        _running(false){};
     int start();
     void finish();
-    bool isRunning(){return mRunning;};
+    bool isRunning(){return _running;};
 protected:
     static void *staticDummy(void *);
     virtual bool execute() = 0;
-    void setRunning(bool b){mRunning = b;};
+    void setRunning(bool b){_running = b;};
 private:
-    bool mRunning;
-    pthread_t mThread;
+    bool _running;
+    pthread_t _thread;
 };
 
-template <typename T>
+// Locks resource away behind a mutex.
+// You can access the resource by providing a class ResourceRequester that has at least:
+// class ResourceRequester
+// {
+// public:
+//   bool execute4Mutex(ResourceType *resource){}
+// };
+template <typename ResourceType>
 class Mutex
 {
 public:
-    Mutex(T *pResource):
-        mResource(pResource){pthread_mutex_init(&mMutex, NULL);};
-//    virtual bool execute() = 0;
-    template <typename T2>
-    bool access(T2 &t2)
+    Mutex(ResourceType *resource):
+        _resource(resource){pthread_mutex_init(&_mutex, NULL);};
+
+    template <typename ResourceRequester>
+    bool access(ResourceRequester &resourceRequester)
         {
             bool ok;
-            pthread_mutex_lock(&mMutex);
-            ok = t2.execute4Mutex(mResource);
-            pthread_mutex_unlock(&mMutex);
+            pthread_mutex_lock(&_mutex);
+            ok = resourceRequester.execute4Mutex(_resource);
+            pthread_mutex_unlock(&_mutex);
             return ok;
         }
+
     void lock()
         {
-            pthread_mutex_lock(&mMutex);
+            pthread_mutex_lock(&_mutex);
         }
     void unlock()
         {
-            pthread_mutex_unlock(&mMutex);
+            pthread_mutex_unlock(&_mutex);
         }
+
 private:
-    pthread_mutex_t mMutex;
-    T *mResource;
+    pthread_mutex_t _mutex;
+    ResourceType *_resource;
 };
 
 #endif
