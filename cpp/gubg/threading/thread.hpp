@@ -3,6 +3,8 @@
 
 #include "pthread.h"
 
+// You can create a thread by inheriting from Thread and providing the method:
+// virtual bool Thread::execute();
 class Thread
 {
 public:
@@ -20,7 +22,7 @@ private:
     pthread_t _thread;
 };
 
-// Locks resource away behind a mutex.
+// Locks a resource of type ResourceType away behind a mutex.
 // You can access the resource by providing a class ResourceRequester that has at least:
 // class ResourceRequester
 // {
