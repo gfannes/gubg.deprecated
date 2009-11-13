@@ -7,14 +7,14 @@ using namespace gubg;
 
 void Visualization::initialize()
 {
-  if (mShow)
-    if (!mCanvas.initialized())
-      mCanvas.initialize();
+  if (_show)
+    if (!_canvas.initialized())
+      _canvas.initialize();
 }
 
 void Visualization::start()
 {
-  if (mShow)
+  if (_show)
     {
       initialize();
 
@@ -23,8 +23,8 @@ void Visualization::start()
       bool continueDynamics;
       continueDynamics = onStart();
 
-      mQuit = false;
-      while ( !mQuit && continueDynamics )
+      _quit = false;
+      while ( !_quit && continueDynamics )
         {
           handleInput();
 
@@ -45,11 +45,11 @@ void Visualization::handleInput()
   while ( SDL_PollEvent(&Event) )
     {
       if ( Event.type == SDL_QUIT )
-        mQuit = true ;
+        _quit = true ;
       if ( Event.type == SDL_KEYDOWN )
         {
           if ( Event.key.keysym.sym == SDLK_ESCAPE )
-            mQuit = true ;
+            _quit = true ;
         }
     }
 }
@@ -60,20 +60,20 @@ void Visualization::draw()
   int currentBasis=-2;
   vector<Drawable*>::iterator iter;
 
-  mDrawablesM.lock();
-  vector<Drawable*> &drawables = mDrawables.getCurrent();
-  mCanvas.clear(mBackgroundColor);
+  _drawablesM.lock();
+  vector<Drawable*> &drawables = _drawables.getCurrent();
+  _canvas.clear(_backgroundColor);
   for (iter=drawables.begin();iter!=drawables.end();iter++)
     {
-      (*iter)->draw(mCanvas);
+      (*iter)->draw(_canvas);
     }
 
 //     // Add the frames per second
-//     mpCairoContext->set_matrix(mFPSBasis);
+//     mpCairoContext->set_matrix(_FPSBasis);
 //     mpCairoContext->text_path("Oe jee");
 //     mpCairoContext->fill();
 //     mpCairoContext->stroke();
 
-  mCanvas.flip();
-  mDrawablesM.unlock();
+  _canvas.flip();
+  _drawablesM.unlock();
 }

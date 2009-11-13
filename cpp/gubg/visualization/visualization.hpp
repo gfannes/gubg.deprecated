@@ -38,25 +38,25 @@ namespace gubg
 
     public:
 	Visualization(int width, int height, bool bShow = true, unsigned int bgColor = 0x123456):
-	    mCanvas(width,height),
-	    mShow(bShow),
-	    mQuit(true),
-	    mBackgroundColor(bgColor),
-	    mDrawablesM(&mDrawables){};
+	    _canvas(width,height),
+	    _show(bShow),
+	    _quit(true),
+	    _backgroundColor(bgColor),
+	    _drawablesM(&_drawables){};
 	~Visualization()
 	    {
 		finishThread();
 	    }
 
-	int createBasis(double xO, double yO, double xW, double yW){return mCanvas.createBasis(xO,yO,xW,yW);}
+	int createBasis(double xO, double yO, double xW, double yW){return _canvas.createBasis(xO,yO,xW,yW);}
 	bool addDrawable(int basis, Drawable *drawable, bool current = true)
 	    {
-		if (mShow)
+		if (_show)
 		{
 		    drawable->setBasis(basis);
-		    mDrawablesM.lock();
-		    mDrawables.get(current).push_back(drawable);
-		    mDrawablesM.unlock();
+		    _drawablesM.lock();
+		    _drawables.get(current).push_back(drawable);
+		    _drawablesM.unlock();
 		}
 		return true;
 	    }
@@ -67,27 +67,27 @@ namespace gubg
 	void draw();
 	void flip()
 	    {
-		if (mShow)
+		if (_show)
 		{
-		    mDrawablesM.lock();
-		    mDrawables.flip();
-		    mDrawablesM.unlock();
+		    _drawablesM.lock();
+		    _drawables.flip();
+		    _drawablesM.unlock();
 		}
 	    }
-	int width(){return mCanvas.width();}
-	int height(){return mCanvas.height();}
+	int width(){return _canvas.width();}
+	int height(){return _canvas.height();}
 	bool clear(bool deleteMemory = false)
 	    {
-		if (mShow)
+		if (_show)
 		{
-		    mDrawablesM.lock();
-		    vector<Drawable*> &drawables = mDrawables.getCurrent();
+		    _drawablesM.lock();
+		    vector<Drawable*> &drawables = _drawables.getCurrent();
 		    if (deleteMemory)
 			for (int i=0;i<drawables.size();++i)
 			    delete drawables[i];
 		    drawables.resize(0);
-		    mCanvas.clear(mBackgroundColor);
-		    mDrawablesM.unlock();
+		    _canvas.clear(_backgroundColor);
+		    _drawablesM.unlock();
 		}
 		return true;
 	    }
@@ -123,13 +123,13 @@ namespace gubg
 	long mTotalElapsedTime;        // Measured in microseconds
 
     private:
-	Canvas mCanvas;
-	bool mShow;
-	bool mQuit;
-	Drawables mDrawables;
-	Mutex<Drawables> mDrawablesM;
-	Cairo::Matrix mFPSBasis;
-	unsigned int mBackgroundColor;
+	Canvas _canvas;
+	bool _show;
+	bool _quit;
+	Drawables _drawables;
+	Mutex<Drawables> _drawablesM;
+	Cairo::Matrix _FPSBasis;
+	unsigned int _backgroundColor;
     };
 };
 

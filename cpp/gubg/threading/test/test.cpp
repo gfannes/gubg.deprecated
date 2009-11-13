@@ -10,7 +10,7 @@ class Printer: public Thread
   {
   public:
     Printer(string str):
-        mToPrint(str) {};
+        _toPrint(str) {};
   protected:
     virtual bool execute()
     {
@@ -18,23 +18,23 @@ class Printer: public Thread
       for (i=0;i<3;i++)
         {
           nanosleep(0, 1000);
-          cout << i << " " << mToPrint << endl;
+          cout << i << " " << _toPrint << endl;
         }
     }
   public:
-    string mToPrint;
+    string _toPrint;
   };
 
 class Grabber: public Thread
   {
   public:
     Grabber(string id,Mutex<int> *token):
-        mID(id),
-        mToken(token) {};
+        _id(id),
+        _token(token) {};
     bool execute4Mutex(int *token)
     {
       (*token)++;
-      cout << "Too late, the token is taken by " << mID << " and has value " << *token << endl;
+      cout << "Too late, the token is taken by " << _id << " and has value " << *token << endl;
       sleep(1);
     }
   protected:
@@ -44,12 +44,12 @@ class Grabber: public Thread
       for (i=0;i<3;i++)
         {
           nanosleep(0, 1000);
-          mToken->access(*this);
+          _token->access(*this);
         }
     }
   private:
-    string mID;
-    Mutex<int> *mToken;
+    string _id;
+    Mutex<int> *_token;
   };
 
 int main()
