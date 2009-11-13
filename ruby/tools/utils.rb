@@ -457,17 +457,15 @@ end
 #A Collection enables case-when statements to be compared with a collection of things that can fit. If any of the collection arguments matches (with ===), the collection matches
 class Collection < Array
   def initialize(*elements)
-    @elements = elements
+    self.concat(elements)
   end
   def Collection.from(ary)
     collection = Collection.new
-    ary.each do |el|
-      collection << el
-    end
+    collection.concat(ary)
     collection
   end
   def ===(rhs)
-    @elements.any?{|el|el===rhs}
+    self.any?{|el|el===rhs}
   end
 end
 

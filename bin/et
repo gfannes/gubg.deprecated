@@ -3,7 +3,8 @@
 
 require("tools/utils")
 
-binary = (ARGV[0]=="-vi" ? "ctags" : "etags")
+#binary = (ARGV[0]=="-vi" ? "ctags" : "etags")
+binary = (ARGV[0]=="-vi" ? "ctags" : "h:/software/ctags58/ctags")
 
 reOK = /^.+\.([ch]p*|idl)$/
 reKO = /\._c\.cpp/
@@ -13,6 +14,8 @@ recursor = Proc.new do |dir|
        when /\.svn/
          false
        when /CVS/
+         false
+       when /win32/
          false
        else
          true
@@ -25,7 +28,7 @@ bFirst = true
 Dir.each('./', recursor) do |dir, fn|
   if fn[reOK] and !fn[reKO]
     fileName = File.expand_path(fn, dir)
-#    puts("\tChecking \"#{fileName}\" for tags")
+    puts("\tChecking \"#{fileName}\" for tags")
     if bFirst
       bFirst = false
       system("#{binary} \"#{fileName}\"")

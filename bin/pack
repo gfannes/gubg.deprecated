@@ -18,7 +18,7 @@ while arguments[0][/^-/] do
   end
 end
 base=arguments[0]
-hostname=ENV['HOSTNAME'].split('.')[0]
+hostname=(ENV['HOSTNAME']||"").split('.')[0]
 date=Time.now.strftime("%Y%m%d")
 version=0
 

@@ -99,10 +99,11 @@ local function iteratorDirs(state, dir)
 	 end
       end
    end
-   return nextDir
+   return nextDir, nextDir and _G.string.match(state.path, "(.+)/" .. nextDir)
 end
 
 -- Returns an recursive iterator for all files in path
+-- The iterator returns the fileName and path where the fileName resides
 --  * arg[1](dir) can specify if dir should be visited recursively
 function eachFile(path, ...)
    local i, s, control = _G.lfs.dir(path)
@@ -114,6 +115,7 @@ function eachFile(path, ...)
 end
 
 -- Returns a recursive iterator for all directories in path
+-- The iterator returns the dirName (only the name, not the path) and the path where the dirName resides
 --  * arg[1](dir) can specify if dir should be visited recursively
 function eachDir(path, ...)
    local i, s, control = _G.lfs.dir(path)
@@ -142,6 +144,15 @@ function loadLines(fileName, ...)
    end
    file:close()
    return lines
+end
+
+-- Exports lines to fileName
+function exportLines(lines, fileName)
+   local file = _G.assert(_G.io.open(fileName, "wb"))
+   for _, line in _G.ipairs(lines) do
+      file:write(line .. "\n")
+   end
+   file:close()
 end
 
 function fullPath(file, dir)
