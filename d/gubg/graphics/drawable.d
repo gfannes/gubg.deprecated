@@ -25,10 +25,11 @@ private:
 
 class Line: StyledDrawable
 {
-    this(real[] sco, real[] eco)
+    this(real[] sco, real[] eco, StrokeStyle style)
     {
 	_origSCo = sco;
 	_origECo = eco;
+	strokeStyle = style;
     }
 
     void setCoordinates(real[] sco, real[] eco){synchronized(this){_origSCo = sco; _origECo = eco;}}
@@ -50,9 +51,10 @@ private:
 
 class Rectangle: Line
 {
-    this(real[] lbco, real[] trco)
+    this(real[] lbco, real[] trco, StrokeStyle sStyle, FillStyle fStyle)
     {
-	super(lbco, trco);
+	super(lbco, trco, sStyle);
+	fillStyle = fStyle;
     }
 
     void draw(ICanvas canvas, Transformation transfo)
@@ -69,10 +71,12 @@ class Rectangle: Line
 
 class Circle: StyledDrawable
 {
-    this(real[] center, real radius)
+    this(real[] center, real radius, StrokeStyle sStyle, FillStyle fStyle)
     {
 	_origCenter = center;
 	_origRadius = radius;
+	strokeStyle = sStyle;
+	fillStyle = fStyle;
     }
 
     void setCenter(real[] center){synchronized(this){_origCenter = center;}}

@@ -61,6 +61,8 @@ class StrokeStyle
 	    strokeColor = color;
 	}
 
+    StrokeStyle dup(){return new StrokeStyle(_strokeWidth, _strokeColor);}
+
     // Getters and setters
     real strokeWidth(){synchronized(this){return _strokeWidth;}}
     void strokeWidth(real width){synchronized(this){_strokeWidth = width;}}
@@ -83,11 +85,13 @@ class FillStyle
 	    _fillColor = fillColor;
 	}
 
+    FillStyle dup(){return new FillStyle(_fillColor);}
+
     // Getters and setters
     Color fillColor(){synchronized(this){return _fillColor;}}
     void fillColor(Color color){synchronized(this){_fillColor = color;}}
 
-    static FillStyle standard(){return new FillStyle(Color.Black);}
+    static FillStyle standard(){return new FillStyle(Color.Red);}
 
     char[] toString(){return Format("fillColor = {}", _fillColor);}
 
