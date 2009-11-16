@@ -32,7 +32,7 @@ class Scene
 	}
     bool draw()
 	{
-	    void drawDrawable(Drawable drawable)
+	    void drawDrawable(IDrawable drawable)
 	    {
 		synchronized(drawable)
 		{
@@ -49,7 +49,11 @@ class Scene
 	    }
 	    return true;
 	}
-    bool add(Drawable drawable, Style style = null)
+    bool add(IDrawable drawable)
+	{
+	    return _currentCoSystem.addDrawable(drawable);
+	}
+    bool addStyledDrawable(StyledDrawable drawable, Style style = null)
 	{
 	    return _currentCoSystem.addDrawable(drawable, (style is null ? _currentStyle.dup() : style));
 	}
@@ -59,13 +63,18 @@ class Scene
     {
 	this(Transformation transfo){mTransformation = transfo;}
 	Transformation transformation(){return mTransformation;}
-	bool addDrawable(Drawable drawable, Style style)
+	bool addDrawable(IDrawable drawable)
+	    {
+		_drawables ~= [drawable];
+		return true;
+	    }
+	bool addDrawable(StyledDrawable drawable, Style style)
 	    {
 		drawable.setStyle(style);
 		_drawables ~= [drawable];
 		return true;
 	    }
-	void eachDrawable(void delegate(Drawable drawable) callback)
+	void eachDrawable(void delegate(IDrawable drawable) callback)
 	    {
 		foreach(drawable; _drawables)
 		{
@@ -74,7 +83,7 @@ class Scene
 	    }
     private:
 	Transformation mTransformation;
-	Drawable[] _drawables;
+	IDrawable[] _drawables;
     }
 private:
     ICanvas _canvas;

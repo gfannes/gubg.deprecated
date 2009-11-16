@@ -5,7 +5,12 @@ import gubg.coordinate;
 import gubg.graphics.canvas;
 import gubg.graphics.style;
 
-class Drawable
+interface IDrawable
+{
+	bool draw(ICanvas, Transformation);
+}
+
+class StyledDrawable: IDrawable
 {
     Style style(){return _style;}
     void setStyle(Style style)
@@ -17,7 +22,7 @@ private:
     Style _style;
 }
 
-class Line: Drawable
+class Line: StyledDrawable
 {
     this(real[] sco, real[] eco)
     {
@@ -71,7 +76,7 @@ class Rectangle: Line
     }
 }
 
-class Circle: Drawable
+class Circle: StyledDrawable
 {
     this(real[] center, real radius)
     {

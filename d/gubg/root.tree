@@ -5,4 +5,4 @@ d:
   always: -I$HOME/d/src -I/home/befanneg/personal/d/src
  linking:
   always: -L-lncurses -L-lcairo
-  derelict.sdl.sdl:  -L-lderelict -L-L$DSRC/derelict/lib -L-gtkD -L-L$DSRC/gtkD/src/lib
+  derelict.sdl.sdl:  -L-lderelict -L-L$DSRC/derelict/lib

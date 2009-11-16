@@ -115,7 +115,7 @@
 parenthesis syntax classes that have uses other than as expression
 operators."
   d (append '("/+" "+/" "..." ".." "!" "*" "&")
-	    (c-lang-const c-other-op-syntax-tokens)))
+            (c-lang-const c-other-op-syntax-tokens)))
   
 (c-lang-defconst c-block-comment-starter d "/*")
 (c-lang-defconst c-block-comment-ender   d "*/")
@@ -175,7 +175,7 @@ operators."
 
 (c-lang-defconst c-typedef-decl-kwds
   d (append (c-lang-const c-typedef-decl-kwds)
-	    '("typedef" "alias")))
+            '("typedef" "alias")))
 
 (c-lang-defconst c-decl-hangon-kwds
   d '("export"))
@@ -287,13 +287,13 @@ operators."
   "Syntax table used in d-mode buffers.")
 (or d-mode-syntax-table
     (setq d-mode-syntax-table
-	 (let ((table (funcall (c-lang-const c-make-mode-syntax-table d))))
-	   ;; Make it recognize D `backquote strings`
-	   (modify-syntax-entry ?` "\"" table)
+         (let ((table (funcall (c-lang-const c-make-mode-syntax-table d))))
+           ;; Make it recognize D `backquote strings`
+           (modify-syntax-entry ?` "\"" table)
 
-	   ;; Make it recognize D's nested /+ +/ comments 
-	   (modify-syntax-entry ?+  ". 23n"   table)
-	   table)))
+           ;; Make it recognize D's nested /+ +/ comments 
+           (modify-syntax-entry ?+  ". 23n"   table)
+           table)))
 
 (defvar d-mode-abbrev-table nil
   "Abbreviation table used in d-mode buffers.")
@@ -323,7 +323,7 @@ operators."
   t `(["Comment Out Region"     comment-region
        (c-fn-region-is-active-p)]
       ["Uncomment Region"       (comment-region (region-beginning)
-						(region-end) '(4))
+                                                (region-end) '(4))
        (c-fn-region-is-active-p)]
       ["Indent Expression"      c-indent-exp
        (memq (char-after) '(?\( ?\[ ?\{))]
@@ -335,15 +335,15 @@ operators."
       "----"
       ("Toggle..."
        ["Syntactic indentation" c-toggle-syntactic-indentation
-	:style toggle :selected c-syntactic-indentation]
+        :style toggle :selected c-syntactic-indentation]
        ["Electric mode"         c-toggle-electric-state
-	:style toggle :selected c-electric-flag]
+        :style toggle :selected c-electric-flag]
        ["Auto newline"          c-toggle-auto-newline
-	:style toggle :selected c-auto-newline]
+        :style toggle :selected c-auto-newline]
        ["Hungry delete"         c-toggle-hungry-state
-	:style toggle :selected c-hungry-delete-key]
+        :style toggle :selected c-hungry-delete-key]
        ["Subword mode"          c-subword-mode
-	:style toggle :selected (and (boundp 'c-subword-mode)
+        :style toggle :selected (and (boundp 'c-subword-mode)
                                      c-subword-mode)])))
 
 (easy-menu-define d-menu d-mode-map "D Mode Commands"
@@ -366,9 +366,9 @@ Key bindings:
   (c-initialize-cc-mode t)
   (set-syntax-table d-mode-syntax-table)
   (setq major-mode 'd-mode
-	mode-name "D"
-	local-abbrev-table d-mode-abbrev-table
-	abbrev-mode t)
+        mode-name "D"
+        local-abbrev-table d-mode-abbrev-table
+        abbrev-mode t)
   (use-local-map d-mode-map)
   (c-init-language-vars d-mode)
   (c-common-init 'd-mode)
@@ -376,7 +376,6 @@ Key bindings:
   (c-run-mode-hooks 'c-mode-common-hook 'd-mode-hook)
   (c-update-modeline))
 
-
 (provide 'd-mode)
 
 ;;; d-mode.el ends here
