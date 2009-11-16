@@ -6,7 +6,6 @@ import gubg.tree;
 import gubg.coordinate;
 
 import gubg.graphics.drawable;
-import gubg.graphics.style;
 import gubg.graphics.canvas;
 
 import gubg.puts;
@@ -26,11 +25,10 @@ class Scene
 		    newOne = [canvas.width()-1, canvas.height()-1];
 		auto transfo = new Transformation(newOrig, newOne);
 		_currentCoSystem = new CoSystem(transfo);
-		_currentStyle = Style.defaultStyle();
 		_tree = new Tree!(CoSystem)(_currentCoSystem);
 	    }
 	}
-    bool draw()
+    void draw()
 	{
 	    void drawDrawable(IDrawable drawable)
 	    {
@@ -39,41 +37,19 @@ class Scene
 		    drawable.draw(_canvas, _currentCoSystem.transformation());
 		}
 	    }
-	    if (_canvas.initializeDraw())
-	    {
-		_currentCoSystem.eachDrawable(&drawDrawable);
-		_canvas.finalizeDraw();
-	    } else
-	    {
-		err("Failed to initialize the canvas for drawing");
-	    }
-	    return true;
+	    if (!_canvas.initializeDraw())
+		throw new Exception("Failed to initialize the canvas for drawing");
+
+	    _currentCoSystem.eachDrawable(&drawDrawable);
+	    _canvas.finalizeDraw();
 	}
-    bool add(IDrawable drawable)
-	{
-	    return _currentCoSystem.addDrawable(drawable);
-	}
-    bool addStyledDrawable(StyledDrawable drawable, Style style = null)
-	{
-	    return _currentCoSystem.addDrawable(drawable, (style is null ? _currentStyle.dup() : style));
-	}
-    Style currentStyle(){return _currentStyle;}
+    void add(IDrawable drawable){_currentCoSystem.addDrawable(drawable);}
 
     class CoSystem
     {
 	this(Transformation transfo){mTransformation = transfo;}
 	Transformation transformation(){return mTransformation;}
-	bool addDrawable(IDrawable drawable)
-	    {
-		_drawables ~= [drawable];
-		return true;
-	    }
-	bool addDrawable(StyledDrawable drawable, Style style)
-	    {
-		drawable.setStyle(style);
-		_drawables ~= [drawable];
-		return true;
-	    }
+	void addDrawable(IDrawable drawable){_drawables ~= [drawable];}
 	void eachDrawable(void delegate(IDrawable drawable) callback)
 	    {
 		foreach(drawable; _drawables)
@@ -88,7 +64,6 @@ class Scene
 private:
     ICanvas _canvas;
     CoSystem _currentCoSystem;
-    Style _currentStyle;
     Tree!(CoSystem) _tree;
 }
 
@@ -98,12 +73,12 @@ version(UnitTest)
 
     void main()
     {
-//	ICanvas canvas = new ConsoleCanvas;
-	ICanvas canvas = new SDLCanvas(640, 480);
+	ICanvas canvas = new ConsoleCanvas;
+//	ICanvas canvas = new SDLCanvas(640, 480);
 	Scene scene = new Scene(canvas);
-	scene.add(new Line([1,2], [3,4]));
-	scene.add(new Line([10,20], [30,40]));
-	auto circle = new Circle([12,34], 56);
+	scene.add(new Line([1.0, 2], [3.0, 4]));
+	scene.add(new Line([10.0, 20], [30.0, 40]));
+	auto circle = new Circle([12.0, 34], 56);
 	scene.add(circle);
 	for (int i=0; i<100; ++i)
 	{

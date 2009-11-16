@@ -3,23 +3,24 @@ module gubg.graphics.drawable;
 import gubg.coordinate;
 
 import gubg.graphics.canvas;
-import gubg.graphics.style;
 
 interface IDrawable
 {
-	bool draw(ICanvas, Transformation);
+    void draw(ICanvas, Transformation);
 }
 
 class StyledDrawable: IDrawable
 {
-    Style style(){return _style;}
-    void setStyle(Style style)
-	{
-	    _style = style;
-	}
-    abstract bool draw(ICanvas canvas, Transformation transfo);
+    StrokeStyle strokeStyle(){return _strokeStyle;}
+    FillStyle fillStyle(){return _fillStyle;}
+    void strokeStyle(StrokeStyle style){_strokeStyle = style;}
+    void fillStyle(FillStyle style){_fillStyle = style;}
+
+    abstract void draw(ICanvas canvas, Transformation transfo);
+
 private:
-    Style _style;
+    StrokeStyle _strokeStyle;
+    FillStyle _fillStyle;
 }
 
 class Line: StyledDrawable
@@ -32,14 +33,14 @@ class Line: StyledDrawable
 
     void setCoordinates(real[] sco, real[] eco){synchronized(this){_origSCo = sco; _origECo = eco;}}
 
-    bool draw(ICanvas canvas, Transformation transfo)
+    void draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
 	    real[] sco, eco;
 	    transfo.transformCoN2O(sco, _origSCo);
 	    transfo.transformCoN2O(eco, _origECo);
-	    return canvas.setStrokeStyle(_style) && canvas.drawLine(sco, eco);
+	    canvas.drawLine(sco, eco, strokeStyle);
 	}
     }
 private:
@@ -54,24 +55,14 @@ class Rectangle: Line
 	super(lbco, trco);
     }
 
-    bool draw(ICanvas canvas, Transformation transfo)
+    void draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
 	    real[] sco, eco;
 	    transfo.transformCoN2O(sco, _origSCo);
 	    transfo.transformCoN2O(eco, _origECo);
-	    if (_style.fill())
-	    {
-		canvas.setFillStyle(_style);
-		canvas.drawRectangle(sco, eco, true);
-	    }
-	    if (_style.stroke())
-	    {
-		canvas.setStrokeStyle(_style);
-		canvas.drawRectangle(sco, eco, false);
-	    }
-	    return true;
+	    canvas.drawRectangle(sco, eco, strokeStyle, fillStyle);
 	}
     }
 }
@@ -87,24 +78,14 @@ class Circle: StyledDrawable
     void setCenter(real[] center){synchronized(this){_origCenter = center;}}
     void setRadius(real radius){synchronized(this){_origRadius = radius;}}
 
-    bool draw(ICanvas canvas, Transformation transfo)
+    void draw(ICanvas canvas, Transformation transfo)
     {
 	synchronized(this)
 	{
 	    real[] center, radiuss;
 	    transfo.transformCoN2O(center, _origCenter);
 	    transfo.transformLN2O(radiuss, [_origRadius, _origRadius]);
-	    if (_style.fill())
-	    {
-		canvas.setFillStyle(_style);
-		canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]),true);
-	    }
-	    if (_style.stroke())
-	    {
-		canvas.setStrokeStyle(_style);
-		canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]), false);
-	    }
-	    return true;
+	    canvas.drawCircle(center, 0.5*(radiuss[0]+radiuss[1]), strokeStyle, fillStyle);
 	}
     }
 private:

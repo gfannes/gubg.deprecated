@@ -2,6 +2,8 @@ module gubg.graphics.style;
 
 import gubg.puts;
 
+import tango.text.convert.Format;
+
 struct Color
 {
     // Some predefined colors
@@ -42,6 +44,7 @@ struct Color
     ubyte[] rgbByte(){return [cast(ubyte)(255*red), cast(ubyte)(255*green), cast(ubyte)(255*blue)];}
     
     void print(){puts("#({}, {}, {})", red, green, blue);}
+    char[] toString(){return Format("#({}, {}, {})", red, green, blue);}
 
 
     // Data fields
@@ -50,60 +53,44 @@ struct Color
     real blue;
 }
 
-class Style
+class StrokeStyle
 {
-    this(bool stroke, real strokeWid, Color strokeCol, bool fill = false, Color fillCol = Color.Invalid)
+    this(real width, Color color)
 	{
-	    _stroke = stroke;
-	    _strokeWidth = strokeWid;
-	    _strokeColor = strokeCol;
-	    _fill = fill;
-	    _fillColor = fillCol;
-	}
-    static Style defaultStyle()
-	{
-	    Style style = new Style(true, 1.0, Color.White, false, Color.Invalid);
-	    return style;
+	    strokeWidth = width;
+	    strokeColor = color;
 	}
 
-    // Getters
-    bool stroke(){return _stroke;}
+    // Getters and setters
     real strokeWidth(){synchronized(this){return _strokeWidth;}}
+    void strokeWidth(real width){synchronized(this){_strokeWidth = width;}}
     Color strokeColor(){synchronized(this){return _strokeColor;}}
-    bool fill(){synchronized(this){return _fill;}}
-    Color fillColor(){synchronized(this){return _fillColor;}}
+    void strokeColor(Color color){synchronized(this){_strokeColor = color;}}
 
-    // Setters
-    void setStroke(bool stroke){synchronized(this){_stroke = stroke;}}
-    void setStrokeWidth(real strokeWidth){synchronized(this){_strokeWidth = strokeWidth;}}
-    void setStrokeColor(Color color){synchronized(this){_strokeColor = color;}}
-    void setFill(bool fill){synchronized(this){_fill = fill;}}
-    void setFillColor(Color color){synchronized(this){_fillColor = color;}}
+    static StrokeStyle standard(){return new StrokeStyle(1.0, Color.Black);}
 
-    // duplicate
-    Style dup()
-	{
-	    return new Style(_stroke, _strokeWidth, _strokeColor, _fill, _fillColor);
-	}
-
-    void print()
-	{
-	    puts("Style:");
-	    if (_stroke)
-	    {
-		putsn("\tStroke color:\t"); _strokeColor.print();
-		puts("\tStroke width:\t{}", _strokeWidth);
-	    }
-	    if (_fill)
-	    {
-		putsn("\tFill color:\t"); _fillColor.print();
-	    }
-	}
+    char[] toString(){return Format("strokeWidth = {}, strokeColor = {}", _strokeWidth, _strokeColor);}
 
 private:
-    bool _stroke;
     real _strokeWidth;
     Color _strokeColor;
-    bool _fill;
+}
+
+class FillStyle
+{
+    this(Color fillColor)
+	{
+	    _fillColor = fillColor;
+	}
+
+    // Getters and setters
+    Color fillColor(){synchronized(this){return _fillColor;}}
+    void fillColor(Color color){synchronized(this){_fillColor = color;}}
+
+    static FillStyle standard(){return new FillStyle(Color.Black);}
+
+    char[] toString(){return Format("fillColor = {}", _fillColor);}
+
+private:
     Color _fillColor;
 }

@@ -1,6 +1,6 @@
 module gubg.graphics.canvas;
 
-import gubg.graphics.style;
+public import gubg.graphics.style;
 
 import derelict.sdl.sdl;
 import Cairo = gubg.graphics.cairo;
@@ -18,28 +18,29 @@ interface ICanvas
     void finalizeDraw();
 
     // width and height of canvas
-    // (0,0) is bottom left and (width()-1, height()-1) is top right
+    // (0,0) is bottom left and (width-1, height-1) is top right
     int width();
     int height();
 
     // Drawing primitives
-    bool drawLine(real[] sco, real[] eco);
-    bool drawCircle(real[] center, real radius, bool fill);
-    bool drawRectangle(real[] lbco, real[] trco, bool fill);
-
-    // Style settings
-    bool setStrokeStyle(Style style);
-    bool setFillStyle(Style style);
+    void drawLine(real[] sco, real[] eco, StrokeStyle);
+    void drawCircle(real[] center, real radius, StrokeStyle, FillStyle);
+    void drawRectangle(real[] lbco, real[] trco, StrokeStyle, FillStyle);
+    // TODO
+    // void drawPixel();
+    // void drawPath();
 }
 
 class ConsoleCanvas: ICanvas
 {
+public:				// ICanvas
     bool initialize()
     {
 	puts("Initializing ConsoleCanvas");
 	return true;
     }
     bool finalize(){return true;}
+
     bool initializeDraw()
     {
 	puts("Initializing ConsoleCanvas for drawing");
@@ -50,20 +51,18 @@ class ConsoleCanvas: ICanvas
     int width(){return -1;}
     int height(){return -1;}
 
-    bool drawLine(real[] sco, real[] eco)
+    void drawLine(real[] sco, real[] eco, StrokeStyle strokeStyle)
     {
-	puts("Drawing line from {} to {}", sco, eco);
-	return true;
+	puts("Drawing line from {} to {} in style {}", sco, eco, strokeStyle);
     }
-    bool drawCircle(real[] center, real radius, bool fill)
+    void drawCircle(real[] center, real radius, StrokeStyle strokeStyle, FillStyle fillStyle)
     {
-	puts("Drawing circle with center {} and radius {}, fill {}", center, radius, fill);
-	return true;
+	puts("Drawing circle with center {} and radius {}, strokeStyle {}, fillStyle {}", center, radius, strokeStyle, fillStyle);
     }
-    bool drawRectangle(real[] lbco, real[] trco, bool fill){return true;}
-
-    bool setStrokeStyle(Style style){return true;}
-    bool setFillStyle(Style style){return true;}
+    void drawRectangle(real[] lbco, real[] trco, StrokeStyle strokeStyle, FillStyle fillStyle)
+    {
+	puts("Drawing rectangle from left bottom {} to top right {}, strokeStyle {}, fillStyle {}", lbco, trco, strokeStyle, fillStyle);
+    }
 }
 
 class SDLCanvas: ICanvas
@@ -76,6 +75,7 @@ class SDLCanvas: ICanvas
 	_SDLSurface = null;
     }
 
+public: 			// ICanvas
     bool initialize()
     {
 	if (_initialized)
@@ -118,65 +118,71 @@ class SDLCanvas: ICanvas
 	clear();
 	return true;
     }
-    void clear(uint rgb = 0x123456){SDL_FillRect( _SDLSurface, null, rgb);}
-
     void finalizeDraw()
     {
 	if (SDL_MUSTLOCK(_SDLSurface))
 	    SDL_UnlockSurface(_SDLSurface);
 	SDL_UpdateRect(_SDLSurface, 0, 0, _width, _height);
     }
-    void flip()
-    {
-	SDL_Flip(_SDLSurface);
-    }
 
     int width(){return _width;}
     int height(){return _height;}
 
-    bool drawLine(real[] sco, real[] eco)
+    void drawLine(real[] sco, real[] eco, StrokeStyle strokeStyle)
     {
-        _cairo.moveTo(sco[0], _height-1-sco[1]);
-        _cairo.lineTo(eco[0], _height-1-eco[1]);
-        _cairo.stroke();
-	return true;
-    }
-    bool drawCircle(real[] center, real radius, bool fill)
-    {
-        _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
-	if (fill)
-	    _cairo.fill();
-	else
+	if (strokeStyle)
+	{
+	    setStrokeStyle(strokeStyle);
+	    _cairo.moveTo(sco[0], _height-1-sco[1]);
+	    _cairo.lineTo(eco[0], _height-1-eco[1]);
 	    _cairo.stroke();
-	return true;
+	}
     }
-    bool drawRectangle(real[] lbco, real[] trco, bool fill)
+    void drawCircle(real[] center, real radius, StrokeStyle strokeStyle, FillStyle fillStyle)
     {
+	setStrokeStyle(strokeStyle);
+	setFillStyle(fillStyle);
+        _cairo.arc(center[0], _height-1-center[1], radius, 0.0, 6.28318530717959);
+	// First fill, then stroke
+	if (fillStyle)
+	    _cairo.fill();
+	if (strokeStyle)
+	    _cairo.stroke();
+    }
+    void drawRectangle(real[] lbco, real[] trco, StrokeStyle strokeStyle, FillStyle fillStyle)
+    {
+	setStrokeStyle(strokeStyle);
+	setFillStyle(fillStyle);
         _cairo.moveTo(lbco[0], _height-1-lbco[1]);
         _cairo.lineTo(lbco[0], _height-1-trco[1]);
         _cairo.lineTo(trco[0], _height-1-trco[1]);
         _cairo.lineTo(trco[0], _height-1-lbco[1]);
         _cairo.lineTo(lbco[0], _height-1-lbco[1]);
-	if (fill)
+	// First fill, then stroke
+	if (fillStyle)
 	    _cairo.fill();
-	else
+	if (strokeStyle)
 	    _cairo.stroke();
-	return true;
     }
 
-    bool setStrokeStyle(Style style)
+private:			// Methods
+    void clear(uint rgb = 0x123456){SDL_FillRect( _SDLSurface, null, rgb);}
+    void flip(){SDL_Flip(_SDLSurface);}
+    void setStrokeStyle(StrokeStyle strokeStyle)
     {
-        _cairo.setLineWidth(style.strokeWidth);
-        _cairo.setSourceRGB(style.strokeColor().red, style.strokeColor().green, style.strokeColor().blue);
-	return true;
+	if (strokeStyle)
+	{
+	    _cairo.setLineWidth(strokeStyle.strokeWidth);
+	    _cairo.setSourceRGB(strokeStyle.strokeColor.red, strokeStyle.strokeColor.green, strokeStyle.strokeColor.blue);
+	}
     }
-    bool setFillStyle(Style style)
+    void setFillStyle(FillStyle fillStyle)
     {
-        _cairo.setSourceRGB(style.fillColor().red, style.fillColor().green, style.fillColor().blue);
-	return true;
+	if (fillStyle)
+	    _cairo.setSourceRGB(fillStyle.fillColor.red, fillStyle.fillColor.green, fillStyle.fillColor.blue);
     }
 
-private:
+private:			// Data
     SDL_Surface* _SDLSurface;
     Cairo.Context _cairo;
     
@@ -192,17 +198,15 @@ version(UnitTest)
 
     void main()
     {
-// 	auto canvas = new ConsoleCanvas;
-	auto canvas = new SDLCanvas(100, 100);
+ 	auto canvas = new ConsoleCanvas;
+//	auto canvas = new SDLCanvas(100, 100);
 	canvas.initialize;
-	canvas.clear;
-	canvas.setStrokeStyle(Style.defaultStyle);
+	canvas.initializeDraw;
 	puts("Before drawLine");
- 	canvas.drawLine([1, 2], [90, 90]);
+ 	canvas.drawLine([1.0, 2], [90.0, 90], StrokeStyle.standard);
 	puts("After drawLine");
-	canvas.fillCircle([5,6], 7);
-	canvas.flip;
-	Thread.sleep(3);
+// 	canvas.flip;
+// 	Thread.sleep(3);
 	canvas.finalize;
 	puts("Finished");
     }
