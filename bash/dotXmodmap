@@ -1,0 +1,12 @@
+!keycode 64 = Alt_L
+keycode 133 = Meta_L
+keycode 134 = Alt_R
+clear mod4
+clear mod1
+add mod1 = Alt_L Meta_L Alt_R
+keycode 104 = Control_R
+add Control = Control_R
+!keycode 64 = Pointer_Button3 Pointer_Button2
+keycode 204 = Pointer_Button3
+!keycode 232 = F1
+!keycode 233 = F2

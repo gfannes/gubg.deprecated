@@ -65,7 +65,7 @@
 (setq gdb-many-windows t)
 
 ;; Firefox-like zooming of fonts.
-(setq default-font-zoom-index 2)
+(setq default-font-zoom-index 3)
 (setq font-zoom-index default-font-zoom-index)
 (setq font-zoom-list
       (list "-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*"
@@ -192,4 +192,4 @@
 ;;		(indent-region (point-min) (point-max))
 ;;		(message "indent buffer")))
 
-(w32-unregister-hot-key [M-tab])
+;;(w32-unregister-hot-key [M-tab])
