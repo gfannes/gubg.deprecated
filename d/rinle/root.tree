@@ -5,4 +5,4 @@ d:
   always: -I$GUBG/d
  linking:
   always: -L-lgubg-d -L-L$GUBG/d/gubg/lib
-  gubg.ncurses: -L-lncurses
+  gubg.NCurses: -L-lncurses

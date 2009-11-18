@@ -11,7 +11,7 @@ class Tree# < IChainOfResponsibility
   attr :base, true
   attr :target, true
   attr :successor, true
-  @@definingFiles = %w[root.tree disabled.tree main.cpp main.d test.cpp test.d test.rb]
+  @@definingFiles = %w[root.tree disabled.tree main.cpp Main.d test.cpp Test.d test.rb]
   @@cppFile = /\.cpp$/
   @@hppFile = /\.hpp$/
   @@dFile = /\.d$/
@@ -126,7 +126,7 @@ class Tree# < IChainOfResponsibility
   end
   
   def unitTest?
-    !@target.nil? && !(Collection.from(["test.cpp", "test.d", "main.cpp", "main.d"]) === File.basename(@target))
+    !@target.nil? && !(Collection.from(["test.cpp", "Test.d", "main.cpp", "Main.d"]) === File.basename(@target))
   end
   def name
     if !@settings.nil? and @settings.has_key?("name")
