@@ -90,7 +90,7 @@ public: 			// ICanvas
 	    return false;
 	}
 	// Create the screen surface (window)
-	_SDLSurface = SDL_SetVideoMode(_width, _height, 32, SDL_SWSURFACE);
+	_SDLSurface = SDL_SetVideoMode(_width, _height, 32, SDL_SWSURFACE | SDL_DOUBLEBUF);
 	if (_SDLSurface is null)
 	{
 	    err("Unable to set {} x {} video: {}\n", _width, _height, SDL_GetError());
