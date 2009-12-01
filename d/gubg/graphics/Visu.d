@@ -7,7 +7,9 @@ import tango.core.Thread;
 import tango.time.StopWatch;
 
 import gubg.graphics.Scene;
+import gubg.Array;
 public import gubg.graphics.Drawable;
+public import gubg.graphics.Style;
 
 import gubg.Puts;
 
@@ -15,25 +17,26 @@ class Visu
 {
     this (int width, int height, real[] newOrig = null, real[] newOne = null)
 	{
-	    _width = width;
-	    _height = height;
-
-	    _canvas = new SDLCanvas(_width, _height);
-	    _scene = new Scene(_canvas, newOrig, newOne);
-	    _quit = false;
+	    width_ = width;
+	    height_ = height;
+	    newOrig_.assign(newOrig);
+	    newOne_.assign(newOne);
 	}
 
     bool show(bool threaded = true, bool delegate() beforeDraw = null, real sleepTime = 0.01)
 	{
-	    _threaded = threaded;
-	    _beforeDraw = beforeDraw;
-	    _sleepTime = sleepTime;
-	    _stopWatch.start();
+	    isThreaded_ = threaded;
+	    beforeDraw_ = beforeDraw;
+	    sleepTime_ = sleepTime;
+	    canvas_ = new SDLCanvas(width_, height_);
+	    scene_ = new Scene(canvas_, newOrig_, newOne_);
+	    quit_ = false;
+	    stopwatch_.start();
 
-	    if (_threaded)
+	    if (isThreaded_)
 	    {
-		_thread = new Thread(&drawLoop);
-		_thread.start();
+		thread_ = new Thread(&drawLoop);
+		thread_.start();
 	    } else
 	    {
 		puts("Unthreaded");
@@ -46,39 +49,43 @@ class Visu
 	{
 	    while (true)
 	    {
-		if (_beforeDraw && !_beforeDraw())
+		if (beforeDraw_ && !beforeDraw_())
 		    break;
 
-		_scene.draw();
+		scene_.draw();
 
 		if (quit())
 		{
-		    puts("Quitting...");
+		    puts("Quitting Visu...");
 		    break;
 		}
 
-		if (_sleepTime > 0)
-		    Thread.sleep(_sleepTime);
+		if (sleepTime_ > 0)
+		    Thread.sleep(sleepTime_);
 	    }
+	    delete scene_;
+	    scene_ = null;
+	    delete canvas_;
+	    canvas_ = null;
 	}
 
     // The number of microseconds elapsed since show()
-    ulong elapsedTime(){return _stopWatch.microsec();}
+    ulong elapsedTime(){return stopwatch_.microsec();}
 
     void stop()
 	{
-	    if (_threaded)
+	    if (isThreaded_)
 	    {
-		_quit = true;
-		if (_thread.isRunning())
-		    _thread.join();
-		_thread = null;
+		quit_ = true;
+		if (thread_.isRunning())
+		    thread_.join();
+		thread_ = null;
 	    }
 	}
 
     bool quit()
 	{
-	    if (_quit)
+	    if (quit_)
 		return true;
 
 	    bool bRet = false;
@@ -104,56 +111,58 @@ class Visu
 
     IDrawable add(IDrawable drawable)
 	{
-	    _scene.add(drawable);
+	    scene_.add(drawable);
 	    return drawable;
 	}
 
 private:
-    bool _threaded;
-    bool delegate() _beforeDraw;
-    Thread _thread;
-    ICanvas _canvas;
-    Scene _scene;
-    bool _quit;
-    int _width;
-    int _height;
-    StopWatch _stopWatch;
-    real _sleepTime;
+    bool isThreaded_;
+    bool delegate() beforeDraw_;
+    Thread thread_;
+    ICanvas canvas_;
+    Scene scene_;
+    bool quit_;
+    int width_;
+    int height_;
+	real[] newOrig_;
+	real[] newOne_;
+    StopWatch stopwatch_;
+    real sleepTime_;
 }
 
 class Factory
 {
     this(StrokeStyle strokeStyle = StrokeStyle.standard, FillStyle fillStyle = FillStyle.standard)
 	{
-	    _strokeStyle = strokeStyle;
-	    _fillStyle = fillStyle;
+	    strokeStyle_ = strokeStyle;
+	    fillStyle_ = fillStyle;
 	}
 
     void strokeColor(Color color)
 	{
-	    _strokeStyle = _strokeStyle ? _strokeStyle.dup : StrokeStyle.standard;
-	    _strokeStyle.strokeColor(color);
+	    strokeStyle_ = strokeStyle_ ? strokeStyle_.dup : StrokeStyle.standard;
+	    strokeStyle_.strokeColor(color);
 	}
     void strokeWidth(real width)
 	{
-	    _strokeStyle = _strokeStyle ? _strokeStyle.dup : StrokeStyle.standard;
-	    _strokeStyle.strokeWidth(width);
+	    strokeStyle_ = strokeStyle_ ? strokeStyle_.dup : StrokeStyle.standard;
+	    strokeStyle_.strokeWidth(width);
 	}
     void fillColor(Color color)
 	{
-	    _fillStyle = _fillStyle ? _fillStyle.dup : FillStyle.standard;
-	    _fillStyle.fillColor(color);
+	    fillStyle_ = fillStyle_ ? fillStyle_.dup : FillStyle.standard;
+	    fillStyle_.fillColor(color);
 	}
 
-    Line createLine(real[] sco, real[] eco){return new Line(sco, eco, _strokeStyle);}
-    Circle createCircle(real[] center, real radius){return new Circle(center, radius, _strokeStyle, _fillStyle);}
-    Rectangle createRectangle(real[] lb, real[] tr){return new Rectangle(lb, tr, _strokeStyle, _fillStyle);}
+    Line createLine(real[] sco, real[] eco){return new Line(sco, eco, strokeStyle_);}
+    Circle createCircle(real[] center, real radius){return new Circle(center, radius, strokeStyle_, fillStyle_);}
+    Rectangle createRectangle(real[] lb, real[] tr){return new Rectangle(lb, tr, strokeStyle_, fillStyle_);}
     Rectangle createCenteredRectangle(real[] center, real[] wh){return createRectangle([center[0]-0.5*wh[0], center[1]-0.5*wh[1]], [center[0]+0.5*wh[0], center[1]+0.5*wh[1]]);}
     Rectangle createCenteredSquare(real[] center, real side){return createRectangle([center[0]-0.5*side, center[1]-0.5*side], [center[0]+0.5*side, center[1]+0.5*side]);}
 	
 private:
-    StrokeStyle _strokeStyle;
-    FillStyle _fillStyle;
+    StrokeStyle strokeStyle_;
+    FillStyle fillStyle_;
 }
 
 version(UnitTest)

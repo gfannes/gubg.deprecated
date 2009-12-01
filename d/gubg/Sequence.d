@@ -20,85 +20,99 @@ class Sequence
     this (real stay, real move, real reset, real[] probs)
 	{
             auto sum = stay+move+reset;
-	    _stay = stay/sum;
-	    _move = move/sum;
-	    _reset = reset/sum;
+	    stay_ = stay/sum;
+	    move_ = move/sum;
+	    reset_ = reset/sum;
 
 	    move *= 0.2;
 	    sum = stay+move+reset;
-	    _mixStay = stay/sum;
-	    _mixMove = move/sum;
-	    _mixReset = reset/sum;
+	    mixStay_ = stay/sum;
+	    mixMove_ = move/sum;
+	    mixReset_ = reset/sum;
 
 	    move *= 0.2;
 	    sum = stay+move+reset;
-	    _nmixStay = stay/sum;
-	    _nmixMove = move/sum;
-	    _nmixReset = reset/sum;
+	    nmixStay_ = stay/sum;
+	    nmixMove_ = move/sum;
+	    nmixReset_ = reset/sum;
 
-	    _probs = probs;
-            normalizeL1(_probs);
+	    probs_ = probs;
+            normalizeL1(probs_);
 	}
     
-    real[] probs(){return _probs;}
+    real[] probs(){return probs_;}
 
     void update(real dT)
 	{
             auto oldProbs = new real[nrStates];
             scope(exit) delete oldProbs;
-            oldProbs[] = _probs[];
-            real cachedStayProb = pow(_stay, dT);
-            real cachedMoveProb = _move*(1.0-cachedStayProb)/(1.0-_stay);
-            real cachedResetProb = _reset*(1.0-cachedStayProb)/(1.0-_stay);
+            oldProbs[] = probs_[];
+            real cachedStayProb = pow(stay_, dT);
+            real cachedMoveProb = move_*(1.0-cachedStayProb)/(1.0-stay_);
+            real cachedResetProb = reset_*(1.0-cachedStayProb)/(1.0-stay_);
 	    uint mix = maxIndex(oldProbs);
-	    setSame!(real)(_probs, 0.0);
+	    setSame!(real)(probs_, 0.0);
             foreach (ix, inout p; oldProbs)
 	    {
 		real stayProb = cachedStayProb, moveProb = cachedMoveProb, resetProb = cachedResetProb;
 		if (ix == mix)
 		{
-		    stayProb = pow(_mixStay, dT);
-		    moveProb = _mixMove*(1.0-stayProb)/(1.0-_mixStay);
-		    resetProb = _mixReset*(1.0-stayProb)/(1.0-_mixStay);
+		    stayProb = pow(mixStay_, dT);
+		    moveProb = mixMove_*(1.0-stayProb)/(1.0-mixStay_);
+		    resetProb = mixReset_*(1.0-stayProb)/(1.0-mixStay_);
 		} else if (ix == (mix+1)%nrStates)
 		{
-		    stayProb = pow(_nmixStay, dT);
-		    moveProb = _nmixMove*(1.0-stayProb)/(1.0-_nmixStay);
-		    resetProb = _nmixReset*(1.0-stayProb)/(1.0-_nmixStay);
+		    stayProb = pow(nmixStay_, dT);
+		    moveProb = nmixMove_*(1.0-stayProb)/(1.0-nmixStay_);
+		    resetProb = nmixReset_*(1.0-stayProb)/(1.0-nmixStay_);
 		}
-		_probs[0] += p * resetProb;
-		_probs[ix] += p * stayProb;
-		_probs[(ix+1)%$] += p * moveProb;
+		probs_[0] += p * resetProb;
+		probs_[ix] += p * stayProb;
+		probs_[(ix+1)%$] += p * moveProb;
 	    }
-            normalizeL1(_probs);
+            normalizeL1(probs_);
 	}
 
-    uint nrStates(){return _probs.length;}
+    uint nrStates(){return probs_.length;}
 
 private:
-    real _stay;
-    real _move;
-    real _reset;
-    real _mixStay;
-    real _mixMove;
-    real _mixReset;
-    real _nmixStay;
-    real _nmixMove;
-    real _nmixReset;
-    real[] _probs;
-    real[] _currentValues;
+    real stay_;
+    real move_;
+    real reset_;
+    real mixStay_;
+    real mixMove_;
+    real mixReset_;
+    real nmixStay_;
+    real nmixMove_;
+    real nmixReset_;
+    real[] probs_;
 }
 
 version (UnitTest)
 {
     import gubg.Timer;
+    import gubg.graphics.Visu;
     import tango.core.Thread;
+
     void main()
     {
-        real stay = 0.001, move = 100.0, reset = 0.0;
-        real[] probs = [1.0, 0.0, 0.0];
+        real stay = 0.1, move = 10.0, reset = 0.0;
+	const NrStates = 10;
+        real[] probs = new real[NrStates];
+	probs[] = 1.0;
+// 	probs[0] = 1.0;
+// 	probs[NrStates/2] = 1.0;
 	auto seq = new Sequence(stay, move, reset, probs);
+	auto visu = new Visu(640, 480, [0,0], [640.0/NrStates, 480.0*NrStates/5]);
+	auto of = new Factory(null, null);	// Factory used for creating squares and circles, we use no predefined stroke nor fill style
+	of.fillColor(Color(0.5, 0.5, 0.5));
 	puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
+
+	// Start the visualization thread
+	visu.show(true, null, 0.01);
+	Rectangle[NrStates] rectanlges;
+	foreach (ix, prob; seq.probs)
+		visu.add(rectanlges[ix] = of.createRectangle([0.0+ix,0], [1.0+ix, prob]));
         
         auto timer = new Timer;
         for (uint i = 0; i < 10000; ++i)
@@ -106,9 +120,12 @@ version (UnitTest)
 	    real dT = timer.difference;
             seq.update(dT);
             auto p = seq.probs;
-            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}, dT = {:e9}", p[0], p[1], p[2], maxIndex(seq.probs), dT);
+//            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}, dT = {:e9}", p[0], p[1], p[2], maxIndex(seq.probs), dT);
+	    foreach (ix, prob; p)
+		    rectanlges[ix].setCoordinates([0.0+ix,0], [1.0+ix, prob]);
             Thread.sleep(0.01);
         }
+	visu.stop();
     }
 }
 

@@ -12,40 +12,45 @@ import gubg.Puts;
 
 class Scene
 {
-    this(ICanvas canvas, real[] newOrigin = null, real[] newOneOne = null)
-	{
-	    if (!canvas.initialize())
-		err("Failed to initialize the canvas");
-	    else
-	    {
-		_canvas = canvas;
-		// If no origin is specified, we take the middle of the canvas
-		if (newOrigin is null)
-		    newOrigin = [0.5*canvas.width(),0.5*canvas.height()];
-		// If no (1, 1) is specified, we take the top right corner
-		if (newOneOne is null)
-		    newOneOne = [canvas.width()-1, canvas.height()-1];
-		auto transfo = new Transformation(newOrigin, newOneOne);
-		_currentCoSystem = new CoSystem(transfo);
-		_tree = new Tree!(CoSystem)(_currentCoSystem);
-	    }
-	}
-    void draw()
+	this(ICanvas canvas, real[] newOrigin = null, real[] newOneOne = null)
+		{
+			if (!canvas.initialize())
+				err("Failed to initialize the canvas");
+			else
+			{
+				canvas_ = canvas;
+				// If no origin is specified, we take the middle of the canvas
+				if (newOrigin is null)
+					newOrigin = [0.5*canvas.width(),0.5*canvas.height()];
+				// If no (1, 1) is specified, we take the top right corner
+				if (newOneOne is null)
+					newOneOne = [canvas.width()-1, canvas.height()-1];
+				auto transfo = new Transformation(newOrigin, newOneOne);
+				currentCoSystem_ = new CoSystem(transfo);
+				tree_ = new Tree!(CoSystem)(currentCoSystem_);
+			}
+		}
+	~this()
+		{
+			if (canvas_)
+				canvas_.finalize();
+		}
+	void draw()
 	{
 	    void drawDrawable(IDrawable drawable)
 	    {
 		synchronized(drawable)
 		{
-		    drawable.draw(_canvas, _currentCoSystem.transformation());
+		    drawable.draw(canvas_, currentCoSystem_.transformation());
 		}
 	    }
-	    if (!_canvas.initializeDraw())
+	    if (!canvas_.initializeDraw())
 		throw new Exception("Failed to initialize the canvas for drawing");
 
-	    _currentCoSystem.eachDrawable(&drawDrawable);
-	    _canvas.finalizeDraw();
+	    currentCoSystem_.eachDrawable(&drawDrawable);
+	    canvas_.finalizeDraw();
 	}
-    void add(IDrawable drawable){_currentCoSystem.addDrawable(drawable);}
+    void add(IDrawable drawable){currentCoSystem_.addDrawable(drawable);}
 
     class CoSystem
     {
@@ -64,9 +69,9 @@ class Scene
 	IDrawable[] _drawables;
     }
 private:
-    ICanvas _canvas;
-    CoSystem _currentCoSystem;
-    Tree!(CoSystem) _tree;
+    ICanvas canvas_;
+    CoSystem currentCoSystem_;
+    Tree!(CoSystem) tree_;
 }
 
 version(UnitTest)
