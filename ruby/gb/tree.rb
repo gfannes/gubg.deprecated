@@ -51,8 +51,15 @@ class Tree# < IChainOfResponsibility
         end
         # Link them into a library
         dirLib = File.expand_path("lib", @base)
+        archiveExtension = nil
+        case operatingSystem
+        when "Linux"
+          archiveExtension = ".a"
+        when Collection.new("MinGW", "Windows")
+          archiveExtension = ".lib"
+        end
         if File.exist?(dirLib)
-          libName = File.expand_path("lib#{name}.a", dirLib)
+          libName = File.expand_path("lib#{name}" + archiveExtension, dirLib)
           fileInfo = FileInfo.new(libName)
           fileInfo["libName"] = libName
           fileInfo["objects"] = commands.collect{|command|command.output}
@@ -136,11 +143,22 @@ class Tree# < IChainOfResponsibility
     end
   end
   def execName
-    if !@settings.nil? and @settings.has_key?("name") and @@definingFiles.include?(@settings["name"])
-      @settings["name"]
-    else
-      @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit.exec" : ".exec"))
+    res = nil
+    execExtension = nil
+    case operatingSystem
+    when "Linux"
+      execExtension = ".exec"
+    when "MinGW"
+      execExtension = ".exe"
+    when "Windows"
+      execExtension = ".exe"
     end
+    if !@settings.nil? and @settings.has_key?("name") and @@definingFiles.include?(@settings["name"])
+      res = @settings["name"]
+    else
+      res = @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit" : "") + execExtension)
+    end
+    return res
   end
 
   def createCompilationFileInfo(type, subType, fileName)
@@ -158,16 +176,25 @@ class Tree# < IChainOfResponsibility
     end
     settings = settings.compact.uniq.sort
 
-    # The objectName  and type-specific settings and 
+    # The objectName and type-specific settings and
+    objectExtension = nil
+    case operatingSystem
+    when "Linux"
+      objectExtension = ".o"
+    when "MinGW"
+      objectExtension = ".obj"
+    when "Windows"
+      objectExtension = ".obj"
+    end
     case type
     when :cpp
-      objectName = File.basename(fileName, ".cpp") + ".o"
+      objectName = File.basename(fileName, ".cpp") + objectExtension
       case subType
       when :unitTest
         settings << "-DUNIT_TEST"
       end
     when :d
-      objectName = File.basename(fileName, ".d") + ".o"
+      objectName = File.basename(fileName, ".d") + objectExtension
       case subType
       when :unitTest
         settings << "-version=UnitTest"

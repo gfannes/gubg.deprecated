@@ -9,6 +9,16 @@ bool loadFile(out char[] content, in char[] fileName)
     return true;
 }
 
+void exportLines(char[][] lines, char[] fileName)
+{
+	scope fo = new File(fileName, File.WriteCreate);	
+	foreach (line; lines)
+	{
+		fo.write(line);
+		fo.write("\n");
+	}
+}
+
 scope class ChangeDir
 {
     this (char[] dirName)

@@ -1,5 +1,7 @@
 module gubg.graphics.Visu;
 
+version (linux)
+{
 import derelict.sdl.sdl;
 import tango.core.Thread;
 import tango.time.StopWatch;
@@ -192,4 +194,5 @@ version(UnitTest)
 
 	visu.stop();
     }
+}
 }
