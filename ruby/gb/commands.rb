@@ -88,15 +88,27 @@ class LinkCommand
   end
   def execute
     wasCreated = @fileStore.create(@fileInfo) do |fileName|
+      objectFiles = @fileInfo['objectFiles']
+      dir = "./"
+      if (Collection.new("MinGW", "Windows") === operatingSystem)
+        fileName = fileName.gsub("/", "\\\\\\\\")
+        objectFiles = objectFiles.collect do |objectFile|
+          objectFile.gsub(/^(.+)\//, "")
+        end
+        dir = "h:/tmp/gb"
+      end
       cmd = nil
       case @fileInfo['linker']
       when "g++"
-        cmd = "g++ #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -o #{fileName}"
+        cmd = "g++ #{objectFiles.join(' ')} #{@fileInfo['settings']} -o #{fileName}"
       when "dmd"
-        cmd = "dmd #{@fileInfo['objectFiles'].join(' ')} #{@fileInfo['settings']} -of#{fileName}"
+        cmd = "dmd #{objectFiles.join(' ')} #{@fileInfo['settings']} -of#{fileName}"
       end
       puts(cmd)
-      system(cmd)
+      Dir.chdir(dir) do
+        puts(Dir.pwd)
+        system(cmd)
+      end
     end
     # Copy the file from the file store to its proper location
     FileUtils.copy(@fileStore.name(@fileInfo), @fileInfo["execName"])
@@ -110,7 +122,13 @@ class ArchiveCommand
   end
   def execute
     wasCreated = @fileStore.create(@fileInfo) do |fileName|
-      cmd = "ar rcs #{fileName} " + @fileInfo["objects"].join(" ")
+      cmd = nil
+      case operatingSystem
+      when "Linux"
+        cmd = "ar rcs #{fileName} " + @fileInfo["objects"].join(" ")
+      when Collection.new("MinGW", "Windows")
+        cmd = "lib -c -p32 #{fileName} " + @fileInfo["objects"].join(" ")
+      end
       puts(cmd)
       system(cmd)
     end

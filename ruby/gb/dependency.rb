@@ -16,7 +16,7 @@ class Dependency
           end
         end
       when :d
-        re = /^(private|public|static)? *import +(.+);.*$/
+        re = /^(private|public|static)?\s*import +(.+);.*$/
         String.loadLines(fileName).each do |line|
           if md = re.match(line)
             modName = md[2]
@@ -39,5 +39,5 @@ class Dependency
 end
 
 if __FILE__ == $0
-  puts Dependency.includedFiles(:d, "/home/gfannes/gubg/d/rinle/command.d")
+  puts Dependency.includedFiles(:d, "/home/gfannes/gubg/d/gubg/graphics/Canvas.d")
 end

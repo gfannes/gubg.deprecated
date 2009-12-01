@@ -8,7 +8,7 @@ class FileInfo
     @info = info
   end
   def name
-    @basename + "." + Digest::MD5.hexdigest(canonicalize) + @ext
+    @basename + "_" + Digest::MD5.hexdigest(canonicalize) + @ext
   end
   def []=(key, v)
     case v

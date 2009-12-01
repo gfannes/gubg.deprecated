@@ -60,11 +60,12 @@ end
 local function iteratorDirs(state, dir)
    print("\nCall to iteratorDirs with dir = ", dir)
    local nextDir = nil
+   local path = nil
    while not nextDir do
-      print("state.path = ", state.path)
+      print("state.path = " .. state.path)
       local name = state.iter(nil, dir)
-      print("name = ", name)
       if name then
+	 print("name = " .. name)
 	 if name ~= "." and name ~= ".." then
 	    local newPath = state.path .. "/" .. name
 	    local attr, err = _G.lfs.attributes(newPath)
@@ -74,6 +75,7 @@ local function iteratorDirs(state, dir)
 	       if attr.mode == "directory" then
 		  print("\t=> directory")
 		  nextDir = name
+		  path = state.path
 		  if state.recursor(name) then
 		     local ii = _G.lfs.dir(newPath)
 		     prevState = {iter = state.iter, path = state.path, prev = state.prev}
@@ -99,7 +101,7 @@ local function iteratorDirs(state, dir)
 	 end
       end
    end
-   return nextDir, nextDir and _G.string.match(state.path, "(.+)/" .. nextDir)
+   return nextDir, path
 end
 
 -- Returns an recursive iterator for all files in path
@@ -155,8 +157,26 @@ function exportLines(lines, fileName)
    file:close()
 end
 
-function fullPath(file, dir)
-   return dir .. "/" .. file
+-- Exports string to fileName
+function exportString(str, fileName)
+   local file = _G.assert(_G.io.open(fileName, "wb"))
+   file:write(str)
+   file:close()
+end
+
+function fullPath(file, ...)
+   local path = file
+   for _, dir in _G.ipairs(arg) do
+      path = dir .. "/" .. path
+   end
+   return path
+end
+
+function doInDir(dir, func)
+   local savePath = _G.lfs.currentdir()
+   _G.lfs.chdir(dir)
+   func()
+   _G.lfs.chdir(savePath)
 end
 
 return gubg
