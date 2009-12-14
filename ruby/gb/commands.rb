@@ -95,7 +95,7 @@ class LinkCommand
         objectFiles = objectFiles.collect do |objectFile|
           objectFile.gsub(/^(.+)\//, "")
         end
-        dir = "h:/tmp/gb"
+        dir = Dir.pwd[0,2] + "/tmp/gb"
       end
       cmd = nil
       case @fileInfo['linker']
