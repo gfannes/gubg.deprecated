@@ -148,6 +148,14 @@ function loadLines(fileName, ...)
    return lines
 end
 
+-- Loads fileName as one big string
+function loadLine(fileName)
+   local file = _G.assert(_G.io.open(fileName))
+   local line = file:read("*all")
+   file:close()
+    return line
+end
+
 -- Exports lines to fileName
 function exportLines(lines, fileName)
    local file = _G.assert(_G.io.open(fileName, "wb"))

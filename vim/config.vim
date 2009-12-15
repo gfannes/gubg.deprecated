@@ -1,4 +1,5 @@
-source $GUBG/vim/colors/darkblue.vim
+" source $GUBG/vim/colors/darkblue.vim
+source $GUBG/vim/colors/ir_black.vim
 set smartindent
 set tabstop=4
 set shiftwidth=4
@@ -7,6 +8,15 @@ set lines=50 columns=190
 set autochdir
 set nowrap
 
-map -p iputs("")<Esc>hi
-map -e A.each do <Bar><Bar><Esc>oend<Esc>k$i
-map -E A.each_with_index do <Bar>, ix<Bar><Esc>oend<Esc>k$hhhhi
+function! ReadString(message)
+  let curline = getline('.')
+  call inputsave()
+  let name = input(a:message . ': ')
+  call inputrestore()
+  call setline('.', curline . name)
+endfunction
+
+autocmd bufenter *.rb source $GUBG/vim/maps.ruby.vim
+autocmd bufenter *.lua source $GUBG/vim/maps.lua.vim
+autocmd bufenter *.cpp source $GUBG/vim/maps.cpp.vim
+autocmd bufenter *.h source $GUBG/vim/maps.cpp.vim
