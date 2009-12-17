@@ -7,6 +7,7 @@ set expandtab
 set lines=50 columns=190
 set autochdir
 set nowrap
+set visualbell
 
 function! ReadString(message)
   let curline = getline('.')
@@ -22,3 +23,5 @@ autocmd bufenter *.cpp source $GUBG/vim/maps.cpp.vim
 autocmd bufenter *.h source $GUBG/vim/maps.cpp.vim
 
 source $GUBG/vim/hexmode.vim
+
+command -bar Q q
