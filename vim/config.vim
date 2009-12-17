@@ -16,11 +16,13 @@ function! ReadString(message)
   call inputrestore()
   call setline('.', curline . name)
 endfunction
+map _o :a<CR><CR>.<CR>
 
 autocmd bufenter *.rb source $GUBG/vim/maps.ruby.vim
 autocmd bufenter *.lua source $GUBG/vim/maps.lua.vim
 autocmd bufenter *.cpp source $GUBG/vim/maps.cpp.vim
 autocmd bufenter *.h source $GUBG/vim/maps.cpp.vim
+autocmd bufenter *.txt source $GUBG/vim/maps.markdown.vim
 
 source $GUBG/vim/hexmode.vim
 
