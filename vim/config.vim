@@ -18,6 +18,17 @@ function! ReadString(message)
 endfunction
 map _o :a<CR><CR>.<CR>
 
+function! InsertOneChar()
+    let c = nr2char(getchar())
+    let i = 0
+    while i < v:count1
+        :exec "normal i".c."\el"
+        let i += 1
+    endwhile
+endfunction
+command -count InsertOneCharCmd call InsertOneChar()
+map <Space> :InsertOneCharCmd<CR>
+
 autocmd bufenter *.rb source $GUBG/vim/maps.ruby.vim
 autocmd bufenter *.lua source $GUBG/vim/maps.lua.vim
 autocmd bufenter *.cpp source $GUBG/vim/maps.cpp.vim
