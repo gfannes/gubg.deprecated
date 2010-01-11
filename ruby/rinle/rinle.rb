@@ -1,4 +1,4 @@
-require("tools")
+require("gubg")
 require("focus")
 require("patterns/chainOfResponsibility")
 require("commands")
@@ -53,4 +53,3 @@ if __FILE__ == $0
   rinle = Rinle.new
   rinle.run
 end
-

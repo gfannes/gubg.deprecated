@@ -1,4 +1,4 @@
-require("tools/utils")
+require("gubg/utils")
 
 require("gb/commands")
 require("gb/tree")

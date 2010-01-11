@@ -1,5 +1,5 @@
 require("gi/environment")
-require("tools/utils")
+require("gubg/utils")
 
 class GenericInstaller
   def initialize

@@ -2,7 +2,7 @@
 # EXTENDING CLASS STRING
 # ==============================================================================
 #
-# (C) Copyright 2004 by Tilo Sloboda <tools@unixgods.org>
+# (C) Copyright 2004 by Tilo Sloboda <gubg@unixgods.org>
 #
 # License:
 #         Freely available under the terms of the OpenSource "Artistic License"
@@ -109,5 +109,3 @@ t.hexdump(false)
 
 t.hexdump(true)
 t.hexdump(false)
-
-

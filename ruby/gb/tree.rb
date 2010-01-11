@@ -1,8 +1,8 @@
 require("yaml")
 
 require("patterns/chainOfResponsibility")
-require("tools/utils")
-require("tools/filestore")
+require("gubg/utils")
+require("gubg/filestore")
 
 $verbose = false
 

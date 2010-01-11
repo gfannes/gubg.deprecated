@@ -1,5 +1,5 @@
 require("objects")
-require("tools/asm")
+require("gubg/asm")
 
 module ResolveWalker
   def prepareWalking

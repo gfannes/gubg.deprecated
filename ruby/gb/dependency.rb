@@ -1,4 +1,4 @@
-require("tools/utils")
+require("gubg/utils")
 
 class Dependency
   @@cache = Hash.new{|h, k|h[k] = {}}

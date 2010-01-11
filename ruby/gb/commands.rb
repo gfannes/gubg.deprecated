@@ -2,7 +2,7 @@ require("digest/md5")
 require("fileutils")
 
 require("patterns/command")
-require("tools/utils")
+require("gubg/utils")
 
 require("gb/dependency")
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require("tools/utils")
+require("gubg/utils")
 
 def includeFiles(fileName)
   incl=String.load(fileName).split("\n").select{|line|line[/^\#include /]}
