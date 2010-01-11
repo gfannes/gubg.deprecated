@@ -1,8 +1,8 @@
-This software is compiled using the Ruby (http://www.ruby-lang.org) build system developed by Geert Fannes, which can be found in the tools directory. Take into account that it is currently a big exauguration to call this a build system, since it will recompile a part of the tree, or the whole tree, without checking file modifications etc. as a normal make-based build system does.
+This software is compiled using the Ruby (http://www.ruby-lang.org) build system developed by Geert Fannes, which can be found in the ruby/gb directory. Take into account that it is currently a big exauguration to call this a build system, since it will recompile a part of the tree, or the whole tree, without checking file modifications etc. as a normal make-based build system does.
 
 On the other hand, it provides a high level of flexibility, allowing zero-effort modifications to the structure of the source tree and provides automatic support for unit test compilation and execution.
 
-To enable this build system, simple add the tools directory to your system path and make sure you have Ruby installed (http://www.ruby-lang.org).
+To enable this build system, simple add the gubg/ruby directory to your system path and make sure you have Ruby installed (http://www.ruby-lang.org or http://www.rubyinstaller.org).
 
 When "build" is invoked at any place in the source tree, the build script will step down the directory tree until it finds "buildBase.rb". At that place, it will analyze the whole tree, collect source, header and object files, together with their locations and potentially specific compile and link options. Finaly, the whole subtree where "build" was invoked, will be recompiled and the foud unit tests will be executed.
 

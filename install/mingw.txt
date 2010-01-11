@@ -32,9 +32,9 @@ export RUBYLIB=$HOME/bin/ruby
 export PATH=$HOME/bin:$PATH
 export MINGW_PATH=C:\\MinGW\\bin
 #end .bashrc
-       * RUBYLIB: make sure "build" can find its necessary "build.rb" and tools/utils.rb scripts
+       * RUBYLIB: make sure "build" can find its necessary "build.rb" and gubg/utils.rb scripts
        * PATH: make sure that the "build" command can be found
-       * MINGW_PATH: make sure that tools/utils.rb can create the path to the g++ compiler
+       * MINGW_PATH: make sure that gubg/utils.rb can create the path to the g++ compiler
     * Close you MSYS shell and start it again. It should now print the line "This is bashrc speaking" before showing the prompt.
 
  * Installation of SDL

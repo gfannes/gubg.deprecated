@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("tools/utils")
+require("gubg/utils")
 
 bytes = String.loadLines(ARGV[0]).join(' ').split(' ').collect{|b|b.to_i(16)}
 puts("Loaded #{bytes.length} bytes")

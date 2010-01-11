@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("tools/utils")
+require("gubg/utils")
 require("fileutils")
 require("optparse")
 require("ostruct")

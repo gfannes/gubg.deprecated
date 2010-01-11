@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("gb/gb.rb")
+require("gb/gb")
 
 # The allowed flags
 flagHelp = "-h"

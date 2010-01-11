@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-require("tools/utils")
-require("tools/newline")
+require("gubg/utils")
+require("gubg/newline")
 
 if ARGV.length == 0
   puts(%Q@Usage: newline [-w] [-u] <fileName>*

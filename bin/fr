@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("tools/utils")
+require("gubg/utils")
 
 arguments = ARGV.dup
 action = :print

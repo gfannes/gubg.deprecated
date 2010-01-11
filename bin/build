@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("build.rb")
+require("build")
 
 res=collectBuildInfo
 puts res

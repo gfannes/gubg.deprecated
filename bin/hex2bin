@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require("tools/utils")
+require("gubg/utils")
 
 inputFile = ARGV[0]
 outputFile = inputFile + '.bin'

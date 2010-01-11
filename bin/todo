@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
-require("tools/utils")
+
+require("gubg/utils")
 
 class Tasks
   def initialize(fileName)
