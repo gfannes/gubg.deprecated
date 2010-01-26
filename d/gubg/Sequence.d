@@ -16,6 +16,8 @@ import tango.math.Math;
 // j(dT) = prob to jump to state j in timespan dT
 // j(dT) = j(1)*(1-q(dT))/(1-q(1))
 
+version = ExponentialDecay;
+
 class Sequence
 {
     this(uint nr, real rotation)
@@ -46,7 +48,22 @@ class Sequence
     void computeProbs_(inout real[] probs, real rotation)
     {
         foreach (ix, inout p; probs)
-            p = abs(2*abs(rotation-rotations_[ix])-1.0);
+        {
+            //Create a W-shape with domain (-1 .. 1) and range (0 ..1)
+            // * the normal abs() (the outer one) with slope 2
+            // * shifting it to the right by 0.5 (the -1.0): A V-shape from (0 .. 1) to (0 .. 1)
+            // * copying its behaviour to domain (-1 .. 0) (the inner abs)
+            version (LinearDecay) p = abs(2.0*abs(rotation-rotations_[ix])-1.0);
+            //Create an exponential-decay W shape by
+            // * taking the linear W-shape shifted downwards (from (-1 .. 1) to (-1 .. 0))
+            // * adjusting its slope with factor (from (-1 .. 1) to (-factor .. 0))
+            // * taking the exp() from this (from (-1 .. 1) to (0 .. 1))
+            version (ExponentialDecay)
+            {
+                const factor = 5.0;
+                p = exp(factor*(abs(2.0*abs(rotation-rotations_[ix])-1.0)-1.0));
+            }
+        }
         normalizeL1(probs);
     }
     real computeRotation_()
