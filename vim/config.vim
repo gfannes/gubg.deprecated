@@ -1,5 +1,5 @@
-" source $GUBG/vim/colors/darkblue.vim
-source $GUBG/vim/colors/ir_black.vim
+"source $GUBG/vim/colors/darkblue.vim
+"source $GUBG/vim/colors/ir_black.vim
 set smartindent
 set tabstop=4
 set shiftwidth=4

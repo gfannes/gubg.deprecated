@@ -1,4 +1,4 @@
-module gubg.Sequence;
+module gubg.S;
 
 import gubg.Math;
 import gubg.Vector;
@@ -15,95 +15,70 @@ import tango.math.Math;
 // q(dT) = q(1)^dT
 // j(dT) = prob to jump to state j in timespan dT
 // j(dT) = j(1)*(1-q(dT))/(1-q(1))
+
+version = ExponentialDecay;
+
 class Sequence
 {
-    this (real stay, real move, real reset, real[] probs)
+    this(uint nr, real rotation)
     {
-        auto sum = stay+move+reset;
-        stay_ = stay/sum;
-        move_ = move/sum;
-        reset_ = reset/sum;
-
-        move *= 10002.2;
-        sum = stay+move+reset;
-        mixStay_ = stay/sum;
-        mixMove_ = move/sum;
-        mixReset_ = reset/sum;
-
-        move *= 0.2;
-        sum = stay+move+reset;
-        nmixStay_ = stay/sum;
-        nmixMove_ = move/sum;
-        nmixReset_ = reset/sum;
-
-        probs_ = probs;
-        normalizeL1(probs_);
+        probs_ = new real[nr];
+        rotations_ = new real[nr];
+        foreach (ix, inout r; rotations_)
+            r = cast(real)ix / nr;
+        computeProbs_(probs_, rotation);
     }
 
     real[] probs(){return probs_;}
+
+    uint nrStates(){return probs_.length;}
 
     void update(real dT)
     {
         auto oldProbs = new real[nrStates];
         scope(exit) delete oldProbs;
         oldProbs[] = probs_[];
-        real cachedStayProb = pow(stay_, dT);
-        real cachedMoveProb = move_*(1.0-cachedStayProb)/(1.0-stay_);
-        real cachedResetProb = reset_*(1.0-cachedStayProb)/(1.0-stay_);
-        uint mix = maxIndex(oldProbs);
-        setSame!(real)(probs_, 0.0);
-        real ppp = oldProbs[$-2], pp = oldProbs[$-1];
-        foreach (ix, inout p; oldProbs)
-        {
-            real stayProb = cachedStayProb, moveProb = cachedMoveProb, resetProb = cachedResetProb;
-            if (true)
-            {
-                if (ppp >= pp && (pp*1.0) <= p)
-                {
-                    puts("inside {}", ix);
-                    stayProb = pow(mixStay_, dT);
-                    moveProb = mixMove_*(1.0-stayProb)/(1.0-mixStay_);
-                    resetProb = mixReset_*(1.0-stayProb)/(1.0-mixStay_);
-                } else
-                {
-                    puts("outside {}", ix);
-                }
-                ppp = pp;
-                pp = p;
-            } else
-            {
-                if (ix == mix)
-                {
-                    stayProb = pow(mixStay_, dT);
-                    moveProb = mixMove_*(1.0-stayProb)/(1.0-mixStay_);
-                    resetProb = mixReset_*(1.0-stayProb)/(1.0-mixStay_);
-                } else if (ix == (mix+1)%nrStates)
-                {
-                    stayProb = pow(nmixStay_, dT);
-                    moveProb = nmixMove_*(1.0-stayProb)/(1.0-nmixStay_);
-                    resetProb = nmixReset_*(1.0-stayProb)/(1.0-nmixStay_);
-                }
-            }
-            probs_[0] += p * resetProb;
-            probs_[ix] += p * stayProb;
-            probs_[(ix+1)%$] += p * moveProb;
-        }
         normalizeL1(probs_);
+
+        auto rotation = computeRotation_ + 0.1*dT;
+        computeProbs_(probs_, rotation);
     }
 
-    uint nrStates(){return probs_.length;}
-
     private:
-    real stay_;
-    real move_;
-    real reset_;
-    real mixStay_;
-    real mixMove_;
-    real mixReset_;
-    real nmixStay_;
-    real nmixMove_;
-    real nmixReset_;
+    void computeProbs_(inout real[] probs, real rotation)
+    {
+        foreach (ix, inout p; probs)
+        {
+            //Create a W-shape with domain (-1 .. 1) and range (0 ..1)
+            // * the normal abs() (the outer one) with slope 2
+            // * shifting it to the right by 0.5 (the -1.0): A V-shape from (0 .. 1) to (0 .. 1)
+            // * copying its behaviour to domain (-1 .. 0) (the inner abs)
+            version (LinearDecay) p = abs(2.0*abs(rotation-rotations_[ix])-1.0);
+            //Create an exponential-decay W shape by
+            // * taking the linear W-shape shifted downwards (from (-1 .. 1) to (-1 .. 0))
+            // * adjusting its slope with factor (from (-1 .. 1) to (-factor .. 0))
+            // * taking the exp() from this (from (-1 .. 1) to (0 .. 1))
+            version (ExponentialDecay)
+            {
+                const factor = 5.0;
+                p = exp(factor*(abs(2.0*abs(rotation-rotations_[ix])-1.0)-1.0));
+            }
+        }
+        normalizeL1(probs);
+    }
+    real computeRotation_()
+    {
+        creal sum = cast(creal)0.0;
+        foreach (ix, p; probs_)
+            sum += p * exp(rotations_[ix]*1i*2*PI);
+        auto rotation = atan2(sum.im, sum.re) * 0.5 * M_1_PI;
+        if (rotation < 0.0)
+            rotation += 1.0;
+        return rotation;
+    }
+
     real[] probs_;
+    real[] rotations_;
 }
 
 version (UnitTest)
@@ -114,19 +89,14 @@ version (UnitTest)
 
     void main()
     {
-        real stay = 1.0, move = 10.5, reset = 0.1;
-        const NrStates = 5;
-        real[] probs = new real[NrStates];
-        probs[] = 1.0;
-         	probs[0] = 2.0;
-        // 	probs[NrStates/2] = 1.0;
-        auto seq = new Sequence(stay, move, reset, probs);
+        const NrStates = 100;
+        auto seq = new Sequence(NrStates, 0);
         auto visu = new Visu(640, 480, [0,0], [640.0/NrStates, 480.0*NrStates/5]);
-        auto of = new Factory(null, null);	// Factory used for creating squares and circles, we use no predefined stroke nor fill style
+        //Factory used for creating squares and circles, we use no predefined stroke nor fill style
+        auto of = new Factory(null, null);
         of.fillColor(Color(0.5, 0.5, 0.5));
-        puts("probs = {}, sum = {}", seq.probs, sum(seq.probs));
 
-        // Start the visualization thread
+        //Start the visualization thread
         visu.show(true, null, 0.01);
         Rectangle[NrStates] rectanlges;
         foreach (ix, prob; seq.probs)
