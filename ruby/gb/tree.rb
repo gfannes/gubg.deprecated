@@ -344,6 +344,7 @@ class Tree# < IChainOfResponsibility
     Dir.each(@base, recursor) do |dir, fn|
       case fn
       when Collection.from(@@wantedFiles)
+          puts("#{dir} #{fn}")
         yield(dir, fn)
       end
       nil
