@@ -1,5 +1,5 @@
-#ifndef neuron_h
-#define neuron_h
+#ifndef gubg_neural_neuron_h
+#define gubg_neural_neuron_h
 
 #include <cmath>
 #include <cassert>
