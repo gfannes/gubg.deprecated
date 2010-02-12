@@ -1,4 +1,4 @@
-require("tools/utils")
+require("gubg/utils")
 
 class LineBuffer
     def initialize(lines)

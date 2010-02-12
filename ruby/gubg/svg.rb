@@ -79,13 +79,17 @@ module SVG
 
   # A rectangle shape
   class Rectangle < Shape
-    # x,y: coordinates of the center
+    # x, y: coordinates of left bottom
     def initialize(x, y, w, h, style = nil)
-      @x,@y,@w,@h,@style = x,y,w,h,style
+      @x, @y, @w, @h, @style = x+0.5*w, y+0.5*h, w, h, style
+    end
+    # x, y: coordinates of the center
+    def centered(x, y, w, h, style = nil)
+      @x, @y, @w, @h, @style = x, y, w, h, style
     end
     def generate(parent, transform)
-      x,y = transform.coordinates(@x,@y)
-      w,h = transform.sizes(@w,@h)
+      x, y = transform.coordinates(@x, @y)
+      w, h = transform.sizes(@w, @h)
       parent.rect(createStyle(@style), "x" => x-w*0.5, "y" => y-h*0.5, "width" => w, "height" => h)
     end
   end
@@ -119,7 +123,7 @@ module SVG
             end
           end
           g.g do |gg|
-            Rectangle.new(xStart+0.5*widthH,@y,widthH,@h,style).generate(gg,transform)
+            Rectangle.centered(xStart+0.5*widthH,@y,widthH,@h,style).generate(gg,transform)
             Text.new(@labelProc.call(key),xStart+0.01*@w,@y-0.4*@fontFrac*@h,"font-size" => @fontFrac*@h).generate(gg,transform)
           end
           xStart += widthH
@@ -195,7 +199,7 @@ end
 if __FILE__ == $0
   include SVG
   svg = Document.new([0,0,10,10], :dimensions => [800,600])
-  svg << Rectangle.new(5,5,8,8,:fill => 'yellow')
+  svg << Rectangle.centered(5,5,8,8,:fill => 'yellow')
   (1..8).each do |y|
     svg << Text.new("Some text",1,y,"font-size" => 1)
   end
