@@ -8,6 +8,9 @@ set lines=50 columns=190
 set autochdir
 set nowrap
 set visualbell
+set scroll=1
+"Remove the 3000 character syntax highlighting limit
+set synmaxcol=0
 
 function! ReadString(message)
   let curline = getline('.')
