@@ -1,7 +1,7 @@
 module gubg.File;
 
 import tango.io.device.File;
-import tango.io.FileSystem;
+import tango.sys.Environment;
 
 bool loadFile(out char[] content, in char[] fileName)
 {
@@ -11,28 +11,28 @@ bool loadFile(out char[] content, in char[] fileName)
 
 void exportLines(char[][] lines, char[] fileName)
 {
-	scope fo = new File(fileName, File.WriteCreate);	
-	foreach (line; lines)
-	{
-		fo.write(line);
-		fo.write("\n");
-	}
+    scope fo = new File(fileName, File.WriteCreate);	
+    foreach (line; lines)
+    {
+        fo.write(line);
+        fo.write("\n");
+    }
 }
 
 scope class ChangeDir
 {
     this (char[] dirName)
-        {
-            mOrigDir = FileSystem.getDirectory();
-            FileSystem.setDirectory(dirName);
-        }
+    {
+        origDir_ = Environment.cwd();
+        Environment.cwd(dirName);
+    }
 
     ~this ()
-        {
-            FileSystem.setDirectory(mOrigDir);
-        }
-private:
-    char[] mOrigDir;
+    {
+        Environment.cwd(origDir_);
+    }
+    private:
+    char[] origDir_;
 }
 
 version (UnitTest)
@@ -43,6 +43,6 @@ version (UnitTest)
     {
         char[] str;
         loadFile(str, "file.d");
-	puts(str);
+        puts(str);
     }
 }
