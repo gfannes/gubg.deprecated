@@ -4,14 +4,10 @@ import tango.time.StopWatch;
 
 class Timer
 {
-	this ()
+	this (bool restart = true)
 		{
-			start();
-		}
-
-	void start()
-		{
-			stopwatch_.start();
+            restart_ = restart;
+            start();
 		}
 	
 	real difference()
@@ -24,7 +20,8 @@ class Timer
 	void difference(inout ulong diff)
 		{
 			diff = stopwatch_.microsec();
-			start();
+            if (restart_)
+                start();
 		}
 
 	void difference(inout uint diff)
@@ -35,7 +32,13 @@ class Timer
 		}
 
 private:
+	void start()
+		{
+            stopwatch_.start();
+		}
+
 	StopWatch stopwatch_;
+    bool restart_;
 }
 
 version (UnitTest)
@@ -56,6 +59,5 @@ version (UnitTest)
 		}
 		foreach (v; vals)
 			puts("{:e6}", v);
-		return 0;
 	}
 }

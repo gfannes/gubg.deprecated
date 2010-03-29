@@ -143,7 +143,7 @@ class ExecuteCommand
   end
   def execute
     Dir.chdir(@dir) do
-      puts("WARNING::\"#{@cmd}\" in \"#{@dir}\" failed.")if !system(@cmd)
+      puts("WARNING::\"#{@cmd}\" in \"#{@dir}\" failed.") if !system(@cmd)
     end
   end
 end

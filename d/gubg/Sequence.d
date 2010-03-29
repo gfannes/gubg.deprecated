@@ -1,4 +1,4 @@
-module gubg.S;
+module gubg.Sequence;
 
 import gubg.Math;
 import gubg.Vector;
@@ -6,6 +6,22 @@ import gubg.Array;
 import gubg.Puts;
 
 import tango.math.Math;
+
+//Ultimately, Sequence should be useful for detecting if a certain sequence is present.
+//Such a sequence would be when each of the different input patterns occur externally on the inputs
+// => Use GammaPosterior to keep information about decayFactor
+// => Design a test for experimentation
+//  * A simplified test where the inputs _are_ directly the pattern probs
+
+//Interpretation:
+// * Natural sequence of states is enforced/modelled with the rotation
+// * Sequence is present if the input patterns occur sequentially
+// * Detection of the sequence is gradual
+//    * Entropy of the posterior of decayFactor
+// * The better the sequence is detected, the better the input is followed?
+// * Or, the better the sequence is detected, the better the prior is followed, which is more or less run by the posterior on defayFactor?
+// * During execution, the posterior is continuously updated
+// * 
 
 // model: log(p_i*cte) = x_i
 // cte = (p_0*...*p_n)^(1/n) => sum_j(x_j) = 0
@@ -20,14 +36,14 @@ version = ExponentialDecay;
 
 class Sequence
 {
-    this(uint nr, real rotationSpeed, real convergenceToPrior)
+    this(uint nrStates, real rotationSpeed, real convergenceToPrior)
     {
         rotationSpeed_ = rotationSpeed;
         convergenceToPrior_ = convergenceToPrior;
-        probs_ = new real[nr];
-        rotations_ = new real[nr];
+        probs_ = new real[nrStates];
+        rotations_ = new real[nrStates];
         foreach (ix, inout r; rotations_)
-            r = cast(real)ix / nr;
+            r = cast(real)ix / nrStates;
         if (true)
             computeProbs_(probs_, 0);
         else
@@ -47,7 +63,7 @@ class Sequence
         auto rotation = computeRotation_ + rotationSpeed_*dT;
         computeProbs_(targetProbs, rotation);
 
-        //Compute the distribution ration between probs_ targetProbs
+        //Compute the distribution ratio between probs_ and targetProbs
         real dp = exp(-convergenceToPrior_*dT);
         real dt = 1.0-dp;
 
@@ -124,6 +140,7 @@ version (UnitTest)
             visu.add(rectanlges[ix] = of.createRectangle([0.0+ix,0], [1.0+ix, prob]));
 
         auto timer = new Timer;
+        auto timerSinceStart = new Timer(false);
         for (uint i = 0; i < 10000; ++i)
         {
             real dT = timer.difference;
@@ -131,8 +148,7 @@ version (UnitTest)
             auto p = seq.probs.dup;
             auto d1 = abs(p[0]-p[NrStates-1]);
             auto d2 = abs(p[0]-p[1]);
-            puts("diff = {:e9}", abs(d1-d2));
-            //            puts("probs = {:g9}, {:g9}, {:g9}, ix = {}, dT = {:e9}", p[0], p[1], p[2], maxIndex(seq.probs), dT);
+            puts("Elapse = {}", timerSinceStart.difference);
             foreach (ix, prob; p)
                 rectanlges[ix].setCoordinates([0.0+ix,0], [1.0+ix, prob]);
             Thread.sleep(0.01);

@@ -11,7 +11,7 @@ class Tree# < IChainOfResponsibility
   attr :base, true
   attr :target, true
   attr :successor, true
-  @@definingFiles = %w[root.tree disabled.tree main.cpp Main.d test.cpp Test.d test.rb]
+  @@definingFiles = %w[root.tree disabled.tree Main.cpp Main.d test.cpp Test.d test.rb]
   @@cppFile = /\.cpp$/
   @@hppFile = /\.hpp$/
   @@dFile = /\.d$/
@@ -62,7 +62,7 @@ class Tree# < IChainOfResponsibility
           libName = File.expand_path("lib#{name}" + archiveExtension, dirLib)
           fileInfo = FileInfo.new(libName)
           fileInfo["libName"] = libName
-          fileInfo["objects"] = commands.collect{|command|command.output}
+          fileInfo["objects"] = commands.collect{|cmd|cmd.output}
           commands << ArchiveCommand.new(fileInfo, @@fileStore)
         else
           puts("WARNING::Directory \"#{dirLib}\" was not found, I will not create the library.")
@@ -153,7 +153,7 @@ class Tree# < IChainOfResponsibility
     when "Windows"
       execExtension = ".exe"
     end
-    if !@settings.nil? and @settings.has_key?("name") and @@definingFiles.include?(@settings["name"])
+    if !@settings.nil? and @settings.has_key?("name") and @@definingFiles.include?(File.basename(@target))
       res = @settings["name"]
     else
       res = @target.gsub(/#{File.extname(@target)}$/, (unitTest? ? ".unit" : "") + execExtension)

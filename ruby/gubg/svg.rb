@@ -3,6 +3,10 @@ require("gubg/builder.rb")
 require("gubg/utils.rb")
 
 module SVG
+    # Create a color string
+    def color(r, g, b)
+        "\#%0.2x%0.2x%0.2x"%[r*255, g*255, b*255]
+    end
   # The SVG document
   class Document
     # range: [minX, minY, maxX, maxY] coordinates of lower left and upper right corners
@@ -84,14 +88,63 @@ module SVG
       @x, @y, @w, @h, @style = x+0.5*w, y+0.5*h, w, h, style
     end
     # x, y: coordinates of the center
-    def centered(x, y, w, h, style = nil)
-      @x, @y, @w, @h, @style = x, y, w, h, style
+    def Rectangle.centered(x, y, w, h, style = nil)
+        Rectangle.new(x-0.5, y-0.5, w, h, style)
     end
     def generate(parent, transform)
       x, y = transform.coordinates(@x, @y)
       w, h = transform.sizes(@w, @h)
       parent.rect(createStyle(@style), "x" => x-w*0.5, "y" => y-h*0.5, "width" => w, "height" => h)
     end
+  end
+
+  # A path
+  class Path < Shape
+      def initialize(xs, ys, close, style = nil)
+          @xs, @ys, @close, @style = xs, ys, close, style
+      end
+    def generate(parent, transform)
+        d = []
+        @xs.zip(@ys).each_with_index do |xy, ix|
+            xx, yy = transform.coordinates(*xy)
+            if ix == 0
+                d << "M#{xx},#{yy}"
+            else
+                d << "L#{xx},#{yy}"
+            end
+        end
+        d << "Z" if @close
+        parent.path(createStyle(@style), "d" => d.join(' '))
+    end
+  end
+
+  # A line
+  class Line < Shape
+      def initialize(co1, co2, style = nil)
+          @co1, @co2, @style = co1, co2, style
+      end
+      def generate(parent, transform)
+          tco1, tco2 = transform.coordinates(*@co1), transform.coordinates(*@co2)
+          parent.line(createStyle(@style), "x1" => tco1[0], "y1" => tco1[1], "x2" => tco2[0], "y2" => tco2[1])
+      end
+  end
+
+  # An ellipse
+  class Ellipse < Shape
+      def initialize(center, radii, style = nil)
+          @center, @radii, @style = center, radii, style
+      end
+      def generate(parent, transform)
+          tc = transform.coordinates(*@center)
+          tr = transform.sizes(*@radii)
+          parent.ellipse(createStyle(@style), "cx" => tc[0], "cy" => tc[1], "rx" => tr[0], "ry" => tr[1])
+      end
+  end
+  # A Circle
+  class Circle < Ellipse
+      def initialize(center, radius, style = nil)
+          super(center, [radius, radius], style)
+      end
   end
 
   # A stacked bar shape
@@ -123,8 +176,8 @@ module SVG
             end
           end
           g.g do |gg|
-            Rectangle.centered(xStart+0.5*widthH,@y,widthH,@h,style).generate(gg,transform)
-            Text.new(@labelProc.call(key),xStart+0.01*@w,@y-0.4*@fontFrac*@h,"font-size" => @fontFrac*@h).generate(gg,transform)
+            Rectangle.centered(xStart+0.5*widthH,@y,widthH,@h,style).generate(gg, transform)
+            Text.new(@labelProc.call(key),xStart+0.01*@w,@y-0.4*@fontFrac*@h,"font-size" => @fontFrac*@h).generate(gg, transform)
           end
           xStart += widthH
         end
@@ -210,6 +263,9 @@ if __FILE__ == $0
                       :style => {:fill => "red"},
                       :fontFrac => 0.5,
                       :labelProc => Proc.new{|label|label.to_s*10})
+  svg << Path.new([0, 1, 2, 3, 4], [0, 2, 1, 4, 3], false)
+  svg << Line.new([0, 0], [10, 10])
+  svg << Circle.new([5, 5], 3)
   puts svg.generate
   svg.export("test.svg")
 end
