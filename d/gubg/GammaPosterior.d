@@ -3,6 +3,11 @@ module gubg.GammaPosterior;
 import tango.math.Math;
 import tango.math.GammaFunction;
 
+//This class encapsulates the posterior distribution of the lambda parameter of an exponential distribution
+//when its prior distribution is given by a Gamma distribution itself (hense the term conjugate)
+// * Prior distribution: Gamma(priorNrObs, priorSumObs)
+//On arrival of (exponentially distributed) data observations, these prior parameters are updated
+//but they remain Gamma-distributed
 class GammaPosterior
 {
     this(real priorNrObs, real priorSumObs, real dataDecayFactor = 0.0)
