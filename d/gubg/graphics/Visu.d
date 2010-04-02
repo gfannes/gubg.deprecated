@@ -3,7 +3,7 @@ module gubg.graphics.Visu;
 version (linux)
 {
     import derelict.sdl.sdl;
-    import tango.core.Thread;
+    public import tango.core.Thread;
     import tango.time.StopWatch;
 
     import gubg.graphics.Scene;
@@ -120,6 +120,8 @@ version (linux)
 
         IDrawable add(IDrawable drawable)
         {
+            if (!scene_)
+                throw new Exception("You have to show() before you can add elements");
             scene_.add(drawable);
             return drawable;
         }

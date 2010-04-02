@@ -135,9 +135,9 @@ version (UnitTest)
 
         //Start the visualization thread
         visu.show(true, null, 0.01);
-        Rectangle[NrStates] rectanlges;
+        Rectangle[NrStates] rectangles;
         foreach (ix, prob; seq.probs.dup)
-            visu.add(rectanlges[ix] = of.createRectangle([0.0+ix,0], [1.0+ix, prob]));
+            visu.add(rectangles[ix] = of.createRectangle([0.0+ix,0], [1.0+ix, prob]));
 
         auto timer = new Timer;
         auto timerSinceStart = new Timer(false);
@@ -150,7 +150,7 @@ version (UnitTest)
             auto d2 = abs(p[0]-p[1]);
             puts("Elapse = {}", timerSinceStart.difference);
             foreach (ix, prob; p)
-                rectanlges[ix].setCoordinates([0.0+ix,0], [1.0+ix, prob]);
+                rectangles[ix].setCoordinates([0.0+ix,0], [1.0+ix, prob]);
             Thread.sleep(0.01);
         }
         visu.stop();
