@@ -7,7 +7,7 @@ class Timer
 	this (bool restart = true)
 		{
             restart_ = restart;
-            start();
+            start_();
 		}
 	
 	real difference()
@@ -21,7 +21,7 @@ class Timer
 		{
 			diff = stopwatch_.microsec();
             if (restart_)
-                start();
+                start_();
 		}
 
 	void difference(inout uint diff)
@@ -32,7 +32,7 @@ class Timer
 		}
 
 private:
-	void start()
+	void start_()
 		{
             stopwatch_.start();
 		}

@@ -4,11 +4,11 @@ version (linux)
 {
     import derelict.sdl.sdl;
     public import tango.core.Thread;
-    import tango.time.StopWatch;
 
     import gubg.graphics.Scene;
     import gubg.Array;
     import gubg.Math;
+    import gubg.Timer;
     public import gubg.graphics.Drawable;
     public import gubg.graphics.Style;
 
@@ -22,6 +22,24 @@ version (linux)
             height_ = height;
             newOrig_.assign(newOrig);
             newOne_.assign(newOne);
+            isThreaded_ = false;
+            isFinished_ = false;
+            canvas_ = new SDLCanvas(width_, height_);
+            scene_ = new Scene(canvas_, newOrig_, newOne_);
+        }
+        ~this ()
+        {
+            if (isThreaded_)
+            {
+                isFinished_ = true;
+                if (thread_.isRunning())
+                    thread_.join();
+                thread_ = null;
+            }
+            if (scene_)
+                delete scene_;
+            if (canvas_)
+                delete canvas_;
         }
         static Visu create(int width, int height, real[2] minMaxX, real[2] minMaxY)
         {
@@ -37,33 +55,70 @@ version (linux)
             isThreaded_ = threaded;
             beforeDraw_ = beforeDraw;
             sleepTime_ = sleepTime;
-            canvas_ = new SDLCanvas(width_, height_);
-            scene_ = new Scene(canvas_, newOrig_, newOne_);
-            quit_ = false;
-            stopwatch_.start();
+            timer_ = new Timer(false);
 
             if (isThreaded_)
             {
-                thread_ = new Thread(&drawLoop);
+                thread_ = new Thread(&drawLoop_);
                 thread_.start();
             } else
             {
                 puts("Unthreaded");
-                drawLoop();
+                drawLoop_();
             }
 
             return true;
         }
-        void drawLoop()
+        //Amount of time elapsed since show() in seconds
+        real elapsedTime(){return timer_.difference;}
+
+        bool isFinished()
+        {
+            if (isFinished_)
+                return true;
+
+            SDL_Event event;
+            while(SDL_PollEvent(&event))
+            {
+                switch(event.type)
+                {
+                    // exit if SDLK or the window close button are pressed
+                    case SDL_KEYUP:
+                        if(event.key.keysym.sym == SDLK_ESCAPE)
+                            isFinished_ = true;
+                        break;
+                    case SDL_QUIT:
+                        isFinished_ = true;
+                        break;
+                    default:
+                        break;	
+                }
+            }
+            return isFinished_;
+        }
+
+        IDrawable add(IDrawable drawable)
+        {
+            if (!scene_)
+                throw new Exception("No scene to add elements to, maybe the visualization is already over");
+            scene_.add(drawable);
+            return drawable;
+        }
+
+        private:
+        void drawLoop_()
         {
             while (true)
             {
                 if (beforeDraw_ && !beforeDraw_())
+                {
+                    isFinished_ = true;
                     break;
+                }
 
                 scene_.draw();
 
-                if (quit())
+                if (isFinished())
                 {
                     puts("Quitting Visu...");
                     break;
@@ -78,66 +133,17 @@ version (linux)
             canvas_ = null;
         }
 
-        // The number of microseconds elapsed since show()
-        ulong elapsedTime(){return stopwatch_.microsec();}
-
-        void stop()
-        {
-            if (isThreaded_)
-            {
-                quit_ = true;
-                if (thread_.isRunning())
-                    thread_.join();
-                thread_ = null;
-            }
-        }
-
-        bool quit()
-        {
-            if (quit_)
-                return true;
-
-            bool bRet = false;
-            SDL_Event event;
-            while(SDL_PollEvent(&event))
-            {
-                switch(event.type)
-                {
-                    // exit if SDLK or the window close button are pressed
-                    case SDL_KEYUP:
-                        if(event.key.keysym.sym == SDLK_ESCAPE)
-                            bRet = true;
-                        break;
-                    case SDL_QUIT:
-                        bRet = true;
-                        break;
-                    default:
-                        break;	
-                }
-            }
-            return bRet;
-        }
-
-        IDrawable add(IDrawable drawable)
-        {
-            if (!scene_)
-                throw new Exception("You have to show() before you can add elements");
-            scene_.add(drawable);
-            return drawable;
-        }
-
-        private:
         bool isThreaded_;
         bool delegate() beforeDraw_;
         Thread thread_;
         ICanvas canvas_;
         Scene scene_;
-        bool quit_;
+        bool isFinished_;
         int width_;
         int height_;
         real[] newOrig_;
         real[] newOne_;
-        StopWatch stopwatch_;
+        Timer timer_;
         real sleepTime_;
     }
 
@@ -184,39 +190,40 @@ version (linux)
     {
         void main()
         {
-            auto visu = new Visu(640, 480);
             auto lf = new Factory(null, null);	// Factory used for creating lines, we use no predefined stroke nor fill style
             auto of = new Factory(null, null);	// Factory used for creating squares and circles, we use no predefined stroke nor fill style
 
-            // Delegate that will be called within the draw loop
-            bool printer()
             {
-                puts("elapsed time = {}", visu.elapsedTime());
-                return true;
-            }
+                scope visu = new Visu(640, 480);
 
-            // Start the visualization thread
-            visu.show(true, &printer, 0.1);
-
-            // Create the graphical objects with our two factories
-            for (real x = -1.0; x<=1.05; x+=0.1)
-            {
-                for (real y = -1.0; y<=1.05; y+=0.1)
+                // Delegate that will be called within the draw loop
+                bool printer()
                 {
-                    of.fillColor(Color(0.5*(-x+1), 0.5*(-y+1), 0.25*(-x-y+2)));
-                    visu.add(of.createCircle([x, y], 0.03));
-                    visu.add(of.createCenteredSquare([x, y], 0.06));
-
-                    lf.strokeColor(Color(0.5*(x+1), 0.5*(y+1), 0.25*(x+y+2)));
-                    visu.add(lf.createLine([x-0.03, y-0.03], [x+0.03, y+0.03]));
+                    puts("elapsed time = {}", visu.elapsedTime());
+                    return true;
                 }
+
+                // Create the graphical objects with our two factories
+                for (real x = -1.0; x<=1.05; x+=0.1)
+                {
+                    for (real y = -1.0; y<=1.05; y+=0.1)
+                    {
+                        of.fillColor(Color(0.5*(-x+1), 0.5*(-y+1), 0.25*(-x-y+2)));
+                        visu.add(of.createCircle([x, y], 0.03));
+                        visu.add(of.createCenteredSquare([x, y], 0.06));
+
+                        lf.strokeColor(Color(0.5*(x+1), 0.5*(y+1), 0.25*(x+y+2)));
+                        visu.add(lf.createLine([x-0.03, y-0.03], [x+0.03, y+0.03]));
+                    }
+                }
+
+                // Start the visualization thread
+                visu.show(true, &printer, 0.1);
+
+                puts("Going to sleep");
+                Thread.sleep(2);
+                puts("Woken up");
             }
-
-            puts("Going to sleep");
-            Thread.sleep(2);
-            puts("Woken up");
-
-            visu.stop();
         }
     }
 }

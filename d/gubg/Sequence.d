@@ -133,26 +133,24 @@ version (UnitTest)
         auto of = new Factory(null, null);
         of.fillColor(Color(0.5, 0.5, 0.5));
 
-        //Start the visualization thread
-        visu.show(true, null, 0.01);
         Rectangle[NrStates] rectangles;
         foreach (ix, prob; seq.probs.dup)
             visu.add(rectangles[ix] = of.createRectangle([0.0+ix,0], [1.0+ix, prob]));
 
         auto timer = new Timer;
-        auto timerSinceStart = new Timer(false);
-        for (uint i = 0; i < 10000; ++i)
+        //Start the visualization thread
+        visu.show(true, null, 0.01);
+        for (uint i = 0; !visu.isFinished && (i < 10000); ++i)
         {
             real dT = timer.difference;
             seq.update(dT);
             auto p = seq.probs.dup;
             auto d1 = abs(p[0]-p[NrStates-1]);
             auto d2 = abs(p[0]-p[1]);
-            puts("Elapse = {}", timerSinceStart.difference);
+            puts("Elapse = {}", visu.elapsedTime);
             foreach (ix, prob; p)
                 rectangles[ix].setCoordinates([0.0+ix,0], [1.0+ix, prob]);
             Thread.sleep(0.01);
         }
-        visu.stop();
     }
 }
