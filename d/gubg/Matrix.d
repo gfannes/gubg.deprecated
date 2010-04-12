@@ -2,7 +2,18 @@ module gubg.Matrix;
 
 import gubg.Vector;
 
-class Matrix
+interface IMatrix
+{
+    uint nrRows();
+    uint nrCols();
+    real[] opMul(real[] rhs);
+    void multiply(real[] res, real[] rhs);
+    real leftRightProduct(real[] vector);
+    bool isSquare();
+    real determinant();
+}
+
+class FullMatrix: IMatrix
 {
     this (uint nrRows, uint nrCols)
     {
@@ -14,14 +25,8 @@ class Matrix
                 v = 0.0;
         }
     }
-    static Matrix identity(uint nr)
-    {
-        Matrix res = new Matrix(nr, nr);
-        for (uint i = 0; i < nr; ++i)
-            res.rows_[i][i] = 1.0;
-        return res;
-    }
 
+    //IMatrix interface
     uint nrRows(){return rows_.length;}
     uint nrCols(){return rows_[0].length;}
 
@@ -61,14 +66,65 @@ class Matrix
                 if (v != (ix == ix2 ? 1.0 : 0.0))
                     throw new Exception("Only diagonal matrices are supported for determinant calculation.");
 
-        real res = 0.0;
+        real res = 1.0;
         foreach (ix, row; rows_)
-            res += row[ix];
+            res *= row[ix];
         return res;
     }
 
     private:
     real[][] rows_;
+}
+
+class DiagonalMatrix: IMatrix
+{
+    this(uint nr)
+    {
+        diagonal_.length = nr;
+        foreach (inout v; diagonal_)
+            v = 1.0;
+    }
+
+    static DiagonalMatrix createIdentity(uint nr)
+    {
+        DiagonalMatrix res = new DiagonalMatrix(nr);
+        for (uint i = 0; i < nr; ++i)
+            res.diagonal_[i] = 1.0;
+        return res;
+    }
+
+    //IMatrix interface
+    uint nrRows(){return diagonal_.length;}
+    uint nrCols(){return diagonal_.length;}
+    real[] opMul(real[] rhs)
+    {
+        real[] res = new real[nrRows];
+        multiply(res, rhs);
+        return res;
+    }
+    void multiply(real[] res, real[] rhs)
+    {
+        foreach (ix, d; diagonal_)
+            res[ix] = d*rhs[ix];
+    }
+    real leftRightProduct(real[] vector)
+    {
+        real res = 0.0;
+        foreach (ix, d; diagonal_)
+            res += d*vector[ix]*vector[ix];
+        return res;
+    }
+    bool isSquare(){return true;}
+    real determinant()
+    {
+        real res = 1.0;
+        foreach (d; diagonal_)
+            res *= d;
+        return res;
+    }
+
+    private:
+    real[] diagonal_;
 }
 
 version (UnitTest)
@@ -77,9 +133,11 @@ version (UnitTest)
 
     void main()
     {
-        auto m = new Matrix(3,5);
+        auto m = new FullMatrix(3,5);
+        auto id = DiagonalMatrix.createIdentity(5);
         real[] v = [1,2,3,4,5];
         puts("m.nrCols = {}", m.nrCols);
         puts("res = {}", m*v);
+        puts("res = {}", id*v);
     }
 }
