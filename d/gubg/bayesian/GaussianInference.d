@@ -87,7 +87,7 @@ version (UnitTest)
     import gubg.Timer;
     void main()
     {
-        auto posterior = new GaussianInference!(2)(createIdentity(2), [1.0, 2.0], 5, 0.2);
+        auto posterior = new GaussianInference!(2)(createIdentity(2), [1.0, 2.0], 5, 0.5);
 
         Color logDensityColor(real x, real y)
         {
@@ -99,7 +99,7 @@ version (UnitTest)
             scope visu = Visu.create(640, 480, [0, 5], [0, 5]);
 
             //Create a grid of rectangles to show the logDensity of the posterior
-            const NrPerAxis = 100;
+            const NrPerAxis = 50;
             auto gridOfRectangles = new Grid!(Rectangle)(NrPerAxis, NrPerAxis, [0, 5], [0, 5]);
             auto of = new Factory(null, null);
             {
@@ -128,7 +128,7 @@ version (UnitTest)
                     posterior.updateTime(dT);
 
                 gridOfRectangles.each(&redrawCells);
-                return visu.elapsedTime < 15;
+                return visu.elapsedTime < 25;
             }
 
             //Show time
