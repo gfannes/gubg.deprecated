@@ -65,7 +65,7 @@ unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c c
 str = unwantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
 reUnwantedExtensions = Regexp.compile("(#{str})"+'$')
 
-wantedExtensions = %w[c h cpp hpp d rb]
+wantedExtensions = %w[c h cpp hpp d rb S asm]
 str = wantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
 reWantedExtensions = Regexp.compile("(#{str})"+'$')
 
