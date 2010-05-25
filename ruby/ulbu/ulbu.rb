@@ -13,7 +13,7 @@ Dir.chdir("data") do
 
   subtree = time("\nParsing subtree #{ulbuFile}", true) do
     parser = Parser.new(UlbuParser)
-    parser.parse(ulbuFile)
+    parser.parseFromFile(ulbuFile)
   end
 
   time("\nAdding subtree to root", true) do

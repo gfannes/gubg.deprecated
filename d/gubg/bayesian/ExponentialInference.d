@@ -1,4 +1,4 @@
-module gubg.GammaPosterior;
+module gubg.baysian.ExponentialInference;
 
 import tango.math.Math;
 import tango.math.GammaFunction;
@@ -8,7 +8,7 @@ import tango.math.GammaFunction;
 // * Prior distribution: Gamma(priorNrObs, priorSumObs)
 //On arrival of (exponentially distributed) data observations, these prior parameters are updated
 //but they remain Gamma-distributed
-class GammaPosterior
+class ExponentialInference
 {
     this(real priorNrObs, real priorSumObs, real dataDecayFactor = 0.0)
     {
@@ -98,7 +98,7 @@ version (UnitTest)
     import gubg.graphics.Visu;
     void main()
     {
-        auto posterior = new GammaPosterior(10, 10, 0.5);
+        auto posterior = new ExponentialInference(10, 10, 0.5);
 
         //Compute the density graph for posterior
         real[] xs, ys;

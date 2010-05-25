@@ -149,13 +149,43 @@ class Array
             mix
         end
     end
+    def minmax
+	    mi, ma = nil, nil
+	    if block_given?
+		    each_with_index do |vv, ix|
+			    v = yield(vv)
+			    if ix == 0
+				    mi = ma = v
+			    else
+				    if v < mi
+					    mi = v
+				    elsif v > ma
+					    ma = v
+				    end
+			    end
+		    end
+	    else
+		    each_with_index do |v, ix|
+			    if ix == 0
+				    mi = ma = v
+			    else
+				    if v < mi
+					    mi = v
+				    elsif v > ma
+					    ma = v
+				    end
+			    end
+		    end
+	    end
+	    return mi, ma
+    end
     def to_s
-        "["+join('; ')+"]"
+	    "["+join('; ')+"]"
     end
     def collect_with_index
-        ix = -1
-        collect do |el|
-            ix += 1
+	    ix = -1
+	    collect do |el|
+		    ix += 1
             yield(el, ix)
         end
     end

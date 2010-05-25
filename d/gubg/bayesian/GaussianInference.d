@@ -1,37 +1,41 @@
-module gubg.GaussianPosterior;
+module gubg.bayesian.GaussianInference;
 
 import gubg.Array;
 import gubg.Vector;
 import gubg.Matrix;
 import tango.math.Math;
 
-//This class encapsulates the posterior distribution of the mean (and optionally a precision matrix (inverse of the covariance matrix)) of a Gaussian distribution
-//when its prior distribution is Gaussion for the mean and Wishart for the precision matrix (if not known)
-class GaussianPosterior(uint Dimension)
+//This class encapsulates the most basic Bayesian inference where:
+// * Data is Gaussian distributed (independently)
+// * The mean of this data distribution is _unknown_ => this is the parameter of interest
+// * The covariance of this data is _known_ (this is dataCovar)
+// * Our prior information for the mean of the data distribution is Gaussian with:
+//    * Mean: priorMean
+//    * Covariance: dataCovar/priorSampleSize
+//    => The latter simplifies things but restricts our expressiveness in the multi-dimensional case
+class GaussianInference(uint Dimension)
 {
-    this (real priorNrObs, real[] priorMean, real dataDecayFactor = 0.0)
+    this (IMatrix dataCovar, real[] priorMean, real priorSampleSize, real dataDecayFactor = 0.0)
     {
-        priorNrObs_ = priorNrObs;
+        invDataCovar_ = dataCovar.inverse();
+        logDetDataCovar_ = log(dataCovar.determinant);
         priorMean_[] = priorMean[];
-        dataNrObs_ = 0;
+        priorSS_ = priorSampleSize;
+        dataSS_ = 0;
         setSame!(real)(dataMean_, 0.0);
         dataDecayFactor_ = dataDecayFactor;
     }
 
-    void setPrecision()
-    {
-        precision_ = Matrix.identity(Dimension);
-    }
-
     real logDensity(real[] mean)
     {
-        check_;
-        scope diff = new real[Dimension];
-        real totalNrObs = 1.0 / (dataNrObs_ + priorNrObs_);
-        foreach (ix, inout d; diff)
-            d = totalNrObs * (dataNrObs_*dataMean_[ix] + priorNrObs_*priorMean_[ix]);
-        add(diff, mean, -1.0); 
-        return -0.5*Dimension*log(2*PI) + 0.5*log(precision_.determinant) - 0.5*precision_.leftRightProduct(diff);
+        real totalSS = priorSS_ + dataSS_;
+        real[Dimension] difference;
+        real factor = 1.0 / totalSS;
+        foreach (ix, inout v; difference)
+            v = factor * (priorSS_*priorMean_[ix] + dataSS_*dataMean_[ix]) - mean[ix];
+        return 0.5*(-cast(real)(Dimension)*log(2*PI) +
+                (logDetDataCovar_-log(totalSS)) +
+                -totalSS*invDataCovar_.leftRightProduct(difference));
     }
     real density(real[] mean)
     {
@@ -40,44 +44,38 @@ class GaussianPosterior(uint Dimension)
 
     void update(real[] x, real dT = 0.0)
     {
-        real downScaledDataNrObs = dataNrObs_;
+        real downScaledDataSS = dataSS_;
         if (0.0 != dataDecayFactor_)
-            downScaledDataNrObs *= exp(-dT*dataDecayFactor_);
-        dataNrObs_ = downScaledDataNrObs + 1.0;
+            downScaledDataSS *= exp(-dT*dataDecayFactor_);
+        dataSS_ = downScaledDataSS + 1.0;
         foreach (ix, inout dm; dataMean_)
-            dm = (x[ix] + downScaledDataNrObs*dm) / dataNrObs_;
+            dm = (x[ix] + downScaledDataSS*dm) / dataSS_;
     }
     void updateWithWeight(real[] x, real weight, real dT = 0.0)
     {
-        real downScaledDataNrObs = dataNrObs_;
+        real downScaledDataSS = dataSS_;
         if (0.0 != dataDecayFactor_)
-            downScaledDataNrObs *= exp(-dT*dataDecayFactor_);
-        dataNrObs_ = downScaledDataNrObs + weight;
+            downScaledDataSS *= exp(-dT*dataDecayFactor_);
+        dataSS_ = downScaledDataSS + weight;
         foreach (ix, inout dm; dataMean_)
-            dm = (weight*x[ix] + downScaledDataNrObs*dm) / dataNrObs_;
+            dm = (weight*x[ix] + downScaledDataSS*dm) / dataSS_;
     }
     //Update the posterior with a new time difference. No observation was made
     //dT: amount of time passed since last update
     void updateTime(real dT)
     {
         if (0.0 != dataDecayFactor_)
-            dataNrObs_ = exp(-dT*dataDecayFactor_)*dataNrObs_;
+            dataSS_ = exp(-dT*dataDecayFactor_)*dataSS_;
      }
 
 
     private:
-    //Consistency check
-    void check_()
-    {
-        if (!precision_)
-            throw new Exception("No precision matrix was specified.");
-    }
-
-    real priorNrObs_;
+    IMatrix invDataCovar_;
+    real logDetDataCovar_;
     real[Dimension] priorMean_;
-    real dataNrObs_;
+    real priorSS_;
+    real dataSS_;
     real[Dimension] dataMean_;
-    Matrix precision_;
     real dataDecayFactor_;
 };
 
@@ -89,8 +87,7 @@ version (UnitTest)
     import gubg.Timer;
     void main()
     {
-        auto posterior = new GaussianPosterior!(2)(5, [1.0, 2.0], 0.2);
-        posterior.setPrecision();
+        auto posterior = new GaussianInference!(2)(createIdentity(2), [1.0, 2.0], 5, 0.5);
 
         Color logDensityColor(real x, real y)
         {
@@ -102,7 +99,7 @@ version (UnitTest)
             scope visu = Visu.create(640, 480, [0, 5], [0, 5]);
 
             //Create a grid of rectangles to show the logDensity of the posterior
-            const NrPerAxis = 100;
+            const NrPerAxis = 50;
             auto gridOfRectangles = new Grid!(Rectangle)(NrPerAxis, NrPerAxis, [0, 5], [0, 5]);
             auto of = new Factory(null, null);
             {
@@ -131,7 +128,7 @@ version (UnitTest)
                     posterior.updateTime(dT);
 
                 gridOfRectangles.each(&redrawCells);
-                return true;
+                return visu.elapsedTime < 25;
             }
 
             //Show time

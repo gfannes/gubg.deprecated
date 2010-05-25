@@ -1,80 +1,87 @@
 require "objects"
 
 module UlbuParser
-  def prepareParsing
-  end
+	def setBaseName(baseName)
+		@baseName = baseName
+	end
 
-  def complete4Parser(obj)
-    case obj
+	def whitespaces
+		[" ", "\n", "\t"]
+	end
+	def prepareParsing
+	end
 
-    when NilClass
-      cota = Cota.new
-      cota.name = Name.new(@baseName)
-      cota.scope = complete(Scope.new)
-      return cota
+	def complete4Parser(obj)
+		case obj
 
-    when Cota
-      cota = obj
-      # Read the attributes
-      cota.attributes = complete(Attributes.new)
-      # Read the name
-      cota.name = complete(Name.new)
-      puts("Parsing #{cota.name}")
-      if !matches(/\A[ \n]*:/)
-        raise "ERROR::Could not read the name"
-      end
+		when NilClass
+			cota = Cota.new
+			cota.name = Name.new(@baseName)
+			cota.scope = complete(Scope.new)
+			return cota
 
-      if cota.attributes.directive?
-        # Read the directive as-is
-        if !matches("{", "}") do
-            cota.scope = buffer[0, buffer.index("}")]
-            consume(cota.scope.length)
-          end
-          raise "ERROR::Could not create directive"
-        end        
-      else
-        # Read the scope
-        if matches("{", "}") do
-            cota.scope = complete(Scope.new)
-          end
-        else
-          cota.refCota = Cota.new
-          cota.refCota.name = complete(Name.new)
-          raise "ERROR::Could not create the refCota" if cota.refCota.name.nil?
-        end
-      end
-      return cota
+		when Cota
+			cota = obj
+			# Read the attributes
+			cota.attributes = complete(Attributes.new)
+			# Read the name
+			cota.name = complete(Name.new)
+			puts("Parsing #{cota.name}")
+			if !matches(/\A[ \n]*:/)
+				raise "ERROR::Could not read the name"
+			end
 
-    when Scope
-      scope = obj
-      loop do
-        break if (buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*\z/])
-        scope.cotas << complete(Cota.new)
-      end
-      return scope
+			if cota.attributes.directive?
+				# Read the directive as-is
+				if !matches("{", "}") do
+					cota.scope = buffer[0, buffer.index("}")]
+					consume(cota.scope.length)
+				end
+				raise "ERROR::Could not create directive"
+				end        
+			else
+				# Read the scope
+				if matches("{", "}") do
+					cota.scope = complete(Scope.new)
+				end
+				else
+					cota.refCota = Cota.new
+					cota.refCota.name = complete(Name.new)
+					raise "ERROR::Could not create the refCota" if cota.refCota.name.nil?
+				end
+			end
+			return cota
 
-    when Attributes
-      attributes = obj
-      if !matches(/\A[ \n]*([@\$\+\-\.\/]*)/) do |attr|
-          attributes.set(attr)
-        end
-        raise "ERROR::Could not read the attributes"
-      end
-      return attributes
+		when Scope
+			scope = obj
+			loop do
+				break if (buffer[/\A[ \n]*\}/] or buffer[/\A[ \n]*\z/])
+				scope.cotas << complete(Cota.new)
+			end
+			return scope
 
-    when Name
-      name = obj
-      if !matches(/\A[ \n]*([a-zA-Z\.]+)/) do |n|
-          name = n
-        end
-        raise "ERROR::Could not complete the name"
-      end
-      return name
+		when Attributes
+			attributes = obj
+			if !matches(/\A[ \n]*([@\$\+\-\.\/]*)/) do |attr|
+				attributes.set(attr)
+			end
+			raise "ERROR::Could not read the attributes"
+			end
+			return attributes
 
-    end
-    nil
-  end
+		when Name
+			name = obj
+			if !matches(/\A[ \n]*([a-zA-Z\.]+)/) do |n|
+				name = n
+			end
+			raise "ERROR::Could not complete the name"
+			end
+			return name
 
-  def finishedParsing
-  end
+		end
+		nil
+	end
+
+	def finishedParsing
+	end
 end
