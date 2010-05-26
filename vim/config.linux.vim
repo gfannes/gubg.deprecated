@@ -112,3 +112,4 @@ endif
 source $GUBG/vim/config.vim
 set backupdir=/tmp
 set directory=/tmp
+set gfn=Monospace\ 14
