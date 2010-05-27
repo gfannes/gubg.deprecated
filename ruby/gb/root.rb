@@ -1,15 +1,16 @@
 require("gubg/utils")
 
 class Root
+    #These members can be filled-in in a root.tree file
     attr(:name, true)
-    attr(:compilation, true)
-    attr(:linking, true)
+    attr(:compiler, true)
+    attr(:linker, true)
     attr(:subtrees, true)
-    attr(:extraSettings, true)
+    attr(:settings, true)
 
     def initialize(string)
-        @compilation = Hash.new{|h, language|h[language] = {}}
-        @linking = Hash.new{|h, language|h[language] = {}}
+        @compiler = Hash.new{|h, language|h[language] = {}}
+        @linker = Hash.new{|h, language|h[language] = {}}
         eval(string, binding_)
     end
     def Root.createFromFile(fileName)
@@ -18,15 +19,15 @@ class Root
 
     def to_s
         res = ""
-        res += "name = #{@name}\n"
-        @compilation.each do |language, settings|
-            res += "Compilation settings for #{language}:\n"
+        res += "Name = #{@name}\n"
+        @compiler.each do |language, settings|
+            res += "Compiler settings for #{language}:\n"
             settings.each do |k, v|
                 res += "\t#{k} => #{v}\n"
             end
         end
-        @linking.each do |language, settings|
-            res += "Linking settings for #{language}:\n"
+        @linker.each do |language, settings|
+            res += "Linker settings for #{language}:\n"
             settings.each do |k, v|
                 res += "\t#{k} => #{v}\n"
             end
@@ -38,7 +39,7 @@ class Root
             res += "Subtrees:\n"
             @subtrees.each{|subtree|res += "\t#{subtree}\n"}
         end
-        res += "extraSettings = #{@extraSettings}\n"
+        res += "Settings = #{@settings}\n"
         res
     end
 
@@ -52,9 +53,13 @@ if __FILE__ == $0
    root = Root.new(DATA.read)
    puts("#{root}")
 end
+
 __END__
+#Example root.tree file
 @name = "test"
-@compilation[:d][:always] = "-I$HOME/d/src -I/home/befanneg/personal/d/src"
-@compilation[:cpp][:always] = "-I$GUBG/cpp/include"
-@compilation[:cpp][/ogre/] = "-I<path to Ogre3d>"
+@compiler[:d][:always] = "-I$HOME/d/src -I/home/befanneg/personal/d/src"
+@compiler[:cpp][:always] = "-I$GUBG/cpp/include"
+@compiler[:cpp][/ogre/] = "-I<path to Ogre3d>"
+@linker[:d][:always] = "-L-lncurses -L-lcairo"
 @subtrees = ["../../root.tree", "Some other tree too"]
+@settings = "../../root.tree"
