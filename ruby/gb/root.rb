@@ -3,14 +3,13 @@ require("gubg/utils")
 class Root
     #These members can be filled-in in a root.tree file
     attr(:name, true)
-    attr(:compiler, true)
-    attr(:linker, true)
+    attr(:language, true)
     attr(:subtrees, true)
     attr(:settings, true)
 
     def initialize(string)
-        @compiler = Hash.new{|h, language|h[language] = {}}
-        @linker = Hash.new{|h, language|h[language] = {}}
+        #A hash of hashes of hashes: language, settings type, settings
+        @language = Hash.new{|h, language|h[language] = Hash.new{|hh, kk|hh[kk] = {}}}
         eval(string, binding_)
     end
     def Root.createFromFile(fileName)
@@ -20,14 +19,8 @@ class Root
     def to_s
         res = ""
         res += "Name = #{@name}\n"
-        @compiler.each do |language, settings|
-            res += "Compiler settings for #{language}:\n"
-            settings.each do |k, v|
-                res += "\t#{k} => #{v}\n"
-            end
-        end
-        @linker.each do |language, settings|
-            res += "Linker settings for #{language}:\n"
+        @language.each do |language, settings|
+            res += "Settings for #{language}:\n"
             settings.each do |k, v|
                 res += "\t#{k} => #{v}\n"
             end
@@ -57,9 +50,13 @@ end
 __END__
 #Example root.tree file
 @name = "test"
-@compiler[:d][:always] = "-I$HOME/d/src -I/home/befanneg/personal/d/src"
-@compiler[:cpp][:always] = "-I$GUBG/cpp/include"
-@compiler[:cpp][/ogre/] = "-I<path to Ogre3d>"
-@linker[:d][:always] = "-L-lncurses -L-lcairo"
+@language[:d][:compiler][:always] = "-I$HOME/d/src -I/home/befanneg/personal/d/src"
+@language[:cpp] = {
+    compiler: {
+    always: "-I$GUBG/cpp/include",
+    /ogre/ => "-I<path to Ogre3d>"
+},
+    linker: { always: "-L-lncurses -L-lcairo" }
+}
 @subtrees = ["../../root.tree", "Some other tree too"]
 @settings = "../../root.tree"
