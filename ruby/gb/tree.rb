@@ -2,6 +2,9 @@
 # * Step from anchorPoint towards / until "root.tree" is found
 # * All files in all subdirectories from "root.tree" are part of the collection
 # * "root.tree: can include other files collections or exclude other files
+
+require("root")
+
 class Tree
     @@rootFileName = "root.tree"
 
@@ -10,6 +13,9 @@ class Tree
         loadRoot_
         createLocalFileList_
         loadChildren_
+    end
+
+    def each(&block)
     end
 
     private
@@ -27,7 +33,7 @@ class Tree
             raise("No #{@@rootFile} found") if nextDirectory == directory
         end
         #Load "root.tree"
-        load(@rootFile)
+        @root = Root.createFromFile(@rootFile)
     end
     def createLocalFileList_
     end

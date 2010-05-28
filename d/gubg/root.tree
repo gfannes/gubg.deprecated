@@ -1,8 +1,9 @@
-include: ../../root.tree
-name: gubg-d
-d:
- compilation:
-  always: -I$HOME/d/src -I/home/befanneg/personal/d/src
- linking:
-  always: -L-lncurses -L-lcairo
-  derelict.sdl.sdl:  -L-lderelict -L-L$DSRC/derelict/lib
+@name = "gubg-d"
+@settings = "../../root.tree"
+@language[:d] = {
+    compiler: { always: "-I$HOME/d/src -I/home/befanneg/personal/d/src" },
+    linker: {
+        always: "-L-lncurses -L-lcairo",
+        /derelict.sdl.sdl/ => "-L-lderelict -L-L$DSRC/derelict/lib"
+    }
+}
