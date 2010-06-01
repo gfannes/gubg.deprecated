@@ -13,7 +13,10 @@ class Tree
         @anchorPoint = ::File.expand_path(anchorPoint)
         loadRoot_
         createLocalFileCollection_
-        loadChildren_
+        loadSubtrees_
+    end
+    def Tree.rootFileName
+        @@rootFileName
     end
 
     def each(&block)
@@ -63,7 +66,10 @@ class Tree
             nil
         end
     end
-    def loadChildren_
+    def loadSubtrees_
+        @subtrees = @root.subtrees.collect do |subtree|
+            Root.new(subtree)
+        end
     end
 end
 

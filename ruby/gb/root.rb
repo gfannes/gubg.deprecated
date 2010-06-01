@@ -16,6 +16,17 @@ class Root
         Root.new(String.load(fileName))
     end
 
+    def subtrees
+        case @subtrees
+        when String
+            [@subtrees]
+        when Array
+            @subtrees
+        else
+            []
+        end
+    end
+
     def to_s
         res = ""
         res += "Name = #{@name}\n"
@@ -25,12 +36,10 @@ class Root
                 res += "\t#{k} => #{v}\n"
             end
         end
-        case @subtrees
-        when String
-            res += "Subtree: #{@subtrees}"
-        when Array
+
+        if !subtrees.empty?
             res += "Subtrees:\n"
-            @subtrees.each{|subtree|res += "\t#{subtree}\n"}
+            subtrees.each{|subtree|res += "\t#{subtree}\n"}
         end
         res += "Settings = #{@settings}\n"
         res
@@ -58,5 +67,6 @@ __END__
 },
     linker: { always: "-L-lncurses -L-lcairo" }
 }
-@subtrees = ["../../root.tree", "Some other tree too"]
+#@subtrees = ["../../root.tree", "Some other tree too"]
+@subtrees = "../../root.tree"
 @settings = "../../root.tree"

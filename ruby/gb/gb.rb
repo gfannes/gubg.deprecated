@@ -1,150 +1,56 @@
-require("gubg/utils")
+require("optparse")
+require("tree")
 
-require("gb/commands")
-require("gb/tree")
+$version = [0, 0, 1]
 
-class GenericBuild
-  def initialize
-    @commands = []
-  end
+options = {}
+OptionParser.new do |parser|
+    parser.banner = "Usage: gb <options> [location*]"
+    
+    parser.separator("")
+    parser.separator("Build options:")
+    parser.separator("    location*                        The location(s) of the affected trees. Working directory is default.")
+    options[:clean] = false
+    parser.on("-c", "--clean", "Clean all object files"){options[:clean] = true}
 
-  def parseArguments(arguments)
-    # Check the arguments and extract the command and location
-    setCommand(:reset)
-    location = nil
-    begin
-      arguments.each do |argument|
-        case argument
-        when Collection.from(%w[--help -h --])
-          # Help commands
-          setCommand(:help)
-          break
-        when Collection.from(%w[push pull s c])
-          # Git commands
-          setCommand(:git, argument)
-        when "all"
-          # Build all
-          setCommand(:build, argument)
-        when "clean"
-          # Clean all
-          setCommand(:clean, argument)
-        when Collection.from(%w[f format])
-          # Format using astyle
-          setCommand(:format, argument)
-        when "create"
-          # Create a default root.tree file
-          setCommand(:create, argument)
+    parser.separator("")
+    parser.separator("Source code options:")
+    options[:git] = nil
+    gitCommands = %w[push pull status commit]
+    parser.on("-g", "--git COMMAND", "Git COMMAND can be: #{gitCommands.join(', ')}") do |command|
+        case command
+        when *gitCommands
+            options[:git] = command.to_sym
         else
-          location = File.expand_path(argument)
+            puts("Unknown git command \"#{command}\". Possible commands are: #{gitCommands.join(', ')}.")
+            exit(0)
         end
-      end
-    rescue
-      setCommand(:unknownCommand, arguments)
+    end
+    options[:format] = false
+    parser.on("-f", "--format", "Format the source code"){options[:format] = true}
+    options[:create] = false
+    parser.on("-C", "--create", "Create a default \"#{Tree.rootFileName}\" file"){options[:create] = true}
+
+    parser.separator("")
+    parser.separator("Common options:")
+    options[:verbose] = false
+    parser.on("-v", "--verbose", "Be verbose"){options[:verbose] = true}
+    parser.on("-V", "--version", "Print version") do
+        puts("Version #{$version.join('.')}")
+        exit(0)
+    end
+    parser.on("-h", "--help", "Print help") do
+        puts(parser)
+        exit(0)
     end
 
-    # By default, we build
-    setCommand(:build) if @commandType.nil?
-    # By default, we take the current working directory as location
-    location = Dir.pwd if location.nil?
+    parser.separator("")
+    parser.separator("Created by Geert Fannes under GPL.")
+end.parse!
 
-    # Create the command objects depending on the command
-    case @commandType
-    when :help
-      print(:usage)
-    when :git
-      @commands << GitCommand.new(Tree.create(location), @command)
-    when :build
-      trees = nil
-      case @command
-      when NilClass
-        trees = [Tree.create(location)]
-      when "all"
-        trees = Tree.allTrees(location)
-        @command = nil
-      end
-      puts("I will build the following trees:")
-      trees.each do |tree|
-        puts(" * #{tree.base}")
-      end
-      trees.each do |tree|
-        @commands += tree.buildCommands(@command)
-      end
-      # Execute the compiled unit tests
-      trees.each do |tree|
-        if tree.unitTest?
-          @commands << ExecuteCommand.new(tree.execName, File.dirname(tree.execName))
-        end
-      end
-    when :clean
-      Tree.cleanFileStore
-    when :format
-      trees = Tree.allTrees(location)
-      puts("I will format the following trees:")
-      trees.each do |tree|
-        puts(" * #{tree.base}")
-      end
-      trees.each do |tree|
-        @commands += tree.formatCommands
-      end
-    when :create
-      Tree.createDefaultRootFile
-    when :unknownCommand
-      print(:unknownCommand, @command)
-    else
-      print(:unknownCommand)
-    end
-  end
+options[:locations] = ARGV.empty? ? [Dir.pwd] : ARGV.collect{|v|File.expand_path(v)}
 
-  def executeCommands
-    time("Executing all commands (#{@commands.length})", true) do
-      @commands.each do |command|
-        command.execute
-      end
-    end
-  end
-
-  def print(what, args = nil)
-    case what
-    when :usage
-      puts(%Q@Usage:: gb [command] [location]
-#{indent(1)}Git commands:
-#{indent(2)} * push: push to the location specified in root.tree
-#{indent(2)} * pull: pull from the location specified in root.tree
-#{indent(2)} * s: status
-#{indent(2)} * c: commit -a
-#{indent(1)}Location: The tree to be used. If not specified, the working directory is taken.
-#{indent(2)} * all: Build all subtrees
-#{indent(1)}Other commands:
-#{indent(2)} * clean: Clean all objects from /tmp/gb
-#{indent(2)} * f: Format the code
-#{indent(2)} * create: Generate a default root.tree file
-Created by Geert Fannes under GPL.
-@)
-    when :unknownCommand
-      puts("ERROR::Unknown command \"#{args}\"")
-    else
-    end
-  end
-
-  def indent(level)
-    " "*3*level
-  end
-
-  def setCommand(type, command = nil)
-    case type
-    when :reset
-      @commandType = nil
-      @command = nil
-    else
-      raise "ERROR::command is already set" if !@command.nil?
-      @commandType = type
-      @command = command
-    end
-  end
-end
-
-if __FILE__ == $0
-  gb = GenericBuild.new
-  gb.parseArguments(ARGV.dup)
-  gb.executeCommands
+$verbose = options[:verbose]
+if $verbose
+    puts("Options: #{options}")
 end
