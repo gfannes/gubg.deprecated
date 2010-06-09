@@ -48,23 +48,43 @@ class CommandFactory
         commands
     end
 
+    protected
+    #Pure virtual functions
+    def getSettings_(file, tree)
+        #Should return a hash with entries
+        # * :compilerSettings: an array of compiler settings
+        # * :referencedFiles: an array of filepaths of referenced files (recursive)
+        # * :includeDirs: an array of required include directories (internal)
+        # * :language: a string indicating the language
+        raise("Please implement this pure virtual method")
+    end
+    def modulesPerFile_(filepath)
+        #Should return an array of modules referenced in filepath (not recursive)
+        raise("Please implement this pure virtual method")
+    end
+    def moduleInfo_(mod, tree)
+        #Should return information on mod if mod is found internally
+        #Else, nil
+        raise("Please implement this pure virtual method")
+    end
+
     private
     @@objectExtensionPerOS = {"Linux" => ".o", "Windows" => ".obj", "MinGW" => ".obj"}
     def createFileInfoForObjectFile_(file, tree)
         fileInfo = nil
 
-        settings, referencedFiles, includeDirs, type = getSettings_(file, tree)
-
-        if type
-            # Create the FileInfo object
-            fileInfo =  FileInfo.new(File.basename(file.filename) + @@objectExtensionPerOS[operatingSystem])
-            fileInfo["settings"] = settings.join(" ")
-            fileInfo["includeDirs"] = includeDirs
-            fileInfo["date"] = File.new(file.filepath).mtime.to_s
-            fileInfo["dates"] = referencedFiles.select{|fn|File.exist?(fn)}.collect{|fn|File.new(fn).mtime.to_s}.sort
-            fileInfo["sourceFile"] = file.filepath
-            fileInfo["directory"] = file.directory
-            fileInfo["type"] = type
+        getSettings_(file, tree).tap do |settings|
+            if settings
+                # Create the FileInfo object
+                fileInfo =  FileInfo.new(File.basename(file.filename) + @@objectExtensionPerOS[operatingSystem])
+                fileInfo["settings"] = settings[:compilerSettings].join(" ")
+                fileInfo["includeDirs"] = settings[:includeDirs]
+                fileInfo["date"] = File.new(file.filepath).mtime.to_s
+                fileInfo["dates"] = settings[:referencedFiles].collect{|fn|File.new(fn).mtime.to_s}.sort
+                fileInfo["sourceFile"] = file.filepath
+                fileInfo["directory"] = file.directory
+                fileInfo["language"] = settings[:language]
+            end
         end
 
         fileInfo
@@ -94,32 +114,36 @@ class DCommandFactory < CommandFactory
         @dependency = DDependency.new
         super
     end
+
+    protected
     def getSettings_(file, tree)
-        settings, referencedFiles, includeDirs, type = nil, nil, nil, nil
+        settings = nil
 
         if ".d" == file.extension
+            (settings ||= {})[:language] = "d"
             findInfoPerModule_(file.filepath, tree).tap do |infoPerModule|
-                #settings
-                settings = [tree.root.language[:d][:compiler][:always]]
-                infoPerModule.each do |mod, info|
-                    if info
-                        filepath = info.filepath
-                        tree.root.language[:d][:compiler].each do |when_, setting|
-                            case when_
-                            when :always
-                                settings << setting
-                            when Regex, String
-                                settings << setting if filepath[when_]
+                #:compilerSettings
+                [tree.root.language[:d][:compiler][:always]].tap do |compilerSettings|
+                    infoPerModule.each do |mod, info|
+                        if info
+                            filepath = info.filepath
+                            tree.root.language[:d][:compiler].each do |when_, setting|
+                                case when_
+                                when :always
+                                    compilerSettings << setting
+                                when Regex, String
+                                    compilerSettings << setting if filepath[when_]
+                                end
                             end
                         end
                     end
+                    settings[:compilerSettings] = compilerSettings.compact.uniq.sort
                 end
-                settings = settings.compact.uniq.sort
             end.tap do |infoPerModule|
-                #referencedFiles
-                referencedFiles = infoPerModule.values.compact.collect{|info|info.filepath}
+                #:referencedFiles
+                settings[:referencedFiles] = infoPerModule.values.compact.collect{|info|info.filepath}
             end.tap do |infoPerModule|
-                #includeDirs
+                #:includeDirs
                 includeDirs = {}
                 infoPerModule.each do |mod, info|
                     if info
@@ -127,17 +151,14 @@ class DCommandFactory < CommandFactory
                         includeDirs[filepath[0, filepath.index(mod.gsub(".", "/"))]] = true
                     end
                 end
-                includeDirs = includeDirs.keys.sort
+                settings[:includeDirs] = includeDirs.keys.sort
             end
-            type = "d"
         end
 
-        return settings, referencedFiles, includeDirs, type
+        settings
     end
-
-    protected
-    def modulesPerFile_(filename)
-        @dependency.importedModules(filename)
+    def modulesPerFile_(filepath)
+        @dependency.importedModules(filepath)
     end
     def moduleInfo_(mod, tree)
         info = nil

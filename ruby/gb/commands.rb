@@ -62,7 +62,7 @@ class CompileCommand
   def execute
     wasCreated = @fileStore.create(@fileInfo) do |fileName|
       cmd = nil
-      case @fileInfo["type"]
+      case @fileInfo["language"]
       when "cpp"
         cmd = "g++ -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -o #{fileName}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
@@ -70,7 +70,7 @@ class CompileCommand
         cmd = "dmd -c #{@fileInfo['sourceFile']} #{@fileInfo['settings']} -of#{fileName}"
         @fileInfo["includeDirs"].each { |id| cmd += " -I#{id}"}
       else
-        raise "Unknown type \"#{@fileInfo["type"]}\""
+        raise "Unknown language \"#{@fileInfo["language"]}\""
       end
       puts(cmd)
       system(cmd)
