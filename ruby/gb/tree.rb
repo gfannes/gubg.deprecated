@@ -9,6 +9,7 @@ require("gubg/utils")
 class Tree
     @@rootFileName = "root.tree"
 
+    attr(:root, true)
     def initialize(anchorPoint)
         @anchorPoint = ::File.expand_path(anchorPoint)
         loadRoot_
@@ -22,6 +23,10 @@ class Tree
     def each(&block)
         @filesPerExtension.each do |extension, files|
             files.each{|file|block.call(file)}
+        end
+        @subtrees.each do |subtree|
+            puts("\nSubtree")
+            subtree.each(block)
         end
     end
 
@@ -48,16 +53,17 @@ class Tree
     class File
         attr(:directory, true)
         attr(:filename, true)
-        def initialize(directory, fileName)
-            @directory, @fileName = directory, fileName
-            @extension = ::File.extname(@fileName)
+        def initialize(directory, filename)
+            @directory, @filename = directory, filename
+            @extension = ::File.extname(@filename)
         end
         def extension
             @extension
         end
-        def to_s
-            ::File.expand_path(@fileName, @directory)
+        def filepath
+            ::File.expand_path(@filename, @directory)
         end
+        alias to_s filepath
     end
     def createLocalFileCollection_
         @filesPerExtension = Hash.new{|h, k|h[k] = []}

@@ -18,7 +18,7 @@ class FileInfo
         raise "Non-String element found in Array." if !(String === el)
       end
     else
-      raise "I can only deal with Strings and Arrays of Strings"
+      raise "I can only deal with Strings and Arrays of Strings, not with #{v.class}"
     end
     raise "Key \"#{key}\" already exists." if @info.has_key?(key)
     @info[key] = v

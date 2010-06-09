@@ -1,43 +1,35 @@
 require("gubg/utils")
 
 class Dependency
-  @@cache = Hash.new{|h, k|h[k] = {}}
-  def Dependency.includedFiles(type, fileName)
-    res = @@cache[type][fileName]
-    if res.nil?
-      res = []
-      case type
-      when :cpp
-        re = /^\#include +[<\"](.+)[>\"]/
-          String.loadLines(fileName).each do |line|
-          case line
-          when re
-            res << line[re, 1]
-          end
-        end
-      when :d
-        re = /^(private|public|static)?\s*import +(.+);.*$/
-        String.loadLines(fileName).each do |line|
-          if md = re.match(line)
-            modName = md[2]
-
-            # Check for renamed imports
-            re2 = /(.+)=(.+)/
-            modName = modName[re2, 2] if modName[re2]
-            
-            modName.strip!
-            res << modName
-          end
-        end
-      else
-        raise "Unknown type \"#{type}\""
-      end
-      @@cache[type][fileName] = res
+    protected
+    def parsePerLine_(filename, &block)
+        (@cache ||= {})[filename] ||= [].tap do |res|
+            String.loadLines(filename).each{|line|block.call(line, res)}
+        end.uniq
     end
-    res
-  end
+end
+
+class DDependency < Dependency
+    def importedModules(filename)
+        parsePerLine_(filename) do |line, modulesAry|
+            if md = (@@reImport ||= /^(private|public|static)?\s*import +(.+);.*$/).match(line)
+                modName = md[2]
+                # Check for renamed imports
+                (@@reRenamedImport ||= /(.+)=(.+)/).match(modName).tap{|md2|modName = md2[2] if md2}
+                modulesAry << modName.strip
+            end
+        end
+    end
+end
+
+class CPPDependency < Dependency
+    def includedFiles(filename)
+        parsePerLine_(filename) do |line, modulesAry|
+            (@@reInclude ||= /^\#include +[<\"](.+)[>\"]/).match(line).tap{|md|modulesAry << md[1] if md}
+        end
+    end
 end
 
 if __FILE__ == $0
-  puts Dependency.includedFiles(:d, "/home/gfannes/gubg/d/gubg/graphics/Canvas.d")
+    puts DDependency.new.importedModules("/home/gfannes/gubg/d/gubg/graphics/Canvas.d")
 end

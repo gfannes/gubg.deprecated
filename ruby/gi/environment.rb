@@ -34,6 +34,7 @@ class Environment
   end
   def move(from, to)
     time("Moving \"#{from}\" to \"#{to}\"") do
+        FileUtils.mkdir_p(to) if !File.exist?(to)
       FileUtils.move(from, to)
     end
   end
