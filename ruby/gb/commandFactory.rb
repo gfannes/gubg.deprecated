@@ -127,10 +127,22 @@ class CompileFactory < Factory
 
     def createCommands(tree)
         commands = []
-        tree.each do |file|
-            if fileInfo = createFileInfoForObjectFile_(file, tree)
-                commands << CompileCommand.new(fileInfo, @fileStore)
-                @@objectFilesPerLanguangePerTree[fileInfo[:language]][tree] << @fileStore.name(fileInfo)
+        if tree.root?
+            tree.each do |file|
+                if fileInfo = createFileInfoForObjectFile_(file, tree).first
+                    commands << CompileCommand.new(fileInfo, @fileStore)
+                    @@objectFilesPerLanguangePerTree[fileInfo[:language]][tree] << @fileStore.name(fileInfo)
+                end
+            end
+        else
+            mainFileInfo, settings = createFileInfoForObjectFile_(tree.anchorPoint, tree)
+            commands << CompileCommand.new(mainFileInfo, @fileStore)
+            @@objectFilesPerLanguangePerTree[mainFileInfo[:language]][tree] << @fileStore.name(mainFileInfo)
+            settings[:referencedFiles].each do |file|
+                if fileInfo = createFileInfoForObjectFile_(file, tree).first
+                    commands << CompileCommand.new(fileInfo, @fileStore)
+                    @@objectFilesPerLanguangePerTree[fileInfo[:language]][tree] << @fileStore.name(fileInfo)
+                end
             end
         end
         commands
@@ -152,23 +164,23 @@ class CompileFactory < Factory
     def createFileInfoForObjectFile_(file, tree)
         fileInfo = nil
 
-        getSettings_(file, tree).tap do |settings|
-            if settings
-                # Create the FileInfo object
-                fileInfo =  FileInfo.new(File.basename(file.filename) + @@objectExtensionPerOS[operatingSystem])
-                #Mandatory options
-                fileInfo[:sourceFile] = file.filepath
-                fileInfo[:language] = settings[:language]
-                fileInfo[:settings] = settings[:compilerSettings].join(" ")
-                fileInfo[:includeDirs] = settings[:includeDirs]
-                #Optional options for improved dependency
-                fileInfo[:date] = File.new(file.filepath).mtime.to_s
-                fileInfo[:dates] = settings[:referencedFiles].collect{|fn|File.new(fn).mtime.to_s}.sort
-                fileInfo[:directory] = file.directory
-            end
+        file = Tree::File.createFromFilepath(file) if !(Tree::File === file)
+        settings = getSettings_(file, tree)
+        if settings
+            # Create the FileInfo object
+            fileInfo =  FileInfo.new(File.basename(file.filename) + @@objectExtensionPerOS[operatingSystem])
+            #Mandatory options
+            fileInfo[:sourceFile] = file.filepath
+            fileInfo[:language] = settings[:language]
+            fileInfo[:settings] = settings[:compilerSettings].join(" ")
+            fileInfo[:includeDirs] = settings[:includeDirs]
+            #Optional options for improved dependency
+            fileInfo[:date] = File.new(file.filepath).mtime.to_s
+            fileInfo[:dates] = settings[:referencedFiles].collect{|fn|File.new(fn).mtime.to_s}.sort
+            fileInfo[:directory] = file.directory
         end
 
-        fileInfo
+        return fileInfo, settings
     end
 end
 

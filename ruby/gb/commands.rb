@@ -146,6 +146,7 @@ class ArchiveCommand
             system(cmd)
         end
         # Copy the file from the file store to its proper location
+        File.dirname(@fileInfo[:libName]).tap{|dir|FileUtils.mkdir_p(dir) if !File.exist?(dir)}
         FileUtils.copy(@fileStore.name(@fileInfo), @fileInfo[:libName])
     end
 end

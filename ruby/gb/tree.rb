@@ -77,6 +77,9 @@ class Tree
             @directory, @filename = directory, filename
             @extension = ::File.extname(@filename)
         end
+        def File.createFromFilepath(filepath)
+            File.new(::File.dirname(filepath), ::File.basename(filepath))
+        end
         def extension
             @extension
         end
