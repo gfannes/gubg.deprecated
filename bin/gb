@@ -2,16 +2,16 @@
 
 require("gb/gb")
 
-gb = GenericBuild.new
-
-begin
-  gb.parseArguments(ARGV)
-rescue RuntimeError => msg
-  puts("Parsing error::#{msg}")
-end
-
-begin
-  gb.executeCommands
-rescue RuntimeError => msg
-  puts("Execution error::#{msg}")
-end
+#gb = GenericBuild.new
+#
+#begin
+#  gb.parseArguments(ARGV)
+#rescue RuntimeError => msg
+#  puts("Parsing error::#{msg}")
+#end
+#
+#begin
+#  gb.executeCommands
+#rescue RuntimeError => msg
+#  puts("Execution error::#{msg}")
+#end

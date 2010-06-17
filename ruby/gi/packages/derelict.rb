@@ -13,11 +13,12 @@ class Install_derelict
         @env.chmod(0777)
         @env.execute(%q@find ./Derelict* -name "derelict" | xargs -i cp -R '{}' ./@)
         Dir.chdir("derelict") do
-          @env.create("root.tree", %Q@d:                                                                                       
- compilation:                                                                            
-  always: -I../                                                                          
- linking:                                                                                
-  always:@)
+          @env.create("root.tree", %Q%
+@language[:d] = {
+    compiler: { always: "-I../" },
+    linker: { always: "" }, 
+}
+                      %)
           @env.create("lib")
           @env.create("include")
           @env.execute("gb")

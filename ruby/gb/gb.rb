@@ -1,6 +1,6 @@
 require("optparse")
-require("tree")
-require("commandFactory")
+require("gb/tree")
+require("gb/commandFactory")
 
 $version = [0, 0, 1]
 
@@ -66,11 +66,16 @@ end
 # * Load the trees
 trees = options[:locations].collect{|location|Tree.new(location)}
 # * Create the commands
-commands = trees.collect do |tree|
-    commandFactory = selectCommandFactory(tree, :build)
-    commandFactory.createCommands(tree)
-end.flatten
+commands = {}
+[:compile, :link].each do |type|
+    commands[type] = trees.collect do |tree|
+        commandFactory = selectCommandFactory(tree, type)
+        commandFactory.createCommands(tree)
+    end.flatten
+end
 # * Execute the commands
-commands.each do |command|
-    command.execute
+[:compile, :link].each do |type|
+    commands[type].each do |command|
+        command.execute
+    end
 end

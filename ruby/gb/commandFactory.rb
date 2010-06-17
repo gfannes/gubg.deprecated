@@ -1,12 +1,12 @@
-require("commands")
-require("dependency")
+require("gb/commands")
+require("gb/dependency")
 require("gubg/utils")
 require("gubg/filestore")
 
 def selectCommandFactory(tree, operation)
     res = nil
     case operation
-    when :build
+    when :compile
         countPerExtension = Hash.new{|h, k|h[k] = 0}
         tree.each do |file|
             countPerExtension[file.extension] += 1
@@ -21,28 +21,116 @@ def selectCommandFactory(tree, operation)
         case mostFrequentExtension
         when ".d"
             raise("I cannot combine d and cpp yet") if countPerExtension[".cpp"] > 0
-            res = DCommandFactory.new
+            res = DCompileFactory.new
         when ".cpp"
             raise("I cannot combine cpp and d yet") if countPerExtension[".d"] > 0
-            res = CPPCommandFactory.new
+            res = CPPCompileFactory.new
         else
             raise("Could not find either d or cpp source files")
         end
+    when :link
+        res = DLinkFactory.new
     else
         raise("Unknown operation #{operation}")
     end
     res
 end
 
-class CommandFactory
+class Factory
+    def initialize(language)
+        @language = case language
+                    when :d
+                        DLanguage.new
+                    when :cpp
+                        CPPLanuage.new
+                    else
+                        language
+                    end
+    end
+
+    #Finds all referred modules (recursively) and return file information on them
+    def findInfoPerModule(filepath, tree)
+        puts("Finding module info for #{filepath}") if $verbose
+        infoPerModule = {}
+        modules2Check = @language.modulesPerFile(filepath)
+        while !modules2Check.empty?
+            newModules2Check = []
+            modules2Check.uniq.each do |mod|
+                if info = @language.moduleInfo(mod, tree)
+                    @language.modulesPerFile(info.filepath).each do |newMod|
+                        newModules2Check << newMod if !infoPerModule.has_key?(newMod)
+                    end
+                end
+                infoPerModule[mod] = info
+            end
+            modules2Check = newModules2Check
+        end
+        infoPerModule
+    end
+end
+
+class DLinkFactory < Factory
     def initialize
         @fileStore = FileStore.new("/tmp/gb")
+        super(:d)
     end
+    def createCommands(tree)
+        if tree.root?
+            #Create a library
+            dirLib = File.expand_path("lib", tree.baseDirectory)
+            archiveExtension = case operatingSystem
+                               when "Linux"
+                                   archiveExtension = ".a"
+                               when Collection.new("MinGW", "Windows")
+                                   archiveExtension = ".lib"
+                               end
+            libName = File.expand_path("lib#{tree.name}" + archiveExtension, dirLib)
+            fileInfo = FileInfo.new(libName)
+            fileInfo[:libName] = libName
+            fileInfo[:objects] = CompileCommand.getObjectFiles(:d, tree)
+            [ArchiveCommand.new(fileInfo, @fileStore)]
+        else
+            #Create an executable and execute it
+            execName = tree.anchorPoint + ".exec"
+            fileInfo = FileInfo.new(execName)
+            fileInfo[:execName] = execName
+            fileInfo[:objectFiles] = CompileCommand.getObjectFiles(:d, tree)
+            fileInfo[:language] = :d
+            [].tap do |linkerSettings|
+                findInfoPerModule(tree.anchorPoint, tree).each do |mod, info|
+                    tree.root.language[:d][:linker].each do |when_, setting|
+                        case when_
+                        when :always
+                            linkerSettings << setting
+                        when Regexp, String
+                            linkerSettings << setting if mod[when_]
+                        end
+                    end
+                end
+                fileInfo[:settings] = linkerSettings.compact.uniq.sort.join(" ")
+            end
+            [LinkCommand.new(fileInfo, @fileStore), ExecuteCommand.new(execName)]
+        end
+    end
+end
+
+class CompileFactory < Factory
+    @@objectFilesPerLanguangePerTree = Hash.new{|h, k|h[k] = Hash.new{|hh, kk|hh[kk] = []}}
+
+    def initialize(language)
+        @fileStore = FileStore.new("/tmp/gb")
+        super(language)
+    end
+    def CompileCommand.getObjectFiles(language, tree)
+        @@objectFilesPerLanguangePerTree[language][tree]
+    end
+
     def createCommands(tree)
         commands = []
         tree.each do |file|
-            createFileInfoForObjectFile_(file, tree).tap do |fileInfo|
-                commands << CompileCommand.new(fileInfo, @fileStore) if fileInfo
+            if fileInfo = createFileInfoForObjectFile_(file, tree)
+                commands << CompileCommand.new(fileInfo, @fileStore)
+                @@objectFilesPerLanguangePerTree[fileInfo[:language]][tree] << @fileStore.name(fileInfo)
             end
         end
         commands
@@ -55,16 +143,7 @@ class CommandFactory
         # * :compilerSettings: an array of compiler settings
         # * :referencedFiles: an array of filepaths of referenced files (recursive)
         # * :includeDirs: an array of required include directories (internal)
-        # * :language: a string indicating the language
-        raise("Please implement this pure virtual method")
-    end
-    def modulesPerFile_(filepath)
-        #Should return an array of modules referenced in filepath (not recursive)
-        raise("Please implement this pure virtual method")
-    end
-    def moduleInfo_(mod, tree)
-        #Should return information on mod if mod is found internally
-        #Else, nil
+        # * :language: a symbol indicating the language
         raise("Please implement this pure virtual method")
     end
 
@@ -77,53 +156,34 @@ class CommandFactory
             if settings
                 # Create the FileInfo object
                 fileInfo =  FileInfo.new(File.basename(file.filename) + @@objectExtensionPerOS[operatingSystem])
-                fileInfo["settings"] = settings[:compilerSettings].join(" ")
-                fileInfo["includeDirs"] = settings[:includeDirs]
-                fileInfo["date"] = File.new(file.filepath).mtime.to_s
-                fileInfo["dates"] = settings[:referencedFiles].collect{|fn|File.new(fn).mtime.to_s}.sort
-                fileInfo["sourceFile"] = file.filepath
-                fileInfo["directory"] = file.directory
-                fileInfo["language"] = settings[:language]
+                #Mandatory options
+                fileInfo[:sourceFile] = file.filepath
+                fileInfo[:language] = settings[:language]
+                fileInfo[:settings] = settings[:compilerSettings].join(" ")
+                fileInfo[:includeDirs] = settings[:includeDirs]
+                #Optional options for improved dependency
+                fileInfo[:date] = File.new(file.filepath).mtime.to_s
+                fileInfo[:dates] = settings[:referencedFiles].collect{|fn|File.new(fn).mtime.to_s}.sort
+                fileInfo[:directory] = file.directory
             end
         end
 
         fileInfo
     end
-    def findInfoPerModule_(filepath, tree)
-        puts("Finding module info for #{filepath}") if $verbose
-        infoPerModule = {}
-        modules2Check = modulesPerFile_(filepath)
-        while !modules2Check.empty?
-            newModules2Check = []
-            modules2Check.uniq.each do |mod|
-                if info = moduleInfo_(mod, tree)
-                    modulesPerFile_(info.filepath).each do |newMod|
-                        newModules2Check << newMod if !infoPerModule.has_key?(newMod)
-                    end
-                end
-                infoPerModule[mod] = info
-            end
-            modules2Check = newModules2Check
-        end
-        infoPerModule
-    end
 end
 
-class DCommandFactory < CommandFactory
-    def initialize()
-        @dependency = DDependency.new
-        super
+class DCompileFactory < CompileFactory
+    def initialize
+        super(:d)
     end
-
-    protected
     def getSettings_(file, tree)
         settings = nil
 
         if ".d" == file.extension
-            (settings ||= {})[:language] = "d"
-            findInfoPerModule_(file.filepath, tree).tap do |infoPerModule|
+            (settings ||= {})[:language] = :d
+            findInfoPerModule(file.filepath, tree).tap do |infoPerModule|
                 #:compilerSettings
-                [tree.root.language[:d][:compiler][:always]].tap do |compilerSettings|
+                [].tap do |compilerSettings|
                     infoPerModule.each do |mod, info|
                         if info
                             filepath = info.filepath
@@ -137,6 +197,7 @@ class DCommandFactory < CommandFactory
                             end
                         end
                     end
+                    compilerSettings << "-version=UnitTest" if tree.anchorPoint == file.filepath
                     settings[:compilerSettings] = compilerSettings.compact.uniq.sort
                 end
             end.tap do |infoPerModule|
@@ -157,10 +218,16 @@ class DCommandFactory < CommandFactory
 
         settings
     end
-    def modulesPerFile_(filepath)
+end
+
+class DLanguage
+    def initialize
+        @dependency = DDependency.new
+    end
+    def modulesPerFile(filepath)
         @dependency.importedModules(filepath)
     end
-    def moduleInfo_(mod, tree)
+    def moduleInfo(mod, tree)
         info = nil
         modAsFile = mod.gsub(".", "/")
         tree.each do |file|
@@ -173,9 +240,8 @@ class DCommandFactory < CommandFactory
     end
 end
 
-class CPPCommandFactory < CommandFactory
-    def initialize()
-        @dependency = CPPDependency.new
-        super
+class CPPCompileFactory < CompileFactory
+    def initialize
+        super(:cpp)
     end
 end
