@@ -11,7 +11,7 @@ import tango.math.Math;
 //Such a sequence would be when each of the different input patterns occur externally on the inputs
 // => Use GammaPosterior to keep information about decayFactor
 // => Design a test for experimentation
-//  * A simplified test where the inputs _are_ directly the pattern probs
+// * A simplified test where the inputs _are_ directly the pattern probs
 
 //Interpretation:
 // * Natural sequence of states is enforced/modelled with the rotation

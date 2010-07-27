@@ -1,3 +1,5 @@
+# Guidelines #
+
 The following guidelines for modifying and extending this software package should be followed:
  * For function arguments, the variable(s) that will hold the result at the end of the call will come first
 

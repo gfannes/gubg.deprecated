@@ -1,14 +1,44 @@
- * Add the tools into the tree
- * Split the unit tests into real unit tests and system tests
- * Add windows compilation support
- * Move implementations of template class methods which are in .hpp files to .cpp files for better readability
- * Start using const reference arguments to indicate what is input and output
- * Design a general guideline on the use of pointers and references
- * Create a central Block class that can be used anywhere
- * Extend the do(<level>) to multiline
- * Create a data visualization class, that can also visualize matrices
- * 
+# Todo #
 
-Any comments or suggestions on these todo's are always welcome at geert_dot_fannes_at_gmail_dot_com
+## GenericBuild ##
+### Refactoring ###
+ * Support for compilation, linking, running tests and generation HTML5 documentation
+ * Refactor this so that a Tree holds the general structure, but a Filter can make a subselection and perform certain operations (compiling, testing, generating documentation)
+### Documentation ###
+ * HTML5 output
+ * SVG support
+ * Mindmap-like presentation style
+ * Documentation should be inside the code and project folders
+ * Markdown format
+ * Todo support with prioritization
+ * A local tool for easy navigation over the project by its documentation would be nice
+ * Meta-information extraction: keywords, references, project names etc.
 
- * 
+## Tango ##
+ * Port Tango to gb
+ * Port Tango to D2
+
+## Hybrid ##
+ * Port Hybrid (team0xf) to gb
+ * Port Hybrid to D2
+
+## Commander ##
+ * Clone mucommander using D2 and Hybrid
+ * Cache commands, making sure it is not blocked like mucommander is on big delete commands
+
+## Robot ##
+ * Don't use NGW, it lacks USB host required for webcam and wireless
+ * Use USB cables to connect to a uC: data and power for uC, using SPI, IIC or serial communication
+ * Use V-USB as a convertor between USB from laptop and uC, running e.g. on ATmega8
+### Transmission ###
+ * Develop some kind of transmission: low friction, flexible and easy to manufacture
+
+## AI ##
+### Parallelization ###
+ * Both local and remote
+ * Use ASN.1/UDP
+### Visualization ###
+ * Create flexible visualizations of a complete cluster
+### Testing ###
+ * Create different test cases (presence and absense sequences) and try to detect them
+ * Test on Realtimebattle
