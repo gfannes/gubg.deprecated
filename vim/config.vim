@@ -4,7 +4,7 @@ set smartindent
 set tabstop=4
 set shiftwidth=4
 set expandtab
-set lines=38 columns=190
+set lines=43 columns=190
 set autochdir
 set nowrap
 set visualbell

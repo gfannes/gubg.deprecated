@@ -1,0 +1,2 @@
+#!/bin/sh
+dmd gb.d Collection.d ../gubg/Tree.d ../gubg/Compile.d

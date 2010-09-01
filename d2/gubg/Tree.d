@@ -1,26 +1,36 @@
 module gubg.Tree;
 
 import std.file;
+import std.path;
 import std.format;
 import std.range;
 
-interface ITree
+class Tree
 {
-    int opApply(int delegate(ref ITree) dg);
-    int opApply(int delegate(ref File) dg);
-    int opApply(int delegate(ref Folder) dg);
-    string toString() const;
+    //Abstract interface
+    // * Iteration over all elements of a certain type
+    abstract int opApply(int delegate(ref Tree) dg);
+    abstract int opApply(int delegate(ref File) dg);
+    abstract int opApply(int delegate(ref Folder) dg);
+    // * Stringification
+    abstract string toString() const;
+
+    //Parent access
+    Folder parent;
 }
 
-class File: ITree
+class File: Tree
 {
-    this(string path)
+    this(string path, Folder folder = null)
     {
         path_ = path;
+        parent = folder;
     }
-    int opApply(int delegate(ref ITree) dg)
+
+    //Abstract interface implementation from Tree
+    int opApply(int delegate(ref Tree) dg)
     {
-        ITree me = this;
+        Tree me = this;
         return dg(me);
     }
     int opApply(int delegate(ref File) dg)
@@ -36,31 +46,29 @@ class File: ITree
         return "File: " ~ path_;
     }
 
+    string path()
+    {
+        return join(parent.path, path_);
+    }
+
     private:
     string path_;
 }
 
-class Folder: ITree
+class Folder: Tree
 {
-    this(string path)
+    Tree[] childs;
+
+    this(string path, Folder folder = null)
     {
         path_ = path;
-        foreach (DirEntry de; dirEntries(path_, SpanMode.shallow))
-        {
-            ITree tree;
-            if (de.isdir())
-            {
-                tree = new Folder(de.name);
-            } else if (de.isfile())
-            {
-                tree = new File(de.name);
-            } else throw new Exception("Entry is neither dir nor file.");
-            childs ~= tree;
-        }
+        parent = folder;
     }
-    int opApply(int delegate(ref ITree) dg)
+    
+    //Abstract interface implementation from Tree
+    int opApply(int delegate(ref Tree) dg)
     {
-        ITree me = this;
+        Tree me = this;
         auto res = dg(me);
         if (res) return res;
         foreach (child; childs)
@@ -101,31 +109,70 @@ class Folder: ITree
         return writer.data;
     }
 
-    ITree[] childs;
+    string path()
+    {
+        return (parent ? join(parent.path, path_) : path_);
+    }
 
     private:
     string path_;
 }
 
-ITree createFromPath(string path)
+interface ICreator
 {
-    ITree res;
-    if (isdir(path))
-    {
-        res = new Folder(path);
-    } else if (isfile(path))
-    {
-        res = new File(path);
-    }
-    return res;
+    Folder createFolder(string path);
+    File createFile(string path);
 }
 
-import std.stdio;
-void main()
+Tree createFromPath(string path, ICreator creator)
 {
-    auto tree = createFromPath("/home/gfannes/gubg");
-    foreach (Folder el; tree)
+    if (isdir(path))
     {
-        writeln(el.toString);
+        auto folder = creator.createFolder(path);
+        if (folder)
+        {
+            foreach (string subpath; dirEntries(path, SpanMode.shallow))
+            {
+                Tree tree = createFromPath(subpath, creator);
+                if (tree)
+                {
+                    tree.parent = folder;
+                    folder.childs ~= tree;
+                }
+            }
+        }
+        return folder;
+    } else if (isfile(path))
+        return creator.createFile(path);
+
+    throw new Exception("Path is neither a directory nor a file.");
+    return null;
+}
+
+version (UnitTest)
+{
+    import std.stdio;
+    import std.path;
+    void main()
+    {
+        class Creator: ICreator
+        {
+            Folder createFolder(string path)
+            {
+                return new Folder(path);
+            }
+            File createFile(string path)
+            {
+                if ("d" == getExt(path))
+                    return new File(path);
+                return null;
+            }
+        }
+        Creator creator = new Creator;
+        auto tree = createFromPath("/home/gfannes/gubg", creator);
+        foreach (File el; tree)
+        {
+            writeln(el.toString);
+        }
     }
 }
