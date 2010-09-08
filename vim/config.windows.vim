@@ -6,3 +6,4 @@ set backupdir=c:/temp
 set directory=c:/temp
 set gfn=Courier:h12:cANSI
 set tags=w:/tags
+let g:ruby_path = "$GUBG/ruby/gubg"

@@ -1,4 +1,5 @@
-require("gubg/math.rb")
+require("gubg/math")
+require("fileutils")
 
 def operatingSystem
     case RUBY_PLATFORM
@@ -213,6 +214,8 @@ class Dir
                             subDirs << fnDir if !(recursor and !recursor.call(fnDir))
                         end
                     end
+		rescue Encoding::CompatibilityError
+			puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" due to incompatibility issues.")
                     #         rescue ArgumentError
                     #           puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" because it does not seem to exist.")
                     #           raise "STOP"
@@ -235,12 +238,8 @@ class Dir
             return if yield(startDir)
             if File.exist?(startDir)
                 Dir.foreach(startDir) do |entry|
-                    puts("entry = #{entry}")
-                    puts("startDir = \"#{startDir}\"")
                     fnDir = File.expand_path(entry, startDir)
-                    puts("fnDir = #{fnDir}")
                     if fnDir.length > startDir.length and File.directory?(fnDir)
-                        puts("OK")
                         subDirs << fnDir if !(recursor and !recursor.call(fnDir))
                     end
                 end
@@ -257,8 +256,8 @@ class Dir
         end
     end
     def Dir.mkchdir(dir, &block)
-        Dir.mkdir(dir) if !File.exist?(dir)
-        Dir.chdir(dir,&block)
+        FileUtils.mkdir_p(dir) if !File.exist?(dir)
+        Dir.chdir(dir, &block)
     end
     def Dir.relative(dir, pwd = nil)
         pwd ||= Dir.pwd
@@ -412,23 +411,35 @@ class String
         self
     end
 
-    def hexdump
-        width = 32
-        bytes = self.bytes.to_a
-        len = bytes.length
-        ix = 0
-        while ix < len
-            print(("0x%x ("%ix).rjust(9) + ("#{ix}): ".ljust(8)))
-            chars = []
-            ix.upto(ix + width-1) do |i|
-                if i < len
-                    print(("%02x"%bytes[i]).ljust(3))
-                    chars << "%c"%(bytes[i])
-                end
-            end
-            ix += width
-            puts(chars.join(''))
-        end
+    def hexdump(doPrint = true)
+	    lines = []
+	    nrBytesPerLine = 32
+	    bytes = self.bytes.to_a
+	    len = bytes.length
+	    ix = 0
+	    while ix < len
+		    line = ("0x%x ("%ix).rjust(9) + "#{ix}): ".ljust(8)
+		    chars = []
+		    ix.upto(ix + nrBytesPerLine-1) do |i|
+			    if i < len
+				    line += ("%02x"%bytes[i]).ljust(3)
+				    chars << bytes[i]
+			    end
+		    end
+		    ix += nrBytesPerLine
+		    chars.collect! do |b|
+			    case b
+			    when Collection.new((?a.ord .. ?z.ord), (?A.ord .. ?Z.ord), (?0.ord .. ?9.ord), ?_.ord, ' '.ord)
+				    "%c"%b
+			    else
+				    "."
+			    end
+		    end
+		    line += ":: " + chars.join('')
+		    lines << line
+	    end
+	    puts(lines.join("\n")) if doPrint
+	    lines
     end
 
 end

@@ -127,7 +127,7 @@ class ArchiveCommand
       when "Linux"
         cmd = "ar rcs #{fileName} " + @fileInfo["objects"].join(" ")
       when Collection.new("MinGW", "Windows")
-        cmd = "lib -c -p32 #{fileName} " + @fileInfo["objects"].join(" ")
+        cmd = "h:/software/dmd/bin/lib.exe -c -p32 #{fileName} " + @fileInfo["objects"].join(" ")
       end
       puts(cmd)
       system(cmd)
