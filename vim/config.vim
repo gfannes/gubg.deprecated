@@ -1,12 +1,12 @@
 "source $GUBG/vim/colors/darkblue.vim
 "source $GUBG/vim/colors/ir_black.vim
+colorscheme desert
 set smartindent
 set tabstop=4
 set shiftwidth=4
 set expandtab
-set lines=43 columns=190
 set autochdir
-set nowrap
+set wrap
 set visualbell
 set scroll=1
 "Remove the 3000 character syntax highlighting limit
@@ -20,6 +20,7 @@ function! ReadString(message)
   call setline('.', curline . name)
 endfunction
 map _o :a<CR><CR>.<CR>
+map -o :a<CR><CR>.<CR>
 
 function! InsertOneChar()
     let c = nr2char(getchar())

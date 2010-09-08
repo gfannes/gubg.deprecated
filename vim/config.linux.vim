@@ -110,6 +110,7 @@ endif
 
 "Added by gfannes
 source $GUBG/vim/config.vim
+set lines=43 columns=190
 set backupdir=/tmp
 set directory=/tmp
 set gfn=Monospace\ 14
