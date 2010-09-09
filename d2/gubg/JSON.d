@@ -1,7 +1,7 @@
 module gubg.JSON;
 
 import gubg.Format;
-import std.json;
+public import std.json;
 import std.stdio;
 
 //Provides easy lookup of a specific JSON object or array to be used for iteration
@@ -28,6 +28,17 @@ string toString(JSONValue json)
     if (JSON_TYPE.STRING != json.type)
         throw new Exception("json is not a string");
     return json.str;
+}
+//Retrieves a string value from an object
+string get(JSONValue json, string key, out string value)
+{
+    if (JSON_TYPE.OBJECT != json.type)
+        throw new Exception("json is not an object");
+    if (!(key in json.object))
+        throw new Exception(Format.immediate("Element with key %s could not be found", key));
+    if (JSON_TYPE.STRING != json.object[key].type)
+        throw new Exception("json.object[key] is not an object");
+    return json.object[key].str;
 }
 
 //Iterator used to iterator over JSON objects or arrays
