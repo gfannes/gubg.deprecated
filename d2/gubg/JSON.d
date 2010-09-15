@@ -30,15 +30,16 @@ string toString(JSONValue json)
     return json.str;
 }
 //Retrieves a string value from an object
-string get(JSONValue json, string key, out string value)
+bool get(JSONValue json, string key, out string value)
 {
     if (JSON_TYPE.OBJECT != json.type)
         throw new Exception("json is not an object");
     if (!(key in json.object))
-        throw new Exception(Format.immediate("Element with key %s could not be found", key));
+        return false;
     if (JSON_TYPE.STRING != json.object[key].type)
         throw new Exception("json.object[key] is not an object");
-    return json.object[key].str;
+    value = json.object[key].str;
+    return true;
 }
 
 //Iterator used to iterator over JSON objects or arrays

@@ -5,6 +5,8 @@ import std.file;
 import std.path;
 import std.stdio;
 
+//Load the configuration file <filename>, optionally by stepping down to the root
+//This file should be a JSON object (hash) of strings or arrays of strings
 class Configuration
 {
     this(string filename, string path = null, bool stepDown = false)
@@ -52,7 +54,7 @@ class Configuration
     bool get(string key, out string value)
     {
         if (!isValid()) return false;
-        return get(json_, key, value);
+        return gubg.JSON.get(json_, key, value);
     }
     bool get(string key, out string[] values)
     {
