@@ -43,3 +43,5 @@ autocmd bufenter *.txt source $GUBG/vim/maps.markdown.vim
 source $GUBG/vim/hexmode.vim
 
 command -bar Q q
+
+source $GUBG/vim/tabnumber.vim

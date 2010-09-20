@@ -1,5 +1,6 @@
 require("gubg/math")
 require("fileutils")
+require("digest/md5")
 
 def operatingSystem
     case RUBY_PLATFORM
@@ -566,7 +567,6 @@ def tempFile(extension)
 end
 
 def md5sum(fileName)
-    require("digest/md5")
     return Digest::MD5.hexdigest(String.load(fileName))
 end
 
