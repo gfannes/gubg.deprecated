@@ -45,3 +45,4 @@ source $GUBG/vim/hexmode.vim
 command -bar Q q
 
 source $GUBG/vim/tabnumber.vim
+source $GUBG/vim/autoclose.vim
