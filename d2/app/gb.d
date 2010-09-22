@@ -5,7 +5,9 @@ import gubg.Build;
 import gubg.FileCache;
 import gubg.Format;
 import gubg.OnlyOnce;
+import gubg.OptionParser;
 import std.stdio;
+import std.array;
 import std.getopt;
 import std.path;
 import std.file;
@@ -16,22 +18,54 @@ immutable int versionMajor_ = 0;
 immutable int versionMinor_ = 0;
 immutable int versionBuild_ = 0;
 
+//gb [options] <command> <location(s)>
+//Options:
+// * -v/--verbose
+// * -h/--help
+// * -V/--version
+// * -o/--output <filename>
+//Commands:
+// * tags
+// * exe
+// * unit
+// * lib
+// * doc
+//Location(s):
+// * Sourcefile
+// * "gb.json" file
+// * Directory where to look for a gb.json file
 int main(string[] args)
 {
-    //Short commands
-    void printVersion_()
-    {
-        exitApp(ExitCode.ok, "Version %s.%s.%s", versionMajor_, versionMinor_, versionBuild_);
-    }
-    void printHelp_()
-    {
-        exitApp(ExitCode.ok, r"Generic build usage: gb [options] <file-to-build>
-Options:
-    --version       Prints the version
-    --help          Prints this help
+    //We will collect all command-line options in these two hashes
+    bool[string] switches;
+    string[string] values;
 
-Created by Geert Fannes under the GPL.");
-    }
+    //The OptionParser we will use to parse the command-line arguments
+    auto parser = new OptionParser("Usage: gb [switches/options] <command> <location(s)>");
+
+    //Options:
+    parser.addLine("\nOptions:");
+    // -h/--help
+    parser.addSwitch("-h", "--help", "Print this help", (){exitApp(ExitCode.ok, parser.help);}); 
+    // -v/--verbose
+    switches["verbose"] = false;
+    parser.addSwitch("-v", "--verbose", "Enable extra output", (){switches["verbose"] = true;});
+    // -V/--version
+    parser.addSwitch("-V", "--version", "Print the version", (){exitApp(ExitCode.ok, "Version %s.%s.%s", versionMajor_, versionMinor_, versionBuild_);});
+
+    //Commands
+    parser.addLine("\nCommands:");
+    parser.addLine("\ttags\tCreate a ctags file");
+    parser.addLine("\texe\tCreate an executable");
+    parser.addLine("\tunit\tCreate and run a unit test");
+    parser.addLine("\tlib\tCreate a library");
+    parser.addLine("\tdoc\tCreate documentation");
+
+    parser.addLine("\nWritten by Geert Fannes.");
+
+    //Parse args
+    if (!parser.parse(args))
+        exitApp(ExitCode.error, Format.immediate("Failed to parse option \"%s\"\n\n%s", args.front, parser.help));
 
     bool createTagsOperation_()
     {
@@ -145,12 +179,9 @@ Created by Geert Fannes under the GPL.");
     try
     {
         getopt(args,
-                "version", &printVersion_,
-                "help", &printHelp_,
                 "tags", &createTags_);
     } catch (Exception)
     {
-        printHelp_();
     }
     //Unshift the executable
     args = args[1 .. $];

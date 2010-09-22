@@ -59,7 +59,7 @@ struct Format
     Appender!(string) appender_;
 }
 
-version (UnitTest)
+version (Format)
 {
     import std.stdio;
     void main()
