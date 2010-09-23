@@ -543,12 +543,21 @@ end
 
 # Temporary path and files
 def tempDir(dir = '/tmp')
-    res = nil
+    tmpDir = nil
     begin
-        res = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
-    end while File.exist?(res)
-    Dir.mkdir(res)
-    res
+        tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
+    end while File.exist?(tmpDir)
+    Dir.mkdir(tmpDir)
+    if block_given?
+	    begin
+		    yield(tmpDir)
+	    ensure
+		    FileUtils.rm_r(tmpDir)
+	    end
+	    nil
+    else
+	    tmpDir
+    end
 end
 def tempPath(dir = '/tmp')
     res = nil
