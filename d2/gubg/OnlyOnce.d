@@ -16,3 +16,17 @@ struct OnlyOnce
         //This variable will get initialized to false
         bool notFirstTime_;
 }
+
+version (UnitTest)
+{
+    import std.stdio;
+    void main()
+    {
+        OnlyOnce oo;
+        assert(oo.firstTime);
+        assert(!oo.firstTime);
+        assert(!oo.firstTime);
+        assert(!oo.firstTime);
+        writeln("Everything went OK");
+    }
+}

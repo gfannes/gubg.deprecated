@@ -119,10 +119,17 @@ class LinkLibrary: Link
 
 version(UnitTest)
 {
+    import std.file;
     void main()
     {
+        auto objectFile = "Build.o";
         auto compile = new Compile("Build.d");
         compile.addIncludePath("/home/gfannes/gubg/d2");
+        if (exists(objectFile))
+            std.file.remove(objectFile);
+        assert(!exists(objectFile));
+        scope (exit) if (exists(objectFile)) std.file.remove(objectFile);
         compile.execute;
+        assert(exists(objectFile));
     }
 }

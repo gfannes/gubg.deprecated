@@ -20,8 +20,8 @@ class FileCache
         storagePath_ = storagePath;
         if (!storagePath_)
         {
-            version(linux) storagePath_ = "/tmp";
-            version(Windows) storagePath_ = "c:\\temp";
+            version(linux) storagePath_ = "/tmp/FileCache";
+            version(Windows) storagePath_ = "c:\\temp\\FileCache";
         }
         if (!exists(storagePath_))
             mkdirRecurse(storagePath_);
@@ -60,6 +60,10 @@ class FileCache
             throw new Exc(Format.immediate("I should have created file \"%s\", but it is not there...", fp));
 
         return true;
+    }
+    void clean()
+    {
+        rmdirRecurse(storagePath_);
     }
 
     private:
@@ -155,7 +159,7 @@ struct FileInfo
     }
 }
 
-version(UnitTest)
+version (UnitTest)
 {
     import gubg.Build;
     import std.stdio;

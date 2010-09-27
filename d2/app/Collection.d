@@ -7,10 +7,10 @@ class DCollection
 {
     this (string path)
     {
-        auto creator = new DCreator;
-        internalTree_ = createFromPath(path, creator);
+        creator_ = new DCreator;
+        internalTree_ = createTreeFromPath(path, creator_);
         //This is hardcoded for now
-        externalTrees_ ~= createFromPath("/home/gfannes/gubg/d2/gubg", creator);
+        addExternalTree_("/home/gfannes/gubg/d2/gubg");
     }
 
     int opApply(int delegate(ref File) dg)
@@ -28,6 +28,19 @@ class DCollection
     }
 
     private:
+    void addExternalTree_(string path)
+    {
+        //Check that the path is not the same as the internal or any external path
+        if (path == internalTree_.path)
+            return;
+        foreach (externalTree; externalTrees_)
+            if (path == externalTree.path)
+                return;
+
+        //The path seems not to be present yet, so we add it
+        externalTrees_ ~= createTreeFromPath(path, creator_);
+    }
+
     class DCreator: ICreator
     {
             Folder createFolder(string path)
@@ -41,6 +54,7 @@ class DCollection
                 return null;
             }
     }
+    DCreator creator_;
     Tree internalTree_;
     Tree[] externalTrees_;
 }

@@ -99,7 +99,7 @@ class OptionParser
     OptionalDelegate[string] optionalDelegates_;
 }
 
-version (OptionParser)
+version (UnitTest)
 {
     import std.stdio;
     import c_process = std.c.process;

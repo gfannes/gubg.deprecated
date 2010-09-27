@@ -14,6 +14,7 @@ class Tree
     abstract int opApply(int delegate(ref Folder) dg);
     // * Stringification
     abstract string toString() const;
+    abstract string path() const;
 
     //Parent access
     Folder parent;
@@ -45,8 +46,7 @@ class File: Tree
     {
         return "File: " ~ path_;
     }
-
-    string path()
+    string path() const
     {
         return join(parent.path, path_);
     }
@@ -108,8 +108,7 @@ class Folder: Tree
         formattedWrite(writer, "Folder: %s containing %d childs.", path_, childs.length);
         return writer.data;
     }
-
-    string path()
+    string path() const
     {
         return (parent ? join(parent.path, path_) : path_);
     }
@@ -124,7 +123,7 @@ interface ICreator
     File createFile(string path);
 }
 
-Tree createFromPath(string path, ICreator creator)
+Tree createTreeFromPath(string path, ICreator creator)
 {
     if (isdir(path))
     {
@@ -133,7 +132,7 @@ Tree createFromPath(string path, ICreator creator)
         {
             foreach (string subpath; dirEntries(path, SpanMode.shallow))
             {
-                Tree tree = createFromPath(subpath, creator);
+                Tree tree = createTreeFromPath(subpath, creator);
                 if (tree)
                 {
                     tree.parent = folder;
@@ -169,7 +168,7 @@ version (UnitTest)
             }
         }
         Creator creator = new Creator;
-        auto tree = createFromPath("/home/gfannes/gubg", creator);
+        auto tree = createTreeFromPath("/home/gfannes/gubg", creator);
         foreach (File el; tree)
         {
             writeln(el.toString);

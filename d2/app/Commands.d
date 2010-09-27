@@ -18,6 +18,7 @@ interface ICommand
     string toString();
 }
 
+private string fileCachePath_ = "/tmp/gb";
 ICommand createCommand(string[] args)
 {
     ICommand res;
@@ -36,13 +37,16 @@ ICommand createCommand(string[] args)
             res = new ExeCommand(args);
             break;
         case "unit":
-            res = new UnitCommand(args);
+            res = new ExeCommand(args, true);
             break;
         case "lib":
             res = new LibCommand(args);
             break;
         case "doc":
             res = new DocCommand(args);
+            break;
+        case "clean":
+            res = new CleanCommand;
             break;
         default:
             break;
@@ -51,11 +55,25 @@ ICommand createCommand(string[] args)
     return res;
 }
 
-class TagsCommand: ICommand
+class ArgsCommand: ICommand
 {
     this(string[] args)
     {
         args_ = args.dup;
+    }
+
+    abstract bool execute();
+    abstract string toString();
+
+    private:
+    string[] args_;
+}
+
+class TagsCommand: ArgsCommand
+{
+    this(string[] args)
+    {
+        super(args);
     }
     //ICommand implementation
     bool execute()
@@ -85,15 +103,13 @@ class TagsCommand: ICommand
         return true;
     }
     string toString(){return "TagsCommand";}
-
-    private:
-    string[] args_;
 }
-class ExeCommand: ICommand
+class ExeCommand: ArgsCommand
 {
-    this(string[] args)
+    this(string[] args, bool isUnitTest = false)
     {
-        args_ = args.dup;
+        super(args);
+        isUnitTest_ = isUnitTest;
     }
     //ICommand implementation
     bool execute()
@@ -123,7 +139,7 @@ class ExeCommand: ICommand
 
         //Compile the sources and collect the object filepaths
         string[] objectFilepaths;
-        auto fileCache = new FileCache("/tmp/gb");
+        auto fileCache = new FileCache(fileCachePath_);
         foreach (gubg.Tree.File file; collection)
         {
             //The source file that needs to be compiled
@@ -131,7 +147,7 @@ class ExeCommand: ICommand
 
             //Collect all information about the source file
             auto fi = FileInfo(addExt(sourceFilepath, "o"));
-            if (filepath == sourceFilepath)
+            if (isUnitTest_ && filepath == sourceFilepath)
                 fi.add("version", "UnitTest");
             fi.add("includePath", "/home/gfannes/gubg/d2");
             fi.addFile(sourceFilepath);
@@ -175,32 +191,35 @@ class ExeCommand: ICommand
     string toString(){return "ExeCommand";}
 
     private:
-    string[] args_;
+    bool isUnitTest_;
 }
-class UnitCommand: ICommand
+class LibCommand: ArgsCommand
 {
     this(string[] args)
     {
-    }
-    //ICommand implementation
-    bool execute(){return false;}
-    string toString(){return "UnitCommand";}
-}
-class LibCommand: ICommand
-{
-    this(string[] args)
-    {
+        super(args);
     }
     //ICommand implementation
     bool execute(){return false;}
     string toString(){return "LibCommand";}
 }
-class DocCommand: ICommand
+class DocCommand: ArgsCommand
 {
     this(string[] args)
     {
+        super(args);
     }
     //ICommand implementation
     bool execute(){return false;}
     string toString(){return "DocCommand";}
+}
+class CleanCommand: ICommand
+{
+    bool execute()
+    {
+        auto fc = new FileCache(fileCachePath_);
+        fc.clean;
+        return true;
+    }
+    string toString(){return "CleanCommand";}
 }

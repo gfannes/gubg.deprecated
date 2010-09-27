@@ -83,7 +83,7 @@ class JSONIterator
     JSONValue json_;
 }
 
-version(UnitTest)
+version (UnitTest)
 {
     auto jsonString = "{ \"binaryType\": \"executable\", \"files\": [\"test.d\"], \"includePaths\": [\"$HOME/gubg/d2\"] }";
     void main()
