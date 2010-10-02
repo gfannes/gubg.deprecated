@@ -2,6 +2,7 @@ module Commands;
 
 import Collection;
 import Exit;
+import Configuration;
 import gubg.OnlyOnce;
 import gubg.Format;
 import gubg.FileCache;
@@ -47,6 +48,9 @@ ICommand createCommand(string[] args)
             break;
         case "clean":
             res = new CleanCommand;
+            break;
+        case "config":
+            res = new ConfigCommand;
             break;
         default:
             break;
@@ -136,20 +140,35 @@ class ExeCommand: ArgsCommand
 
         //Create the Tree Collection
         auto collection = new DCollection(dirname(filepath));
+        scope config = new Configuration("gb.json", dirname(filepath), true);
+        string[] includePaths = [dirname(filepath)];
+        string[] externalTrees;
+        config.get("externalTrees", externalTrees);
+        foreach(ref externalTree; externalTrees)
+        {
+            externalTree = expandTilde(externalTree);
+            collection.addExternalTree(externalTree);
+            includePaths ~= dirname(externalTree);
+        }
+        collection.prune(filepath);
 
         //Compile the sources and collect the object filepaths
         string[] objectFilepaths;
         auto fileCache = new FileCache(fileCachePath_);
+        uint nrCompilationErrors = 0;
+        uint nrCompilations = 0;
         foreach (gubg.Tree.File file; collection)
         {
             //The source file that needs to be compiled
             string sourceFilepath = file.path;
+            writefln("Compiling source %s", sourceFilepath);
 
             //Collect all information about the source file
             auto fi = FileInfo(addExt(sourceFilepath, "o"));
             if (isUnitTest_ && filepath == sourceFilepath)
                 fi.add("version", "UnitTest");
-            fi.add("includePath", "/home/gfannes/gubg/d2");
+            foreach(includePath; includePaths)
+            fi.add("includePath", includePath);
             fi.addFile(sourceFilepath);
 
             //Compile, if necessary
@@ -163,10 +182,25 @@ class ExeCommand: ArgsCommand
                 c.setObjectFilepath(fileCache.filepath(fi));
                 return c.execute(true);
             }
-            fileCache.create(fi, &compile);
+            switch (fileCache.create(fi, &compile))
+            {
+                case FileCache.Result.AlreadyPresent:
+                case FileCache.Result.CreationOK:
+                    break;
+                case FileCache.Result.CreationFailed:
+                    ++nrCompilationErrors;
+                    writefln("ERROR::Failed to compile %s", sourceFilepath);
+                    break;
+            }
+            ++nrCompilations;
 
             //Collect the object filename
             objectFilepaths ~= fileCache.filepath(fi);
+        }
+        if (nrCompilationErrors > 0)
+        {
+            writefln("I encountered %d compilation errors (out of %d).", nrCompilationErrors, nrCompilations);
+            return false;
         }
 
         //Link the executable, if necessary
@@ -222,4 +256,27 @@ class CleanCommand: ICommand
         return true;
     }
     string toString(){return "CleanCommand";}
+}
+class ConfigCommand: ICommand
+{
+    bool execute()
+    {
+        Format format;
+        format.delimiter = "\n";
+        format(`{`);
+        format(`    "binaryType": "executable",`);
+        format(`    "files": ["test.d"],`);
+        format(`    "externalTrees": ["~/gubg/d2/gubg"]`);
+        format(`}`);
+        format(``);
+        try
+        {
+            std.file.write("gb.json", format.toString);
+        } catch(FileException)
+        {
+            return false;
+        }
+        return true;
+    }
+    string toString(){return "ConfigCommand";}
 }

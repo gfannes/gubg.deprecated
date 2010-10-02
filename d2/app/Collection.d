@@ -2,6 +2,7 @@ module Collection;
 
 public import gubg.Tree;
 import std.path;
+import std.stdio;
 
 class DCollection
 {
@@ -9,26 +10,29 @@ class DCollection
     {
         creator_ = new DCreator;
         internalTree_ = createTreeFromPath(path, creator_);
-        //This is hardcoded for now
-        addExternalTree_("/home/gfannes/gubg/d2/gubg");
     }
 
-    int opApply(int delegate(ref File) dg)
+    int opApply(FileT)(int delegate(ref FileT) dg)
     {
         //We first iterate over the internal tree
-        foreach (File file; internalTree_)
-            if (dg(file)) break;
+        foreach (gubg.Tree.File file; internalTree_)
+        {
+            FileT f = cast(FileT)file;
+            if (f && dg(f)) break;
+        }
         //Next, we iterate over the external trees
         foreach (externalTree; externalTrees_)
         {
-            foreach (File file; externalTree)
-                if (dg(file)) break;
+            foreach (gubg.Tree.File file; externalTree)
+            {
+                FileT f = cast(FileT)file;
+                if (f && dg(f)) break;
+            }
         }
         return 0;
     }
 
-    private:
-    void addExternalTree_(string path)
+    void addExternalTree(string path)
     {
         //Check that the path is not the same as the internal or any external path
         if (path == internalTree_.path)
@@ -41,16 +45,43 @@ class DCollection
         externalTrees_ ~= createTreeFromPath(path, creator_);
     }
 
+    void prune(string filepath)
+    {
+        writeln("Starting with pruning");
+        foreach(ref DFile file; this)
+        {
+            if (filepath != file.path)
+                file.isTagged = true;
+        }
+        foreach(ref DFile file; this)
+        {
+            if (file.isTagged)
+                file.remove;
+        }
+        writeln("Pruning is done");
+        assert(false);
+    }
+
+    private:
+    class DFile: gubg.Tree.File
+    {
+        this(string path, Folder folder = null)
+        {
+            super(path, folder);
+        }
+
+        bool isTagged;
+    }
     class DCreator: ICreator
     {
             Folder createFolder(string path)
             {
                 return new Folder(path);
             }
-            File createFile(string path)
+            DFile createFile(string path)
             {
                 if ("d" == getExt(path))
-                    return new File(path);
+                    return new DFile(path);
                 return null;
             }
     }

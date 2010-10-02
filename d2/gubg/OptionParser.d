@@ -11,8 +11,8 @@ import gubg.Format;
 import std.array;
 
 alias void delegate() SwitchDelegate;
-alias void delegate(string value = null) MandatoryDelegate;
-alias void delegate(string value) OptionalDelegate;
+alias void delegate(string value = null) OptionalDelegate;
+alias void delegate(string value) MandatoryDelegate;
 class OptionParser
 {
     this(string caption)
@@ -74,7 +74,7 @@ class OptionParser
             {
                 if (args.length < 2 || args[1].length == 0 || '-' == args[1][0])
                 {
-                    optionalDelegates_[args.front]();
+                    optionalDelegates_[args.front](null);
                 } else
                 {
                     optionalDelegates_[args.front](args[1]);

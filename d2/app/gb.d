@@ -23,6 +23,8 @@ immutable int versionBuild_ = 0;
 // * unit
 // * lib
 // * doc
+// * clean
+// * config
 //Location(s):
 // * Sourcefile
 // * "gb.json" file
@@ -53,6 +55,8 @@ int main(string[] args)
     parser.addLine("\tunit\tCreate and run a unit test");
     parser.addLine("\tlib\tCreate a library");
     parser.addLine("\tdoc\tCreate documentation");
+    parser.addLine("\tclean\tClean the file cache");
+    parser.addLine("\tconfig\tCreate a dummy config file");
 
     parser.addLine("\nWritten by Geert Fannes.");
 

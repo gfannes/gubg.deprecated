@@ -33,8 +33,9 @@ class FileCache
         return storagePath_.join(fi.filename);
     }
 
-    //Returns true if creater was used to successfully from fi
-    bool create(FileInfo fi, bool delegate(FileInfo fi) creater)
+    //Returns true if creater was used to successfully create fi
+    enum Result {AlreadyPresent, CreationOK, CreationFailed}
+    Result create(FileInfo fi, bool delegate(FileInfo fi) creater)
     {
         //The filepath we have to create if it doesn't exist yet
         auto fp = filepath(fi);
@@ -51,15 +52,15 @@ class FileCache
 
         //Check if the file already exists
         if (fileExists_())
-            return false;
+            return Result.AlreadyPresent;
 
         //Try to create the file and check if it is actually there
         if (!creater(fi))
-            throw new Exc(Format.immediate("I could not create file \"%s\"", fp));
+            return Result.CreationFailed;
         if (!fileExists_())
             throw new Exc(Format.immediate("I should have created file \"%s\", but it is not there...", fp));
 
-        return true;
+        return Result.CreationOK;
     }
     void clean()
     {

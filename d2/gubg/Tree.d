@@ -1,74 +1,75 @@
 module gubg.Tree;
 
-import std.file;
-import std.path;
-import std.format;
-import std.range;
-
-class Tree
+class Tree(LeafData, NodeData)
 {
+    alias Leaf!(LeafData, NodeData) LeafT;
+    alias Node!(LeafData, NodeData) NodeT;
+
     //Abstract interface
     // * Iteration over all elements of a certain type
     abstract int opApply(int delegate(ref Tree) dg);
-    abstract int opApply(int delegate(ref File) dg);
-    abstract int opApply(int delegate(ref Folder) dg);
-    // * Stringification
-    abstract string toString() const;
-    abstract string path() const;
+    abstract int opApply(int delegate(ref LeafT) dg);
+    abstract int opApply(int delegate(ref NodeT) dg);
+//    abstract int opApply(int delegate(ref LeafData) dg);
+//    abstract int opApply(int delegate(ref NodeData) dg);
+    // * RTTI
+    NodeT isNode(){return null;}
+    LeafT isLeaf(){return null;}
+    bool isRoot(){return parent is null;}
 
     //Parent access
-    Folder parent;
+    NodeT parent;
 }
 
-class File: Tree
+class Leaf(LeafData, NodeData): Tree!(LeafData, NodeData)
 {
-    this(string path, Folder folder = null)
+    alias Tree!(LeafData, NodeData) TreeT;
+    alias Node!(LeafData, NodeData) NodeT;
+
+    this(NodeT p = null)
     {
-        path_ = path;
-        parent = folder;
+        parent = p;
     }
 
     //Abstract interface implementation from Tree
-    int opApply(int delegate(ref Tree) dg)
+    int opApply(int delegate(ref TreeT) dg)
     {
-        Tree me = this;
+        TreeT me = this;
         return dg(me);
     }
-    int opApply(int delegate(ref File) dg)
+    int opApply(int delegate(ref Leaf) dg)
     {
         return dg(this);
     }
-    int opApply(int delegate(ref Folder) dg)
+    int opApply(int delegate(ref NodeT) dg)
     {
         return 0;
     }
-    string toString() const
-    {
-        return "File: " ~ path_;
-    }
-    string path() const
-    {
-        return join(parent.path, path_);
-    }
 
-    private:
-    string path_;
+    LeafT isLeaf(){return this;}
+
+    LeafData data;
+    Leaf set(LeafData d)
+    {
+        data = d;
+        return this;
+    }
 }
 
-class Folder: Tree
+class Node(LeafData, NodeData): Tree!(LeafData, NodeData)
 {
-    Tree[] childs;
+    alias Tree!(LeafData, NodeData) TreeT;
+    alias Leaf!(LeafData, NodeData) LeafT;
 
-    this(string path, Folder folder = null)
+    this(NodeT p = null)
     {
-        path_ = path;
-        parent = folder;
+        parent = p;
     }
-    
+
     //Abstract interface implementation from Tree
-    int opApply(int delegate(ref Tree) dg)
+    int opApply(int delegate(ref TreeT) dg)
     {
-        Tree me = this;
+        TreeT me = this;
         auto res = dg(me);
         if (res) return res;
         foreach (child; childs)
@@ -78,7 +79,7 @@ class Folder: Tree
         }
         return 0;
     }
-    int opApply(int delegate(ref File) dg)
+    int opApply(int delegate(ref LeafT) dg)
     {
         foreach (child; childs)
         {
@@ -87,13 +88,13 @@ class Folder: Tree
         }
         return 0;
     }
-    int opApply(int delegate(ref Folder) dg)
+    int opApply(int delegate(ref Node) dg)
     {
         auto res = dg(this);
         if (res) return res;
         foreach (child; childs)
         {
-            Folder subfolder = cast(Folder)child;
+            Node subfolder = cast(Node)child;
             if (subfolder)
             {
                 res = subfolder.opApply(dg);
@@ -102,76 +103,66 @@ class Folder: Tree
         }
         return 0;
     }
-    string toString() const
+    NodeT isNode(){return this;}
+
+    //Construction support
+    Node add(TreeT tree)
     {
-        auto writer = appender!(string);
-        formattedWrite(writer, "Folder: %s containing %d childs.", path_, childs.length);
-        return writer.data;
+        childs ~= tree;
+        return this;
     }
-    string path() const
+    Node createNode(NodeData d)
     {
-        return (parent ? join(parent.path, path_) : path_);
+        auto n = (new Node(this)).set(d);
+        add(n);
+        return n;
+    }
+    LeafT createLeaf(LeafData d)
+    {
+        auto l = (new LeafT(this)).set(d);
+        add(l);
+        return l;
     }
 
-    private:
-    string path_;
+    NodeData data;
+    Node set(NodeData d)
+    {
+        data = d;
+        return this;
+    }
+    TreeT[] childs;
 }
 
-interface ICreator
+version (Tree)
 {
-    Folder createFolder(string path);
-    File createFile(string path);
-}
-
-Tree createTreeFromPath(string path, ICreator creator)
-{
-    if (isdir(path))
+    import gubg.Format;
+    import std.stdio;
+    void main()
     {
-        auto folder = creator.createFolder(path);
-        if (folder)
+        alias Tree!(int, string) TreeT;
+        auto root = (new TreeT.NodeT).set("Root node");
+        for (uint i = 0; i < 10; ++i)
         {
-            foreach (string subpath; dirEntries(path, SpanMode.shallow))
+            if (i % 2)
+                root.createLeaf(i);
+            else
             {
-                Tree tree = createTreeFromPath(subpath, creator);
-                if (tree)
+                with (root.createNode(Format.immediate("Subnode %d", i)))
                 {
-                    tree.parent = folder;
-                    folder.childs ~= tree;
+                    createLeaf(10*i);
+                    createLeaf(10*i+1);
                 }
             }
         }
-        return folder;
-    } else if (isfile(path))
-        return creator.createFile(path);
-
-    throw new Exception("Path is neither a directory nor a file.");
-    return null;
-}
-
-version (UnitTest)
-{
-    import std.stdio;
-    import std.path;
-    void main()
-    {
-        class Creator: ICreator
+        foreach (TreeT el; root)
         {
-            Folder createFolder(string path)
+            if (auto n = el.isNode)
             {
-                return new Folder(path);
-            }
-            File createFile(string path)
+                writefln("%s: %s", (n.parent ? n.parent.data : "This is the root"), n.data);
+            } else if (auto l = el.isLeaf)
             {
-                if ("d" == getExt(path))
-                    return new File(path);
-                return null;
+                writefln("%s: %d", l.parent.data, l.data);
             }
-        }
-        Creator creator = new Creator;
-        auto tree = createTreeFromPath("/home/gfannes/gubg", creator);
-        foreach (File el; tree)
-        {
-            writeln(el.toString);
         }
     }
 }
