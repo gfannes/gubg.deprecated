@@ -1,5 +1,7 @@
 module gubg.Tree;
 
+import std.exception;
+
 class Tree(LeafData, NodeData)
 {
     alias Leaf!(LeafData, NodeData) LeafT;
@@ -10,12 +12,19 @@ class Tree(LeafData, NodeData)
     abstract int opApply(int delegate(ref Tree) dg);
     abstract int opApply(int delegate(ref LeafT) dg);
     abstract int opApply(int delegate(ref NodeT) dg);
-//    abstract int opApply(int delegate(ref LeafData) dg);
-//    abstract int opApply(int delegate(ref NodeData) dg);
     // * RTTI
     NodeT isNode(){return null;}
     LeafT isLeaf(){return null;}
     bool isRoot(){return parent is null;}
+    // * Construction
+    void remove()
+    {
+        if (parent)
+        {
+            scope(exit) parent = null;
+            enforce(parent.removeChild(this));
+        }
+    }
 
     //Parent access
     NodeT parent;
@@ -123,6 +132,16 @@ class Node(LeafData, NodeData): Tree!(LeafData, NodeData)
         add(l);
         return l;
     }
+    bool removeChild(TreeT child)
+    {
+        foreach (ix, ref TreeT ch; childs)
+            if (ch is child)
+            {
+                childs = childs[0 .. ix] ~ childs[ix+1 .. $];
+                return true;
+            }
+        return false;
+    }
 
     NodeData data;
     Node set(NodeData d)
@@ -145,13 +164,11 @@ version (Tree)
         {
             if (i % 2)
                 root.createLeaf(i);
-            else
+            else with (root.createNode(Format.immediate("Subnode %d", i)))
             {
-                with (root.createNode(Format.immediate("Subnode %d", i)))
-                {
-                    createLeaf(10*i);
-                    createLeaf(10*i+1);
-                }
+                createLeaf(10*i);
+                auto l = createLeaf(10*i+1);
+                l.remove;
             }
         }
         foreach (TreeT el; root)
