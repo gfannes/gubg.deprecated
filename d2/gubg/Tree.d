@@ -26,6 +26,25 @@ class Tree(LeafData, NodeData)
         }
     }
 
+    //Data
+    union
+    {
+        //When LeafData == NodeData, we provide access to it via data
+        static if (is(LeafData == NodeData))
+        {
+            LeafData data;
+        } else
+        {
+            LeafData leafData_;
+            NodeData nodeData_;
+        }
+    };
+    Tree set(T)(T d)
+        if (is(T == NodeData) && is(T == LeafData))
+    {
+        data = d;
+        return this;
+    }
     //Parent access
     NodeT parent;
 }
@@ -57,7 +76,10 @@ class Leaf(LeafData, NodeData): Tree!(LeafData, NodeData)
 
     LeafT isLeaf(){return this;}
 
-    LeafData data;
+    static if (!is(LeafData == NodeData))
+    {
+        alias leafData_ data;
+    }
     Leaf set(LeafData d)
     {
         data = d;
@@ -143,7 +165,10 @@ class Node(LeafData, NodeData): Tree!(LeafData, NodeData)
         return false;
     }
 
-    NodeData data;
+    static if (!is(LeafData == NodeData))
+    {
+        alias nodeData_ data;
+    }
     Node set(NodeData d)
     {
         data = d;
@@ -158,6 +183,7 @@ version (Tree)
     import std.stdio;
     void main()
     {
+        //Leaf and node data are different
         alias Tree!(int, string) TreeT;
         auto root = (new TreeT.NodeT).set("Root node");
         for (uint i = 0; i < 10; ++i)
@@ -180,6 +206,14 @@ version (Tree)
             {
                 writefln("%s: %d", l.parent.data, l.data);
             }
+        }
+
+        //Leaf and node data are the same, note that we can now access the data using a Tree reference
+        alias Tree!(string, string) Tree2T;
+        auto root2 = (new Tree2T.NodeT).set("Root2 node");
+        foreach (Tree2T el; root2)
+        {
+            writefln("%s", el.data);
         }
     }
 }
