@@ -1,120 +1,54 @@
 module gubg.FSTree;
 
+import gubg.Tree;
 import std.file;
 import std.path;
 import std.format;
 import std.range;
 
-class Tree
+class FSTree: Tree!(string, string)
 {
-    //Abstract interface
-    // * Iteration over all elements of a certain type
-    abstract int opApply(int delegate(ref Tree) dg);
-    abstract int opApply(int delegate(ref File) dg);
-    abstract int opApply(int delegate(ref Folder) dg);
     // * Stringification
     abstract string toString() const;
     abstract string path() const;
-
-    //Parent access
-    Folder parent;
 }
 
-class File: Tree
+class File: Leaf!(string, string)
 {
     this(string path, Folder folder = null)
     {
-        path_ = path;
-        parent = folder;
+        data = path;
+        super(folder);
     }
 
-    //Abstract interface implementation from Tree
-    int opApply(int delegate(ref Tree) dg)
-    {
-        Tree me = this;
-        return dg(me);
-    }
-    int opApply(int delegate(ref File) dg)
-    {
-        return dg(this);
-    }
-    int opApply(int delegate(ref Folder) dg)
-    {
-        return 0;
-    }
     string toString() const
     {
-        return "File: " ~ path_;
+        return "File: " ~ data;
     }
     string path() const
     {
-        return join(parent.path, path_);
+        return join(parent.path, data);
     }
-
-    private:
-    string path_;
 }
 
-class Folder: Tree
+class Folder: Node!(string, string)
 {
-    Tree[] childs;
-
     this(string path, Folder folder = null)
     {
-        path_ = path;
-        parent = folder;
+        data = path;
+        super(folder);
     }
     
-    //Abstract interface implementation from Tree
-    int opApply(int delegate(ref Tree) dg)
-    {
-        Tree me = this;
-        auto res = dg(me);
-        if (res) return res;
-        foreach (child; childs)
-        {
-            res = child.opApply(dg);
-            if (res) return res;
-        }
-        return 0;
-    }
-    int opApply(int delegate(ref File) dg)
-    {
-        foreach (child; childs)
-        {
-            auto res = child.opApply(dg);
-            if (res) return res;
-        }
-        return 0;
-    }
-    int opApply(int delegate(ref Folder) dg)
-    {
-        auto res = dg(this);
-        if (res) return res;
-        foreach (child; childs)
-        {
-            Folder subfolder = cast(Folder)child;
-            if (subfolder)
-            {
-                res = subfolder.opApply(dg);
-                if (res) return res;
-            }
-        }
-        return 0;
-    }
     string toString() const
     {
         auto writer = appender!(string);
-        formattedWrite(writer, "Folder: %s containing %d childs.", path_, childs.length);
+        formattedWrite(writer, "Folder: %s containing %d childs.", data, childs.length);
         return writer.data;
     }
     string path() const
     {
-        return (parent ? join(parent.path, path_) : path_);
+        return (parent ? join(parent.path, data) : data);
     }
-
-    private:
-    string path_;
 }
 
 interface ICreator
@@ -123,7 +57,7 @@ interface ICreator
     File createFile(string path);
 }
 
-Tree createTreeFromPath(string path, ICreator creator)
+FSTree createTreeFromPath(string path, ICreator creator)
 {
     if (isdir(path))
     {
@@ -132,7 +66,7 @@ Tree createTreeFromPath(string path, ICreator creator)
         {
             foreach (string subpath; dirEntries(path, SpanMode.shallow))
             {
-                Tree tree = createTreeFromPath(subpath, creator);
+                FSTree tree = createTreeFromPath(subpath, creator);
                 if (tree)
                 {
                     tree.parent = folder;
@@ -148,7 +82,7 @@ Tree createTreeFromPath(string path, ICreator creator)
     return null;
 }
 
-version (UnitTest)
+version (FSTree)
 {
     import std.stdio;
     import std.path;
