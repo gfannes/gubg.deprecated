@@ -1,7 +1,10 @@
 module Collection;
 
-public import gubg.Tree;
+public import gubg.FSTree;
+import gubg.parsing.D;
 import std.path;
+import std.algorithm;
+import std.array;
 import std.stdio;
 
 class DCollection
@@ -9,13 +12,13 @@ class DCollection
     this (string path)
     {
         creator_ = new DCreator;
-        internalTree_ = createTreeFromPath(path, creator_);
+        internalTree_ = createFSTreeFromPath(path, creator_);
     }
 
     int opApply(FileT)(int delegate(ref FileT) dg)
     {
         //We first iterate over the internal tree
-        foreach (gubg.Tree.File file; internalTree_)
+        foreach (gubg.FSTree.File file; internalTree_)
         {
             FileT f = cast(FileT)file;
             if (f && dg(f)) break;
@@ -23,7 +26,7 @@ class DCollection
         //Next, we iterate over the external trees
         foreach (externalTree; externalTrees_)
         {
-            foreach (gubg.Tree.File file; externalTree)
+            foreach (gubg.FSTree.File file; externalTree)
             {
                 FileT f = cast(FileT)file;
                 if (f && dg(f)) break;
@@ -42,28 +45,54 @@ class DCollection
                 return;
 
         //The path seems not to be present yet, so we add it
-        externalTrees_ ~= createTreeFromPath(path, creator_);
+        externalTrees_ ~= createFSTreeFromPath(path, creator_);
     }
 
     void prune(string filepath)
     {
         writeln("Starting with pruning");
-        foreach(ref DFile file; this)
+        auto parser = new DParser;
+        //Collect recursively all imported modules and the filepath where this module can be found
+        string[string] fpPerModule;
+        auto modulesToCheck = uniq(parser.parse(filepath).imports);
+        while (!modulesToCheck.empty)
         {
-            if (filepath != file.path)
-                file.isTagged = true;
+            writeln(modulesToCheck);
+            auto newModulesToCheck = appender!(string[])();
+            foreach (ref DFile file; this)
+            {
+                writeln("");
+                if (!file.isTagged)
+                {
+                    foreach (modName; modulesToCheck)
+                    {
+                        writeln(modName);
+                        if (DParser.fileMatchesModule(file.path, modName))
+                        {
+                        }
+                    }
+                }
+            }
+            modulesToCheck = uniq(newModulesToCheck.data);
         }
+
+        //Remove all files that are not referenced
+        // * Create a hash-lookup with our initial filepath and all referenced files
+        bool[string] referencedFilepaths = [filepath: true];
+        foreach (mod, fp; fpPerModule)
+            referencedFilepaths[fp] = true;
         foreach(ref DFile file; this)
         {
-            if (file.isTagged)
+            if (file.path in referencedFilepaths)
                 file.remove;
         }
         writeln("Pruning is done");
+        //Not implemented yet
         assert(false);
     }
 
     private:
-    class DFile: gubg.Tree.File
+    class DFile: gubg.FSTree.File
     {
         this(string path, Folder folder = null)
         {
@@ -86,6 +115,6 @@ class DCollection
             }
     }
     DCreator creator_;
-    Tree internalTree_;
-    Tree[] externalTrees_;
+    FSTree internalTree_;
+    FSTree[] externalTrees_;
 }

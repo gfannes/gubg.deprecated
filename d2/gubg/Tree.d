@@ -1,6 +1,15 @@
 module gubg.Tree;
 
-import std.exception;
+//This module provides basic Component functionality:
+// * mixin Tree!(T, N, L) into the Component (here called T)
+// * mixin Node!(T) into the Composite (here called N) and derive from T
+// * mixix Leaf!(T) into the Leaf (here called L) and derive from T
+//As such, you get the Composite pattern that is aware of the actual classes you want to apply it to
+//and you don't use you single class inheritance.
+//Data members can be placed to will, either in T, N and/or L
+
+//This module only contains mixin templates, which is why we make this a public import
+public import std.exception;
 
 mixin template Tree(TreeType, NodeType, LeafType)
 {
@@ -28,28 +37,6 @@ mixin template Tree(TreeType, NodeType, LeafType)
             enforce(parent.removeChild(this));
         }
     }
-}
-mixin template Leaf(TreeType)
-{
-    alias TreeType TreeT;
-    alias TreeType.NodeT NodeT;
-    alias TreeType.LeafT LeafT;
-
-    int opApply(int delegate(ref TreeT) dg)
-    {
-        TreeT me = this;
-        return dg(me);
-    }
-    int opApply(int delegate(ref LeafT) dg)
-    {
-        return dg(this);
-    }
-    int opApply(int delegate(ref NodeT) dg)
-    {
-        return 0;
-    }
-
-    LeafT isLeaf(){return this;}
 }
 mixin template Node(TreeType)
 {
@@ -113,6 +100,28 @@ mixin template Node(TreeType)
             }
         return false;
     }
+}
+mixin template Leaf(TreeType)
+{
+    alias TreeType TreeT;
+    alias TreeType.NodeT NodeT;
+    alias TreeType.LeafT LeafT;
+
+    int opApply(int delegate(ref TreeT) dg)
+    {
+        TreeT me = this;
+        return dg(me);
+    }
+    int opApply(int delegate(ref LeafT) dg)
+    {
+        return dg(this);
+    }
+    int opApply(int delegate(ref NodeT) dg)
+    {
+        return 0;
+    }
+
+    LeafT isLeaf(){return this;}
 }
 
 version (Tree)

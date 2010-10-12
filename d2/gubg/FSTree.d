@@ -1,53 +1,60 @@
 module gubg.FSTree;
 
 import gubg.Tree;
+import gubg.Format;
 import std.file;
 import std.path;
-import std.format;
-import std.range;
 
-class FSTree: Tree!(string, string)
+class FSTree
 {
-    // * Stringification
+    //Insert the tree functionality
+    mixin Tree!(FSTree, Folder, File);
+
+    //Interface
     abstract string toString() const;
-    abstract string path() const;
-}
-
-class File: Leaf!(string, string)
-{
-    this(string path, Folder folder = null)
-    {
-        data = path;
-        super(folder);
-    }
-
-    string toString() const
-    {
-        return "File: " ~ data;
-    }
     string path() const
     {
-        return join(parent.path, data);
+        return (parent ? join(parent.path, name) : name);
     }
+
+    //This is the single data member, the name of the folder or file.
+    //It is placed at the FSTree level, allowing access from an FSTree reference
+    string name;
 }
 
-class Folder: Node!(string, string)
+class Folder: FSTree
 {
+    //Insert the node functionality
+    mixin Node!(FSTree);
+
     this(string path, Folder folder = null)
     {
-        data = path;
-        super(folder);
+        name = path;
+        parent = folder;
     }
     
+    //FSTree interface
     string toString() const
     {
-        auto writer = appender!(string);
-        formattedWrite(writer, "Folder: %s containing %d childs.", data, childs.length);
-        return writer.data;
+        return Format.immediate("Folder: %s containing %d childs.", name, childs.length);
     }
-    string path() const
+}
+
+class File: FSTree
+{
+    //Insert the leaf functionality
+    mixin Leaf!(FSTree);
+
+    this(string lname, Folder folder = null)
     {
-        return (parent ? join(parent.path, data) : data);
+        name = lname;
+        parent = folder;
+    }
+
+    //FSTree interface
+    string toString() const
+    {
+        return "File: " ~ name;
     }
 }
 
@@ -57,7 +64,7 @@ interface ICreator
     File createFile(string path);
 }
 
-FSTree createTreeFromPath(string path, ICreator creator)
+FSTree createFSTreeFromPath(string path, ICreator creator)
 {
     if (isdir(path))
     {
@@ -66,7 +73,7 @@ FSTree createTreeFromPath(string path, ICreator creator)
         {
             foreach (string subpath; dirEntries(path, SpanMode.shallow))
             {
-                FSTree tree = createTreeFromPath(subpath, creator);
+                FSTree tree = createFSTreeFromPath(subpath, creator);
                 if (tree)
                 {
                     tree.parent = folder;
@@ -102,7 +109,7 @@ version (FSTree)
             }
         }
         Creator creator = new Creator;
-        auto tree = createTreeFromPath("/home/gfannes/gubg", creator);
+        auto tree = createFSTreeFromPath("/home/gfannes/gubg", creator);
         foreach (File el; tree)
         {
             writeln(el.toString);

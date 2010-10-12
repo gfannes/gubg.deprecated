@@ -92,7 +92,7 @@ class TagsCommand: ArgsCommand
         OnlyOnce createTagsFile;
         foreach (path; locations)
         {
-            foreach (gubg.Tree.File file; new DCollection(path))
+            foreach (gubg.FSTree.File file; new DCollection(path))
             {
                 writeln(file.path);
                 string command;
@@ -157,7 +157,7 @@ class ExeCommand: ArgsCommand
         auto fileCache = new FileCache(fileCachePath_);
         uint nrCompilationErrors = 0;
         uint nrCompilations = 0;
-        foreach (gubg.Tree.File file; collection)
+        foreach (gubg.FSTree.File file; collection)
         {
             //The source file that needs to be compiled
             string sourceFilepath = file.path;
