@@ -61,14 +61,21 @@ class DCollection
             auto newModulesToCheck = appender!(string[])();
             foreach (ref DFile file; this)
             {
-                writeln("");
                 if (!file.isTagged)
                 {
-                    foreach (modName; modulesToCheck)
+                    if (filepath == file.path)
                     {
-                        writeln(modName);
-                        if (DParser.fileMatchesModule(file.path, modName))
+                        file.isTagged = true;
+                    } else
+                    {
+                        foreach (modName; modulesToCheck)
                         {
+                            if (DParser.fileMatchesModule(file.path, modName))
+                            {
+                                writeln(modName);
+                                file.isTagged = true;
+                                newModulesToCheck.put(uniq(parser.parse(file.path).imports));
+                            }
                         }
                     }
                 }
@@ -76,19 +83,13 @@ class DCollection
             modulesToCheck = uniq(newModulesToCheck.data);
         }
 
-        //Remove all files that are not referenced
-        // * Create a hash-lookup with our initial filepath and all referenced files
-        bool[string] referencedFilepaths = [filepath: true];
-        foreach (mod, fp; fpPerModule)
-            referencedFilepaths[fp] = true;
+        //Remove all files that are not tagged (referenced)
         foreach(ref DFile file; this)
         {
-            if (file.path in referencedFilepaths)
+            if (!file.isTagged)
                 file.remove;
         }
         writeln("Pruning is done");
-        //Not implemented yet
-        assert(false);
     }
 
     private:

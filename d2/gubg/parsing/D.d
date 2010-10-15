@@ -11,27 +11,29 @@ class DParser
 {
     static bool fileMatchesModule(string fp, string modName)
     {
-        writefln("fp = %s", fp);
-        string[] pathParts = [];
-        std.algorithm.copy(splitter(fp, regex("[/\\.]")), pathParts);
-//        auto reversePP = retro(pathParts);
-
-//        switch (reversePP.front)
-//        {
-//            case "d":
-//            case "di":
-//                reversePP.popFront;
-//                break;
-//            default:
-//                return false;
-//                break;
-//        }
-//        auto mnReverseR = retro(splitter(modName, "\\."));
-//        for (; !mnReverseR.empty && !fpReverseR.empty; mnReverseR.popFront, fpReverseR.popFront)
-//            if (mnReverseR.front != fpReverseR.front)
-//                return false;
-//        return mnReverseR.empty;
-        return true;
+        //Create a range that iterates backwards over the parts of fp
+        auto reverseFpParts = retro(std.algorithm.copy(splitter(fp, regex("[/\\.]")), appender!(string[])).data);
+        //Check if the last part of fp is a known D extension
+        switch (reverseFpParts.front)
+        {
+            case "d":
+            case "di":
+                reverseFpParts.popFront;
+                break;
+            default:
+                return false;
+                break;
+        }
+        //Create a range that iterates backwards over the parts of modName
+        auto reverseModnameParts = retro(std.algorithm.copy(splitter(modName, regex("\\.")), appender!(string[])).data);
+        //Check if the parts from both ranges match
+        for (; !reverseModnameParts.empty && !reverseFpParts.empty; reverseModnameParts.popFront, reverseFpParts.popFront)
+        {
+            if (reverseModnameParts.front != reverseFpParts.front)
+                return false;
+        }
+        //If all parts of the modName could be matched, we have a valid match
+        return reverseModnameParts.empty;
     }
     class DModule
     {
@@ -71,5 +73,6 @@ version (parsing_D)
     {
         auto p = new DParser;
         writeln(p.parse("/home/gfannes/gubg/d2/gubg/parsing/D.d").imports);
+        writeln(DParser.fileMatchesModule("/home/gfannes/gubg/test.d", "gubg.test"));
     }
 }
