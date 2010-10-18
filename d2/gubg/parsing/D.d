@@ -9,31 +9,40 @@ import std.stdio;
 
 class DParser
 {
-    static bool fileMatchesModule(string fp, string modName)
+    //Returns null if modName could not be found in fp
+    //else, the required include path is given to find fp by importing modName
+    static string includePathForModule(string fp, string modName)
     {
         //Create a range that iterates backwards over the parts of fp
         auto reverseFpParts = retro(std.algorithm.copy(splitter(fp, regex("[/\\.]")), appender!(string[])).data);
         //Check if the last part of fp is a known D extension
-        switch (reverseFpParts.front)
-        {
-            case "d":
-            case "di":
-                reverseFpParts.popFront;
-                break;
-            default:
-                return false;
-                break;
-        }
+        if (std.algorithm.find(["d", "di"], reverseFpParts.front).empty)
+            return null;
+        reverseFpParts.popFront;
         //Create a range that iterates backwards over the parts of modName
         auto reverseModnameParts = retro(std.algorithm.copy(splitter(modName, regex("\\.")), appender!(string[])).data);
+
         //Check if the parts from both ranges match
         for (; !reverseModnameParts.empty && !reverseFpParts.empty; reverseModnameParts.popFront, reverseFpParts.popFront)
-        {
             if (reverseModnameParts.front != reverseFpParts.front)
-                return false;
+                return null;
+
+        //If not all parts of the modName could be matched, we don't have a valid match
+        if (!reverseModnameParts.empty)
+            return null;
+
+        //We have a valid match, join the remaining parts from reverseFpParts into the include path
+        auto includePath = appender!(char[]);
+        for (; !reverseFpParts.empty; reverseFpParts.popBack)
+        {
+            auto part = reverseFpParts.back;
+            if ("" != part)
+            {
+                includePath.put("/");
+                includePath.put(part);
+            }
         }
-        //If all parts of the modName could be matched, we have a valid match
-        return reverseModnameParts.empty;
+        return cast(string)includePath.data;
     }
     class DModule
     {

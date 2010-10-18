@@ -48,16 +48,15 @@ class DCollection
         externalTrees_ ~= createFSTreeFromPath(path, creator_);
     }
 
-    void prune(string filepath)
+    void prune(string filepath, ref string[] includePaths)
     {
-        writeln("Starting with pruning");
         auto parser = new DParser;
         //Collect recursively all imported modules and the filepath where this module can be found
         string[string] fpPerModule;
+        bool[string] isPathIncluded;
         auto modulesToCheck = uniq(parser.parse(filepath).imports);
         while (!modulesToCheck.empty)
         {
-            writeln(modulesToCheck);
             auto newModulesToCheck = appender!(string[])();
             foreach (ref DFile file; this)
             {
@@ -70,11 +69,12 @@ class DCollection
                     {
                         foreach (modName; modulesToCheck)
                         {
-                            if (DParser.fileMatchesModule(file.path, modName))
+                            auto includePath = DParser.includePathForModule(file.path, modName);
+                            if (includePath !is null)
                             {
-                                writeln(modName);
                                 file.isTagged = true;
                                 newModulesToCheck.put(uniq(parser.parse(file.path).imports));
+                                isPathIncluded[includePath] = true;
                             }
                         }
                     }
@@ -89,7 +89,14 @@ class DCollection
             if (!file.isTagged)
                 file.remove;
         }
-        writeln("Pruning is done");
+
+        //Append all extra include paths found
+        foreach (includePath; includePaths)
+        {
+            if (includePath in isPathIncluded)
+                isPathIncluded.remove(includePath);
+        }
+        includePaths ~= isPathIncluded.keys;
     }
 
     private:

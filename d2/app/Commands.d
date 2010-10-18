@@ -141,16 +141,15 @@ class ExeCommand: ArgsCommand
         //Create the Tree Collection
         auto collection = new DCollection(dirname(filepath));
         scope config = new Configuration("gb.json", dirname(filepath), true);
-        string[] includePaths = [dirname(filepath)];
         string[] externalTrees;
         config.get("externalTrees", externalTrees);
         foreach(ref externalTree; externalTrees)
         {
             externalTree = expandTilde(externalTree);
             collection.addExternalTree(externalTree);
-            includePaths ~= dirname(externalTree);
         }
-        collection.prune(filepath);
+        string[] includePaths;
+        collection.prune(filepath, includePaths);
 
         //Compile the sources and collect the object filepaths
         string[] objectFilepaths;
@@ -161,7 +160,6 @@ class ExeCommand: ArgsCommand
         {
             //The source file that needs to be compiled
             string sourceFilepath = file.path;
-            writefln("Compiling source %s", sourceFilepath);
 
             //Collect all information about the source file
             auto fi = FileInfo(addExt(sourceFilepath, "o"));
