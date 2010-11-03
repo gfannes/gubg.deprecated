@@ -1,11 +1,12 @@
 module gubg.OptionParser;
 
-//OptionParser can be used to parse command-line options
-//bool[string] switches;
-//auto parser = new OptionParser;
-//switches["verbose"] = false;
-//parser.addSwitch("-v", "--verbose", delegate void(){switches["verbose"] = true;});
-//writeln(parser.help);
+//OptionParser can be used to parse command-line options:
+// > bool[string] switches;//Will reflect the options specified by the user
+// > auto parser = new OptionParser;
+// > switches["verbose"] = false;//Default setting for "verbose"
+// > parser.addSwitch("-v", "--verbose", delegate void(){switches["verbose"] = true;});
+// > writeln(parser.help);
+// > parser.parse(args, true);//Parses the options and strips the executable
 
 import gubg.Format;
 import std.array;

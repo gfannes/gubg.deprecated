@@ -3,6 +3,7 @@ module Commands;
 import Collection;
 import Exit;
 import Configuration;
+import Runtime;
 import gubg.OnlyOnce;
 import gubg.Format;
 import gubg.FileCache;
@@ -138,9 +139,11 @@ class ExeCommand: ArgsCommand
         }
         writefln("I will build \"%s\".", filepath);
 
-        //Create the Tree Collection
+        //Create the Collection of all files to compile
+        // * The initial tree defined by the main source file
         auto collection = new DCollection(dirname(filepath));
-        scope config = new Configuration("gb.json", dirname(filepath), true);
+        // * Extend this set with the externalTrees
+        auto config = new Configuration("gb.json", dirname(filepath), true);
         string[] externalTrees;
         config.get("externalTrees", externalTrees);
         foreach(ref externalTree; externalTrees)
@@ -148,8 +151,15 @@ class ExeCommand: ArgsCommand
             externalTree = expandTilde(externalTree);
             collection.addExternalTree(externalTree);
         }
+        // * Prune unreferenced files and get the necessay include paths also
         string[] includePaths;
         collection.prune(filepath, includePaths);
+        if (Runtime.verbose)
+        {
+            writeln("I will build these files");
+            foreach (gubg.FSTree.File file; collection)
+                writefln("\t%s", file.path);
+        }
 
         //Compile the sources and collect the object filepaths
         string[] objectFilepaths;
@@ -160,6 +170,7 @@ class ExeCommand: ArgsCommand
         {
             //The source file that needs to be compiled
             string sourceFilepath = file.path;
+            writeln(sourceFilepath);
 
             //Collect all information about the source file
             auto fi = FileInfo(addExt(sourceFilepath, "o"));
@@ -186,6 +197,7 @@ class ExeCommand: ArgsCommand
                 case FileCache.Result.CreationOK:
                     break;
                 case FileCache.Result.CreationFailed:
+                    exitApp(ExitCode.error, Format.immediate("ERROR::Failed to compile %s", sourceFilepath));
                     ++nrCompilationErrors;
                     writefln("ERROR::Failed to compile %s", sourceFilepath);
                     break;
@@ -212,12 +224,19 @@ class ExeCommand: ArgsCommand
             auto l = new LinkExecutable(uniqExecName);
             foreach (objectFilepath; fi.get!(string[])("objectFilepath"))
                 l.addObjectFilepath(objectFilepath);
+            string[] libraries;
+            if (config.get("libraries", libraries))
+            {
+                foreach (library; libraries)
+                    l.addLibrary(library);
+            }
             return l.execute(true);
         }
         fileCache.create(fi, &link);
         //Copy the executable over
         //Copying with the copy()-function does not preserve the executable attributes, so we use the shell instead
         system(Format.immediate("cp %s %s", uniqExecName, execName));
+        system(Format.immediate("cp %s.map %s.map", uniqExecName, execName));
         return true;
     }
     string toString(){return "ExeCommand";}
@@ -262,9 +281,8 @@ class ConfigCommand: ICommand
         Format format;
         format.delimiter = "\n";
         format(`{`);
-        format(`    "binaryType": "executable",`);
-        format(`    "files": ["test.d"],`);
         format(`    "externalTrees": ["~/gubg/d2/gubg"]`);
+        format(`    "libraries": ["dl", "cairo"]`);
         format(`}`);
         format(``);
         try

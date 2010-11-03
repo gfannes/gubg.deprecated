@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-localSources = %w[gb Collection Configuration MetaInfo Commands Exit]
+localSources = %w[gb Collection Configuration MetaInfo Commands Exit Runtime]
 gubgSources = %w[Tree FSTree JSON Build Format FileCache OnlyOnce OptionParser parsing/D]
 
 objectFiles = []

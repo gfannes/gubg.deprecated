@@ -2,6 +2,7 @@ module gb;
 
 import Commands;
 import Exit;
+import Runtime;
 import gubg.Format;
 import gubg.OptionParser;
 import std.stdio;
@@ -32,7 +33,6 @@ immutable int versionBuild_ = 0;
 int main(string[] args)
 {
     //We will collect all command-line options in these two hashes
-    bool[string] switches;
     string[string] values;
 
     //The OptionParser we will use to parse the command-line arguments
@@ -43,8 +43,7 @@ int main(string[] args)
     // -h/--help
     parser.addSwitch("-h", "--help", "Print this help", (){exitApp(ExitCode.ok, parser.help);}); 
     // -v/--verbose
-    switches["verbose"] = false;
-    parser.addSwitch("-v", "--verbose", "Enable extra output", (){switches["verbose"] = true;});
+    parser.addSwitch("-v", "--verbose", "Enable extra output", (){Runtime.setVerbose(true);});
     // -V/--version
     parser.addSwitch("-V", "--version", "Print the version", (){exitApp(ExitCode.ok, "Version %s.%s.%s", versionMajor_, versionMinor_, versionBuild_);});
 

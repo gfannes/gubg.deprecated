@@ -59,8 +59,14 @@ class Configuration
     bool get(string key, out string[] values)
     {
         if (!isValid()) return false;
+        try
+        {
         foreach (value; lookup(json_, key))
             values ~= value;
+        } catch (JSONException e)
+        {
+            return false;
+        }
         return true;
     }
 

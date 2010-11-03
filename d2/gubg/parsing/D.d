@@ -16,7 +16,7 @@ class DParser
         //Create a range that iterates backwards over the parts of fp
         auto reverseFpParts = retro(std.algorithm.copy(splitter(fp, regex("[/\\.]")), appender!(string[])).data);
         //Check if the last part of fp is a known D extension
-        if (std.algorithm.find(["d", "di"], reverseFpParts.front).empty)
+        if (std.algorithm.find(["d", "di", "apd"], reverseFpParts.front).empty)
             return null;
         reverseFpParts.popFront;
         //Create a range that iterates backwards over the parts of modName

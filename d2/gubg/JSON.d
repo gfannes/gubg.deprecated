@@ -10,9 +10,9 @@ JSONIterator lookup(JSONValue json, string[] path...)
     if (path.length > 0)
     {
         if (JSON_TYPE.OBJECT != json.type)
-           throw new Exception("json is not an object, I cannot lookup a path");
+           throw new JSONException("json is not an object, I cannot lookup a path");
         if (!(path[0] in json.object))
-            throw new Exception(Format.immediate("Element with key %s could not be found", path[0]));
+            throw new JSONException(Format.immediate("Element with key %s could not be found", path[0]));
         return lookup(json.object[path[0]], path[1 .. $]);
     }
     return new JSONIterator(json);
@@ -26,18 +26,18 @@ JSONIterator iterate(JSONValue json)
 string toString(JSONValue json)
 {
     if (JSON_TYPE.STRING != json.type)
-        throw new Exception("json is not a string");
+        throw new JSONException("json is not a string");
     return json.str;
 }
 //Retrieves a string value from an object
 bool get(JSONValue json, string key, out string value)
 {
     if (JSON_TYPE.OBJECT != json.type)
-        throw new Exception("json is not an object");
+        throw new JSONException("json is not an object");
     if (!(key in json.object))
         return false;
     if (JSON_TYPE.STRING != json.object[key].type)
-        throw new Exception("json.object[key] is not an object");
+        throw new JSONException("json.object[key] is not an object");
     value = json.object[key].str;
     return true;
 }
@@ -81,6 +81,14 @@ class JSONIterator
 
     private:
     JSONValue json_;
+}
+
+class JSONException: Exception
+{
+    this (string msg)
+    {
+        super(msg);
+    }
 }
 
 version (UnitTest)

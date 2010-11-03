@@ -45,7 +45,20 @@ class DCollection
                 return;
 
         //The path seems not to be present yet, so we add it
-        externalTrees_ ~= createFSTreeFromPath(path, creator_);
+        bool[string] allIncludedPaths;
+        foreach (ref DFile file; this)
+            allIncludedPaths[file.path] = true;
+        auto externalTree = createFSTreeFromPath(path, creator_);
+        bool atLeastOneLeft = false;
+        foreach (ref gubg.FSTree.File file; externalTree)
+        {
+            if (file.path in allIncludedPaths)
+                file.remove;
+            else
+                atLeastOneLeft = true;
+        }
+        if (atLeastOneLeft)
+            externalTrees_ ~= externalTree;
     }
 
     void prune(string filepath, ref string[] includePaths)
@@ -54,10 +67,11 @@ class DCollection
         //Collect recursively all imported modules and the filepath where this module can be found
         string[string] fpPerModule;
         bool[string] isPathIncluded;
-        auto modulesToCheck = uniq(parser.parse(filepath).imports);
-        while (!modulesToCheck.empty)
+        auto modulesToCheck = parser.parse(filepath).imports;
+        for (uint level = 0; !modulesToCheck.empty; ++level)
         {
-            auto newModulesToCheck = appender!(string[])();
+            writefln("Looking for imported modules level %d: %d modules to find.", level, modulesToCheck.length);
+            bool[string] newModulesToCheck;
             foreach (ref DFile file; this)
             {
                 if (!file.isTagged)
@@ -73,20 +87,21 @@ class DCollection
                             if (includePath !is null)
                             {
                                 file.isTagged = true;
-                                newModulesToCheck.put(uniq(parser.parse(file.path).imports));
+                                foreach (newImport; uniq(parser.parse(file.path).imports))
+                                    newModulesToCheck[newImport] = true;
                                 isPathIncluded[includePath] = true;
                             }
                         }
                     }
                 }
             }
-            modulesToCheck = uniq(newModulesToCheck.data);
+            modulesToCheck = newModulesToCheck.keys;
         }
 
         //Remove all files that are not tagged (referenced)
         foreach(ref DFile file; this)
         {
-            if (!file.isTagged)
+            if (!file.isTagged && filepath != file.path)
                 file.remove;
         }
 

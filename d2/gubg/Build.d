@@ -19,7 +19,7 @@ class Compile
     bool execute(bool verbose = true)
     {
         Format format;
-        format("dmd -c -of%s %s", objectFilepath(), sourceFilepath_);
+        format("dmd -c -version=phobos -of%s %s", objectFilepath(), sourceFilepath_);
         format.delimiter = " ";
         foreach (includePath; includePaths_)
             format("-I%s", includePath);
@@ -93,13 +93,27 @@ class LinkExecutable: Link
         exeName_ = exeName;
     }
 
+    //Abstract interface from Link
     string extraSettings()
     {
-        return Format.immediate("-of%s", exeName_);
+        Format format;
+        format("-of%s", exeName_);
+        format.delimiter = " ";
+        format("-L-Map=%s.map", exeName_);
+        foreach (libName; libraries)
+            format("-L-l%s", libName);
+
+        return format.toString();
+    }
+    
+    void addLibrary(string libName)
+    {
+        libraries ~= libName;
     }
 
     private:
     string exeName_;
+    string[] libraries;
 }
 class LinkLibrary: Link
 {
