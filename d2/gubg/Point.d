@@ -18,6 +18,36 @@ struct Point
     real y;
 
     string toString(){return Format.immediate("(%s, %s)", x, y);}
+
+    Point opBinary(string op)(Point rhs) const if ("+" == op)
+    {
+        Point res = this;
+        res.x += rhs.x;
+        res.y += rhs.y;
+        return res;
+    }
+    Point opBinary(string op)(Point rhs) const if ("-" == op)
+    {
+        Point res = this;
+        res.x -= rhs.x;
+        res.y -= rhs.y;
+        return res;
+    }
+    void multiplyScalar(real v)
+    {
+        x *= v;
+        y *= v;
+    }
+    void multiplyByElement(in Point vs)
+    {
+        x *= vs.x;
+        y *= vs.y;
+    }
+    void divideByElement(in Point vs)
+    {
+        x /= vs.x;
+        y /= vs.y;
+    }
 }
 
 struct TwoPoint
@@ -87,6 +117,8 @@ version (UnitTest)
         writefln("%s is in %s => %s", p, rect, rect.isInside(p));
         rect = TwoPoint([10,20], [3,4]);
         writeln(rect.toString);
+        writefln("p + p = %s", p+p);
+        writefln("p - p = %s", p-p);
     }
 }
 

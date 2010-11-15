@@ -1,53 +1,66 @@
 module gubg.graphics.Cairo;
 
 import gubg.bindings.cairo;
+import std.string;
 
 class Context
 {
     this (ubyte *data, uint width, uint height)
     {
-        _targetSurface = new Surface(data, width, height);
-        _context = cairo_create(_targetSurface.surface);
+        targetSurface_ = new Surface(data, width, height);
+        context_ = cairo_create(targetSurface_.surface);
     }
     ~this ()
     {
-        if (_context !is null)
-            cairo_destroy(_context);
-        delete _targetSurface;
+        if (context_ !is null)
+            cairo_destroy(context_);
+        delete targetSurface_;
     }
 
     void moveTo(real x, real y)
     {
-        cairo_move_to(_context, x, y);
+        cairo_move_to(context_, x, y);
     }
     void lineTo(real x, real y)
     {
-        cairo_line_to(_context, x, y);
+        cairo_line_to(context_, x, y);
     }
     void stroke()
     {
-        cairo_stroke(_context);
+        cairo_stroke(context_);
     }
     void arc(real xc, real yc, real radius, real angle1, real angle2)
     {
-        cairo_arc(_context, xc, yc, radius, angle1, angle2);
+        cairo_arc(context_, xc, yc, radius, angle1, angle2);
     }
     void fill()
     {
-        cairo_fill(_context);
+        cairo_fill(context_);
     }
     void setLineWidth(real width)
     {
-        cairo_set_line_width(_context, width);
+        cairo_set_line_width(context_, width);
     }
     void setSourceRGB(real red, real green, real blue)
     {
-        cairo_set_source_rgb(_context, red, green, blue);
+        cairo_set_source_rgb(context_, red, green, blue);
+    }
+    void selectFontFace(string family)
+    {
+        cairo_select_font_face(context_, toStringz(family), cairo_font_slant_t.CAIRO_FONT_SLANT_NORMAL, cairo_font_weight_t.CAIRO_FONT_WEIGHT_NORMAL);
+    }
+    void setFontSize(real size)
+    {
+        cairo_set_font_size(context_, size);
+    }
+    void showText(string text)
+    {
+        cairo_show_text(context_, toStringz(text));
     }
 
     private:
-    Surface _targetSurface;
-    cairo_t *_context;
+    Surface targetSurface_;
+    cairo_t *context_;
 }
 
 class Surface

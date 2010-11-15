@@ -25,6 +25,7 @@ interface ICanvas
     void drawLine(TwoPoint fromTo, Style);
     void drawCircle(Point center, real radius, Style);
     void drawRectangle(TwoPoint fromTo, Style);
+    void drawText(Point location, string text, Style, Font);
 }
 
 class SDLCanvas: ICanvas
@@ -138,6 +139,15 @@ class SDLCanvas: ICanvas
             cairo_.stroke();
         }
     }
+    void drawText(Point location, string text, Style style, Font font)
+    {
+        cairo_.selectFontFace(font.fontFace());
+        cairo_.setFontSize(font.fontSize());
+        setStrokeStyle_(style);
+        cairo_.moveTo(location.x, height_-1-location.y);
+        cairo_.showText(text);
+        cairo_.stroke();
+    }
 
     private:
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
@@ -169,12 +179,18 @@ version (UnitTest)
     {
         auto canvas = new SDLCanvas(640, 480);
         canvas.initialize();
-        auto s = Style().fill(Color.green).stroke(Color.red);
+        auto sc = Style().fill(Color.green).stroke(Color.red);
+        auto sr = Style().fill(Color.blue);
+        auto font = Font();
         foreach (i; 0 .. 240)
         {
             canvas.initializeDraw;
-            s.width(i/5+1);
-            canvas.drawCircle(Point(i, i), i, s);
+            sc.width(i/5+1);
+            canvas.drawCircle(Point(i, i), i, sc);
+            auto half = 0.5*i;
+            canvas.drawRectangle(TwoPoint(i-half, i-half, i+half, i+half), sr);
+            font.size(i);
+            canvas.drawText(Point(i, i), "Test", sc, font);
             canvas.finalizeDraw;
             Thread.sleep(100000);
         }

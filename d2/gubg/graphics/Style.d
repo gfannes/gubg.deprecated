@@ -92,6 +92,33 @@ struct Style
     real width_ = InvalidWidth;
 }
 
+struct Font
+{
+    ref Font face(string f)
+    {
+        face_ = f;
+        return this;
+    }
+    ref Font size(real s)
+    {
+        size_ = s;
+        return this;
+    }
+    string fontFace(){return face_;}
+    real fontSize(){return size_;}
+
+    string toString() const
+    {
+        return Format.immediate("Font %s using size %s", face_, size_);
+    }
+
+    private:
+    const string DefaultFace = "";
+    string face_ = DefaultFace;
+    const real DefaultSize = 10.0;
+    real size_ = DefaultSize;
+}
+
 version (UnitTest)
 {
     import std.stdio;
@@ -106,5 +133,10 @@ version (UnitTest)
         writeln(s.toString());
         s.width(3);
         writeln(s.toString());
+
+        auto f = Font();
+        writeln(f.toString());
+        f.face("blabla").size(15.3);
+        writeln(f.toString());
     }
 }
