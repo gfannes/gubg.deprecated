@@ -2,6 +2,8 @@ module gubg.graphics.Cairo;
 
 import gubg.bindings.cairo;
 import std.string;
+import std.conv;
+import std.stdio;
 
 class Context
 {
@@ -56,6 +58,21 @@ class Context
     void showText(string text)
     {
         cairo_show_text(context_, toStringz(text));
+    }
+    void fontExtents(out real ascent, out real descent, out real height)
+    {
+        cairo_font_extents_t extents;
+        writefln("%f %f %f", extents.ascent, extents.descent, extents.height);
+        cairo_font_extents(context_, &extents);
+        writefln("%f %f %f", extents.ascent, extents.descent, extents.height);
+        ascent = extents.ascent;
+        descent = extents.descent;
+        height = extents.height;
+    }
+    string toyFontFaceGetFamily()
+    {
+        cairo_font_face_t *ff = cairo_get_font_face(context_);
+        return to!(string)(cairo_toy_font_face_get_family(ff));
     }
 
     private:

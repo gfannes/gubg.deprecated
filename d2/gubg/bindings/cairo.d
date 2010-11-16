@@ -25,6 +25,15 @@ enum cairo_font_weight_t
     CAIRO_FONT_WEIGHT_NORMAL,
     CAIRO_FONT_WEIGHT_BOLD
 }
+struct cairo_font_extents_t
+{
+    double ascent;
+    double descent;
+    double height;
+    double max_x_advance;
+    double max_y_advance;
+}
+struct cairo_font_face_t {}
 
 extern (C)
 {
@@ -53,6 +62,9 @@ extern (C)
     void cairo_select_font_face(cairo_t *cr, const char *family, cairo_font_slant_t slant, cairo_font_weight_t weight);
     void cairo_set_font_size(cairo_t *cr, double size);
     void cairo_show_text(cairo_t *cr, const char *utf8);
+    void cairo_font_extents(cairo_t *cr, cairo_font_extents_t *extents);
+    cairo_font_face_t *cairo_get_font_face(cairo_t *cr);
+    char *cairo_toy_font_face_get_family(cairo_font_face_t *font_face);
 }
 
 version (UnitTest)

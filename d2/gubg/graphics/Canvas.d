@@ -6,6 +6,21 @@ import gubg.graphics.Cairo;
 import derelict.sdl.sdl;
 import std.stdio;
 
+enum VAlign
+{
+    Bottom,//The bottom of the TwoPoint is matched with the baseline, the top with the height line
+           //This is suitable for multi-line text, as line spacing is automatically handled
+    Center,//The bottom of the TwoPoint is matched with the descent line, the top with the ascent line
+           //This is suitable for centered single-line text, as the characters more or less fall nicely
+           //in the box (given that the text contains both low and high characters like "g" and "l").
+}
+enum HAlign
+{
+    Left,
+    Center,
+    Right,
+    Fill,//This probably only makes sense in combination with VAlign.Center
+}
 interface ICanvas
 {
     //Called once or more before any other call
@@ -25,7 +40,9 @@ interface ICanvas
     void drawLine(TwoPoint fromTo, Style);
     void drawCircle(Point center, real radius, Style);
     void drawRectangle(TwoPoint fromTo, Style);
-    void drawText(Point location, string text, Style, Font);
+    void setFont(string font);
+    //By default, the height of the box controls the font size, except when HAlign.Fill is chosen
+    void drawText(string text, TwoPoint box, VAlign, HAlign, Style);
 }
 
 class SDLCanvas: ICanvas
@@ -139,12 +156,33 @@ class SDLCanvas: ICanvas
             cairo_.stroke();
         }
     }
-    void drawText(Point location, string text, Style style, Font font)
+    void setFont(string font)
     {
-        cairo_.selectFontFace(font.fontFace());
-        cairo_.setFontSize(font.fontSize());
+        cairo_.selectFontFace(font);
+    }
+    void drawText(string text, TwoPoint box, VAlign valign, HAlign halign, Style style)
+    {
         setStrokeStyle_(style);
-        cairo_.moveTo(location.x, height_-1-location.y);
+
+        //Compute and set the font size
+        cairo_.setFontSize(1.0);
+        real ascent, descent, height;
+        cairo_.fontExtents(ascent, descent, height);
+        writefln("Descent: %s, ascent: %s, height: %s", descent, ascent, height);
+        writeln(cairo_.toyFontFaceGetFamily);
+        switch (valign)
+        {
+            case VAlign.Bottom:
+                real fontSize = box.height/height;
+                cairo_.setFontSize(fontSize);
+                cairo_.moveTo(box.p0.x, height_-1-box.p0.y);
+                break;
+            case VAlign.Center:
+                real fontSize = box.height/(descent+ascent);
+                cairo_.setFontSize(fontSize);
+                cairo_.moveTo(box.p0.x, height_-1-box.p0.y-descent*fontSize);
+                break;
+        }
         cairo_.showText(text);
         cairo_.stroke();
     }
@@ -181,16 +219,16 @@ version (UnitTest)
         canvas.initialize();
         auto sc = Style().fill(Color.green).stroke(Color.red);
         auto sr = Style().fill(Color.blue);
-        auto font = Font();
+        canvas.setFont("sans-serif");
         foreach (i; 0 .. 240)
         {
             canvas.initializeDraw;
             sc.width(i/5+1);
             canvas.drawCircle(Point(i, i), i, sc);
             auto half = 0.5*i;
-            canvas.drawRectangle(TwoPoint(i-half, i-half, i+half, i+half), sr);
-            font.size(i);
-            canvas.drawText(Point(i, i), "Test", sc, font);
+            auto box = TwoPoint(i-half, i-half, i+half, i+half);
+            canvas.drawRectangle(box, sr);
+            canvas.drawText("gl|", box, VAlign.Center, HAlign.Left, sc);
             canvas.finalizeDraw;
             Thread.sleep(100000);
         }
