@@ -61,6 +61,16 @@ struct TwoPoint
     {
         this (co0[0], co0[1], co1[0], co1[1]);
     }
+    static TwoPoint centered(real x, real y, real w, real h)
+    {
+        w *= 0.5;
+        h *= 0.5;
+        return TwoPoint(x-w, y-h, x+w, y+h);
+    }
+    static TwoPoint centered(Point center, real w, real h)
+    {
+        return TwoPoint.centered(center.x, center.y, w, h);
+    }
     Point p0;
     Point p1;
 

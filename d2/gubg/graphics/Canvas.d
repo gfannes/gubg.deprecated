@@ -1,7 +1,7 @@
 module gubg.graphics.Canvas;
 
-import gubg.Point;
-import gubg.graphics.Style;
+public import gubg.Point;
+public import gubg.graphics.Style;
 import gubg.graphics.Cairo;
 import derelict.sdl.sdl;
 import std.stdio;
@@ -30,6 +30,12 @@ interface ICanvas
     //Called before and after each draw session
     bool initializeDraw();
     void finalizeDraw();
+    scope class DrawScope
+    {
+        this () { ok_ = initializeDraw(); }
+        ~this () { if (ok_) finalizeDraw(); }
+        private: bool ok_ = false;
+    }
 
     //width and height of canvas
     //(0,0) is bottom left and (width-1, height-1) is top right
@@ -80,6 +86,7 @@ class SDLCanvas: ICanvas
 
         cairo_ = new gubg.graphics.Cairo.Context(cast(ubyte*)(SDLSurface_.pixels), width_, height_);
 
+        lastKey_ = SDLK_UNKNOWN;
         initialized_ = true;
         return true;
     }
@@ -96,6 +103,19 @@ class SDLCanvas: ICanvas
             if (SDL_LockSurface(SDLSurface_) < 0)
                 return false;
         clear();
+
+        //Collect event
+        SDL_Event event;
+        if (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+                case SDL_KEYDOWN:
+                    lastKey_ = event.key.keysym.sym;
+                    break;
+                default: break;
+            }
+        }
         return true;
     }
     void finalizeDraw()
@@ -175,7 +195,6 @@ class SDLCanvas: ICanvas
             descentFrac /= tmpFontSize;
             heightFrac /= tmpFontSize;
             caplineFrac = 1.0 - descentFrac;
-            writefln("descentFrac: %s, ascentFrac: %s, heightFrac: %s, caplineFrac", descentFrac, ascentFrac, heightFrac, caplineFrac);
         }
         switch (valign)
         {
@@ -194,6 +213,37 @@ class SDLCanvas: ICanvas
         cairo_.stroke();
     }
 
+    bool getNumericKey(out uint number)
+    {
+        if (SDLK_UNKNOWN == lastKey_)
+            return false;
+
+        if (SDLK_0 <= lastKey_ && lastKey_ <= SDLK_9)
+        {
+            number = lastKey_ - SDLK_0;
+            lastKey_ = SDLK_UNKNOWN;
+            return true;
+        }
+        if (SDLK_KP0 <= lastKey_ && lastKey_ <= SDLK_KP9)
+        {
+            number = lastKey_ - SDLK_KP0;
+            lastKey_ = SDLK_UNKNOWN;
+            return true;
+        }
+        return false;
+    }
+    bool escapeIsPressed()
+    {
+        if (SDLK_UNKNOWN == lastKey_)
+            return false;
+        if (SDLK_ESCAPE == lastKey_)
+        {
+            lastKey_ = SDLK_UNKNOWN;
+            return true;
+        }
+        return false;
+    }
+
     private:
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
     void flip(){SDL_Flip(SDLSurface_);}
@@ -210,6 +260,7 @@ class SDLCanvas: ICanvas
     private:
     SDL_Surface* SDLSurface_;
     gubg.graphics.Cairo.Context cairo_;
+    SDLKey lastKey_;
 
     int width_;
     int height_;
@@ -229,14 +280,13 @@ version (UnitTest)
         canvas.setFont("serif");
         foreach (i; 0 .. 240)
         {
-            canvas.initializeDraw;
+            scope ds = canvas.new DrawScope;
             sc.width(i/5+1);
             canvas.drawCircle(Point(i, i), i, sc);
             auto half = 0.5*i;
             auto box = TwoPoint(i-half, i-half, i+half, i+half);
             canvas.drawRectangle(box, sr);
             canvas.drawText("pgjpqyl|", box, VAlign.Center, HAlign.Left, sc);
-            canvas.finalizeDraw;
             Thread.sleep(100000);
         }
         Thread.sleep(100000000);

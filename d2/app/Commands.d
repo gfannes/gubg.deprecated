@@ -281,7 +281,7 @@ class ConfigCommand: ICommand
         Format format;
         format.delimiter = "\n";
         format(`{`);
-        format(`    "externalTrees": ["~/gubg/d2/gubg"]`);
+        format(`    "externalTrees": ["~/gubg/d2/gubg"],`);
         format(`    "libraries": ["dl", "cairo"]`);
         format(`}`);
         format(``);

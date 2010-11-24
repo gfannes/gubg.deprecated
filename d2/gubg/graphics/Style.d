@@ -5,13 +5,16 @@ import gubg.Format;
 struct Color
 {
     // Some predefined colors
-    static const Color black  = Color(0.0, 0.0, 0.0);
-    static const Color white  = Color(1.0, 1.0, 1.0);
-    static const Color red    = Color(1.0, 0.0, 0.0);
-    static const Color green  = Color(0.0, 1.0, 0.0);
-    static const Color blue   = Color(0.0, 0.0, 1.0);
-    static const Color purple = Color(1.0, 0.0, 1.0);
-    static const Color cool   = Color(0.07, 0.20, 0.33);
+    static const Color black   = Color(0.0, 0.0, 0.0);
+    static const Color white   = Color(1.0, 1.0, 1.0);
+    static const Color red     = Color(1.0, 0.0, 0.0);
+    static const Color green   = Color(0.0, 1.0, 0.0);
+    static const Color blue    = Color(0.0, 0.0, 1.0);
+    static const Color purple  = Color(1.0, 0.0, 1.0);
+    static const Color cyan    = Color(0.0, 1.0, 1.0);
+    static const Color yellow  = Color(1.0, 1.0, 0.0);
+    static const Color gray    = Color(0.5, 0.5, 0.5);
+    static const Color cool    = Color(0.07, 0.20, 0.33);
 
     const real InvalidValue = -2.0;
     static const Color invalid = Color(InvalidValue, InvalidValue, InvalidValue);

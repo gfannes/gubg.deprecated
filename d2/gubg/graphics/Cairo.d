@@ -62,9 +62,7 @@ class Context
     void fontExtents(out real ascent, out real descent, out real height)
     {
         cairo_font_extents_t extents;
-        writefln("%f %f %f", extents.ascent, extents.descent, extents.height);
         cairo_font_extents(context_, &extents);
-        writefln("%f %f %f", extents.ascent, extents.descent, extents.height);
         ascent = extents.ascent;
         descent = extents.descent;
         height = extents.height;
