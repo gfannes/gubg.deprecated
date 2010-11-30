@@ -304,6 +304,9 @@ class String
     def String.load(fileName)
         File.read(fileName, encoding: "ascii-8bit")||""
     end
+    def String.loadBinary(fileName)
+	    open(fileName, "rb"){|fi|fi.read}
+    end
     def String.loadLines(fileName)
         String.load(fileName).split("\n")
     end
@@ -542,11 +545,16 @@ def time(str, newline = false)
 end
 
 # Temporary path and files
-def tempDir(dir = '/tmp')
+def tempDir(dir = '/tmp', subdir = nil)
     tmpDir = nil
-    begin
-        tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
-    end while File.exist?(tmpDir)
+    if subdir
+	    tmpDir = File.expand_path(subdir, dir)
+	    FileUtils.rm_r(tmpDir) if File.exist?(tmpDir)
+    else
+	    begin
+		    tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
+	    end while File.exist?(tmpDir)
+    end
     Dir.mkdir(tmpDir)
     if block_given?
 	    begin
@@ -576,7 +584,7 @@ def tempFile(extension)
 end
 
 def md5sum(fileName)
-    return Digest::MD5.hexdigest(String.load(fileName))
+    return Digest::MD5.hexdigest(String.loadBinary(fileName))
 end
 
 class << File
