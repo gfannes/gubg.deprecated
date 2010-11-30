@@ -33,6 +33,8 @@ endfunction
 command -count InsertOneCharCmd call InsertOneChar()
 map <Space> :InsertOneCharCmd<CR>
 
+command LongLines /\%>110v.\+
+
 autocmd bufenter *.rb source $GUBG/vim/maps.ruby.vim
 autocmd bufenter *.lua source $GUBG/vim/maps.lua.vim
 autocmd bufenter *.d source $GUBG/vim/maps.d.vim
