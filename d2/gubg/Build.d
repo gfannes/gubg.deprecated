@@ -8,7 +8,7 @@ import std.stdio;
 string objectExtension()
 {
 	version (Win32) return "obj";
-	version (Posix) return "obj";
+	version (Posix) return "o";
 }
 
 class Compile
