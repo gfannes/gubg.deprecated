@@ -214,11 +214,11 @@ class ExeCommand: ArgsCommand
         }
 
         //Link the executable, if necessary
-        string execName = getName(filepath);
+        string execName = createExecName_(getName(filepath));
         auto fi = FileInfo(execName);
         foreach (objectFilepath; objectFilepaths)
             fi.add("objectFilepath", objectFilepath);
-        string uniqExecName = fileCache.filepath(fi);
+        string uniqExecName = createExecName_(fileCache.filepath(fi));
         bool link(FileInfo fi)
         {
             auto l = new LinkExecutable(uniqExecName);
@@ -242,6 +242,12 @@ class ExeCommand: ArgsCommand
     string toString(){return "ExeCommand";}
 
     private:
+    string createExecName_(string name) const
+    {
+        if (isUnitTest_)
+            return name.addExt("unit");
+        return name;
+    }
     bool isUnitTest_;
 }
 class LibCommand: ArgsCommand
