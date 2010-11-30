@@ -32,7 +32,7 @@ class Configuration
                 if (exists(filename))
                 {
                     filepath_ = join(path, filename);
-                    writefln("I found %s", filepath_);
+                    writefln("I found \"%s\"", filepath_);
                     break;
                 }
                 prevPath = path;
@@ -80,6 +80,8 @@ class Configuration
         if (!filepath_)
             return;
 
+	writefln("Parsing \"%s\"", filepath_);
+	writefln("Content: %s", cast(char[])read(filepath_));
         json_ = parseJSON(cast(char[])read(filepath_));
         jsonIsParsed_ = true;
     }

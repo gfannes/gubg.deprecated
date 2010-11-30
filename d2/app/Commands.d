@@ -173,7 +173,7 @@ class ExeCommand: ArgsCommand
             writeln(sourceFilepath);
 
             //Collect all information about the source file
-            auto fi = FileInfo(addExt(sourceFilepath, "o"));
+            auto fi = FileInfo(addExt(sourceFilepath, gubg.Build.objectExtension()));
             if (isUnitTest_ && filepath == sourceFilepath)
                 fi.add("version", "UnitTest");
             foreach(includePath; includePaths)

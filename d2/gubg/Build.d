@@ -5,6 +5,12 @@ import std.process;
 import std.path;
 import std.stdio;
 
+string objectExtension()
+{
+	version (Win32) return "obj";
+	version (Posix) return "obj";
+}
+
 class Compile
 {
     this(string sourceFilepath)
@@ -19,7 +25,7 @@ class Compile
     bool execute(bool verbose = true)
     {
         Format format;
-        format("dmd -c -version=phobos -of%s %s", objectFilepath(), sourceFilepath_);
+        format("dmd -c -version=phobos -of\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
         format.delimiter = " ";
         foreach (includePath; includePaths_)
             format("-I%s", includePath);
@@ -46,7 +52,7 @@ class Compile
     {
         if (objectFilepath_)
             return objectFilepath_;
-        return addExt(sourceFilepath_, "o");
+        return addExt(sourceFilepath_, objectExtension());
     }
 
     private:
