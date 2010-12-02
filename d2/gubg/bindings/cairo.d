@@ -33,6 +33,16 @@ struct cairo_font_extents_t
     double max_x_advance;
     double max_y_advance;
 }
+struct cairo_text_extents_t
+{
+    double x_bearing;
+    double y_bearing;
+    double width;
+    double height;
+    double x_advance;
+    double y_advance;
+}
+
 struct cairo_font_face_t {}
 
 extern (C)
@@ -65,6 +75,7 @@ extern (C)
     void cairo_font_extents(cairo_t *cr, cairo_font_extents_t *extents);
     cairo_font_face_t *cairo_get_font_face(cairo_t *cr);
     char *cairo_toy_font_face_get_family(cairo_font_face_t *font_face);
+    void cairo_text_extents(cairo_t *cr, const char *utf8, cairo_text_extents_t *extents);
 }
 
 version (UnitTest)

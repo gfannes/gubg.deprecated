@@ -78,6 +78,8 @@ struct TwoPoint
     real length(){return sqrt(pow(p0.x-p1.x, 2) + pow(p0.y-p1.y, 2));}
     real width(){return abs(moveX());}
     real height(){return abs(moveY());}
+    real centerX(){return 0.5*(p0.x+p1.x);}
+    real centerY(){return 0.5*(p0.y+p1.y);}
     //The distance to move across a certain axis to go from p0 to p1
     real moveX(){return p1.x-p0.x;}
     real moveY(){return p1.y-p0.y;}

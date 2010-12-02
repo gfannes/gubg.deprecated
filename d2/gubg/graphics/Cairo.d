@@ -1,6 +1,7 @@
 module gubg.graphics.Cairo;
 
 import gubg.bindings.cairo;
+import gubg.Point;
 import std.string;
 import std.conv;
 import std.stdio;
@@ -71,6 +72,12 @@ class Context
     {
         cairo_font_face_t *ff = cairo_get_font_face(context_);
         return to!(string)(cairo_toy_font_face_get_family(ff));
+    }
+    TwoPoint textBB(string str)
+    {
+        cairo_text_extents_t extents;
+        cairo_text_extents(context_, toStringz(str), &extents);
+        return TwoPoint(extents.x_bearing, extents.y_bearing, extents.x_bearing+extents.width, extents.y_bearing+extents.height);
     }
 
     private:
