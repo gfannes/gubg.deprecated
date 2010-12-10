@@ -1,5 +1,3 @@
-Dir.chdir(File.dirname(__FILE__)) do
-  Dir.chdir("builder") do
-    require("builder")
-  end
-end
+$LOAD_PATH.push(File.expand_path("builder", File.dirname(__FILE__)))
+require("builder")
+$LOAD_PATH.pop

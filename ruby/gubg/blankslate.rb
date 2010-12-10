@@ -1,5 +1,3 @@
-Dir.chdir(File.dirname(__FILE__)) do
-  Dir.chdir("blankslate") do
-    require("blankslate")
-  end
-end
+$LOAD_PATH.push(File.expand_path("blankslate", File.dirname(__FILE__)))
+require("blankslate")
+$LOAD_PATH.pop
