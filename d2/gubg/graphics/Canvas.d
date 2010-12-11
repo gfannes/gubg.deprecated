@@ -312,10 +312,10 @@ version (UnitTest)
     import core.thread;
     void main()
     {
-        enum ETest {Text, All};
-        ETest test = ETest.Text;
+        enum ETest {Text, Multiline, All};
+        ETest test = ETest.Multiline;
 
-        auto canvas = new SDLCanvas(640, 480);
+        auto canvas = new SDLCanvas(1024, 480);
         canvas.initialize();
         auto sc = Style().fill(Color.green).stroke(Color.red);
         auto sr = Style();
@@ -340,6 +340,28 @@ version (UnitTest)
                             canvas.drawRectangle(box, sr);
                             canvas.drawText("p|", box, vAlign, hAlign, sc);
                         }
+                    }
+                    break;
+                case ETest.Multiline:
+                    TwoPoint[] boxes = new TwoPoint[10];
+                    foreach (ix, ref box; boxes)
+                        box = TwoPoint(0, 48*(9-ix), 1024, 48*(10-ix));
+                    sr.stroke(Color.yellow).width(2);
+                    sc.width(2);
+                    string[] strAry = ["Dees ziet er al geweldig uit",
+                        "Inderdaad, best wel in orde",
+                        "Kzal eens een lijntje leeg laten si",
+                        "",
+                        "Hey, waar is de vorige lijn naar toe?",
+                        "Khad het u toch gezegd,",
+                        "Kging een lijntje leeg laten",
+                        "",
+                        "Doven otter",
+                        "Schelden is voor nix nodig!"];
+                    foreach (ix, box; boxes)
+                    {
+                        canvas.drawRectangle(box, sr);
+                        canvas.drawText(strAry[ix], box, VAlign.Bottom, HAlign.Left, sc);
                     }
                     break;
                 case ETest.All:
