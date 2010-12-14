@@ -6,6 +6,7 @@ import std.file;
 import std.date;
 import std.md5;
 import std.string;
+import std.array;
 
 //Manages a file cache where files are stored using a unique name constructed from the file name and other attributes (FileInfo)
 //The create()-function indicates if the file was found in the cache, and will create it using the passed delegate if not
@@ -20,8 +21,8 @@ class FileCache
         storagePath_ = storagePath;
         if (!storagePath_)
         {
-            version(linux) storagePath_ = "/tmp/FileCache";
-            version(Windows) storagePath_ = "c:\\temp\\FileCache";
+            version (Posix) storagePath_ = "/tmp/FileCache";
+            version (Windows) storagePath_ = "c:\\temp\\FileCache";
         }
         if (!exists(storagePath_))
             mkdirRecurse(storagePath_);
@@ -80,9 +81,19 @@ struct FileInfo
     }
     string filename()
     {
-        if (!getExt(filename_))
-            return Format.immediate("%s.%s", filename_, optionsDigest_()).replace(sep, "_");
-        return Format.immediate("%s-%s.%s", getName(filename_), optionsDigest_(), getExt(filename_)).replace(sep, "_");
+	    string res;
+	    {
+	    if (getExt(filename_))
+		    res = Format.immediate("%s-%s.%s", getName(filename_), optionsDigest_(), getExt(filename_)).replace(sep, "_");
+	    else
+		    res = Format.immediate("%s.%s", filename_, optionsDigest_()).replace(sep, "_");
+	    }
+	    if (!std.path.altsep.empty)
+	    {
+		    res = res.replace(altsep, "_");
+		    res = res.replace(":", "_");
+	    }
+	    return res;
     }
     string get(T)(string key) if (is(T == string))
     {

@@ -20,7 +20,10 @@ interface ICommand
     string toString();
 }
 
+version (Posix)
 private string fileCachePath_ = "/tmp/gb";
+version (Windows)
+private string fileCachePath_ = "c:\\tmp\\gb";
 ICommand createCommand(string[] args)
 {
     ICommand res;
@@ -215,10 +218,13 @@ class ExeCommand: ArgsCommand
 
         //Link the executable, if necessary
         string execName = getName(filepath);
+	version (Windows) execName ~= ".exe";
+	writefln("execName: %s", execName);
         auto fi = FileInfo(execName);
         foreach (objectFilepath; objectFilepaths)
             fi.add("objectFilepath", objectFilepath);
         string uniqExecName = fileCache.filepath(fi);
+	writefln("uniqExecName: %s", uniqExecName);
         bool link(FileInfo fi)
         {
             auto l = new LinkExecutable(uniqExecName);
@@ -235,8 +241,8 @@ class ExeCommand: ArgsCommand
         fileCache.create(fi, &link);
         //Copy the executable over
         //Copying with the copy()-function does not preserve the executable attributes, so we use the shell instead
-        system(Format.immediate("cp %s %s", uniqExecName, execName));
-        system(Format.immediate("cp %s.map %s.map", uniqExecName, execName));
+        system(Format.immediate("cp \"%s\" \"%s\"", uniqExecName, execName));
+        version (Posix) system(Format.immediate("cp %s.map %s.map", uniqExecName, execName));
         return true;
     }
     string toString(){return "ExeCommand";}

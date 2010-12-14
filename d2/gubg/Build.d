@@ -28,7 +28,7 @@ class Compile
         format("dmd -c -version=phobos -of\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
         format.delimiter = " ";
         foreach (includePath; includePaths_)
-            format("-I%s", includePath);
+            format("-I\"%s\"", includePath);
         foreach (v; versions_)
             format("-version=%s", v);
 
@@ -73,7 +73,7 @@ class Link
         format("dmd");
         format(extraSettings());
         foreach (objectFilepath; objectFilepaths_)
-            format(objectFilepath);
+            format("\"" ~ objectFilepath ~ "\"");
 
         //Execute the command
         if (verbose)
@@ -103,9 +103,9 @@ class LinkExecutable: Link
     string extraSettings()
     {
         Format format;
-        format("-of%s", exeName_);
+        format("-of\"%s\"", exeName_);
         format.delimiter = " ";
-        format("-L-Map=%s.map", exeName_);
+        version (Posix) format("-L-Map=\"%s.map\"", exeName_);
         foreach (libName; libraries)
             format("-L-l%s", libName);
 
