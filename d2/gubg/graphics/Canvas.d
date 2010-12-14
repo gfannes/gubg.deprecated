@@ -3,6 +3,7 @@ module gubg.graphics.Canvas;
 public import gubg.Point;
 public import gubg.graphics.Style;
 import gubg.graphics.Cairo;
+import gubg.Format;
 import derelict.sdl.sdl;
 import std.stdio;
 
@@ -23,10 +24,6 @@ enum HAlign
 }
 interface ICanvas
 {
-    //Called once or more before any other call
-    bool initialize();
-    bool finalize();
-
     //Called before and after each draw session
     bool initializeDraw();
     void finalizeDraw();
@@ -53,48 +50,47 @@ interface ICanvas
 
 class SDLCanvas: ICanvas
 {
-    this(int width, int height)
+    private static bool isInitialized__ = false;
+    static ~this ()
+    {
+        if (isInitialized__)
+            SDL_Quit();
+    }
+
+    this (int width, int height, bool useBorder = true)
     {
         width_ = width;
         height_ = height;
-        initialized_ = false;
-        SDLSurface_ = null;
-    }
+        lastKey_ = SDLK_UNKNOWN;
 
-    public:
-    bool initialize()
-    {
-        if (initialized_)
-            return true;
-
-        DerelictSDL.load();
-        //Initialize SDL
-        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+        //Lazy initialization of SDL
+        if (!isInitialized__)
         {
-            writeln(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-            SDL_Quit();
-            return false;
+            writeln("Initializing SDL");
+            DerelictSDL.load();
+            //Initialize SDL
+            if (SDL_Init(SDL_INIT_VIDEO) < 0)
+                throw new Exception(Format.immediate("Unable to init SDL: %s\n", SDL_GetError()));
+            isInitialized__ = true;
         }
+
         //Create the screen surface (window)
-        SDLSurface_ = SDL_SetVideoMode(width_, height_, 32, SDL_SWSURFACE);
+        auto flags = SDL_SWSURFACE;
+        if (!useBorder)
+            flags |= SDL_NOFRAME;
+        SDLSurface_ = SDL_SetVideoMode(width_, height_, 32, flags);
         if (SDLSurface_ is null)
-        {
-            writeln(stderr, "Unable to set %s x %s video: %s\n", width_, height_, SDL_GetError());
-            SDL_Quit();
-            return false;
-        }
+            throw new Exception(Format.immediate("Unable to set video mode to %s x %s: %s", width_, height_, SDL_GetError()));
+
+        writeln("Before");
+        SDL_SysWMinfo info;
+        SDL_VERSION(&info.ver);
+        writeln("Middle");
+        SDL_GetWMInfo(&info);
+        writeln("After");
+        writefln(Format.immediate("WindowID: %s", info.windowID));
 
         cairo_ = new gubg.graphics.Cairo.Context(cast(ubyte*)(SDLSurface_.pixels), width_, height_);
-
-        lastKey_ = SDLK_UNKNOWN;
-        initialized_ = true;
-        return true;
-    }
-    bool finalize()
-    {
-        if (initialized_)
-            SDL_Quit();
-        return true;
     }
 
     bool initializeDraw()
@@ -102,7 +98,7 @@ class SDLCanvas: ICanvas
         if (SDL_MUSTLOCK(SDLSurface_))
             if (SDL_LockSurface(SDLSurface_) < 0)
                 return false;
-        clear();
+        //clear();
 
         //Collect event
         SDL_Event event;
@@ -122,6 +118,7 @@ class SDLCanvas: ICanvas
     {
         if (SDL_MUSTLOCK(SDLSurface_))
             SDL_UnlockSurface(SDLSurface_);
+        //SDL_UpdateRect should _not_ be called inside the lock
         SDL_UpdateRect(SDLSurface_, 0, 0, width_, height_);
     }
 
@@ -282,9 +279,9 @@ class SDLCanvas: ICanvas
         }
         return false;
     }
+    void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
 
     private:
-    void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
     void flip(){SDL_Flip(SDLSurface_);}
     void setStrokeStyle_(Style style)
     {
@@ -303,26 +300,28 @@ class SDLCanvas: ICanvas
 
     int width_;
     int height_;
-    bool initialized_;
 }
 
 version (UnitTest)
 {
     import std.stdio;
+    import std.process;
     import core.thread;
     void main()
     {
-        enum ETest {Text, Multiline, All};
-        ETest test = ETest.Multiline;
+        enum ETest {Text, Multiline, MPlayer, All};
+        ETest test = ETest.MPlayer;
 
-        auto canvas = new SDLCanvas(1024, 480);
-        canvas.initialize();
+        scope canvas = new SDLCanvas(1024, 480, false);
+        ICanvas canvas2;
         auto sc = Style().fill(Color.green).stroke(Color.red);
         auto sr = Style();
         canvas.setFont("serif");
-        foreach (i; 0 .. 240)
+        foreach (i; 0 .. 24000)
         {
             scope ds = canvas.new DrawScope;
+            if (canvas.escapeIsPressed)
+                break;
             switch (test)
             {
                 case ETest.Text:
@@ -364,6 +363,9 @@ version (UnitTest)
                         canvas.drawText(strAry[ix], box, VAlign.Bottom, HAlign.Left, sc);
                     }
                     break;
+                case ETest.MPlayer:
+                    shell("mplayer -ss 10 -frames 100 -wid 52428813 ~/kwis/Films/raw/Addams\\ Family\\ Movie\\ Trailer.flv");
+                    break;
                 case ETest.All:
                     sr.fill(Color.blue);
                     sc.width(i/5+1);
@@ -376,7 +378,5 @@ version (UnitTest)
             }
             Thread.sleep(100000);
         }
-        Thread.sleep(10000000);
-        canvas.finalize();
     }
 }
