@@ -46,7 +46,7 @@ class MetaStateMachine(Event, Submachine = IEventHandler!(Event)): StateMachine!
     final bool processEvent(Event event)
     {
         //First, we give the event to the submachine, which is the state
-        if (submachine().processEvent(event))
+        if (submachine && submachine.processEvent(event))
             return true;
 
         //The submachine could not handle the event, lets try to handle it ourselves

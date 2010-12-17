@@ -66,7 +66,6 @@ class SDLCanvas: ICanvas
         //Lazy initialization of SDL
         if (!isInitialized__)
         {
-            writeln("Initializing SDL");
             DerelictSDL.load();
             //Initialize SDL
             if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -82,13 +81,8 @@ class SDLCanvas: ICanvas
         if (SDLSurface_ is null)
             throw new Exception(Format.immediate("Unable to set video mode to %s x %s: %s", width_, height_, SDL_GetError()));
 
-        writeln("Before");
-        SDL_SysWMinfo info;
-        SDL_VERSION(&info.ver);
-        writeln("Middle");
-        SDL_GetWMInfo(&info);
-        writeln("After");
-        writefln(Format.immediate("WindowID: %s", info.windowID));
+        SDL_VERSION(&info_.ver);
+        SDL_GetWMInfo(&info_);
 
         cairo_ = new gubg.graphics.Cairo.Context(cast(ubyte*)(SDLSurface_.pixels), width_, height_);
     }
@@ -98,7 +92,7 @@ class SDLCanvas: ICanvas
         if (SDL_MUSTLOCK(SDLSurface_))
             if (SDL_LockSurface(SDLSurface_) < 0)
                 return false;
-        //clear();
+        clear();
 
         //Collect event
         SDL_Event event;
@@ -249,6 +243,14 @@ class SDLCanvas: ICanvas
         cairo_.stroke();
     }
 
+    bool getKey(out uint key)
+    {
+        if (SDLK_UNKNOWN == lastKey_)
+            return false;
+        key = lastKey_;
+        lastKey_ = SDLK_UNKNOWN;
+        return true;
+    }
     bool getNumericKey(out uint number)
     {
         if (SDLK_UNKNOWN == lastKey_)
@@ -280,6 +282,7 @@ class SDLCanvas: ICanvas
         return false;
     }
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
+    uint windowId(){return info_.windowId;}
 
     private:
     void flip(){SDL_Flip(SDLSurface_);}
@@ -300,6 +303,7 @@ class SDLCanvas: ICanvas
 
     int width_;
     int height_;
+    SDL_SysWMinfo info_;
 }
 
 version (UnitTest)
