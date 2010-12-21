@@ -2,7 +2,9 @@ module gubg.graphics.Canvas;
 
 public import gubg.Point;
 public import gubg.graphics.Style;
+import gubg.graphics.SDL;
 import gubg.graphics.Cairo;
+import gubg.graphics.IMUI;
 import gubg.Format;
 import derelict.sdl.sdl;
 import std.stdio;
@@ -50,28 +52,14 @@ interface ICanvas
 
 class SDLCanvas: ICanvas
 {
-    private static bool isInitialized__ = false;
-    static ~this ()
-    {
-        if (isInitialized__)
-            SDL_Quit();
-    }
-
     this (int width, int height, bool useBorder = true)
     {
         width_ = width;
         height_ = height;
-        lastKey_ = SDLK_UNKNOWN;
 
         //Lazy initialization of SDL
-        if (!isInitialized__)
-        {
-            DerelictSDL.load();
-            //Initialize SDL
-            if (SDL_Init(SDL_INIT_VIDEO) < 0)
-                throw new Exception(Format.immediate("Unable to init SDL: %s\n", SDL_GetError()));
-            isInitialized__ = true;
-        }
+        if (sdl_ is null)
+            sdl_ = new SDL;
 
         //Create the screen surface (window)
         auto flags = SDL_SWSURFACE;
@@ -94,18 +82,10 @@ class SDLCanvas: ICanvas
                 return false;
         clear();
 
-        //Collect event
-        SDL_Event event;
-        if (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-                case SDL_KEYDOWN:
-                    lastKey_ = event.key.keysym.sym;
-                    break;
-                default: break;
-            }
-        }
+        //Only of our IMUI member is present, we will process input
+        if (!(imui_ is null))
+            imui_.processInput();
+
         return true;
     }
     void finalizeDraw()
@@ -242,47 +222,44 @@ class SDLCanvas: ICanvas
         cairo_.showText(text);
         cairo_.stroke();
     }
-
-    bool getKey(out uint key)
-    {
-        if (SDLK_UNKNOWN == lastKey_)
-            return false;
-        key = lastKey_;
-        lastKey_ = SDLK_UNKNOWN;
-        return true;
-    }
-    bool getNumericKey(out uint number)
-    {
-        if (SDLK_UNKNOWN == lastKey_)
-            return false;
-
-        if (SDLK_0 <= lastKey_ && lastKey_ <= SDLK_9)
-        {
-            number = lastKey_ - SDLK_0;
-            lastKey_ = SDLK_UNKNOWN;
-            return true;
-        }
-        if (SDLK_KP0 <= lastKey_ && lastKey_ <= SDLK_KP9)
-        {
-            number = lastKey_ - SDLK_KP0;
-            lastKey_ = SDLK_UNKNOWN;
-            return true;
-        }
-        return false;
-    }
-    bool escapeIsPressed()
-    {
-        if (SDLK_UNKNOWN == lastKey_)
-            return false;
-        if (SDLK_ESCAPE == lastKey_)
-        {
-            lastKey_ = SDLK_UNKNOWN;
-            return true;
-        }
-        return false;
-    }
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
     uint windowId(){return info_.windowId;}
+
+    //Immediate-mode user interface handling
+    gubg.graphics.IMUI.IMUI imui()
+    {
+        //Lazy creation of imui_
+        if (imui_ is null)
+            imui_ = new IMUI;
+        return imui_;
+    }
+    private:
+    //An inner class that handles user input to the SDLCanvas
+    //using immediate-mode user interface handling
+    class IMUI: gubg.graphics.IMUI.IMUI
+    {
+        bool processInput()
+        {
+            //Check if a key is already pressed
+            if (Key.None != lastKey_)
+                return true;
+            //Collect event
+            SDL_Event event;
+            if (SDL_PollEvent(&event))
+            {
+                switch (event.type)
+                {
+                    case SDL_KEYDOWN:
+                        lastKey_ = fromSDL(event.key.keysym.sym);
+                        return true;
+                        break;
+                    default: break;
+                }
+            }
+            return false;
+        }
+    }
+    IMUI imui_;
 
     private:
     void flip(){SDL_Flip(SDLSurface_);}
@@ -298,8 +275,8 @@ class SDLCanvas: ICanvas
 
     private:
     SDL_Surface* SDLSurface_;
+    gubg.graphics.SDL.SDL sdl_;
     gubg.graphics.Cairo.Context cairo_;
-    SDLKey lastKey_;
 
     int width_;
     int height_;
@@ -324,7 +301,7 @@ version (UnitTest)
         foreach (i; 0 .. 24000)
         {
             scope ds = canvas.new DrawScope;
-            if (canvas.escapeIsPressed)
+            if (canvas.imui.escapeIsPressed)
                 break;
             switch (test)
             {
@@ -368,7 +345,7 @@ version (UnitTest)
                     }
                     break;
                 case ETest.MPlayer:
-                    shell("mplayer -ss 10 -frames 100 -wid 52428813 ~/kwis/Films/raw/Addams\\ Family\\ Movie\\ Trailer.flv");
+                    shell(Format.immediate("mplayer -ss 10 -frames 100 -wid %s ~/kwis/Films/raw/Addams\\ Family\\ Movie\\ Trailer.flv", canvas.windowId));
                     break;
                 case ETest.All:
                     sr.fill(Color.blue);

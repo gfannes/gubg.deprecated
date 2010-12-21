@@ -3,42 +3,44 @@ module gubg.graphics.SDL;
 import std.stdio;
 import derelict.sdl.sdl;
 
-scope class SDL
+//Reference-count SDL initializer
+class SDL
 {
-    this ()
+    this()
     {
-        version (D_Version2)
+        if (0 == refCount__)
         {
-            writeln("Bfore loading derelict");
-        writefln("SDL_Init = %s", SDL_Init);
+            DerelictSDL.load();
+            if (SDL_Init(SDL_INIT_VIDEO) < 0)
+                throw new Exception("Could not initialize SDL");
         }
-        DerelictSDL.load();
-        writeln("DerelictSDL is loaded");
-        writefln("SDL_Init = %s, %d", SDL_Init, SDL_INIT_VIDEO);
-        if (SDL_Init(SDL_INIT_VIDEO) < 0)
-        {
-            writeln("Could not initialize");
-            return;
-        }
-        initialized_ = true;
+        ++refCount__;
     }
-    ~this ()
+    ~this()
     {
-        if (initialized_)
-        {
-            writeln("Calling quit");
-            SDL_Quit();
-        }
+        finalize();
+    }
+    static ~this()
+    {
+        finalize();
     }
 
     private:
-    bool initialized_;
+    static void finalize()
+    {
+        if (1 == refCount__)
+            SDL_Quit();
+        //The destructor might run before the static destructor
+        if (refCount__ > 0)
+            --refCount__;
+    }
+    static uint refCount__ = 0;
 }
 
 version (UnitTest)
 {
     void main()
     {
-        scope sdl = new SDL;
+        auto sdl = new SDL;
     }
 }
