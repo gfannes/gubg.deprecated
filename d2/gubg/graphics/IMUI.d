@@ -21,6 +21,15 @@ bool convertToDigit(out ubyte digit, in Key key)
     }
     return false;
 }
+char convertToChar(in Key key)
+{
+    ubyte digit;
+    if (convertToDigit(digit, key))
+        return cast(char)('0'+digit);
+    if (Key.a <= key && key <= Key.z)
+        return cast(char)('a'+key-Key.a);
+    return '.';
+}
 enum Key
 {
     None = 0,
@@ -64,6 +73,33 @@ enum Key
     F13 = SDLK_F13,
     F14 = SDLK_F14,
     F15 = SDLK_F15,
+
+    a = SDLK_a,
+    b = SDLK_b,
+    c = SDLK_c,
+    d = SDLK_d,
+    e = SDLK_e,
+    f = SDLK_f,
+    g = SDLK_g,
+    h = SDLK_h,
+    i = SDLK_i,
+    j = SDLK_j,
+    k = SDLK_k,
+    l = SDLK_l,
+    m = SDLK_m,
+    n = SDLK_n,
+    o = SDLK_o,
+    p = SDLK_p,
+    q = SDLK_q,
+    r = SDLK_r,
+    s = SDLK_s,
+    t = SDLK_t,
+    u = SDLK_u,
+    v = SDLK_v,
+    w = SDLK_w,
+    x = SDLK_x,
+    y = SDLK_y,
+    z = SDLK_z,
 
     Escape = SDLK_ESCAPE,
 }
