@@ -1,9 +1,44 @@
 module gubg.graphics.IMUI;
 
 import gubg.graphics.Canvas;
+import gubg.BitMagic;
 import derelict.sdl.sdl;
 
 import std.stdio;
+
+class Widgets
+{
+    Widget get(uint extra)
+    {
+        void *callerLocation;
+        asm
+        {
+            mov EAX, dword ptr [EBP+4];
+            mov callerLocation[EBP], EAX;
+        }
+        uint id = createId_(callerLocation, extra);
+        writefln("id: %x", id);
+        Widget *widget = (id in widgetPerId);
+        if (!widget)
+        {
+            auto w = new Widget(id);
+            widgetPerId[id] = w;
+            widget = &w;
+        }
+        return *widget;
+    }
+    class Widget
+    {
+        this(uint id)
+        {}
+    }
+    private:
+    uint createId_(void *location, uint extra)
+    {
+        return cast(uint)location ^ gubg.BitMagic.reverseBits(extra);
+    }
+    Widget[uint] widgetPerId;
+}
 
 //Key is basically the same order as SDL uses...
 Key fromSDL(int sdlKey){return cast(Key)sdlKey;}

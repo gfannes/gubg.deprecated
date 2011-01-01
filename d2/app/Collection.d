@@ -7,6 +7,8 @@ import std.algorithm;
 import std.array;
 import std.stdio;
 
+bool verbose__ = false;
+
 class DCollection
 {
     this (string path)
@@ -63,6 +65,11 @@ class DCollection
 
     void prune(string filepath, ref string[] includePaths)
     {
+        if (verbose__)
+        {
+            writefln("Pruning include paths for %s", filepath);
+            writefln("includePaths: %s", includePaths);
+        }
         auto parser = new DParser;
         //Collect recursively all imported modules and the filepath where this module can be found
         string[string] fpPerModule;
@@ -70,7 +77,11 @@ class DCollection
         auto modulesToCheck = parser.parse(filepath).imports;
         for (uint level = 0; !modulesToCheck.empty; ++level)
         {
-            writefln("Looking for imported modules level %d: %d modules to find.", level, modulesToCheck.length);
+            if (verbose__)
+            {
+                writefln("Looking for imported modules level %d: %d modules to find.", level, modulesToCheck.length);
+                writefln("modulesToCheck: %s", modulesToCheck);
+            }
             bool[string] newModulesToCheck;
             foreach (ref DFile file; this)
             {
@@ -86,6 +97,8 @@ class DCollection
                             auto includePath = DParser.includePathForModule(file.path, modName);
                             if (includePath !is null)
                             {
+                                if (verbose__)
+                                    writefln("I found module %s in %s", modName, includePath);
                                 file.isTagged = true;
                                 foreach (newImport; uniq(parser.parse(file.path).imports))
                                     newModulesToCheck[newImport] = true;

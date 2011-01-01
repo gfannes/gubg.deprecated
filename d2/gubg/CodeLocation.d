@@ -1,7 +1,7 @@
-module gubg.CodePosition;
+module gubg.CodeLocation;
 
-//Returns the position in the source code where a call to this function will continue
-void *codePosition()
+//Returns the location in the source code where a call to this function will continue
+void *codeLocation()
 {
     void *res;
     asm
@@ -20,9 +20,9 @@ version (UnitTest)
         foreach (i; 0 .. 10)
         {
             writefln("Iteration %s", i);
-            writefln("%s", codePosition());
-            writefln("%s", codePosition());
-            writefln("%s", codePosition());
+            writefln("%s", codeLocation());
+            writefln("%s", codeLocation());
+            writefln("%s", codeLocation());
         }
     }
 }

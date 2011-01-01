@@ -5,6 +5,8 @@ import std.file;
 import std.path;
 import std.stdio;
 
+bool verbose__ = false;
+
 //Load the configuration file <filename>, optionally by stepping down to the root
 //This file should be a JSON object (hash) of strings or arrays of strings
 class Configuration
@@ -80,8 +82,11 @@ class Configuration
         if (!filepath_)
             return;
 
-	writefln("Parsing \"%s\"", filepath_);
-	writefln("Content: %s", cast(char[])read(filepath_));
+        if (verbose__)
+        {
+            writefln("Parsing \"%s\"", filepath_);
+            writefln("Content: %s", cast(char[])read(filepath_));
+        }
         json_ = parseJSON(cast(char[])read(filepath_));
         jsonIsParsed_ = true;
     }
