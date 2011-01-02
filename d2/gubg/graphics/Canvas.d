@@ -7,6 +7,8 @@ import gubg.graphics.Cairo;
 import gubg.graphics.IMUI;
 import gubg.Format;
 import derelict.sdl.sdl;
+import std.array;
+
 import std.stdio;
 
 enum VAlign
@@ -96,8 +98,8 @@ class SDLCanvas: ICanvas
         SDL_UpdateRect(SDLSurface_, 0, 0, width_, height_);
     }
 
-    int width(){return width_;}
-    int height(){return height_;}
+    int width() const {return width_;}
+    int height() const {return height_;}
 
     void drawLine(TwoPoint fromTo, Style strokeStyle)
     {
@@ -240,23 +242,33 @@ class SDLCanvas: ICanvas
     {
         bool processInput()
         {
-            //Check if a key is already pressed
-            if (Key.None != lastKey_)
-                return true;
-            //Collect event
+            bool somethingChanged = false;
+            //Keep polling events until the event queue is empty. If we do this one by one,
+            //we get a delay in the mouse behaviour
             SDL_Event event;
-            if (SDL_PollEvent(&event))
+            while (SDL_PollEvent(&event))
             {
                 switch (event.type)
                 {
                     case SDL_KEYDOWN:
-                        lastKey_ = fromSDL(event.key.keysym.sym);
-                        return true;
+                        cachedKeys_ ~= fromSDL(event.key.keysym.sym);
+                        break;
+                    case SDL_MOUSEMOTION:
+                        mousePosition_.x = event.motion.x;
+                        mousePosition_.y = height() - event.motion.y - 1;
+                        somethingChanged = true;
                         break;
                     default: break;
                 }
             }
-            return false;
+            if (Key.None == lastKey_ && !cachedKeys_.empty())
+            {
+                lastKey_ = cachedKeys_.front();
+                cachedKeys_.popFront();
+            }
+            if (Key.None != lastKey_)
+                somethingChanged = true;
+            return somethingChanged;
         }
     }
     IMUI imui_;

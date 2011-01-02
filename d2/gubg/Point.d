@@ -17,7 +17,7 @@ struct Point
     real x;
     real y;
 
-    string toString(){return Format.immediate("(%s, %s)", x, y);}
+    string toString() const {return Format.immediate("(%s, %s)", x, y);}
 
     Point opBinary(string op)(Point rhs) const if ("+" == op)
     {
@@ -75,15 +75,15 @@ struct TwoPoint
     Point p1;
 
     //L2 distance
-    real length(){return sqrt(pow(p0.x-p1.x, 2) + pow(p0.y-p1.y, 2));}
-    real width(){return abs(moveX());}
-    real height(){return abs(moveY());}
-    real centerX(){return 0.5*(p0.x+p1.x);}
-    real centerY(){return 0.5*(p0.y+p1.y);}
+    real length() const {return sqrt(pow(p0.x-p1.x, 2) + pow(p0.y-p1.y, 2));}
+    real width() const {return abs(moveX());}
+    real height() const {return abs(moveY());}
+    real centerX() const {return 0.5*(p0.x+p1.x);}
+    real centerY() const {return 0.5*(p0.y+p1.y);}
     //The distance to move across a certain axis to go from p0 to p1
-    real moveX(){return p1.x-p0.x;}
-    real moveY(){return p1.y-p0.y;}
-    bool isInside(in Point p)
+    real moveX() const {return p1.x-p0.x;}
+    real moveY() const {return p1.y-p0.y;}
+    bool isInside(in Point p) const
     {
         //Check the X-axis
         if (p0.x <= p1.x)
@@ -109,7 +109,7 @@ struct TwoPoint
         return true;
     }
 
-    string toString(){return Format.immediate("(%s, %s)", p0.toString, p1.toString);}
+    string toString() const {return Format.immediate("(%s, %s)", p0.toString, p1.toString);}
 }
 
 version (UnitTest)

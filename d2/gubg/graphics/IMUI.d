@@ -1,14 +1,45 @@
 module gubg.graphics.IMUI;
 
 import gubg.graphics.Canvas;
+import gubg.Point;
 import gubg.BitMagic;
 import derelict.sdl.sdl;
+public import std.range;
 
 import std.stdio;
 
+enum WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated};
+interface IWidget
+{
+    //Processes the widget (draw etc. if any is present)
+    //and returns its current state
+    WidgetState process();
+}
+class Button: IWidget
+{
+    this (TwoPoint dimensions, SDLCanvas canvas)
+    {
+        dimensions_ = dimensions;
+        canvas_ = canvas;
+    }
+    //IWidget interface
+    WidgetState process()
+    {
+        Style s;
+        if (canvas_.imui.isMouseInside(dimensions_))
+            s.fill(Color.green);
+        else
+            s.fill(Color.red);
+        canvas_.drawRectangle(dimensions_, s);
+        return WidgetState.Emerging;
+    }
+    private:
+    TwoPoint dimensions_;
+    SDLCanvas canvas_;
+}
 class Widgets
 {
-    Widget get(uint extra)
+    WidgetProxy get(uint extra)
     {
         void *callerLocation;
         asm
@@ -17,27 +48,36 @@ class Widgets
             mov callerLocation[EBP], EAX;
         }
         uint id = createId_(callerLocation, extra);
-        writefln("id: %x", id);
-        Widget *widget = (id in widgetPerId);
-        if (!widget)
+        WidgetProxy *wp = (id in widgetPerId);
+        if (!wp)
         {
-            auto w = new Widget(id);
+            auto w = new WidgetProxy(id);
             widgetPerId[id] = w;
-            widget = &w;
+            wp = &w;
         }
-        return *widget;
+        return *wp;
     }
-    class Widget
+    class WidgetProxy: IWidget
     {
         this(uint id)
         {}
+        void set(IWidget widget){widget_ = widget;}
+        //IWidget interface
+        WidgetState process()
+        {
+            if (widget_ is null)
+                return WidgetState.Empty;
+            return widget_.process();
+        }
+        private:
+        IWidget widget_;
     }
     private:
     uint createId_(void *location, uint extra)
     {
         return cast(uint)location ^ gubg.BitMagic.reverseBits(extra);
     }
-    Widget[uint] widgetPerId;
+    WidgetProxy[uint] widgetPerId;
 }
 
 //Key is basically the same order as SDL uses...
@@ -175,8 +215,17 @@ abstract class IMUI
         return false;
     }
 
+    bool isMouseInside(TwoPoint region) const
+    {
+        return region.isInside(mousePosition_);
+    }
+
     protected:
     Key lastKey_ = Key.None;
+    //When processInput() polls for key presses, it can store excess Keys in here and move them
+    //later to lastKey_ one by one
+    Key[] cachedKeys_;
+    Point mousePosition_ = Point(0.0, 0.0);
 }
 
 version (UnitTest)
