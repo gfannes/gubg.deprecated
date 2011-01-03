@@ -17,6 +17,31 @@ struct OnlyOnce
         bool notFirstTime_;
 }
 
+struct FewTimes
+{
+    this (uint nrTimes)
+    {
+        nrTimes_ = nrTimes;
+        reset();
+    }
+    bool isActive()
+    {
+        if (current_ < nrTimes_)
+        {
+            ++current_;
+            return true;
+        }
+        return false;
+    }
+    void reset()
+    {
+        current_ = 0;
+    }
+    private:
+    uint nrTimes_;
+    uint current_;
+}
+
 version (UnitTest)
 {
     import std.stdio;

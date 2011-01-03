@@ -3,7 +3,7 @@ module gubg.Timer;
 import std.date;
 
 enum ResetType {Auto, NoAuto}
-class Timer
+struct Timer
 {
     this (ResetType resetType)
     {
@@ -32,7 +32,7 @@ version (UnitTest)
     import std.stdio;
 	void main()
 	{
-		auto timer = new Timer(ResetType.Auto);
+		auto timer = Timer(ResetType.Auto);
         //Sleep for 11 miliseconds
 		Thread.sleep(110000000);
 		real vals[10];

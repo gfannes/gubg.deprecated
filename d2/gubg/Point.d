@@ -71,6 +71,10 @@ struct TwoPoint
     {
         return TwoPoint.centered(center.x, center.y, w, h);
     }
+    static TwoPoint expanded(TwoPoint source, real factor)
+    {
+        return TwoPoint.centered(source.centerX, source.centerY, factor*source.width, factor*source.height);
+    }
     Point p0;
     Point p1;
 

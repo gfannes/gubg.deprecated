@@ -169,6 +169,9 @@ class ExeCommand: ArgsCommand
         auto fileCache = new FileCache(fileCachePath_);
         uint nrCompilationErrors = 0;
         uint nrCompilations = 0;
+        // * Collect the compilation options, if any
+        string[] compilationOptions;
+        config.get("compilation", compilationOptions);
         foreach (gubg.FSTree.File file; collection)
         {
             //The source file that needs to be compiled
@@ -180,7 +183,9 @@ class ExeCommand: ArgsCommand
             if (isUnitTest_ && filepath == sourceFilepath)
                 fi.add("version", "UnitTest");
             foreach(includePath; includePaths)
-            fi.add("includePath", includePath);
+                fi.add("includePath", includePath);
+            foreach(option; compilationOptions)
+                fi.add("compilationOptions", option);
             fi.addFile(sourceFilepath);
 
             //Compile, if necessary
@@ -191,6 +196,8 @@ class ExeCommand: ArgsCommand
                     c.addVersion(v);
                 foreach (includePath; fi.get!(string[])("includePath"))
                     c.addIncludePath(includePath);
+                foreach (option; fi.get!(string[])("compilationOptions"))
+                    c.addOption(option);
                 c.setObjectFilepath(fileCache.filepath(fi));
                 return c.execute(true);
             }

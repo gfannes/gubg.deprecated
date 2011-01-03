@@ -3,8 +3,11 @@ module gubg.graphics.IMUI;
 import gubg.graphics.Canvas;
 import gubg.Point;
 import gubg.BitMagic;
+import gubg.StateMachine;
+import gubg.Timer;
 import derelict.sdl.sdl;
 public import std.range;
+import core.thread;
 
 import std.stdio;
 
@@ -15,26 +18,77 @@ interface IWidget
     //and returns its current state
     WidgetState process();
 }
-class Button: IWidget
+//We don't actually listen to any event, we just process
+enum Alignment {Left, Center};
+class Button: StateMachine!(bool, WidgetState),  IWidget
 {
-    this (TwoPoint dimensions, SDLCanvas canvas)
+    this (TwoPoint dimensions, string label, Alignment alignment, SDLCanvas canvas)
     {
         dimensions_ = dimensions;
+        label_ = label;
+        alignment_ = alignment;
         canvas_ = canvas;
+        super(WidgetState.Emerging);
+    }
+    //StateMachine interface
+    bool processEvent(bool)
+    {
+        switch (state)
+        {
+            case WidgetState.Emerging: changeState(WidgetState.Idle); break;
+            case WidgetState.Idle:
+                                       if (canvas_.imui.isMouseInside(dimensions_) && canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Up))
+                                           changeState(WidgetState.Highlighted);
+                                       break;
+            case WidgetState.Highlighted:
+                                       if (canvas_.imui.isMouseInside(dimensions_))
+                                       {
+                                           if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Down))
+                                               changeState(WidgetState.Activated);
+                                       }
+                                       else
+                                           changeState(WidgetState.Idle);
+                                       break;
+            case WidgetState.Activated:
+                                       if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Up))
+                                           changeState(WidgetState.Idle);
+                                       break;
+        }
+        return true;
     }
     //IWidget interface
     WidgetState process()
     {
+        processEvent(false);
         Style s;
-        if (canvas_.imui.isMouseInside(dimensions_))
-            s.fill(Color.green);
-        else
-            s.fill(Color.red);
+        switch (state)
+        {
+            case WidgetState.Idle: s.fill(Color.red); break;
+            case WidgetState.Highlighted: s.fill(Color.yellow); break;
+            case WidgetState.Activated: s.fill(Color.green); break;
+        }
         canvas_.drawRectangle(dimensions_, s);
+        //Draw the label
+        if (!label_.empty)
+        {
+            Style ts;
+            ts.fill(Color.black).stroke(Color.black).width(2.0);
+            HAlign ha;
+            switch (alignment_)
+            {
+                case Alignment.Center: ha = HAlign.Center; break;
+                case Alignment.Left: ha = HAlign.Left; break;
+            }
+            auto lh = dimensions_.height*0.75;
+            auto lw = dimensions_.width - (dimensions_.height-lh);
+            canvas_.drawText(label_, TwoPoint.centered(dimensions_.centerX, dimensions_.centerY, lw, lh), VAlign.Center, ha, ts);
+        }
         return WidgetState.Emerging;
     }
     private:
     TwoPoint dimensions_;
+    string label_;
+    Alignment alignment_;
     SDLCanvas canvas_;
 }
 class Widgets
@@ -178,6 +232,17 @@ enum Key
 
     Escape = SDLK_ESCAPE,
 }
+enum MouseButton
+{
+    Left,
+    Middle,
+    Right,
+}
+enum ButtonState
+{
+    Up,
+    Down,
+}
 
 //Immediate-mode user interface
 abstract class IMUI
@@ -186,6 +251,20 @@ abstract class IMUI
     //Returns true if some event is waiting (not sure if this maps OK for all input devices)
     //Calling this twice without getting any event should return the same
     bool processInput();
+    //Returns true as soon as input is ready to be processed
+    //false if it timed out
+    bool waitForInput(real timeout)
+    {
+        auto timer = Timer(ResetType.NoAuto);
+        while (timer.difference < timeout)
+        {
+            if (processInput())
+                return true;
+            //10ms resolution should be fast enough for most things
+            Thread.sleep(10_0000);
+        }
+        return false;
+    }
 
     //This is a non-const method, it will reset the interal lastKey_
     Key getLastKey()
@@ -219,6 +298,23 @@ abstract class IMUI
     {
         return region.isInside(mousePosition_);
     }
+    bool isMouseButton(MouseButton button, ButtonState cmpState)
+    {
+        bool state;
+        switch (button)
+        {
+            case MouseButton.Left: state = leftMouse_; break;
+            case MouseButton.Middle: state = middleMouse_; break;
+            case MouseButton.Right: state = rightMouse_; break;
+        }
+        switch (cmpState)
+        {
+            case ButtonState.Down: return true == state; break;
+            case ButtonState.Up: return false == state; break;
+        }
+        assert(false);
+        return false;
+    }
 
     protected:
     Key lastKey_ = Key.None;
@@ -226,6 +322,10 @@ abstract class IMUI
     //later to lastKey_ one by one
     Key[] cachedKeys_;
     Point mousePosition_ = Point(0.0, 0.0);
+    //A value of true means it is down
+    bool leftMouse_;
+    bool middleMouse_;
+    bool rightMouse_;
 }
 
 version (UnitTest)

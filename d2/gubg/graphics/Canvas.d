@@ -258,6 +258,27 @@ class SDLCanvas: ICanvas
                         mousePosition_.y = height() - event.motion.y - 1;
                         somethingChanged = true;
                         break;
+                    case SDL_MOUSEBUTTONDOWN:
+                        somethingChanged = true;
+                        switch (event.button.button)
+                        {
+                            case SDL_BUTTON_LEFT: leftMouse_ = true; break;
+                            case SDL_BUTTON_MIDDLE: middleMouse_ = true; break;
+                            case SDL_BUTTON_RIGHT: rightMouse_ = true; break;
+                            default: somethingChanged = false; break;
+                        }
+                        break;
+                    case SDL_MOUSEBUTTONUP:
+                        somethingChanged = true;
+                        switch (event.button.button)
+                        {
+                            case SDL_BUTTON_LEFT: leftMouse_ = false; break;
+                            case SDL_BUTTON_MIDDLE: middleMouse_ = false; break;
+                            case SDL_BUTTON_RIGHT: rightMouse_ = false; break;
+                            default: somethingChanged = false; break;
+                        }
+                        break;
+
                     default: break;
                 }
             }

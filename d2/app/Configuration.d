@@ -63,8 +63,8 @@ class Configuration
         if (!isValid()) return false;
         try
         {
-        foreach (value; lookup(json_, key))
-            values ~= value;
+            foreach (value; lookup(json_, key))
+                values ~= value;
         } catch (JSONException e)
         {
             return false;

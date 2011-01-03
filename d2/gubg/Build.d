@@ -31,6 +31,8 @@ class Compile
             format("-I\"%s\"", includePath);
         foreach (v; versions_)
             format("-version=%s", v);
+        foreach (option; options_)
+            format(option);
 
         //Execute the command
         if (verbose)
@@ -48,6 +50,10 @@ class Compile
     {
         versions_ ~= v;
     }
+    void addOption(string option)
+    {
+        options_ ~= option;
+    }
     string objectFilepath()
     {
         if (objectFilepath_)
@@ -60,6 +66,7 @@ class Compile
     string objectFilepath_;
     string[] includePaths_;
     string[] versions_;
+    string[] options_;
 }
 
 class Link
