@@ -4,6 +4,7 @@ import gubg.Tree;
 import gubg.Format;
 import std.file;
 import std.path;
+import std.array;
 
 class FSTree
 {
@@ -22,6 +23,7 @@ class FSTree
     string name;
 }
 
+enum ExpandStrat {Shallow, Recursive};
 class Folder: FSTree
 {
     //Insert the node functionality
@@ -31,6 +33,31 @@ class Folder: FSTree
     {
         name = path;
         parent = folder;
+    }
+
+    void expand(ICreator creator, ExpandStrat et = ExpandStrat.Shallow)
+    {
+        if (!childs.empty)
+            return;
+        foreach (string subpath; dirEntries(path, SpanMode.shallow))
+        {
+            FSTree child;
+            if (isdir(subpath))
+            {
+                Folder folder = creator.createFolder(subpath);
+                if (ExpandStrat.Recursive == et)
+                    folder.expand(creator, et);
+                child = folder;
+            }
+            else if (isfile(subpath))
+                child = creator.createFile(subpath);
+
+            if (child)
+            {
+                child.parent = this;
+                childs ~= child;
+            }
+        }
     }
     
     //FSTree interface
@@ -70,17 +97,7 @@ FSTree createFSTreeFromPath(string path, ICreator creator)
     {
         auto folder = creator.createFolder(path);
         if (folder)
-        {
-            foreach (string subpath; dirEntries(path, SpanMode.shallow))
-            {
-                FSTree tree = createFSTreeFromPath(subpath, creator);
-                if (tree)
-                {
-                    tree.parent = folder;
-                    folder.childs ~= tree;
-                }
-            }
-        }
+            folder.expand(creator, ExpandStrat.Recursive);
         return folder;
     } else if (isfile(path))
         return creator.createFile(path);
@@ -89,7 +106,7 @@ FSTree createFSTreeFromPath(string path, ICreator creator)
     return null;
 }
 
-version (FSTree)
+version (UnitTest)
 {
     import std.stdio;
     import std.path;

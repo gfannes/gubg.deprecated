@@ -53,12 +53,12 @@ class Configuration
         return true;
     }
 
-    bool get(string key, out string value)
+    bool get(out string value, string key)
     {
         if (!isValid()) return false;
         return gubg.JSON.get(json_, key, value);
     }
-    bool get(string key, out string[] values)
+    bool get(out string[] values, string key)
     {
         if (!isValid()) return false;
         try

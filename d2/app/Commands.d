@@ -148,7 +148,7 @@ class ExeCommand: ArgsCommand
         // * Extend this set with the externalTrees
         auto config = new Configuration("gb.json", dirname(filepath), true);
         string[] externalTrees;
-        config.get("externalTrees", externalTrees);
+        config.get(externalTrees, "externalTrees");
         foreach(ref externalTree; externalTrees)
         {
             externalTree = expandTilde(externalTree);
@@ -159,7 +159,7 @@ class ExeCommand: ArgsCommand
         collection.prune(filepath, includePaths);
         if (Runtime.verbose)
         {
-            writeln("I will build these files");
+            writeln("I will build these files:");
             foreach (gubg.FSTree.File file; collection)
                 writefln("\t%s", file.path);
         }
@@ -171,12 +171,13 @@ class ExeCommand: ArgsCommand
         uint nrCompilations = 0;
         // * Collect the compilation options, if any
         string[] compilationOptions;
-        config.get("compilation", compilationOptions);
+        config.get(compilationOptions, "compilation");
         foreach (gubg.FSTree.File file; collection)
         {
             //The source file that needs to be compiled
             string sourceFilepath = file.path;
-            writeln(sourceFilepath);
+            if (Runtime.verbose)
+                writefln("Processing %s", sourceFilepath);
 
             //Collect all information about the source file
             auto fi = FileInfo(addExt(sourceFilepath, gubg.Build.objectExtension()));
@@ -235,7 +236,7 @@ class ExeCommand: ArgsCommand
             foreach (objectFilepath; fi.get!(string[])("objectFilepath"))
                 l.addObjectFilepath(objectFilepath);
             string[] libraries;
-            if (config.get("libraries", libraries))
+            if (config.get(libraries, "libraries"))
             {
                 foreach (library; libraries)
                     l.addLibrary(library);
