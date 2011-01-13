@@ -7,10 +7,10 @@ gubgSources = %w[Tree FSTree JSON Build Format FileCache OnlyOnce OptionParser p
 objectExtension = ("Linux" == operatingSystem ? "o" : "obj")
 
 objectFiles = []
-[localSources, gubgSources].zip(["", "../gubg/"]).each do |sources, dir|
+[localSources, gubgSources].zip(["", "../../gubg/"]).each do |sources, dir|
     sources.each do |source|
         objectFiles << "objects/#{source}.#{objectExtension}"
-        cmd = "dmd -c -of#{objectFiles.last} #{dir}#{source}.d -I.."
+        cmd = "dmd -c -of#{objectFiles.last} #{dir}#{source}.d -I../.."
         puts cmd
         system(cmd)
     end
