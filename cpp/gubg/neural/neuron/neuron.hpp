@@ -201,7 +201,7 @@ namespace gubg
 {
     namespace Serialize
     {
-	SetType(Neuron<eNeuronTanh>,eTypeIDNeuronTanh);
+        SetType(Neuron<eNeuronTanh>,eTypeIDNeuronTanh);
     }
 }
 

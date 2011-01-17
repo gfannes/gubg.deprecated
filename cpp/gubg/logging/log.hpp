@@ -12,86 +12,86 @@ namespace gubg
     class Log
     {
     public:
-	class Output
-	{
-	public:
-	    class Primitive
-	    {
-	    public:
-		virtual ~Primitive(){};
+        class Output
+        {
+        public:
+            class Primitive
+            {
+            public:
+                virtual ~Primitive(){};
 
-		virtual void write(const std::string &str) = 0;
-	    };
+                virtual void write(const std::string &str) = 0;
+            };
 
-	    Output(Primitive *primitive);
-	    virtual ~Output();
+            Output(Primitive *primitive);
+            virtual ~Output();
 
-	    virtual void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag) = 0;
-	    virtual void closeLevel(const std::string &tag) = 0;
-	    virtual void newLine(const std::string &fileName, unsigned int lineNr) = 0;
-	    virtual void closeLine() = 0;
-	    virtual Output &operator<<(const std::string &str) = 0;
+            virtual void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag) = 0;
+            virtual void closeLevel(const std::string &tag) = 0;
+            virtual void newLine(const std::string &fileName, unsigned int lineNr) = 0;
+            virtual void closeLine() = 0;
+            virtual Output &operator<<(const std::string &str) = 0;
 
-	    Primitive *swapPrimitive(Primitive *primitive);
+            Primitive *swapPrimitive(Primitive *primitive);
 
-	protected:
-	    void write(const std::string &str);
+        protected:
+            void write(const std::string &str);
 
-	private:
-	    // Disallowed
-	    Output();
-	    Output(const Output &output){};
-	    Output &operator=(const Output &output){};
+        private:
+            // Disallowed
+            Output();
+            Output(const Output &output){};
+            Output &operator=(const Output &output){};
 
-	    Primitive *_primitive;
-	};
+            Primitive *_primitive;
+        };
 
-	class Scope
-	{
-	public:
-	    Scope(const std::string &fileName, unsigned int lineNr, const std::string &msg);
-	    ~Scope();
-	    Scope &operator()(const std::string &fileName, unsigned int lineNr, const std::string &msg);
-	    Scope &operator<<(const std::string &msg);
-	    Scope &operator<<(int value);
-	    Scope &operator<<(unsigned int value);
-	    Scope &operator<<(void *ptr);
+        class Scope
+        {
+        public:
+            Scope(const std::string &fileName, unsigned int lineNr, const std::string &msg);
+            ~Scope();
+            Scope &operator()(const std::string &fileName, unsigned int lineNr, const std::string &msg);
+            Scope &operator<<(const std::string &msg);
+            Scope &operator<<(int value);
+            Scope &operator<<(unsigned int value);
+            Scope &operator<<(void *ptr);
 
-	private:
-	    std::string _msg;
-	    bool _lineIsOpen;
-	};
+        private:
+            std::string _msg;
+            bool _lineIsOpen;
+        };
 
-	virtual ~Log();
+        virtual ~Log();
 
-	static Log &instance();
+        static Log &instance();
 
-	enum LogFormat
-	{
-	    XML,
-	    Tree,
-	};
-	enum LogSink
-	{
-	    COut,
-	    File,
-	};
-	static void add(LogFormat logFormat, LogSink logSink, const std::string &fileName = "");
+        enum LogFormat
+        {
+            XML,
+            Tree,
+        };
+        enum LogSink
+        {
+            COut,
+            File,
+        };
+        static void add(LogFormat logFormat, LogSink logSink, const std::string &fileName = "");
 
-	void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag);
-	void closeLevel(const std::string &tag);
-	void newLine(const std::string &fileName, unsigned int lineNr);
-	void closeLine();
-	Log &operator<<(const std::string &str);
+        void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag);
+        void closeLevel(const std::string &tag);
+        void newLine(const std::string &fileName, unsigned int lineNr);
+        void closeLine();
+        Log &operator<<(const std::string &str);
 
     private:
-	// Singleton: disallow constructor
-	Log();
-	// Disallow copying
-	Log(const Log& log);
-	Log &operator=(const Log& log);
+        // Singleton: disallow constructor
+        Log();
+        // Disallow copying
+        Log(const Log& log);
+        Log &operator=(const Log& log);
 
-	std::vector<Output*> _outputs;
+        std::vector<Output*> _outputs;
     };
 };
 

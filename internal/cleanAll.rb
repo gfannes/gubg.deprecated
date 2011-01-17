@@ -12,10 +12,12 @@ Dir.each('./') do |dir,fn|
   when /^a\.out$/
   when /^gmon\.out$/
   when /^execTest/
+  when /\.unit$/
+  when /\.map$/
   when /((\.cpp)|(\.hpp))$/
-    fileName = File.expand_path(fn,dir)
-    str=String.load(fileName)
-    str.gsub("\t",tabReplacement).export(fileName)
+#    fileName = File.expand_path(fn,dir)
+#    str=String.load(fileName)
+#    str.gsub("\t",tabReplacement).export(fileName)
     fn = nil
   else
     fn=nil
