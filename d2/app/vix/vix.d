@@ -6,16 +6,19 @@ import gubg.graphics.IMUI;
 import gubg.Format;
 import gubg.OnlyOnce;
 import gubg.FSTree;
+import gubg.Layout;
 import core.thread;
 
 import gubg.Profiler;
 import gubg.Timer;
 import std.stdio;
 
+const width = 1912;
+const height = 1050;
 int main(string[] args)
 {
     auto widgets = new Widgets;
-    auto canvas = new SDLCanvas(1024, 768);
+    auto canvas = new SDLCanvas(width, height);
     auto fastProcessing = FewTimes(10);
 
     class Creator: ICreator
@@ -31,7 +34,7 @@ int main(string[] args)
     }
     auto creator = new Creator;
     Folder currentFolder = creator.createFolder("/");
-    currentFolder.expand(creator);
+    currentFolder.expand(creator, ExpandStrat.Shallow);
 
     //Profiling variables
     auto p = new Profiler("Mainloop");
@@ -57,28 +60,42 @@ int main(string[] args)
                 }
             }
 
-            const NrRows = 10;
-            const NrCols = 40;
-            foreach (row; 0 .. NrRows)
+            auto box = new Box(TwoPoint(0, 0, width, height));
+            const MaxNrEntries = 40;
+            box.split(MaxNrEntries, Direction.TopDown);
+            foreach (uint ix, ref sb; box)
             {
-                foreach (col; 0 .. NrCols)
+                if (ix >= currentFolder.childs.length+1)
+                    break;
+                FSTree child;
+                string label;
+                if (0 == ix)
                 {
-                    task.change("Getting widgets");
-                    auto w = widgets.get(row*NrCols+col);
-                    task.change("Process");
-                    switch (w.process)
-                    {
-                        case WidgetState.Empty:
-                            auto dimensions = TwoPoint.centered((cast(real)canvas.width/NrRows)*(0.5+row),
-                                    (cast(real)canvas.height/NrCols)*(0.5+col),
-                                    0.8*cast(real)canvas.width/NrRows,
-                                    0.8*cast(real)canvas.height/NrCols);
-                            w.set(new Button(dimensions, Format.immediate("agl|(%s, %s)", row, col), Alignment.Left, canvas));
-                            break;
-                        default:
-                            break;
-                    }
-                    task.change("Drawing");
+                    child = currentFolder.parent;
+                    label = "..";
+                }
+                else
+                {
+                    child = currentFolder.childs[ix-1];
+                    label = child.path;
+                }
+                auto w = widgets.get(ix);
+                switch (w.process)
+                {
+                    case WidgetState.Empty:
+                        w.set(new Button(sb.area, label, Alignment.Left, canvas));
+                        break;
+                    case WidgetState.Activated:
+                        Folder folder = cast(gubg.FSTree.Folder)child;
+                        if (folder)
+                        {
+                            currentFolder = folder;
+                            currentFolder.expand(creator, ExpandStrat.Shallow);
+                        }
+                        break;
+                    default:
+                        w.get!(Button).setLabel(label);
+                        break;
                 }
             }
         }

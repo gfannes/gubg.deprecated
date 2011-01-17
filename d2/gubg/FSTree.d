@@ -5,6 +5,7 @@ import gubg.Format;
 import std.file;
 import std.path;
 import std.array;
+import std.stdio;
 
 class FSTree
 {
@@ -42,15 +43,19 @@ class Folder: FSTree
         foreach (string subpath; dirEntries(path, SpanMode.shallow))
         {
             FSTree child;
-            if (isdir(subpath))
+            try
             {
-                Folder folder = creator.createFolder(subpath);
-                if (ExpandStrat.Recursive == et)
-                    folder.expand(creator, et);
-                child = folder;
+                if (isdir(subpath))
+                {
+                    Folder folder = creator.createFolder(subpath);
+                    if (ExpandStrat.Recursive == et)
+                        folder.expand(creator, et);
+                    child = folder;
+                }
+                else if (isfile(subpath))
+                    child = creator.createFile(subpath);
             }
-            else if (isfile(subpath))
-                child = creator.createFile(subpath);
+            catch (std.file.FileException){}
 
             if (child)
             {

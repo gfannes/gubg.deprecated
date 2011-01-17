@@ -30,6 +30,11 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         canvas_ = canvas;
         super(WidgetState.Emerging);
     }
+    Button setLabel(string label)
+    {
+        label_ = label;
+        return this;
+    }
     //StateMachine interface
     bool processEvent(bool)
     {
@@ -44,14 +49,17 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
                                        if (canvas_.imui.isMouseInside(dimensions_))
                                        {
                                            if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Down))
-                                               changeState(WidgetState.Activated);
+                                               changeState(WidgetState.Activating);
                                        }
                                        else
                                            changeState(WidgetState.Idle);
                                        break;
-            case WidgetState.Activated:
+            case WidgetState.Activating:
                                        if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Up))
-                                           changeState(WidgetState.Idle);
+                                           changeState(WidgetState.Activated);
+                                       break;
+            case WidgetState.Activated:
+                                       changeState(WidgetState.Idle);
                                        break;
         }
         return true;
@@ -63,8 +71,9 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         Style s;
         switch (state)
         {
-            case WidgetState.Idle: s.fill(Color.red); break;
-            case WidgetState.Highlighted: s.fill(Color.yellow); break;
+            case WidgetState.Idle: break;
+            case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
+            case WidgetState.Activating: s.fill(Color.yellow); break;
             case WidgetState.Activated: s.fill(Color.green); break;
         }
         canvas_.drawRectangle(dimensions_, s);
@@ -72,7 +81,7 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         if (!label_.empty)
         {
             Style ts;
-            ts.fill(Color.black).stroke(Color.black).width(2.0);
+            ts.fill(Color.black).stroke(Color.white).width(2.0);
             HAlign ha;
             switch (alignment_)
             {
@@ -83,7 +92,7 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
             auto lw = dimensions_.width - (dimensions_.height-lh);
             canvas_.drawText(label_, TwoPoint.centered(dimensions_.centerX, dimensions_.centerY, lw, lh), VAlign.Center, ha, ts);
         }
-        return WidgetState.Emerging;
+        return state;
     }
     private:
     TwoPoint dimensions_;
@@ -116,6 +125,7 @@ class Widgets
         this(uint id)
         {}
         void set(IWidget widget){widget_ = widget;}
+        T get(T)(){return cast(T)widget_;}
         //IWidget interface
         WidgetState process()
         {
