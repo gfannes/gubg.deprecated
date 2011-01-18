@@ -41,6 +41,67 @@ class Box
                 break;
         }
     }
+    void split(real[] fracs, in Direction direction)
+    {
+        if (!subAreas_.empty())
+            throw new Exception("There are already sub areas present");
+        //Compute the lengths of the different parts
+        auto parts = fracs.dup;
+        {
+            real len;
+            switch (direction)
+            {
+                case Direction.BottomUp:
+                case Direction.TopDown:
+                    len = area.height;
+                    break;
+                case Direction.LeftToRight:
+                case Direction.RightToLeft:
+                    len = area.width;
+                    break;
+            }
+            foreach (ix, ref part; parts)
+                part = fracs[ix]*len;
+        }
+
+        subAreas_.length = fracs.length;
+        real cumulative = 0.0;
+        switch (direction)
+        {
+            case Direction.BottomUp:
+                foreach (ix, ref sa; subAreas_)
+                {
+                    auto newCumul = cumulative+parts[ix];
+                    sa = new Box(TwoPoint(area.p0.x, area.p0.y+cumulative, area.p1.x, area.p0.y+newCumul));
+                    cumulative = newCumul;
+                }
+                break;
+            case Direction.TopDown:
+                foreach (ix, ref sa; subAreas_)
+                {
+                    auto newCumul = cumulative+parts[ix];
+                    sa = new Box(TwoPoint(area.p0.x, area.p1.y-newCumul, area.p1.x, area.p1.y-cumulative));
+                    cumulative = newCumul;
+                }
+                break;
+            case Direction.LeftToRight:
+                foreach (ix, ref sa; subAreas_)
+                {
+                    auto newCumul = cumulative+parts[ix];
+                    sa = new Box(TwoPoint(area.p0.x+cumulative, area.p0.y, area.p0.x+newCumul, area.p1.y));
+                    cumulative = newCumul;
+                }
+                break;
+            case Direction.RightToLeft:
+                foreach (ix, ref sa; subAreas_)
+                {
+                    auto newCumul = cumulative+parts[ix];
+                    sa = new Box(TwoPoint(area.p1.x-newCumul, area.p0.y, area.p1.x-cumulative, area.p1.y));
+                    cumulative = newCumul;
+                }
+                break;
+        }
+    }
     int opApply(int delegate(ref Box) dg)
     {
         foreach (ref area; subAreas_)
@@ -59,6 +120,10 @@ class Box
         }
         return 0;
     }
+    Box opIndex(uint ix)
+    {
+        return subAreas_[ix];
+    }
 
     private:
     Box[] subAreas_;
@@ -73,11 +138,22 @@ version (UnitTest)
 
         foreach (direction; directions)
         {
-            auto box = new Box(TwoPoint.centered(0, 0, 1, 1));
-            box.split(4, direction);
-            foreach (sb; box)
-                writefln("%s", sb.area);
-            writeln("");
+            {
+                scope box = new Box(TwoPoint.centered(0, 0, 1, 1));
+                writefln("split(uint) for %s", box.area);
+                box.split(4, direction);
+                foreach (sb; box)
+                    writefln("%s", sb.area);
+                writeln("");
+            }
+            {
+                scope box = new Box(TwoPoint.centered(0, 0, 1, 1));
+                writefln("split(real[]) for %s", box.area);
+                box.split([0.1, 0.2, 0.3, 0.4], direction);
+                foreach (sb; box)
+                    writefln("%s", sb.area);
+                writeln("");
+            }
         }
     }
 }

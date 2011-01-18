@@ -102,7 +102,7 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
 }
 class Widgets
 {
-    WidgetProxy get(uint extra)
+    WidgetProxy get(uint extra = 0)
     {
         void *callerLocation;
         asm

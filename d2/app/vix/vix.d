@@ -25,6 +25,7 @@ int main(string[] args)
     {
         Folder createFolder(string path)
         {
+            writefln("createFolder: %s", path);
             return new Folder(path);
         }
         gubg.FSTree.File createFile(string path)
@@ -61,41 +62,72 @@ int main(string[] args)
             }
 
             auto box = new Box(TwoPoint(0, 0, width, height));
-            const MaxNrEntries = 40;
-            box.split(MaxNrEntries, Direction.TopDown);
-            foreach (uint ix, ref sb; box)
+            box.split([0.05, 0.95], Direction.TopDown);
+            //The folder bar
             {
-                if (ix >= currentFolder.childs.length+1)
-                    break;
-                FSTree child;
-                string label;
-                if (0 == ix)
-                {
-                    child = currentFolder.parent;
-                    label = "..";
-                }
-                else
-                {
-                    child = currentFolder.childs[ix-1];
-                    label = child.path;
-                }
-                auto w = widgets.get(ix);
+                auto folderBar = box[0];
+                auto w = widgets.get();
                 switch (w.process)
                 {
                     case WidgetState.Empty:
-                        w.set(new Button(sb.area, label, Alignment.Left, canvas));
+                        w.set(new Button(folderBar.area, currentFolder.path, Alignment.Center, canvas));
                         break;
                     case WidgetState.Activated:
-                        Folder folder = cast(gubg.FSTree.Folder)child;
-                        if (folder)
-                        {
-                            currentFolder = folder;
-                            currentFolder.expand(creator, ExpandStrat.Shallow);
-                        }
+                        //What to do here?
                         break;
                     default:
-                        w.get!(Button).setLabel(label);
+                        w.get!(Button).setLabel(currentFolder.path);
                         break;
+                }
+            }
+            box[1].split([0.02, 0.98], Direction.LeftToRight);
+            //The back button
+            {
+                auto back = box[1][0];
+                auto w = widgets.get();
+                switch (w.process)
+                {
+                    case WidgetState.Empty:
+                        w.set(new Button(back.area, "", Alignment.Left, canvas));
+                        break;
+                    case WidgetState.Activated:
+                        if (currentFolder.parent)
+                            currentFolder = currentFolder.parent;
+                        currentFolder.expand(creator, ExpandStrat.Shallow);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            //The file and folder buttons
+            {
+                const MaxNrEntries = 40;
+                auto buttons = box[1][1];
+                buttons.split(MaxNrEntries, Direction.TopDown);
+                foreach (uint ix, ref sb; buttons)
+                {
+                    if (ix >= currentFolder.childs.length)
+                        break;
+                    FSTree child = currentFolder.childs[ix];
+                    string label = child.name;
+                    auto w = widgets.get(ix);
+                    switch (w.process)
+                    {
+                        case WidgetState.Empty:
+                            w.set(new Button(sb.area, label, Alignment.Left, canvas));
+                            break;
+                        case WidgetState.Activated:
+                            Folder folder = cast(gubg.FSTree.Folder)child;
+                            if (folder)
+                            {
+                                currentFolder = folder;
+                                currentFolder.expand(creator, ExpandStrat.Shallow);
+                            }
+                            break;
+                        default:
+                            w.get!(Button).setLabel(label);
+                            break;
+                    }
                 }
             }
         }

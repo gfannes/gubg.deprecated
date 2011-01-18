@@ -5,7 +5,6 @@ import gubg.Format;
 import std.file;
 import std.path;
 import std.array;
-import std.stdio;
 
 class FSTree
 {
@@ -32,7 +31,9 @@ class Folder: FSTree
 
     this(string path, Folder folder = null)
     {
-        name = path;
+        name = basename(path);
+        if (name.empty)
+            name = path;
         parent = folder;
     }
 
@@ -79,7 +80,7 @@ class File: FSTree
 
     this(string lname, Folder folder = null)
     {
-        name = lname;
+        name = basename(lname);
         parent = folder;
     }
 
