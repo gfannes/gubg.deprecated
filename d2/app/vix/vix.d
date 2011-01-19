@@ -8,6 +8,7 @@ import gubg.OnlyOnce;
 import gubg.FSTree;
 import gubg.Layout;
 import core.thread;
+import std.algorithm;
 
 import gubg.Profiler;
 import gubg.Timer;
@@ -70,7 +71,7 @@ int main(string[] args)
                 switch (w.process)
                 {
                     case WidgetState.Empty:
-                        w.set(new Button(folderBar.area, currentFolder.path, Alignment.Center, canvas));
+                        w.set(new Button(folderBar.area, currentFolder.path, Alignment.Left, canvas));
                         break;
                     case WidgetState.Activated:
                         //What to do here?
@@ -80,10 +81,11 @@ int main(string[] args)
                         break;
                 }
             }
-            box[1].split([0.02, 0.98], Direction.LeftToRight);
+            auto rest = box[1];
+            rest.split([0.02, 0.98], Direction.LeftToRight);
             //The back button
             {
-                auto back = box[1][0];
+                auto back = rest[0];
                 auto w = widgets.get();
                 switch (w.process)
                 {
@@ -101,14 +103,46 @@ int main(string[] args)
             }
             //The file and folder buttons
             {
+                //Filter and sort the childs
+                FSTree[] childs;
+                {
+                    foreach (child; currentFolder.childs)
+                    {
+                        if (child.name[0] != '.')
+                            childs ~= child;
+                    }
+                    bool localCmp(FSTree lhs, FSTree rhs)
+                    {
+                        {
+                            Folder l = cast(Folder)lhs;
+                            if (l)
+                            {
+                                Folder r = cast(Folder)rhs;
+                                if (r is null)
+                                    return true;
+                            }
+                        }
+                        {
+                            gubg.FSTree.File l = cast(gubg.FSTree.File)lhs;
+                            if (l)
+                            {
+                                Folder r = cast(Folder)rhs;
+                                if (r)
+                                    return false;
+                            }
+                        }
+                        return lhs.name < rhs.name;
+                    }
+                    sort!(localCmp)(childs);
+                }
                 const MaxNrEntries = 40;
-                auto buttons = box[1][1];
+                auto buttons = rest[1];
                 buttons.split(MaxNrEntries, Direction.TopDown);
                 foreach (uint ix, ref sb; buttons)
                 {
-                    if (ix >= currentFolder.childs.length)
+                    if (ix >= childs.length)
                         break;
-                    FSTree child = currentFolder.childs[ix];
+                    FSTree child = childs[ix];
                     string label = child.name;
                     auto w = widgets.get(ix);
                     switch (w.process)
