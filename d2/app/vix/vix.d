@@ -57,9 +57,7 @@ int main(string[] args)
                     quit = true;
                 auto key = canvas.imui.getLastKey();
                 if (Key.None != key)
-                {
                     writefln("Key: %s", convertToChar(key));
-                }
             }
 
             auto box = new Box(TwoPoint(0, 0, width, height));
@@ -82,10 +80,12 @@ int main(string[] args)
                 }
             }
             auto rest = box[1];
-            rest.split([0.02, 0.98], Direction.LeftToRight);
+            rest.split([0.02, 0.97, 0.01], Direction.LeftToRight);
+            auto back = rest[0];
+            auto buttons = rest[1];
+            auto scroller = rest[2];
             //The back button
             {
-                auto back = rest[0];
                 auto w = widgets.get();
                 switch (w.process)
                 {
@@ -101,42 +101,41 @@ int main(string[] args)
                         break;
                 }
             }
-            //The file and folder buttons
+            //The file and folder buttons with scrollbar
             {
                 //Filter and sort the childs
                 FSTree[] childs;
                 {
+                    //Append only the non-hidden files and folders
                     foreach (child; currentFolder.childs)
-                    {
                         if (child.name[0] != '.')
                             childs ~= child;
-                    }
+                    //Sort the childs using localCmp as criterion
                     bool localCmp(FSTree lhs, FSTree rhs)
                     {
-                        {
-                            Folder l = cast(Folder)lhs;
-                            if (l)
-                            {
-                                Folder r = cast(Folder)rhs;
-                                if (r is null)
-                                    return true;
-                            }
-                        }
-                        {
-                            gubg.FSTree.File l = cast(gubg.FSTree.File)lhs;
-                            if (l)
-                            {
-                                Folder r = cast(Folder)rhs;
-                                if (r)
-                                    return false;
-                            }
-                        }
+                        //First Folders, then Files
+                        if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
+                            return true;
+                        if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
+                            return false;
+                        //If the type results in a tie, sort alphabetically
                         return lhs.name < rhs.name;
                     }
                     sort!(localCmp)(childs);
                 }
+                //Scrollbar
+                {
+                    auto w = widgets.get();
+                    switch (w.process)
+                    {
+                        case WidgetState.Empty:
+                            w.set(new Scroller(scroller.area, buttons.area, canvas));
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 const MaxNrEntries = 40;
-                auto buttons = rest[1];
                 buttons.split(MaxNrEntries, Direction.TopDown);
                 foreach (uint ix, ref sb; buttons)
                 {

@@ -5,6 +5,7 @@ import gubg.Point;
 import gubg.BitMagic;
 import gubg.StateMachine;
 import gubg.Timer;
+import gubg.Math;
 import derelict.sdl.sdl;
 public import std.range;
 import core.thread;
@@ -94,12 +95,76 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         }
         return state;
     }
+
     private:
     TwoPoint dimensions_;
     string label_;
     Alignment alignment_;
     SDLCanvas canvas_;
 }
+class Scroller: StateMachine!(bool, WidgetState),  IWidget
+{
+    this (TwoPoint displayArea, TwoPoint listenArea, SDLCanvas canvas)
+    {
+        displayArea_ = displayArea;
+        listenArea_ = listenArea;
+        setRange([0.0, 1.0]);
+        setBar([0.3, 0.5]);
+        canvas_ = canvas;
+        super(WidgetState.Emerging);
+    }
+    Scroller setRange(real[2] range)
+    {
+        range_[] = range[];
+        //Compute the linear transformation that transforms range_ into displayArea_.p[10].y
+        computeLinTrans!(real, real, real)(linTrans_, range_, [displayArea_.p1.y, displayArea_.p0.y]);
+        return this;
+    }
+    Scroller setRange(uint nr)
+    {
+        return setRange([0.0, nr]);
+    }
+    Scroller setBar(real[2] bar)
+    {
+        bar_[] = bar;
+        return this;
+    }
+    Scroller setBar(uint ix)
+    {
+        return setBar([cast(real)ix, ix+1]);
+    }
+    //StateMachine interface
+    bool processEvent(bool)
+    {
+        return false;
+    }
+    //IWidget interface
+    WidgetState process()
+    {
+        processEvent(false);
+        Style s;
+        s.fill(Color.purple);
+//        switch (state)
+//        {
+//            case WidgetState.Idle: break;
+//            case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
+//            case WidgetState.Activating: s.fill(Color.yellow); break;
+//            case WidgetState.Activated: s.fill(Color.green); break;
+//        }
+        
+        canvas_.drawRectangle(TwoPoint(displayArea_.p0.x, transformLinTrans(bar_[0], linTrans_), displayArea_.p1.x, transformLinTrans(bar_[1], linTrans_)), s);
+        return state;
+    }
+
+    private:
+    TwoPoint displayArea_;
+    TwoPoint listenArea_;
+    real[2] linTrans_;
+    real[2] range_;
+    real[2] bar_;
+    SDLCanvas canvas_;
+}
+
 class Widgets
 {
     WidgetProxy get(uint extra = 0)
@@ -344,11 +409,10 @@ version (UnitTest)
     void main()
     {
         auto canvas = new SDLCanvas(640, 480);
-        auto imui = new SDLIMUI(canvas);
         int i = 0;
-        while (!imui.escapeIsPressed)
+        while (!canvas.imui.escapeIsPressed)
         {
-            imui.processInput();
+            canvas.imui.processInput();
             ++i;
             if (i > 100)
                 return;
