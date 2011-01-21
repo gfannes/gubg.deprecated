@@ -262,9 +262,11 @@ class SDLCanvas: ICanvas
                         somethingChanged = true;
                         switch (event.button.button)
                         {
-                            case SDL_BUTTON_LEFT: leftMouse_ = true; break;
-                            case SDL_BUTTON_MIDDLE: middleMouse_ = true; break;
-                            case SDL_BUTTON_RIGHT: rightMouse_ = true; break;
+                            case SDL_BUTTON_LEFT: leftMouse_.setUp(false); break;
+                            case SDL_BUTTON_MIDDLE: middleMouse_.setUp(false); break;
+                            case SDL_BUTTON_RIGHT: rightMouse_.setUp(false); break;
+                            case SDL_BUTTON_WHEELUP: wheelUp_.setUp(false); break;
+                            case SDL_BUTTON_WHEELDOWN: wheelDown_.setUp(false); break;
                             default: somethingChanged = false; break;
                         }
                         break;
@@ -272,9 +274,11 @@ class SDLCanvas: ICanvas
                         somethingChanged = true;
                         switch (event.button.button)
                         {
-                            case SDL_BUTTON_LEFT: leftMouse_ = false; break;
-                            case SDL_BUTTON_MIDDLE: middleMouse_ = false; break;
-                            case SDL_BUTTON_RIGHT: rightMouse_ = false; break;
+                            case SDL_BUTTON_LEFT: leftMouse_.setUp(true); break;
+                            case SDL_BUTTON_MIDDLE: middleMouse_.setUp(true); break;
+                            case SDL_BUTTON_RIGHT: rightMouse_.setUp(true); break;
+                            case SDL_BUTTON_WHEELUP: wheelUp_.setUp(true); break;
+                            case SDL_BUTTON_WHEELDOWN: wheelDown_.setUp(true); break;
                             default: somethingChanged = false; break;
                         }
                         break;

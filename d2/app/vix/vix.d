@@ -16,6 +16,9 @@ import std.stdio;
 
 const width = 1912;
 const height = 1050;
+//const width = 640;
+//const height = 480;
+bool verbose__ = false;
 int main(string[] args)
 {
     auto widgets = new Widgets;
@@ -131,6 +134,22 @@ int main(string[] args)
                         case WidgetState.Empty:
                             w.set(new Scroller(scroller.area, buttons.area, canvas));
                             break;
+                        case WidgetState.ScrollDown:
+                            real[2] bar;
+                            auto sb = w.get!(Scroller);
+                            sb.getBar(bar);
+                            bar[0] += 0.1;
+                            bar[1] += 0.1;
+                            sb.setBar(bar);
+                            break;
+                        case WidgetState.ScrollUp:
+                            real[2] bar;
+                            auto sb = w.get!(Scroller);
+                            sb.getBar(bar);
+                            bar[0] -= 0.1;
+                            bar[1] -= 0.1;
+                            sb.setBar(bar);
+                            break;
                         default:
                             break;
                     }
@@ -176,8 +195,11 @@ int main(string[] args)
         const NrSeconds = 1.0;
         if (timer.difference > NrSeconds)
         {
-            writeln(p.toString);
-            writefln("FPS: %s", cast(real)nrFrames/NrSeconds);
+            if (verbose__)
+            {
+                writeln(p.toString);
+                writefln("FPS: %s", cast(real)nrFrames/NrSeconds);
+            }
             timer.reset;
             p.reset();
             nrFrames = 0;

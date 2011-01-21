@@ -12,7 +12,7 @@ import core.thread;
 
 import std.stdio;
 
-enum WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated};
+enum WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated, ScrollDown, ScrollUp};
 interface IWidget
 {
     //Processes the widget (draw etc. if any is present)
@@ -43,20 +43,20 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         {
             case WidgetState.Emerging: changeState(WidgetState.Idle); break;
             case WidgetState.Idle:
-                                       if (canvas_.imui.isMouseInside(dimensions_) && canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Up))
+                                       if (canvas_.imui.isMouseInside(dimensions_) && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
                                            changeState(WidgetState.Highlighted);
                                        break;
             case WidgetState.Highlighted:
                                        if (canvas_.imui.isMouseInside(dimensions_))
                                        {
-                                           if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Down))
+                                           if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsDown))
                                                changeState(WidgetState.Activating);
                                        }
                                        else
                                            changeState(WidgetState.Idle);
                                        break;
             case WidgetState.Activating:
-                                       if (canvas_.imui.isMouseButton(MouseButton.Left, ButtonState.Up))
+                                       if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
                                            changeState(WidgetState.Activated);
                                        break;
             case WidgetState.Activated:
@@ -133,10 +133,41 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     {
         return setBar([cast(real)ix, ix+1]);
     }
+    void getBar(ref real[2] bar)
+    {
+        bar[] = bar_[];
+    }
+    T getBarCenter(T)()
+        if(is(typeof(T): real))
+    {
+        return 0.5*(bar_[0] + bar_[1]);
+    }
+    T getBarCenter(T)()
+        if(is(typeof(T): uint))
+    {
+        return bar_[0];
+    }
     //StateMachine interface
     bool processEvent(bool)
     {
-        return false;
+        switch (state)
+        {
+            case WidgetState.Emerging: changeState(WidgetState.Idle); break;
+            case WidgetState.Idle:
+                                       if ((canvas_.imui.isMouseInside(listenArea_) || canvas_.imui.isMouseInside(displayArea_)))
+                                       {
+                                           if (canvas_.imui.checkMouseButton(MouseButton.WheelDown, ButtonState.WentDown))
+                                               changeState(WidgetState.ScrollDown);
+                                           else if (canvas_.imui.checkMouseButton(MouseButton.WheelUp, ButtonState.WentDown))
+                                               changeState(WidgetState.ScrollUp);
+                                       }
+                                       break;
+            case WidgetState.ScrollDown:
+            case WidgetState.ScrollUp:
+                                       changeState(WidgetState.Idle);
+                                       break;
+        }
+        return true;
     }
     //IWidget interface
     WidgetState process()
@@ -312,11 +343,15 @@ enum MouseButton
     Left,
     Middle,
     Right,
+    WheelUp,
+    WheelDown,
 }
 enum ButtonState
 {
-    Up,
-    Down,
+    IsUp,
+    IsDown,
+    WentUp,
+    WentDown,
 }
 
 //Immediate-mode user interface
@@ -373,20 +408,25 @@ abstract class IMUI
     {
         return region.isInside(mousePosition_);
     }
-    bool isMouseButton(MouseButton button, ButtonState cmpState)
+    bool checkMouseButton(MouseButton button, ButtonState cmpState)
     {
-        bool state;
+        bool isUp, changed;
         switch (button)
         {
-            case MouseButton.Left: state = leftMouse_; break;
-            case MouseButton.Middle: state = middleMouse_; break;
-            case MouseButton.Right: state = rightMouse_; break;
+            case MouseButton.Left: leftMouse_.get(isUp, changed); break;
+            case MouseButton.Middle: middleMouse_.get(isUp, changed); break;
+            case MouseButton.Right: rightMouse_.get(isUp, changed); break;
+            case MouseButton.WheelUp: wheelUp_.get(isUp, changed); break;
+            case MouseButton.WheelDown: wheelDown_.get(isUp, changed); break;
         }
         switch (cmpState)
         {
-            case ButtonState.Down: return true == state; break;
-            case ButtonState.Up: return false == state; break;
+            case ButtonState.IsDown: return false == isUp; break;
+            case ButtonState.IsUp: return true == isUp; break;
+            case ButtonState.WentDown: return false == isUp || changed; break;
+            case ButtonState.WentUp: return true == isUp || changed; break;
         }
+        //Should never be reached
         assert(false);
         return false;
     }
@@ -397,10 +437,29 @@ abstract class IMUI
     //later to lastKey_ one by one
     Key[] cachedKeys_;
     Point mousePosition_ = Point(0.0, 0.0);
-    //A value of true means it is down
-    bool leftMouse_;
-    bool middleMouse_;
-    bool rightMouse_;
+    struct ButtonHistory
+    {
+        void setUp(bool b)
+        {
+            if (isDown_ == b)
+                changed_ = true;
+            isDown_ = !b;
+        }
+        void get(ref bool cur, ref bool ch)
+        {
+            cur = !isDown_;
+            ch = changed_;
+            changed_ = false;
+        }
+        private:
+        bool isDown_;
+        bool changed_;
+    }
+    ButtonHistory leftMouse_;
+    ButtonHistory middleMouse_;
+    ButtonHistory rightMouse_;
+    ButtonHistory wheelUp_;
+    ButtonHistory wheelDown_;
 }
 
 version (UnitTest)
