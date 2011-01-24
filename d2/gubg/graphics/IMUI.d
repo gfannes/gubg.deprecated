@@ -12,7 +12,7 @@ import core.thread;
 
 import std.stdio;
 
-enum WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated, ScrollDown, ScrollUp};
+enum WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated, Moving, ScrollDown, ScrollUp};
 interface IWidget
 {
     //Processes the widget (draw etc. if any is present)
@@ -43,23 +43,23 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         {
             case WidgetState.Emerging: changeState(WidgetState.Idle); break;
             case WidgetState.Idle:
-                                       if (canvas_.imui.isMouseInside(dimensions_) && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
+                                       if (canvas_.imui.isMouseInside(dimensions_) && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsOrWentUp))
                                            changeState(WidgetState.Highlighted);
                                        break;
-            case WidgetState.Highlighted:
+            case WidgetState.Highlighted://Hoovering over the button
                                        if (canvas_.imui.isMouseInside(dimensions_))
                                        {
-                                           if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsDown))
+                                           if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsOrWentDown))
                                                changeState(WidgetState.Activating);
                                        }
                                        else
                                            changeState(WidgetState.Idle);
                                        break;
-            case WidgetState.Activating:
-                                       if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
+            case WidgetState.Activating://Button-down
+                                       if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsOrWentUp))
                                            changeState(WidgetState.Activated);
                                        break;
-            case WidgetState.Activated:
+            case WidgetState.Activated://Button went back up
                                        changeState(WidgetState.Idle);
                                        break;
         }
@@ -152,15 +152,43 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     {
         switch (state)
         {
+
+
+
             case WidgetState.Emerging: changeState(WidgetState.Idle); break;
             case WidgetState.Idle:
-                                       if ((canvas_.imui.isMouseInside(listenArea_) || canvas_.imui.isMouseInside(displayArea_)))
+                                       //Becomes true if we are inside the diplay or the listen area. We don't compute this in advance
+                                       //for performance reasons, maybe we don't have to check if we are in the listen area
+                                       bool inDisplay = canvas_.imui.isMouseInside(displayArea_);
+                                       if (inDisplay && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsOrWentUp))
+                                           changeState(WidgetState.Highlighted);
+                                       else
                                        {
-                                           if (canvas_.imui.checkMouseButton(MouseButton.WheelDown, ButtonState.WentDown))
-                                               changeState(WidgetState.ScrollDown);
-                                           else if (canvas_.imui.checkMouseButton(MouseButton.WheelUp, ButtonState.WentDown))
-                                               changeState(WidgetState.ScrollUp);
+                                           //Check for a scroll event in the display or listen area
+                                           if (inDisplay || canvas_.imui.isMouseInside(listenArea_))
+                                           {
+                                               if (canvas_.imui.checkMouseButton(MouseButton.WheelDown, ButtonState.IsOrWentDown))
+                                                   changeState(WidgetState.ScrollDown);
+                                               else if (canvas_.imui.checkMouseButton(MouseButton.WheelUp, ButtonState.IsOrWentDown))
+                                                   changeState(WidgetState.ScrollUp);
+                                           }
                                        }
+                                       break;
+            case WidgetState.Highlighted://Hoovering over the button
+                                       if (canvas_.imui.isMouseInside(displayArea_))
+                                       {
+                                           if (canvas_.imui.isMouseInside(currentBar_()) && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsDown))
+                                               changeState(WidgetState.Moving);
+                                       }
+                                       else
+                                           changeState(WidgetState.Idle);
+                                       break;
+            case WidgetState.Moving://Button-down
+                                       if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
+                                           if (canvas_.imui.isMouseInside(displayArea_))
+                                               changeState(WidgetState.Highlighted);
+                                           else
+                                               changeState(WidgetState.Idle);
                                        break;
             case WidgetState.ScrollDown:
             case WidgetState.ScrollUp:
@@ -174,20 +202,24 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     {
         processEvent(false);
         Style s;
-        s.fill(Color.purple);
-//        switch (state)
-//        {
-//            case WidgetState.Idle: break;
-//            case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
-//            case WidgetState.Activating: s.fill(Color.yellow); break;
-//            case WidgetState.Activated: s.fill(Color.green); break;
-//        }
         
-        canvas_.drawRectangle(TwoPoint(displayArea_.p0.x, transformLinTrans(bar_[0], linTrans_), displayArea_.p1.x, transformLinTrans(bar_[1], linTrans_)), s);
+        switch (state)
+        {
+            case WidgetState.Idle: s.fill(Color.purple); break;
+            case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
+            case WidgetState.Moving: s.fill(Color.yellow); break;
+        }
+        
+        canvas_.drawRectangle(currentBar_(), s);
         return state;
     }
 
     private:
+    TwoPoint currentBar_()
+    {
+        return TwoPoint(displayArea_.p0.x, transformLinTrans(bar_[0], linTrans_), displayArea_.p1.x, transformLinTrans(bar_[1], linTrans_));
+    }
+
     TwoPoint displayArea_;
     TwoPoint listenArea_;
     real[2] linTrans_;
@@ -350,8 +382,8 @@ enum ButtonState
 {
     IsUp,
     IsDown,
-    WentUp,
-    WentDown,
+    IsOrWentUp,
+    IsOrWentDown,
 }
 
 //Immediate-mode user interface
@@ -423,8 +455,8 @@ abstract class IMUI
         {
             case ButtonState.IsDown: return false == isUp; break;
             case ButtonState.IsUp: return true == isUp; break;
-            case ButtonState.WentDown: return false == isUp || changed; break;
-            case ButtonState.WentUp: return true == isUp || changed; break;
+            case ButtonState.IsOrWentDown: return false == isUp || changed; break;
+            case ButtonState.IsOrWentUp: return true == isUp || changed; break;
         }
         //Should never be reached
         assert(false);
