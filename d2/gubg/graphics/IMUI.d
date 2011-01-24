@@ -116,7 +116,7 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     Scroller setRange(real[2] range)
     {
         range_[] = range[];
-        //Compute the linear transformation that transforms range_ into displayArea_.p[10].y
+        //Compute the linear transformation that transforms range_ into displayArea_.p[1|0].y
         computeLinTrans!(real, real, real)(linTrans_, range_, [displayArea_.p1.y, displayArea_.p0.y]);
         return this;
     }
@@ -126,7 +126,8 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     }
     Scroller setBar(real[2] bar)
     {
-        bar_[] = bar;
+        barCenter_ = 0.5*(bar[0]+bar[1]);
+        barSize_ = bar[1] - bar[0];
         return this;
     }
     Scroller setBar(uint ix)
@@ -135,26 +136,24 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     }
     void getBar(ref real[2] bar)
     {
-        bar[] = bar_[];
+        bar[0] = barCenter_ - 0.5*barSize_;
+        bar[1] = barCenter_ + 0.5*barSize_;
     }
     T getBarCenter(T)()
         if(is(typeof(T): real))
     {
-        return 0.5*(bar_[0] + bar_[1]);
+        return barCenter_;
     }
     T getBarCenter(T)()
         if(is(typeof(T): uint))
     {
-        return bar_[0];
+        return barCenter_ - 0.5*barSize_;
     }
     //StateMachine interface
     bool processEvent(bool)
     {
         switch (state)
         {
-
-
-
             case WidgetState.Emerging: changeState(WidgetState.Idle); break;
             case WidgetState.Idle:
                                        //Becomes true if we are inside the diplay or the listen area. We don't compute this in advance
@@ -174,23 +173,32 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
                                            }
                                        }
                                        break;
-            case WidgetState.Highlighted://Hoovering over the button
+            case WidgetState.Highlighted://Hoovering over the scrollbar
                                        if (canvas_.imui.isMouseInside(displayArea_))
                                        {
                                            if (canvas_.imui.isMouseInside(currentBar_()) && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsDown))
+                                           {
+                                               //The user pressed the left mouse button _inside_ the bar of the scrollbar
+                                               //We record the displacement between the barCenter_ and the mouse position
+                                               displacement_ = barCenter_ - transformReverseLinTrans(canvas_.imui.mousePosition_.y, linTrans_);
                                                changeState(WidgetState.Moving);
+                                           }
                                        }
                                        else
                                            changeState(WidgetState.Idle);
                                        break;
-            case WidgetState.Moving://Button-down
+            case WidgetState.Moving://Button-down on the bar inside the scrollbar
                                        if (canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsUp))
+                                       {
                                            if (canvas_.imui.isMouseInside(displayArea_))
                                                changeState(WidgetState.Highlighted);
                                            else
                                                changeState(WidgetState.Idle);
+                                       }
+                                       else
+                                           barCenter_ = transformReverseLinTrans(canvas_.imui.mousePosition_.y, linTrans_) + displacement_;
                                        break;
-            case WidgetState.ScrollDown:
+            case WidgetState.ScrollDown://Scrolling inside the scrollbar or the listen area
             case WidgetState.ScrollUp:
                                        changeState(WidgetState.Idle);
                                        break;
@@ -201,13 +209,14 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     WidgetState process()
     {
         processEvent(false);
-        Style s;
         
+        Style s;
         switch (state)
         {
             case WidgetState.Idle: s.fill(Color.purple); break;
             case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
             case WidgetState.Moving: s.fill(Color.yellow); break;
+            default: break;
         }
         
         canvas_.drawRectangle(currentBar_(), s);
@@ -217,14 +226,16 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     private:
     TwoPoint currentBar_()
     {
-        return TwoPoint(displayArea_.p0.x, transformLinTrans(bar_[0], linTrans_), displayArea_.p1.x, transformLinTrans(bar_[1], linTrans_));
+        return TwoPoint.centered(displayArea_.centerX, transformLinTrans(barCenter_, linTrans_), displayArea_.width, barSize_*linTrans_[0]);
     }
 
     TwoPoint displayArea_;
     TwoPoint listenArea_;
     real[2] linTrans_;
     real[2] range_;
-    real[2] bar_;
+    real barCenter_;
+    real barSize_;
+    real displacement_;
     SDLCanvas canvas_;
 }
 

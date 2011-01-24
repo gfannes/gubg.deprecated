@@ -10,6 +10,10 @@ T transformLinTrans(T, TT)(TT from, T[2] linTrans)
 {
     return linTrans[0]*from + linTrans[1];
 }
+T transformReverseLinTrans(T, TT)(TT to, T[2] linTrans)
+{
+    return (to - linTrans[1])/linTrans[0];
+}
 
 version (UnitTest)
 {
