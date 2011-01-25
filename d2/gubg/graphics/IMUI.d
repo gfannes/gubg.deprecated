@@ -108,8 +108,9 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     {
         displayArea_ = displayArea;
         listenArea_ = listenArea;
+        //Some default range and bar to get started
         setRange([0.0, 1.0]);
-        setBar([0.3, 0.5]);
+        setBar([0.0, 1.0]);
         canvas_ = canvas;
         super(WidgetState.Emerging);
     }
@@ -159,6 +160,8 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
                                        //Becomes true if we are inside the diplay or the listen area. We don't compute this in advance
                                        //for performance reasons, maybe we don't have to check if we are in the listen area
                                        bool inDisplay = canvas_.imui.isMouseInside(displayArea_);
+                                       //We check for the left button to be up, making sure we don't enter WidgetState.Highlighted with
+                                       //the left button already down
                                        if (inDisplay && canvas_.imui.checkMouseButton(MouseButton.Left, ButtonState.IsOrWentUp))
                                            changeState(WidgetState.Highlighted);
                                        else
@@ -182,6 +185,14 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
                                                //We record the displacement between the barCenter_ and the mouse position
                                                displacement_ = barCenter_ - transformReverseLinTrans(canvas_.imui.mousePosition_.y, linTrans_);
                                                changeState(WidgetState.Moving);
+                                           }
+                                           else
+                                           {
+                                               //Check for scrolling on the scrollbar
+                                               if (canvas_.imui.checkMouseButton(MouseButton.WheelDown, ButtonState.IsOrWentDown))
+                                                   changeState(WidgetState.ScrollDown);
+                                               else if (canvas_.imui.checkMouseButton(MouseButton.WheelUp, ButtonState.IsOrWentDown))
+                                                   changeState(WidgetState.ScrollUp);
                                            }
                                        }
                                        else
@@ -306,6 +317,17 @@ char convertToChar(in Key key)
         return cast(char)('0'+digit);
     if (Key.a <= key && key <= Key.z)
         return cast(char)('a'+key-Key.a);
+    if (Key.A <= key && key <= Key.Z)
+        return cast(char)('A'+key-Key.A);
+    switch (key)
+    {
+        case Key.Return: return '\n';
+        case Key.Colon: return ':';
+        case Key.Semicolon: return ';';
+        case Key.Comma: return ',';
+        default: return '.';
+    }
+    assert(false);
     return '.';
 }
 enum Key
@@ -378,6 +400,38 @@ enum Key
     x = SDLK_x,
     y = SDLK_y,
     z = SDLK_z,
+
+    A = SDLK_a - SDLK_a + 'A',
+    B = SDLK_b - SDLK_a + 'A',
+    C = SDLK_c - SDLK_a + 'A',
+    D = SDLK_d - SDLK_a + 'A',
+    E = SDLK_e - SDLK_a + 'A',
+    F = SDLK_f - SDLK_a + 'A',
+    G = SDLK_g - SDLK_a + 'A',
+    H = SDLK_h - SDLK_a + 'A',
+    I = SDLK_i - SDLK_a + 'A',
+    J = SDLK_j - SDLK_a + 'A',
+    K = SDLK_k - SDLK_a + 'A',
+    L = SDLK_l - SDLK_a + 'A',
+    M = SDLK_m - SDLK_a + 'A',
+    N = SDLK_n - SDLK_a + 'A',
+    O = SDLK_o - SDLK_a + 'A',
+    P = SDLK_p - SDLK_a + 'A',
+    Q = SDLK_q - SDLK_a + 'A',
+    R = SDLK_r - SDLK_a + 'A',
+    S = SDLK_s - SDLK_a + 'A',
+    T = SDLK_t - SDLK_a + 'A',
+    U = SDLK_u - SDLK_a + 'A',
+    V = SDLK_v - SDLK_a + 'A',
+    W = SDLK_w - SDLK_a + 'A',
+    X = SDLK_x - SDLK_a + 'A',
+    Y = SDLK_y - SDLK_a + 'A',
+    Z = SDLK_z - SDLK_a + 'A',
+
+    Return = SDLK_RETURN,
+    Colon = SDLK_COLON,
+    Semicolon = SDLK_SEMICOLON,
+    Comma = SDLK_COMMA,
 
     Escape = SDLK_ESCAPE,
 }

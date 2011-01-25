@@ -251,7 +251,7 @@ class SDLCanvas: ICanvas
                 switch (event.type)
                 {
                     case SDL_KEYDOWN:
-                        cachedKeys_ ~= fromSDL(event.key.keysym.sym);
+                        cachedKeys_ ~= fromSDL(event.key.keysym.unicode);
                         break;
                     case SDL_MOUSEMOTION:
                         mousePosition_.x = event.motion.x;

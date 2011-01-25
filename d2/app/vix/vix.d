@@ -9,6 +9,7 @@ import gubg.FSTree;
 import gubg.Layout;
 import core.thread;
 import std.algorithm;
+import std.path;
 
 import gubg.Profiler;
 import gubg.Timer;
@@ -29,8 +30,24 @@ int main(string[] args)
     {
         Folder createFolder(string path)
         {
-            writefln("createFolder: %s", path);
             return new Folder(path);
+        }
+        Folder createFolderRecursive(string path)
+        {
+            //The top-level Folder that will be returned
+            Folder res = new Folder(path);
+            //We will gradually step down until we reached to root of the file system
+            string dir = dirname(path);
+            Folder tmp = res;
+            while (dir != path)
+            {
+                    tmp.parent = new Folder(dir);
+                    tmp = tmp.parent;
+                    auto t = dir;
+                    dir = dirname(dir);
+                    path = t;
+            }
+            return res;
         }
         gubg.FSTree.File createFile(string path)
         {
@@ -38,8 +55,10 @@ int main(string[] args)
         }
     }
     auto creator = new Creator;
-    Folder currentFolder = creator.createFolder("/");
+    Folder currentFolder = creator.createFolderRecursive("/home/gfannes");
     currentFolder.expand(creator, ExpandStrat.Shallow);
+    int topIX = 0;
+    string command = "Command bar";
 
     //Profiling variables
     auto p = new Profiler("Mainloop");
@@ -57,17 +76,30 @@ int main(string[] args)
             //Check the keyboard
             {
                 if (canvas.imui.escapeIsPressed())
-                    quit = true;
+                        command = "";
                 auto key = canvas.imui.getLastKey();
                 if (Key.None != key)
-                    writefln("Key: %s", convertToChar(key));
+                {
+                    command ~= convertToChar(key);
+                }
+                if (!command.empty && '\n' == command[$-1])
+                {
+                    switch (command)
+                    {
+                        case ":q\n": quit = true; break;
+                        case "quit\n": quit = true; break;
+                        default: break;
+                    }
+                }
             }
 
             auto box = new Box(TwoPoint(0, 0, width, height));
-            box.split([0.05, 0.95], Direction.TopDown);
+            box.split([0.05, 0.92, 0.03], Direction.TopDown);
+            auto folderBar = box[0];
+            auto center = box[1];
+            auto commandBar = box[2];
             //The folder bar
             {
-                auto folderBar = box[0];
                 auto w = widgets.get();
                 switch (w.process)
                 {
@@ -82,11 +114,10 @@ int main(string[] args)
                         break;
                 }
             }
-            auto rest = box[1];
-            rest.split([0.02, 0.97, 0.01], Direction.LeftToRight);
-            auto back = rest[0];
-            auto buttons = rest[1];
-            auto scroller = rest[2];
+            center.split([0.02, 0.97, 0.01], Direction.LeftToRight);
+            auto back = center[0];
+            auto buttons = center[1];
+            auto scroller = center[2];
             //The back button
             {
                 auto w = widgets.get();
@@ -99,6 +130,7 @@ int main(string[] args)
                         if (currentFolder.parent)
                             currentFolder = currentFolder.parent;
                         currentFolder.expand(creator, ExpandStrat.Shallow);
+                        topIX = 0;
                         break;
                     default:
                         break;
@@ -107,12 +139,12 @@ int main(string[] args)
             //The file and folder buttons with scrollbar
             {
                 //Filter and sort the childs
-                FSTree[] childs;
+                FSTree[] allChilds;
                 {
                     //Append only the non-hidden files and folders
                     foreach (child; currentFolder.childs)
                         if (child.name[0] != '.')
-                            childs ~= child;
+                            allChilds ~= child;
                     //Sort the childs using localCmp as criterion
                     bool localCmp(FSTree lhs, FSTree rhs)
                     {
@@ -124,8 +156,9 @@ int main(string[] args)
                         //If the type results in a tie, sort alphabetically
                         return lhs.name < rhs.name;
                     }
-                    sort!(localCmp)(childs);
+                    sort!(localCmp)(allChilds);
                 }
+                const MaxNrEntries = 40;
                 //Scrollbar
                 {
                     auto w = widgets.get();
@@ -135,27 +168,20 @@ int main(string[] args)
                             w.set(new Scroller(scroller.area, buttons.area, canvas));
                             break;
                         case WidgetState.ScrollDown:
-                            real[2] bar;
-                            auto sb = w.get!(Scroller);
-                            sb.getBar(bar);
-                            bar[0] += 0.1;
-                            bar[1] += 0.1;
-                            sb.setBar(bar);
+                            topIX = min(topIX+10, allChilds.length-1);
                             break;
                         case WidgetState.ScrollUp:
-                            real[2] bar;
-                            auto sb = w.get!(Scroller);
-                            sb.getBar(bar);
-                            bar[0] -= 0.1;
-                            bar[1] -= 0.1;
-                            sb.setBar(bar);
+                            topIX = max(topIX-10, 0);
                             break;
                         default:
+                            auto sb = w.get!(Scroller);
+                            sb.setRange(allChilds.length);
+                            sb.setBar([cast(real)topIX, min(topIX+MaxNrEntries, allChilds.length)]);
                             break;
                     }
                 }
-                const MaxNrEntries = 40;
                 buttons.split(MaxNrEntries, Direction.TopDown);
+                auto childs = allChilds[topIX .. $];
                 foreach (uint ix, ref sb; buttons)
                 {
                     if (ix >= childs.length)
@@ -180,6 +206,22 @@ int main(string[] args)
                             w.get!(Button).setLabel(label);
                             break;
                     }
+                }
+            }
+            //The command bar
+            {
+                auto w = widgets.get();
+                switch (w.process)
+                {
+                    case WidgetState.Empty:
+                        w.set(new Button(commandBar.area, command, Alignment.Left, canvas));
+                        break;
+                    case WidgetState.Activated:
+                        //What to do here?
+                        break;
+                    default:
+                        w.get!(Button).setLabel(command);
+                        break;
                 }
             }
         }

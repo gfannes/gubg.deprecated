@@ -13,6 +13,7 @@ class SDL
             DerelictSDL.load();
             if (SDL_Init(SDL_INIT_VIDEO) < 0)
                 throw new Exception("Could not initialize SDL");
+            SDL_EnableUNICODE(1);
         }
         ++refCount__;
     }
