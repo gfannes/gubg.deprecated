@@ -141,10 +141,14 @@ class DCollection
     {
             Folder createFolder(string path)
             {
+		    if (verbose__)
+			    writefln("createFolder: %s", path);
                 return new Folder(path);
             }
             DFile createFile(string path)
             {
+		    if (verbose__)
+			    writefln("createFile: %s", path);
                 if ("d" == getExt(path))
                     return new DFile(path);
                 return null;

@@ -225,7 +225,10 @@ class SDLCanvas: ICanvas
         cairo_.stroke();
     }
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
+    version (posix)
+    {
     uint windowId(){return info_.windowId;}
+    }
 
     //Immediate-mode user interface handling
     gubg.graphics.IMUI.IMUI imui()

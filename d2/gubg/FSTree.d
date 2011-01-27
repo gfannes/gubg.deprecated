@@ -6,6 +6,8 @@ import std.file;
 import std.path;
 import std.array;
 
+import std.stdio;
+
 class FSTree
 {
     //Insert the tree functionality
@@ -37,6 +39,24 @@ class Folder: FSTree
         parent = folder;
     }
 
+    static Folder createRecursive(string path, ICreator creator)
+    {
+        //The top-level Folder that will be returned
+        Folder res = creator.createFolder(path);
+        //We will gradually step down until we reached to root of the file system
+        string dir = dirname(path);
+        Folder tmp = res;
+        while (dir != path)
+        {
+            tmp.parent = creator.createFolder(dir);
+            tmp = tmp.parent;
+            auto t = dir;
+            dir = dirname(dir);
+            path = t;
+        }
+        return res;
+    }
+
     void expand(ICreator creator, ExpandStrat et = ExpandStrat.Shallow)
     {
         if (!childs.empty)
@@ -49,20 +69,25 @@ class Folder: FSTree
                 if (isdir(subpath))
                 {
                     Folder folder = creator.createFolder(subpath);
-                    if (ExpandStrat.Recursive == et)
-                        folder.expand(creator, et);
-                    child = folder;
+		    if (folder)
+		    {
+			    folder.parent = this;
+			    if (ExpandStrat.Recursive == et)
+				    folder.expand(creator, et);
+			    child = folder;
+		    }
                 }
                 else if (isfile(subpath))
+		{
                     child = creator.createFile(subpath);
+		    if (child)
+			    child.parent = this;
+		}
             }
             catch (std.file.FileException){}
 
             if (child)
-            {
-                child.parent = this;
                 childs ~= child;
-            }
         }
     }
     
@@ -101,7 +126,7 @@ FSTree createFSTreeFromPath(string path, ICreator creator)
 {
     if (isdir(path))
     {
-        auto folder = creator.createFolder(path);
+        auto folder = Folder.createRecursive(path, creator);
         if (folder)
             folder.expand(creator, ExpandStrat.Recursive);
         return folder;
@@ -132,6 +157,7 @@ version (UnitTest)
             }
         }
         Creator creator = new Creator;
+	auto folder = Folder.createRecursive("/home/gfannes/gubg", creator);
         auto tree = createFSTreeFromPath("/home/gfannes/gubg", creator);
         foreach (File el; tree)
         {

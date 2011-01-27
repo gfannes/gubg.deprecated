@@ -9,7 +9,7 @@ class Tab
     this()
     {
         creator_ = new Creator;
-        currentFolder_ = creator_.createFolderRecursive("/home/gfannes");
+        currentFolder_ = Folder.createRecursive("/home/gfannes", creator_);
         currentFolder_.expand(creator_, ExpandStrat.Shallow);
     }
 
@@ -48,23 +48,6 @@ class Creator: ICreator
     Folder createFolder(string path)
     {
         return new Folder(path);
-    }
-    Folder createFolderRecursive(string path)
-    {
-        //The top-level Folder that will be returned
-        Folder res = new Folder(path);
-        //We will gradually step down until we reached to root of the file system
-        string dir = dirname(path);
-        Folder tmp = res;
-        while (dir != path)
-        {
-            tmp.parent = new Folder(dir);
-            tmp = tmp.parent;
-            auto t = dir;
-            dir = dirname(dir);
-            path = t;
-        }
-        return res;
     }
     gubg.FSTree.File createFile(string path)
     {
