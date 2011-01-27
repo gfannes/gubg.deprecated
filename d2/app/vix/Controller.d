@@ -11,16 +11,12 @@ import std.stdio;
 
 class Controller
 {
-    this()
+    this(uint width, uint height)
     {
         quit_ = false;
 
         fastProcessing_ = FewTimes(10);
 
-        //const width = 1912;
-        //const height = 1050;
-        const width = 640;
-        const height = 480;
         canvas_ = new SDLCanvas(width, height);
 
         model_ = new Model;
