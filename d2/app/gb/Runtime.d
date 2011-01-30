@@ -9,3 +9,11 @@ void setVerbose(bool b)
     writefln("Verbose is set to %s", verbose_);
 }
 bool verbose(){return verbose_;}
+
+string configurationFilename()
+{
+    version (Posix)
+        return "gb.linux.json";
+    version (Windows)
+        return "gb.windows.json";
+}

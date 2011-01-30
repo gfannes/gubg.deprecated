@@ -146,7 +146,7 @@ class ExeCommand: ArgsCommand
         // * The initial tree defined by the main source file
         auto collection = new DCollection(dirname(filepath));
         // * Extend this set with the externalTrees
-        auto config = new Configuration("gb.json", dirname(filepath), true);
+        auto config = new Configuration(Runtime.configurationFilename, dirname(filepath), true);
         string[] externalTrees;
         config.get(externalTrees, "externalTrees");
         foreach(ref externalTree; externalTrees)
@@ -311,7 +311,7 @@ class ConfigCommand: ICommand
         format(``);
         try
         {
-            std.file.write("gb.json", format.toString);
+                std.file.write(Runtime.configurationFilename(), format.toString);
         } catch(FileException)
         {
             return false;
