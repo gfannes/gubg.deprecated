@@ -84,7 +84,7 @@ class SDLCanvas: ICanvas
                 return false;
         clear();
 
-        //Only of our IMUI member is present, we will process input
+        //Only if our IMUI member is present, we will process input
         if (!(imui_ is null))
             imui_.processInput();
 
@@ -92,6 +92,10 @@ class SDLCanvas: ICanvas
     }
     void finalizeDraw()
     {
+        //Only if our IMUI member is present, we will process input
+        if (!(imui_ is null))
+            imui_.reset();
+
         if (SDL_MUSTLOCK(SDLSurface_))
             SDL_UnlockSurface(SDLSurface_);
         //SDL_UpdateRect should _not_ be called inside the lock
@@ -243,7 +247,7 @@ class SDLCanvas: ICanvas
     //using immediate-mode user interface handling
     class IMUI: gubg.graphics.IMUI.IMUI
     {
-        bool processInput()
+        protected bool processInput_()
         {
             bool somethingChanged = false;
             //Keep polling events until the event queue is empty. If we do this one by one,
