@@ -5,18 +5,35 @@ import vix.Controller;
 
 import gubg.Profiler;
 import gubg.Timer;
+import gubg.OptionParser;
 
 import std.stdio;
 
 bool verbose__ = true;
 int main(string[] args)
 {
+    bool[string] switches;
+    auto parser = new OptionParser("vix, the vi file explorer");
+    //Default settings
+    switches["verbose"] = false;
+    parser.addSwitch("-v", "--verbose", "Verbosity", delegate void(){switches["verbose"] = true;});
+    switches["small"] = false;
+    parser.addSwitch("-s", "--small", "Start vix in small-mode", delegate void(){switches["small"] = true;});
+    //Parses the options and strips the executable
+    parser.parse(args, true);
+
     //Profiling variables
     auto p = new Profiler("Mainloop");
     uint nrFrames = 0;
     auto timer = Timer(ResetType.NoAuto);
 
-    auto controller = new Controller;
+    uint width = 1912, height = 1050;
+    if (switches["small"])
+    {
+        width = 640;
+        height = 480;
+    }
+    auto controller = new Controller(width, height);
 
     while (!controller.quit)
     {

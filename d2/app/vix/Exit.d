@@ -10,6 +10,11 @@ void catchInterrupt(int v)
     exit(0);
 }
 
+void reportError(string message)
+{
+    writefln("ERROR::%s", message);
+}
+
 static this()
 {
     signal(SIGINT, &catchInterrupt);

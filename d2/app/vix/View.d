@@ -1,10 +1,12 @@
 module vix.View;
 
 import vix.Model;
+import vix.Exit;
 
 import gubg.graphics.Canvas;
 import gubg.graphics.IMUI;
 import gubg.Layout;
+import gubg.Format;
 
 import std.algorithm;
 
@@ -80,6 +82,11 @@ class View
                     return lhs.name < rhs.name;
                 }
                 sort!(localCmp)(allChilds);
+                if (topIX_ < 0 || topIX_ >= allChilds.length)
+                {
+                    reportError(Format.immediate("topIX_: %s is out of range", topIX_));
+                    topIX_ = 0;
+                }
             }
             const MaxNrEntries = 40;
             //Scrollbar
@@ -121,7 +128,10 @@ class View
                     case WidgetState.Activated:
                         Folder folder = cast(gubg.FSTree.Folder)child;
                         if (folder)
+                        {
                             model_.setCurrent(folder);
+                            topIX_ = 0;
+                        }
                         else
                         {
                             //Not yet handled

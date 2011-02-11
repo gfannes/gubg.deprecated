@@ -457,7 +457,14 @@ abstract class IMUI
     //Call this fast enough to get a reasonable response time
     //Returns true if some event is waiting (not sure if this maps OK for all input devices)
     //Calling this twice without getting any event should return the same
-    bool processInput();
+    final bool processInput()
+    {
+        if (processInput_())
+            somethingChanged_ = true;
+        return somethingChanged_;
+    }
+    //Resets the changed status, which should be done after one iteration through the main loop
+    void reset(){somethingChanged_ = false;}
     //Returns true as soon as input is ready to be processed
     //false if it timed out
     bool waitForInput(real timeout)
@@ -529,6 +536,11 @@ abstract class IMUI
     }
 
     protected:
+    bool somethingChanged_ = false;
+    //This should be provided by any derived class, implementing basic input processing
+    //Keeping track of input changes is done by processInput()
+    bool processInput_();
+
     Key lastKey_ = Key.None;
     //When processInput() polls for key presses, it can store excess Keys in here and move them
     //later to lastKey_ one by one
