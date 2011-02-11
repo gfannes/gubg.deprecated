@@ -1,0 +1,5 @@
+{
+    "externalTrees": ["h:\\My Dropbox\\gubg\\d2\\gubg", "h:\\software\\Derelict2\\DerelictSDL", "h:\\software\\Derelict2\\DerelictUtil"],
+    "libraries": ["cairo"],
+    "compilation": ["-profile"]
+}

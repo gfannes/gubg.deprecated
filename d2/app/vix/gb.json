@@ -1,5 +1,0 @@
-{
-    "externalTrees": ["~/gubg/d2/gubg", "~/d/src/Derelict2/DerelictSDL", "~/d/src/Derelict2/DerelictUtil"],
-    "libraries": ["dl", "cairo"],
-    "compilation": ["-profile"]
-}
