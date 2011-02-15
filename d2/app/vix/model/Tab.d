@@ -3,44 +3,57 @@ module vix.model.Tab;
 public import gubg.FSTree;
 
 import std.path;
+import std.regex;
+import std.array;
+
+import std.stdio;
 
 class Tab
 {
     this()
     {
         creator_ = new Creator;
-        currentFolder_ = Folder.createRecursive("/home/gfannes", creator_);
-        currentFolder_.expand(creator_, ExpandStrat.Shallow);
+        folder_ = Folder.createRecursive("/home/gfannes", creator_);
+        folder_.expand(creator_, ExpandStrat.Shallow);
     }
 
-    string getPath(){return currentFolder_.path;}
+    string getPath(){return folder_.path;}
     void moveToRoot()
     {
-        if (currentFolder_.parent)
-            currentFolder_ = currentFolder_.parent;
-        currentFolder_.expand(creator_, ExpandStrat.Shallow);
+        if (folder_.parent)
+            folder_ = folder_.parent;
+        folder_.expand(creator_, ExpandStrat.Shallow);
     }
     FSTree[] getChilds()
     {
         FSTree[] childs;
-        //Append only the non-hidden files and folders
-        foreach (child; currentFolder_.childs)
+        //Append only the non-hidden files and folders which match the filter_
+        auto re = regex(filter_.empty ? "." : filter_);
+        foreach (child; folder_.childs)
             if (child.name[0] != '.')
-                childs ~= child;
+            {
+                auto m = match(child.name, re);
+                if (!m.empty)
+                    childs ~= child;
+            }
         return childs;
     }
     void setFolder(Folder folder)
     {
-        currentFolder_ = folder;
-        currentFolder_.expand(creator_, ExpandStrat.Shallow);
+        folder_ = folder;
+        folder_.expand(creator_, ExpandStrat.Shallow);
     }
+
+    string getFilter() const {return filter_;}
+    void setFilter(string filter){filter_ = filter;}
+    const(string[]) getSelection() const {return selection_;}
+    void addToSelection(string selected){selection_ ~= selected;}
 
     private:
         Creator creator_;
-        Folder currentFolder_;
-        //Filter filter_;
-        //Selection selection_;
-        //Current current_;
+        Folder folder_;
+        string filter_;
+        string[] selection_;
 }
 
 class Creator: ICreator

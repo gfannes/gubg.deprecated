@@ -18,6 +18,10 @@ class Model
     void moveCurrentToRoot(){current_.moveToRoot;}
     FSTree[] getCurrentChilds(){return current_.getChilds;}
     void setCurrent(Folder folder){return current_.setFolder(folder);}
+    string getCurrentFilter() const {return current_.getFilter;}
+    void setCurrentFilter(string filter){current_.setFilter(filter);}
+    const(string[]) getCurrentSelection() const {return current_.getSelection;}
+    void addToCurrentSelection(string selected){current_.addToSelection(selected);}
 
     //Command
     void resetCommand(){command_ = "";}
@@ -25,7 +29,7 @@ class Model
     string getCommand() const {return command_;}
 
     private:
-        Tab[] tabs_;
-        Tab current_;
-        string command_;
+    Tab[] tabs_;
+    Tab current_;
+    string command_;
 }
