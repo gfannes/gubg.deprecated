@@ -433,6 +433,11 @@ enum Key
     Semicolon = SDLK_SEMICOLON,
     Comma = SDLK_COMMA,
 
+    Up = SDLK_UP,
+    Down = SDLK_DOWN,
+    Right = SDLK_RIGHT,
+    Left = SDLK_LEFT,
+
     Escape = SDLK_ESCAPE,
 }
 enum MouseButton

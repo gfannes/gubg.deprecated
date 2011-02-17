@@ -16,9 +16,8 @@ class Model
     //Current
     string getCurrentPath(){return current_.getPath;}
     void moveCurrentToRoot(){current_.moveToRoot;}
-    FSTree[] getCurrentChilds(){return current_.getChilds;}
+    FSTree[] getCurrentChilds(ref uint focusIX){return current_.getChilds(focusIX);}
     void setCurrent(Folder folder){return current_.setFolder(folder);}
-    string getCurrentFocus() const {return current_.getFocus();}
     const(string[]) getCurrentSelection() const {return current_.getSelection;}
     void addToCurrentSelection(string selected){current_.addToSelection(selected);}
 
@@ -39,10 +38,26 @@ class Model
     }
     void appendToCommand(Key key)
     {
-        if (Key.Escape == key)
+        switch (key)
         {
-            resetCommand;
-            return;
+            case Key.Escape: resetCommand; return; break;
+            case Key.Return:
+                             //Only in filter mode, <enter> acts the same as "->"
+                             if (Mode.Filter != mode_)
+                                 break;
+            case Key.Right:
+                             current_.setFolderToFocus; return;
+                             break;
+            case Key.Left:
+                             moveCurrentToRoot; return;
+                             break;
+            case Key.Up:
+                             current_.moveFocus(Tab.Movement.Up); return;
+                             break;
+            case Key.Down:
+                             current_.moveFocus(Tab.Movement.Down); return;
+                             break;
+            default: break;
         }
         auto c = convertToChar(key);
         switch (mode_)

@@ -9,6 +9,8 @@ import gubg.graphics.IMUI;
 
 import std.stdio;
 
+bool verbose__ = false;
+
 class Controller
 {
     this(uint width, uint height)
@@ -30,6 +32,8 @@ class Controller
         //Check the keyboard
         {
             auto key = canvas_.imui.getLastKey();
+            if (verbose__)
+                writefln("Key: %s", key);
             if (Key.None != key)
                 model_.appendToCommand(key);
 

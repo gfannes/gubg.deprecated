@@ -23,7 +23,11 @@ class Tab
         if (folder_.parent)
             setFolder(folder_.parent);
     }
-    FSTree[] getChilds() {return childs_;}
+    FSTree[] getChilds(ref uint focusIX)
+    {
+        focusIX = focusIX_;
+        return childs_;
+    }
     void setFolder(Folder folder)
     {
         folder_ = folder;
@@ -31,6 +35,30 @@ class Tab
         filter_ = "";
         focus_ = "";
         updateChilds_();
+    }
+    void setFolderToFocus()
+    {
+        if (childs_.empty)
+            return;
+        auto folder = cast(Folder)childs_[focusIX_];
+        if (folder is null)
+            return;
+        setFolder(folder);
+    }
+    enum Movement {Up, Down}
+    void moveFocus(Movement movement)
+    {
+        switch (movement)
+        {
+            case Movement.Up:
+                if (focusIX_ > 1)
+                    --focusIX_;
+                break;
+            case Movement.Down:
+                if (focusIX_ < childs_.length-1)
+                    ++focusIX_;
+                break;
+        }
     }
 
     string getFilter() const {return filter_;}
@@ -44,7 +72,6 @@ class Tab
         filter_ ~= c;
         updateChilds_();
     }
-    string getFocus() const {return focus_;}
     void setFocus(string focus)
     {
         focus_ = focus;
@@ -57,8 +84,8 @@ class Tab
     void updateChilds_()
     {
         childs_.length = 0;
-        //Append only the non-hidden files and folders which match the filter_
-        auto re = regex(filter_.empty ? "." : filter_);
+        //Append only the non-hidden files and folders which match the filter_ (case insensitive)
+        auto re = regex(filter_.empty ? "." : filter_, "i");
         foreach (child; folder_.childs)
             if (child.name[0] != '.')
             {
@@ -83,15 +110,28 @@ class Tab
     void updateFocus_()
     {
         if (childs_.empty)
+        {
             focus_ = "";
-        else if (!canFind!("a.name == b")(childs_, focus_))
-            focus_ = childs_[0].name;
+            focusIX_ = 0;
+            return;
+        }
+        foreach (uint ix, child; childs_)
+        {
+            if (focus_ == child.name)
+            {
+                focusIX_ = ix;
+                return;
+            }
+        }
+        focus_ = childs_[0].name;
+        focusIX_ = 0;
     }
 
     Creator creator_;
     Folder folder_;
     FSTree[] childs_;
-    string focus_;
+    string focus_ = "";
+    uint focusIX_ = 0;
     string filter_;
     string[] selection_;
 }

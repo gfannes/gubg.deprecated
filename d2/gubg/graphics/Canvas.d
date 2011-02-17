@@ -239,7 +239,10 @@ class SDLCanvas: ICanvas
     {
         //Lazy creation of imui_
         if (imui_ is null)
+        {
             imui_ = new IMUI;
+            SDL_EnableKeyRepeat(200, 50);
+        }
         return imui_;
     }
     private:
@@ -258,7 +261,22 @@ class SDLCanvas: ICanvas
                 switch (event.type)
                 {
                     case SDL_KEYDOWN:
-                        cachedKeys_ ~= fromSDL(event.key.keysym.unicode);
+                        if (event.key.keysym.unicode != 0)
+                            cachedKeys_ ~= fromSDL(event.key.keysym.unicode);
+                        else
+                        {
+                            auto sdlKey = event.key.keysym.sym;
+                            switch (sdlKey)
+                            {
+                                case SDLK_UP:
+                                case SDLK_DOWN:
+                                case SDLK_RIGHT:
+                                case SDLK_LEFT:
+                                    cachedKeys_ ~= fromSDL(sdlKey);
+                                    break;
+                                default: break;
+                            }
+                        }
                         break;
                     case SDL_MOUSEMOTION:
                         mousePosition_.x = event.motion.x;

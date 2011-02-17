@@ -67,16 +67,21 @@ class View
         }
         //The file and folder buttons with scrollbar
         {
-            //Get all the childs
-            auto allChilds = model_.getCurrentChilds;
+            //Get all the childs and the focusIX
+            uint focusIX;
+            auto allChilds = model_.getCurrentChilds(focusIX);
+            //Check that topIX_ is in range
+            if (topIX_ < 0 || (topIX_ >= allChilds.length && !allChilds.empty))
             {
-                if (topIX_ < 0 || topIX_ >= allChilds.length)
-                {
-                    reportError(Format.immediate("topIX_: %s is out of range", topIX_));
-                    topIX_ = 0;
-                }
+                reportError(Format.immediate("topIX_: %s is out of range", topIX_));
+                topIX_ = 0;
             }
             const MaxNrEntries = 40;
+            //Shift topIX_ to make sure focusIX will be shown
+            if (focusIX < topIX_)
+                topIX_ = focusIX;
+            else if (focusIX >= topIX_+MaxNrEntries)
+                topIX_ = focusIX-MaxNrEntries+1;
             //Scrollbar
             {
                 auto w = widgets_.get();
@@ -100,6 +105,7 @@ class View
             }
             //Draw all the folder and file entries from a subset of allChilds
             auto childs = allChilds[topIX_ .. $];
+            auto relativeFocusIX = focusIX - topIX_;
             buttons.split(MaxNrEntries, Direction.TopDown);
             foreach (uint ix, ref sb; buttons)
             {
@@ -107,8 +113,8 @@ class View
                     break;
                 FSTree child = childs[ix];
                 string label = child.name;
-                if (label == model_.getCurrentFocus)
-                    label = "* " ~ label;
+                if (ix == relativeFocusIX)
+                    label = "*** " ~ label;
                 auto w = widgets_.get(ix);
                 switch (w.process)
                 {
