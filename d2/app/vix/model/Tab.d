@@ -5,6 +5,7 @@ public import gubg.FSTree;
 import std.path;
 import std.regex;
 import std.array;
+import std.algorithm;
 
 import std.stdio;
 
@@ -13,20 +14,49 @@ class Tab
     this()
     {
         creator_ = new Creator;
-        folder_ = Folder.createRecursive("/home/gfannes", creator_);
-        folder_.expand(creator_, ExpandStrat.Shallow);
+        setFolder(Folder.createRecursive("/home/gfannes", creator_));
     }
 
     string getPath(){return folder_.path;}
     void moveToRoot()
     {
         if (folder_.parent)
-            folder_ = folder_.parent;
-        folder_.expand(creator_, ExpandStrat.Shallow);
+            setFolder(folder_.parent);
     }
-    FSTree[] getChilds()
+    FSTree[] getChilds() {return childs_;}
+    void setFolder(Folder folder)
     {
-        FSTree[] childs;
+        folder_ = folder;
+        folder_.expand(creator_, ExpandStrat.Shallow);
+        filter_ = "";
+        focus_ = "";
+        updateChilds_();
+    }
+
+    string getFilter() const {return filter_;}
+    void setFilter(string filter)
+    {
+        filter_ = filter;
+        updateChilds_();
+    }
+    void appendToFilter(char c)
+    {
+        filter_ ~= c;
+        updateChilds_();
+    }
+    string getFocus() const {return focus_;}
+    void setFocus(string focus)
+    {
+        focus_ = focus;
+        updateFocus_;
+    }
+    const(string[]) getSelection() const {return selection_;}
+    void addToSelection(string selected){selection_ ~= selected;}
+
+    private:
+    void updateChilds_()
+    {
+        childs_.length = 0;
         //Append only the non-hidden files and folders which match the filter_
         auto re = regex(filter_.empty ? "." : filter_);
         foreach (child; folder_.childs)
@@ -34,26 +64,36 @@ class Tab
             {
                 auto m = match(child.name, re);
                 if (!m.empty)
-                    childs ~= child;
+                    childs_ ~= child;
             }
-        return childs;
+        //Sort the childs using localCmp as criterion
+        bool localCmp(FSTree lhs, FSTree rhs)
+        {
+            //First Folders, then Files
+            if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
+                return true;
+            if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
+                return false;
+            //If the type results in a tie, sort alphabetically
+            return lhs.name < rhs.name;
+        }
+        sort!(localCmp)(childs_);
+        updateFocus_;
     }
-    void setFolder(Folder folder)
+    void updateFocus_()
     {
-        folder_ = folder;
-        folder_.expand(creator_, ExpandStrat.Shallow);
+        if (childs_.empty)
+            focus_ = "";
+        else if (!canFind!("a.name == b")(childs_, focus_))
+            focus_ = childs_[0].name;
     }
 
-    string getFilter() const {return filter_;}
-    void setFilter(string filter){filter_ = filter;}
-    const(string[]) getSelection() const {return selection_;}
-    void addToSelection(string selected){selection_ ~= selected;}
-
-    private:
-        Creator creator_;
-        Folder folder_;
-        string filter_;
-        string[] selection_;
+    Creator creator_;
+    Folder folder_;
+    FSTree[] childs_;
+    string focus_;
+    string filter_;
+    string[] selection_;
 }
 
 class Creator: ICreator

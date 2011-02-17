@@ -70,18 +70,6 @@ class View
             //Get all the childs
             auto allChilds = model_.getCurrentChilds;
             {
-                //Sort the childs using localCmp as criterion
-                bool localCmp(FSTree lhs, FSTree rhs)
-                {
-                    //First Folders, then Files
-                    if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
-                        return true;
-                    if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
-                        return false;
-                    //If the type results in a tie, sort alphabetically
-                    return lhs.name < rhs.name;
-                }
-                sort!(localCmp)(allChilds);
                 if (topIX_ < 0 || topIX_ >= allChilds.length)
                 {
                     reportError(Format.immediate("topIX_: %s is out of range", topIX_));
@@ -119,6 +107,8 @@ class View
                     break;
                 FSTree child = childs[ix];
                 string label = child.name;
+                if (label == model_.getCurrentFocus)
+                    label = "* " ~ label;
                 auto w = widgets_.get(ix);
                 switch (w.process)
                 {

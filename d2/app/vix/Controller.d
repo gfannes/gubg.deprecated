@@ -29,40 +29,12 @@ class Controller
         scope ds = canvas_.new DrawScope;
         //Check the keyboard
         {
-            if (canvas_.imui.escapeIsPressed())
-            {
-                if (model_.getCommand.empty)
-                    mode_ = Mode.Command;
-                else
-                    model_.resetCommand;
-            }
             auto key = canvas_.imui.getLastKey();
             if (Key.None != key)
-                model_.appendToCommand(convertToChar(key));
-            {
-                string command = model_.getCommand;
-                if (Mode.Command == mode_)
-                {
-                    if (!command.empty && '\n' == command[$-1])
-                    {
-                        switch (command)
-                        {
-                            case ":q\n": quit_ = true; break;
-                            case "i":
-                                   model_.resetCommand;
-                                   mode_ = Mode.Filter;
-                                   break;
-                            default: break;
-                        }
-                    }
-                }
-                else if (Mode.Filter == mode_)
-                {
-                    model_.setCurrentFilter(command);
-                }
-                else
-                    throw new Exception("Unknown mode");
-            }
+                model_.appendToCommand(key);
+
+            if (model_.quit)
+                quit_ = true;
         }
 
         //Process the display
@@ -81,6 +53,4 @@ class Controller
         FewTimes fastProcessing_;
         View view_;
         Model model_;
-        enum Mode {Filter, Command};
-        Mode mode_ = Mode.Filter;
 }
