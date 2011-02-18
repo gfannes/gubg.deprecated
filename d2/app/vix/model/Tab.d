@@ -1,6 +1,7 @@
 module vix.model.Tab;
 
 public import gubg.FSTree;
+import gubg.Format;
 
 import std.path;
 
@@ -12,6 +13,7 @@ version (UseRegExp)
 import std.regexp;
 import std.array;
 import std.algorithm;
+import std.process;
 
 import std.stdio;
 
@@ -20,36 +22,45 @@ class Tab
     this()
     {
         creator_ = new Creator;
-        setFolder(Folder.createRecursive("/home/gfannes", creator_));
+        activate(Folder.createRecursive("/home/gfannes", creator_));
     }
 
     string getPath(){return folder_.path;}
     void moveToRoot()
     {
         if (folder_.parent)
-            setFolder(folder_.parent);
+            activate(folder_.parent);
     }
     FSTree[] getChilds(ref uint focusIX)
     {
         focusIX = focusIX_;
         return childs_;
     }
-    void setFolder(Folder folder)
+    void activate(FSTree tree)
     {
-        folder_ = folder;
-        folder_.expand(creator_, ExpandStrat.Shallow);
-        filter_ = "";
-        focus_ = "";
-        updateChilds_();
+        auto folder = cast(Folder)tree;
+        if (!(folder is null))
+        {
+            folder_ = folder;
+            folder_.expand(creator_, ExpandStrat.Shallow);
+            filter_ = "";
+            focus_ = "";
+            updateChilds_();
+            return;
+        }
+        auto file = cast(gubg.FSTree.File)tree;
+        if (!(file is null))
+        {
+            writefln("Executing file %s", file.path);
+            system(Format.immediate("gvim --remote-tab-silent %s", file.path));
+            system("wmctrl -a GVIM");
+        }
     }
-    void setFolderToFocus()
+    void activateFocus()
     {
         if (childs_.empty)
             return;
-        auto folder = cast(Folder)childs_[focusIX_];
-        if (folder is null)
-            return;
-        setFolder(folder);
+        activate(childs_[focusIX_]);
     }
     enum Movement {Up, Down}
     void moveFocus(Movement movement)

@@ -19,7 +19,6 @@ class View
         model_ = model;
         canvas_ = canvas;
         widgets_ = new Widgets;
-        topIX_ = 0;
     }
 
     void process()
@@ -32,16 +31,17 @@ class View
         //The folder bar
         {
             auto w = widgets_.get();
+            updateCurrentPath_();
             switch (w.process)
             {
                 case WidgetState.Empty:
-                    w.set(new Button(folderBar.area, model_.getCurrentPath, Alignment.Left, canvas_));
+                    w.set(new Button(folderBar.area, currentPath_, Alignment.Left, canvas_));
                     break;
                 case WidgetState.Activated:
                     //What to do here?
                     break;
                 default:
-                    w.get!(Button).setLabel(model_.getCurrentPath);
+                    w.get!(Button).setLabel(currentPath_);
                     break;
             }
         }
@@ -59,7 +59,7 @@ class View
                     break;
                 case WidgetState.Activated:
                     model_.moveCurrentToRoot;
-                    topIX_ = 0;
+                    return;
                     break;
                 default:
                     break;
@@ -120,16 +120,7 @@ class View
                         w.set(new Button(sb.area, label, Alignment.Left, canvas_));
                         break;
                     case WidgetState.Activated:
-                        Folder folder = cast(gubg.FSTree.Folder)child;
-                        if (folder)
-                        {
-                            model_.setCurrent(folder);
-                            topIX_ = 0;
-                        }
-                        else
-                        {
-                            //Not yet handled
-                        }
+                        model_.activateCurrent(child);
                         break;
                     default:
                         auto button = w.get!(Button).setLabel(label);
@@ -163,5 +154,15 @@ class View
     Model model_;
     Widgets widgets_;
     SDLCanvas canvas_;
+
+    void updateCurrentPath_()
+    {
+        if (currentPath_ != model_.getCurrentPath)
+        {
+            currentPath_ = model_.getCurrentPath;
+            topIX_ = 0;
+        }
+    }
     int topIX_;
+    string currentPath_;
 }

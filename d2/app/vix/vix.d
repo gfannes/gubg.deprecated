@@ -9,7 +9,7 @@ import gubg.OptionParser;
 
 import std.stdio;
 
-bool verbose__ = true;
+bool verbose__ = false;
 int main(string[] args)
 {
     bool[string] switches;

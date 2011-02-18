@@ -17,7 +17,7 @@ class Model
     string getCurrentPath(){return current_.getPath;}
     void moveCurrentToRoot(){current_.moveToRoot;}
     FSTree[] getCurrentChilds(ref uint focusIX){return current_.getChilds(focusIX);}
-    void setCurrent(Folder folder){return current_.setFolder(folder);}
+    void activateCurrent(FSTree tree){return current_.activate(tree);}
     const(string[]) getCurrentSelection() const {return current_.getSelection;}
     void addToCurrentSelection(string selected){current_.addToSelection(selected);}
 
@@ -46,7 +46,7 @@ class Model
                              if (Mode.Filter != mode_)
                                  break;
             case Key.Right:
-                             current_.setFolderToFocus; return;
+                             current_.activateFocus; return;
                              break;
             case Key.Left:
                              moveCurrentToRoot; return;
