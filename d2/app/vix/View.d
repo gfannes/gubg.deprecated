@@ -113,8 +113,6 @@ class View
                     break;
                 FSTree child = childs[ix];
                 string label = child.name;
-                if (ix == relativeFocusIX)
-                    label = "*** " ~ label;
                 auto w = widgets_.get(ix);
                 switch (w.process)
                 {
@@ -134,7 +132,11 @@ class View
                         }
                         break;
                     default:
-                        w.get!(Button).setLabel(label);
+                        auto button = w.get!(Button).setLabel(label);
+                        if (ix == relativeFocusIX)
+                            button.setFillColor(Color.coolGreen);
+                        else
+                            button.resetFillColor();
                         break;
                 }
             }

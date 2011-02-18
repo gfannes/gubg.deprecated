@@ -15,7 +15,9 @@ struct Color
     static const Color yellow  = Color(1.0, 1.0, 0.0);
     static const Color gray    = Color(0.5, 0.5, 0.5);
     static const Color coolBlue  = Color(0.07, 0.20, 0.33);
+    static const Color darkBlue  = Color(0.06, 0.15, 0.25);
     static const Color coolGreen = Color(0.07, 0.33, 0.20);
+    static const Color darkGreen = Color(0.06, 0.25, 0.15);
 
     const real InvalidValue = -2.0;
     static const Color invalid = Color(InvalidValue, InvalidValue, InvalidValue);

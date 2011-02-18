@@ -3,7 +3,13 @@ module vix.model.Tab;
 public import gubg.FSTree;
 
 import std.path;
+
+//There was instability in std.regex for D2.052 which is why we for now fall back to using regexp
+version = UseRegExp;
+version (UseRegex)
 import std.regex;
+version (UseRegExp)
+import std.regexp;
 import std.array;
 import std.algorithm;
 
@@ -51,7 +57,7 @@ class Tab
         switch (movement)
         {
             case Movement.Up:
-                if (focusIX_ > 1)
+                if (focusIX_ > 0)
                     --focusIX_;
                 break;
             case Movement.Down:
@@ -85,13 +91,25 @@ class Tab
     {
         childs_.length = 0;
         //Append only the non-hidden files and folders which match the filter_ (case insensitive)
-        auto re = regex(filter_.empty ? "." : filter_, "i");
+        auto reStr = (filter_.empty ? "." : filter_);
+        version (UseRegex)
+            auto re = regex(reStr, "i");
+        version (UseRegExp)
+            auto re = RegExp(reStr, "i");
         foreach (child; folder_.childs)
             if (child.name[0] != '.')
             {
+                version (UseRegex)
+                {
                 auto m = match(child.name, re);
                 if (!m.empty)
                     childs_ ~= child;
+                }
+                version (UseRegExp)
+                {
+                if (re.test(child.name))
+                    childs_ ~= child;
+                }
             }
         //Sort the childs using localCmp as criterion
         bool localCmp(FSTree lhs, FSTree rhs)

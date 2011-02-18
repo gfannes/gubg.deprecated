@@ -36,6 +36,16 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         label_ = label;
         return this;
     }
+    Button setFillColor(Color fillColor)
+    {
+        fillColor_ = fillColor;
+        return this;
+    }
+    Button resetFillColor()
+    {
+        fillColor_ = Color.invalid;
+        return this;
+    }
     //StateMachine interface
     bool processEvent(bool)
     {
@@ -72,8 +82,11 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
         Style s;
         switch (state)
         {
-            case WidgetState.Idle: break;
-            case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
+            case WidgetState.Idle:
+                if (fillColor_.isValid)
+                    s.fill(fillColor_);
+                break;
+            case WidgetState.Highlighted: s.fill(Color.darkBlue); break;
             case WidgetState.Activating: s.fill(Color.yellow); break;
             case WidgetState.Activated: s.fill(Color.green); break;
         }
@@ -99,6 +112,7 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
     private:
     TwoPoint dimensions_;
     string label_;
+    Color fillColor_ = Color.invalid;
     Alignment alignment_;
     SDLCanvas canvas_;
 }
