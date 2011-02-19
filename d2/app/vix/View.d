@@ -36,6 +36,7 @@ class View
             foreach (uint ix, ref sb; tabs)
             {
                 auto tab = model_.tabs_[ix];
+                //We use _both_ the total number of tabs and the tabIX at hand as extra
                 auto w = widgets_.get((model_.tabs_.length << 16) + ix);
                 switch (w.process)
                 {

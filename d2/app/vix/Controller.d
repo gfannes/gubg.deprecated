@@ -24,7 +24,10 @@ class Controller
         view_ = new View(model_, canvas_);
     }
     
-    bool quit(){return quit_;}
+    bool quit() const
+    {
+        return quit_ || model_.tabs_.empty;
+    }
     void process()
     {
         scope ds = canvas_.new DrawScope;
@@ -98,20 +101,41 @@ class Controller
                 break;
             case Mode.Command:
                 command_ ~= c;
+                bool commandOK = true;
                 switch (command_)
                 {
-                    case ":q\n": quit_ = true; break;
+                    case ":qa\n": quit_ = true; break;
+                    case ":q\n":
+                           if (1 == model_.tabs_.length)
+                               quit_ = true;
+                           else
+                           {
+                               Tab[] tabs;
+                               uint tabIX;
+                               foreach (ix, tab; model_.tabs_)
+                                   if (tab == currentTab_)
+                                       tabIX = ix;
+                                   else
+                                       tabs ~= tab;
+                               if (tabIX > 0)
+                                   --tabIX;
+                               model_.tabs_ = tabs;
+                               view_.setCurrentTab(tabIX);
+                           }
+                           break;
                     case ":t\n":
                            model_.tabs_ ~= new Tab;
                            view_.setCurrentTab(model_.tabs_.length-1);
-                           resetCommand_;
                            break;
                     case "i":
-                           resetCommand_;
                            mode_ = Mode.Filter;
                            break;
-                    default: break;
+                    default:
+                           commandOK = false;
+                           break;
                 }
+                if (commandOK)
+                    resetCommand_;
                 break;
         }
     }
@@ -129,7 +153,6 @@ class Controller
         assert(false);
         return "";
     }
-    bool quit() const {return quit_;}
 
     private:
     enum Mode {Filter, Command};
