@@ -25,10 +25,36 @@ class View
     void process()
     {
         auto box = new Box(TwoPoint(0, 0, canvas_.width, canvas_.height));
-        box.split([0.05, 0.92, 0.03], Direction.TopDown);
-        auto folderBar = box[0];
-        auto center = box[1];
-        auto commandBar = box[2];
+        box.split([0.03, 0.05, 0.89, 0.03], Direction.TopDown);
+        auto tabs = box[0];
+        auto folderBar = box[1];
+        auto center = box[2];
+        auto commandBar = box[3];
+        //The tabs
+        {
+            tabs.split(model_.tabs_.length, Direction.LeftToRight);
+            foreach (uint ix, ref sb; tabs)
+            {
+                auto tab = model_.tabs_[ix];
+                auto w = widgets_.get((model_.tabs_.length << 16) + ix);
+                switch (w.process)
+                {
+                    case WidgetState.Empty:
+                        w.set(new Button(sb.area, tab.getPath, Alignment.Left, canvas_));
+                        break;
+                    case WidgetState.Activated:
+                        setCurrentTab(ix);
+                        break;
+                    default:
+                        auto button = w.get!(Button).setLabel(tab.getPath);
+                        if (tab == currentTab)
+                            button.setFillColor(Color.coolGreen);
+                        else
+                            button.resetFillColor();
+                        break;
+                }
+            }
+        }
         //The folder bar
         {
             auto w = widgets_.get();
@@ -152,6 +178,7 @@ class View
     }
 
     Tab currentTab(){return model_.tabs_[tabIX_];}
+    void setCurrentTab(int tabIX){tabIX_ = tabIX;}
 
     private:
     Model model_;

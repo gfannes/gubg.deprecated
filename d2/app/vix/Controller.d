@@ -48,15 +48,19 @@ class Controller
     }
 
     private:
+    Tab currentTab_()
+    {
+        return view_.currentTab;
+    }
     void resetCommand_()
     {
         switch (mode_)
         {
             case Mode.Filter:
-                if (view_.currentTab.getFilter.empty)
+                if (currentTab_.getFilter.empty)
                     mode_ = Mode.Command;
                 else
-                    view_.currentTab.setFilter("");
+                    currentTab_.setFilter("");
                 break;
             case Mode.Command:
                 command_ = "";
@@ -73,16 +77,16 @@ class Controller
                              if (Mode.Filter != mode_)
                                  break;
             case Key.Right:
-                             view_.currentTab.activateFocus; return;
+                             currentTab_.activateFocus; return;
                              break;
             case Key.Left:
-                             view_.currentTab.moveToRoot; return;
+                             currentTab_.moveToRoot; return;
                              break;
             case Key.Up:
-                             view_.currentTab.moveFocus(Tab.Movement.Up); return;
+                             currentTab_.moveFocus(Tab.Movement.Up); return;
                              break;
             case Key.Down:
-                             view_.currentTab.moveFocus(Tab.Movement.Down); return;
+                             currentTab_.moveFocus(Tab.Movement.Down); return;
                              break;
             default: break;
         }
@@ -90,13 +94,18 @@ class Controller
         switch (mode_)
         {
             case Mode.Filter:
-                view_.currentTab.appendToFilter(c);
+                currentTab_.appendToFilter(c);
                 break;
             case Mode.Command:
                 command_ ~= c;
                 switch (command_)
                 {
                     case ":q\n": quit_ = true; break;
+                    case ":t\n":
+                           model_.tabs_ ~= new Tab;
+                           view_.setCurrentTab(model_.tabs_.length-1);
+                           resetCommand_;
+                           break;
                     case "i":
                            resetCommand_;
                            mode_ = Mode.Filter;
@@ -111,7 +120,7 @@ class Controller
         switch (mode_)
         {
             case Mode.Filter:
-                return "Filter: " ~ view_.currentTab().getFilter;
+                return "Filter: " ~ currentTab_().getFilter;
                 break;
             case Mode.Command:
                 return "Command: " ~ command_;
