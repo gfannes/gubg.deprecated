@@ -86,7 +86,12 @@ class Button: StateMachine!(bool, WidgetState),  IWidget
                 if (fillColor_.isValid)
                     s.fill(fillColor_);
                 break;
-            case WidgetState.Highlighted: s.fill(Color.darkBlue); break;
+            case WidgetState.Highlighted:
+                if (fillColor_.isValid)
+                    s.fill(fillColor_);
+                else
+                    s.fill(Color.darkBlue);
+                break;
             case WidgetState.Activating: s.fill(Color.yellow); break;
             case WidgetState.Activated: s.fill(Color.green); break;
         }

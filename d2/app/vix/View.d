@@ -19,6 +19,7 @@ class View
         model_ = model;
         canvas_ = canvas;
         widgets_ = new Widgets;
+        tabIX_ = 0;
     }
 
     void process()
@@ -58,7 +59,7 @@ class View
                     w.set(new Button(back.area, "", Alignment.Left, canvas_));
                     break;
                 case WidgetState.Activated:
-                    model_.moveCurrentToRoot;
+                    currentTab.moveToRoot;
                     return;
                     break;
                 default:
@@ -69,7 +70,7 @@ class View
         {
             //Get all the childs and the focusIX
             uint focusIX;
-            auto allChilds = model_.getCurrentChilds(focusIX);
+            auto allChilds = currentTab.getChilds(focusIX);
             //Check that topIX_ is in range
             if (topIX_ < 0 || (topIX_ >= allChilds.length && !allChilds.empty))
             {
@@ -120,7 +121,7 @@ class View
                         w.set(new Button(sb.area, label, Alignment.Left, canvas_));
                         break;
                     case WidgetState.Activated:
-                        model_.activateCurrent(child);
+                        currentTab.activate(child);
                         break;
                     default:
                         auto button = w.get!(Button).setLabel(label);
@@ -150,6 +151,8 @@ class View
         }
     }
 
+    Tab currentTab(){return model_.tabs_[tabIX_];}
+
     private:
     Model model_;
     Widgets widgets_;
@@ -157,12 +160,14 @@ class View
 
     void updateCurrentPath_()
     {
-        if (currentPath_ != model_.getCurrentPath)
+        if (currentPath_ != currentTab.getPath)
         {
-            currentPath_ = model_.getCurrentPath;
+            currentPath_ = currentTab.getPath;
             topIX_ = 0;
         }
     }
     int topIX_;
+
+    int tabIX_;
     string currentPath_;
 }

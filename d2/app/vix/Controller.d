@@ -15,13 +15,12 @@ class Controller
 {
     this(uint width, uint height)
     {
-        quit_ = false;
-
         fastProcessing_ = FewTimes(10);
 
         canvas_ = new SDLCanvas(width, height);
 
         model_ = new Model;
+        model_.setCommandGetter(&getCommand);
         view_ = new View(model_, canvas_);
     }
     
@@ -35,10 +34,7 @@ class Controller
             if (verbose__)
                 writefln("Key: %s", key);
             if (Key.None != key)
-                model_.appendToCommand(key);
-
-            if (model_.quit)
-                quit_ = true;
+                appendToCommand_(key);
         }
 
         //Process the display
@@ -52,9 +48,87 @@ class Controller
     }
 
     private:
-        bool quit_;
-        SDLCanvas canvas_;
-        FewTimes fastProcessing_;
-        View view_;
-        Model model_;
+    void resetCommand_()
+    {
+        switch (mode_)
+        {
+            case Mode.Filter:
+                if (view_.currentTab.getFilter.empty)
+                    mode_ = Mode.Command;
+                else
+                    view_.currentTab.setFilter("");
+                break;
+            case Mode.Command:
+                command_ = "";
+                break;
+        }
+    }
+    void appendToCommand_(Key key)
+    {
+        switch (key)
+        {
+            case Key.Escape: resetCommand_; return; break;
+            case Key.Return:
+                             //Only in filter mode, <enter> acts the same as "->"
+                             if (Mode.Filter != mode_)
+                                 break;
+            case Key.Right:
+                             view_.currentTab.activateFocus; return;
+                             break;
+            case Key.Left:
+                             view_.currentTab.moveToRoot; return;
+                             break;
+            case Key.Up:
+                             view_.currentTab.moveFocus(Tab.Movement.Up); return;
+                             break;
+            case Key.Down:
+                             view_.currentTab.moveFocus(Tab.Movement.Down); return;
+                             break;
+            default: break;
+        }
+        auto c = convertToChar(key);
+        switch (mode_)
+        {
+            case Mode.Filter:
+                view_.currentTab.appendToFilter(c);
+                break;
+            case Mode.Command:
+                command_ ~= c;
+                switch (command_)
+                {
+                    case ":q\n": quit_ = true; break;
+                    case "i":
+                           resetCommand_;
+                           mode_ = Mode.Filter;
+                           break;
+                    default: break;
+                }
+                break;
+        }
+    }
+    string getCommand()
+    {
+        switch (mode_)
+        {
+            case Mode.Filter:
+                return "Filter: " ~ view_.currentTab().getFilter;
+                break;
+            case Mode.Command:
+                return "Command: " ~ command_;
+                break;
+        }
+        assert(false);
+        return "";
+    }
+    bool quit() const {return quit_;}
+
+    private:
+    enum Mode {Filter, Command};
+    Mode mode_ = Mode.Filter;
+    string command_ = "";
+    bool quit_ = false;
+    SDLCanvas canvas_;
+    FewTimes fastProcessing_;
+    View view_;
+    Model model_;
 }

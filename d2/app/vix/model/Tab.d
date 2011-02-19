@@ -52,7 +52,7 @@ class Tab
         if (!(file is null))
         {
             writefln("Executing file %s", file.path);
-            system(Format.immediate("gvim --remote-tab-silent %s", file.path));
+            system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
             system("wmctrl -a GVIM");
         }
     }
