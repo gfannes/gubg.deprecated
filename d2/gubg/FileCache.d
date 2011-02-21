@@ -31,7 +31,7 @@ class FileCache
     //The full, unique name of the file in the file cache
     string filepath(FileInfo fi)
     {
-        return storagePath_.join(fi.filename);
+        return std.path.join(storagePath_, fi.filename);
     }
 
     //Returns true if creater was used to successfully create fi
@@ -160,7 +160,7 @@ struct FileInfo
         //Files: we only use creation and modification time information
         foreach (string filepath; filepaths_.sort)
         {
-            d_time c, a, m;
+            std.file.d_time c, a, m;
             getTimes(filepath, c, a, m);
             context.update(Format.immediate("%d %d", c, m));
         }

@@ -6,6 +6,9 @@ import vix.Model;
 import gubg.OnlyOnce;
 import gubg.graphics.Canvas;
 import gubg.graphics.IMUI;
+import gubg.Format;
+
+import std.regexp;
 
 import std.stdio;
 
@@ -17,13 +20,15 @@ class Controller
     {
         fastProcessing_ = FewTimes(10);
 
-        canvas_ = new SDLCanvas(width, height);
+        canvas_ = new SDLCanvas(width, height, false);
 
         model_ = new Model;
         model_.setCommandGetter(&getCommand);
         view_ = new View(model_, canvas_);
+
+        reGoto = RegExp("^g(.)");
     }
-    
+
     bool quit() const
     {
         return quit_ || model_.tabs_.empty;
@@ -55,13 +60,16 @@ class Controller
     {
         return view_.currentTab;
     }
-    void resetCommand_()
+    void resetCommand_(bool allowSwitchToCommandMode = false)
     {
         switch (mode_)
         {
             case Mode.Filter:
                 if (currentTab_.getFilter.empty)
-                    mode_ = Mode.Command;
+                {
+                    if (allowSwitchToCommandMode)
+                        mode_ = Mode.Command;
+                }
                 else
                     currentTab_.setFilter("");
                 break;
@@ -74,7 +82,7 @@ class Controller
     {
         switch (key)
         {
-            case Key.Escape: resetCommand_; return; break;
+            case Key.Escape: resetCommand_(true); return; break;
             case Key.Return:
                              //Only in filter mode, <enter> acts the same as "->"
                              if (Mode.Filter != mode_)
@@ -91,6 +99,18 @@ class Controller
             case Key.Down:
                              currentTab_.moveFocus(Tab.Movement.Down); return;
                              break;
+            case Key.F1: view_.setCurrentTab(0); resetCommand_; return; break;
+            case Key.F2: view_.setCurrentTab(1); resetCommand_; return; break;
+            case Key.F3: view_.setCurrentTab(2); resetCommand_; return; break;
+            case Key.F4: view_.setCurrentTab(3); resetCommand_; return; break;
+            case Key.F5: view_.setCurrentTab(4); resetCommand_; return; break;
+            case Key.F6: view_.setCurrentTab(5); resetCommand_; return; break;
+            case Key.F7: view_.setCurrentTab(6); resetCommand_; return; break;
+            case Key.F8: view_.setCurrentTab(7); resetCommand_; return; break;
+            case Key.F9: view_.setCurrentTab(8); resetCommand_; return; break;
+            case Key.F10: view_.setCurrentTab(9); resetCommand_; return; break;
+            case Key.F11: view_.setCurrentTab(10); resetCommand_; return; break;
+            case Key.F12: view_.setCurrentTab(11); resetCommand_; return; break;
             default: break;
         }
         auto c = convertToChar(key);
@@ -101,7 +121,7 @@ class Controller
                 break;
             case Mode.Command:
                 command_ ~= c;
-                bool commandOK = true;
+                bool resetCommandAtEnd = true;
                 switch (command_)
                 {
                     case ":qa\n": quit_ = true; break;
@@ -127,14 +147,16 @@ class Controller
                            model_.tabs_ ~= new Tab;
                            view_.setCurrentTab(model_.tabs_.length-1);
                            break;
-                    case "i":
-                           mode_ = Mode.Filter;
-                           break;
+                    case "i": mode_ = Mode.Filter; break;
+                    case "r": currentTab_.refresh; break;
                     default:
-                           commandOK = false;
-                           break;
+                              if (reGoto.test(command_))
+                                  currentTab_.setFolder(Format.immediate("%s:\\", reGoto[0][1]));
+                              else
+                                  resetCommandAtEnd = false;
+                              break;
                 }
-                if (commandOK)
+                if (resetCommandAtEnd)
                     resetCommand_;
                 break;
         }
@@ -158,6 +180,7 @@ class Controller
     enum Mode {Filter, Command};
     Mode mode_ = Mode.Filter;
     string command_ = "";
+    RegExp reGoto;
     bool quit_ = false;
     SDLCanvas canvas_;
     FewTimes fastProcessing_;

@@ -9,6 +9,7 @@ import gubg.Layout;
 import gubg.Format;
 
 import std.algorithm;
+import std.regexp;
 
 import std.stdio;
 
@@ -32,22 +33,31 @@ class View
         auto commandBar = box[3];
         //The tabs
         {
+            string formatPathForTab_(string path)
+            {
+                auto re = RegExp("([A-Z]+_[A-Z_]+)");
+                if (re.test(path))
+                    return re[0];
+                return path;
+
+            }
             tabs.split(model_.tabs_.length, Direction.LeftToRight);
             foreach (uint ix, ref sb; tabs)
             {
                 auto tab = model_.tabs_[ix];
                 //We use _both_ the total number of tabs and the tabIX at hand as extra
                 auto w = widgets_.get((model_.tabs_.length << 16) + ix);
+                string label = Format.immediate("%s - %s", ix+1, formatPathForTab_(tab.getPath));
                 switch (w.process)
                 {
                     case WidgetState.Empty:
-                        w.set(new Button(sb.area, tab.getPath, Alignment.Left, canvas_));
+                        w.set(new Button(sb.area, label, Alignment.Left, canvas_));
                         break;
                     case WidgetState.Activated:
                         setCurrentTab(ix);
                         break;
                     default:
-                        auto button = w.get!(Button).setLabel(tab.getPath);
+                        auto button = w.get!(Button).setLabel(label);
                         if (tab == currentTab)
                             button.setFillColor(Color.coolGreen);
                         else
@@ -179,7 +189,12 @@ class View
     }
 
     Tab currentTab(){return model_.tabs_[tabIX_];}
-    void setCurrentTab(int tabIX){tabIX_ = tabIX;}
+    void setCurrentTab(int tabIX)
+    {
+        tabIX_ = tabIX;
+        if (tabIX_ >= model_.tabs_.length)
+            tabIX_ = model_.tabs_.length-1;
+    }
 
     private:
     Model model_;

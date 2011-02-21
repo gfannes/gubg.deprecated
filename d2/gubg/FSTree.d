@@ -57,9 +57,11 @@ class Folder: FSTree
         return res;
     }
 
-    void expand(ICreator creator, ExpandStrat et = ExpandStrat.Shallow)
+    void expand(ICreator creator, ExpandStrat et = ExpandStrat.Shallow, bool refresh = false)
     {
-        if (!childs.empty)
+        if (refresh)
+            childs.length = 0;
+        else if (!childs.empty)
             return;
         foreach (string subpath; dirEntries(path, SpanMode.shallow))
         {
@@ -69,20 +71,20 @@ class Folder: FSTree
                 if (isdir(subpath))
                 {
                     Folder folder = creator.createFolder(subpath);
-		    if (folder)
-		    {
-			    folder.parent = this;
-			    if (ExpandStrat.Recursive == et)
-				    folder.expand(creator, et);
-			    child = folder;
-		    }
+                    if (folder)
+                    {
+                        folder.parent = this;
+                        if (ExpandStrat.Recursive == et)
+                            folder.expand(creator, et);
+                        child = folder;
+                    }
                 }
                 else if (isfile(subpath))
-		{
+                {
                     child = creator.createFile(subpath);
-		    if (child)
-			    child.parent = this;
-		}
+                    if (child)
+                        child.parent = this;
+                }
             }
             catch (std.file.FileException){}
 
@@ -90,7 +92,7 @@ class Folder: FSTree
                 childs ~= child;
         }
     }
-    
+
     //FSTree interface
     string toString() const
     {
@@ -147,6 +149,7 @@ version (UnitTest)
         {
             Folder createFolder(string path)
             {
+                writefln("createFolder: %s", path);
                 return new Folder(path);
             }
             File createFile(string path)
@@ -157,8 +160,11 @@ version (UnitTest)
             }
         }
         Creator creator = new Creator;
-	auto folder = Folder.createRecursive("/home/gfannes/gubg", creator);
-        auto tree = createFSTreeFromPath("/home/gfannes/gubg", creator);
+        version (Posix) string dir = "/home/gfannes/gubg";
+        //version (Win32) string dir = "c:/home/gfannes/gubg";
+        version (Win32) string dir = "c:\\home\\gfannes\\gubg";
+        auto folder = Folder.createRecursive(dir, creator);
+        auto tree = createFSTreeFromPath(dir, creator);
         foreach (File el; tree)
         {
             writeln(el.toString);

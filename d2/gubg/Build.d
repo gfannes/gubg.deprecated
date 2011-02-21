@@ -7,8 +7,8 @@ import std.stdio;
 
 string objectExtension()
 {
-	version (Posix) return "o";
-	version (Win32) return "obj";
+    version (Posix) return "o";
+    version (Win32) return "obj";
 }
 
 class Compile
@@ -76,11 +76,28 @@ class Link
     bool execute(bool verbose)
     {
         Format format;
-        format.delimiter = " ";
-        format("dmd");
-        format(extraSettings());
-        foreach (objectFilepath; objectFilepaths_)
-            format("\"" ~ objectFilepath ~ "\"");
+        version (Posix)
+        {
+            format.delimiter = " ";
+            format("dmd");
+            format(extraSettings());
+            foreach (objectFilepath; objectFilepaths_)
+                format("\"" ~ objectFilepath ~ "\"");
+        }
+        version (Win32)
+        {
+            format.delimiter = " ";
+            format("d-link ");
+            {
+                Format objectFiles;
+                objectFiles.delimiter = "+";
+                foreach (objectFilepath; objectFilepaths_)
+                    objectFiles("\"" ~ objectFilepath ~ "\"");
+                format(objectFiles.toString);
+            }
+            format.delimiter = ", ";
+            format(extraSettings());
+        }
 
         //Execute the command
         if (verbose)
@@ -110,15 +127,29 @@ class LinkExecutable: Link
     string extraSettings()
     {
         Format format;
-        format("-of\"%s\"", exeName_);
-        format.delimiter = " ";
-        version (Posix) format("-L-Map=\"%s.map\"", exeName_);
-        foreach (libName; libraries)
-            format("-L-l%s", libName);
+        version (Posix)
+        {
+            format("-of\"%s\"", exeName_);
+            format.delimiter = " ";
+            format("-L-Map=\"%s.map\"", exeName_);
+            foreach (libName; libraries)
+                format("-L-l%s", libName);
+        }
+        version (Win32)
+        {
+            format("\"%s\", , ", exeName_);
+            {
+                Format libFiles;
+                libFiles.delimiter = "+";
+                foreach (libName; libraries)
+                    libFiles("%s.lib", libName);
+                format(libFiles.toString);
+            }
+        }
 
         return format.toString();
     }
-    
+
     void addLibrary(string libName)
     {
         libraries ~= libName;
