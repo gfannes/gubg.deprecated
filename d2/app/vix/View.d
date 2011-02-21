@@ -33,13 +33,22 @@ class View
         auto commandBar = box[3];
         //The tabs
         {
-            string formatPathForTab_(string path)
+            string formatPathForTab_(Tab tab)
             {
-                auto re = RegExp("([A-Z]+_[A-Z_]+)");
-                if (re.test(path))
-                    return re[0];
-                return path;
-
+                if (!tab.getContentPattern.empty)
+                    return "(" ~ tab.getContentPattern ~ ")";
+                version (Posix)
+                {
+                    return std.path.basename(tab.getPath);
+                }
+                version (Win32)
+                {
+                    auto re = RegExp("([A-Z]+_[A-Z_]+)");
+                    auto path = tab.getPath;
+                    if (re.test(path))
+                        return re[0];
+                    return path;
+                }
             }
             tabs.split(model_.tabs_.length, Direction.LeftToRight);
             foreach (uint ix, ref sb; tabs)
@@ -47,7 +56,7 @@ class View
                 auto tab = model_.tabs_[ix];
                 //We use _both_ the total number of tabs and the tabIX at hand as extra
                 auto w = widgets_.get((model_.tabs_.length << 16) + ix);
-                string label = Format.immediate("%s - %s", ix+1, formatPathForTab_(tab.getPath));
+                string label = Format.immediate("%s - %s", ix+1, formatPathForTab_(tab));
                 switch (w.process)
                 {
                     case WidgetState.Empty:

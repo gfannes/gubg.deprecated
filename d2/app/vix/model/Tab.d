@@ -14,20 +14,24 @@ version (UseRegExp)
 import std.array;
 import std.algorithm;
 import std.process;
+import std.file;
 
 import std.stdio;
 
 class Tab
 {
-    this()
+    this(string folder, string contentPattern = "")
     {
-        creator_ = new Creator;
-        string homeFolder;
-        version (Posix) homeFolder = "/home/gfannes";
-        version (Win32) homeFolder = "w:\\";
-        setFolder(homeFolder);
+        if (!contentPattern.empty)
+        {
+            contentPattern_ = contentPattern;
+            reContentPattern_ = RegExp(contentPattern);
+        }
+        creator_ = new Creator(reContentPattern_);
+        setFolder(folder);
     }
 
+    string getContentPattern(){return contentPattern_;}
     void refresh()
     {
         folder_.expand(creator_, ExpandStrat.Shallow, true);
@@ -174,16 +178,35 @@ class Tab
     uint focusIX_ = 0;
     string filter_;
     string[] selection_;
+    string contentPattern_;
+    RegExp reContentPattern_;
 }
 
 class Creator: ICreator
 {
+    this (RegExp contentPattern = null)
+    {
+        reContentPattern_ = contentPattern;
+        reExtension_ = RegExp("\\.(d|c|h|cpp|txt|xml)$");
+    }
+    RegExp reContentPattern_;
+    RegExp reExtension_;
+
     Folder createFolder(string path)
     {
         return new Folder(path);
     }
     gubg.FSTree.File createFile(string path)
     {
+        if (!(reContentPattern_ is null))
+        {
+            if (!reExtension_.test(path))
+                return null;
+            writefln("Reading file: %s", path);
+            auto content = readText!(string)(path);
+            if (content.length > 100_000 || !reContentPattern_.test(content))
+                return null;
+        }
         return new gubg.FSTree.File(path);
     }
 }

@@ -11,6 +11,8 @@ import std.array;
 
 import std.stdio;
 
+bool verbose__ = false;
+
 enum VAlign
 {
     Bottom,//The bottom of the TwoPoint is matched with the baseline, the top with the height line
@@ -262,7 +264,11 @@ class SDLCanvas: ICanvas
                 {
                     case SDL_KEYDOWN:
                         if (event.key.keysym.unicode != 0)
+                        {
                             cachedKeys_ ~= fromSDL(event.key.keysym.unicode);
+                            if (verbose__)
+                                writefln("Unicode: %s", cachedKeys_[$-1]);
+                        }
                         else
                         {
                             auto sdlKey = event.key.keysym.sym;

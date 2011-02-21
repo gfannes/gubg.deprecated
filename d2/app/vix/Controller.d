@@ -22,11 +22,15 @@ class Controller
 
         canvas_ = new SDLCanvas(width, height, false);
 
-        model_ = new Model;
+        string homeFolder;
+        version (Posix) homeFolder = "/home/gfannes";
+        version (Win32) homeFolder = "w:\\";
+        model_ = new Model(homeFolder);
         model_.setCommandGetter(&getCommand);
         view_ = new View(model_, canvas_);
 
         reGoto = RegExp("^g(.)");
+        reSearch = RegExp("^/(.*)");
     }
 
     bool quit() const
@@ -144,7 +148,8 @@ class Controller
                            }
                            break;
                     case ":t\n":
-                           model_.tabs_ ~= new Tab;
+                           model_.tabs_ ~= new Tab(currentTab_.getPath);
+                           mode_ = Mode.Filter;
                            view_.setCurrentTab(model_.tabs_.length-1);
                            break;
                     case "i": mode_ = Mode.Filter; break;
@@ -152,6 +157,20 @@ class Controller
                     default:
                               if (reGoto.test(command_))
                                   currentTab_.setFolder(Format.immediate("%s:\\", reGoto[0][1]));
+                              else if ('\n' == command_[$-1])
+                              {
+                                  if (reSearch.test(command_))
+                                  {
+                                      auto contentSearch = reSearch[0][1 .. $];
+                                      if (!contentSearch.empty)
+                                      {
+                                          writefln("Search regexp: %s", contentSearch);
+                                          model_.tabs_ ~= new Tab(currentTab_.getPath, contentSearch);
+                                          mode_ = Mode.Filter;
+                                          view_.setCurrentTab(model_.tabs_.length-1);
+                                      }
+                                  }
+                              }
                               else
                                   resetCommandAtEnd = false;
                               break;
@@ -181,6 +200,7 @@ class Controller
     Mode mode_ = Mode.Filter;
     string command_ = "";
     RegExp reGoto;
+    RegExp reSearch;
     bool quit_ = false;
     SDLCanvas canvas_;
     FewTimes fastProcessing_;

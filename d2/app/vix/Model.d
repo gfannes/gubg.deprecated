@@ -4,9 +4,9 @@ public import vix.model.Tab;
 
 class Model
 {
-    this()
+    this(string homeFolder)
     {
-        tabs_ ~= new Tab;
+        tabs_ ~= new Tab(homeFolder);
     }
     Tab[] tabs_;
 

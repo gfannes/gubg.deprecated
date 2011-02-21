@@ -347,6 +347,7 @@ char convertToChar(in Key key)
         case Key.Space: return ' ';
         case Key.Underscore: return '_';
         case Key.Period: return '.';
+        case Key.Slash: return '/';
         default: return '.';
     }
     assert(false);
@@ -457,6 +458,7 @@ enum Key
     Space = SDLK_SPACE,
     Underscore = SDLK_UNDERSCORE,
     Period = SDLK_PERIOD,
+    Slash = SDLK_SLASH,
 
     Up = SDLK_UP,
     Down = SDLK_DOWN,
