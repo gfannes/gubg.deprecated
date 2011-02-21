@@ -14,10 +14,10 @@ import std.stdio;
 enum VAlign
 {
     Bottom,//The bottom of the TwoPoint is matched with the baseline, the top with the height line
-           //This is suitable for multi-line text, as line spacing is automatically handled
+    //This is suitable for multi-line text, as line spacing is automatically handled
     Center,//The bottom of the TwoPoint is matched with the descent line, the top with the ascent line
-           //This is suitable for centered single-line text, as the characters more or less fall nicely
-           //in the box (given that the text contains both low and high characters like "g" and "l").
+    //This is suitable for centered single-line text, as the characters more or less fall nicely
+    //in the box (given that the text contains both low and high characters like "g" and "l").
 }
 enum HAlign
 {
@@ -217,8 +217,8 @@ class SDLCanvas: ICanvas
                             //For VAlign.Bottom, y does not change
                             case VAlign.Bottom: break;
                             case VAlign.Center:
-                                y = box.p0.y+descentFrac*fontSize;
-                                break;
+                                                y = box.p0.y+descentFrac*fontSize;
+                                                break;
                         }
                         break;
                 }
@@ -231,7 +231,7 @@ class SDLCanvas: ICanvas
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
     version (posix)
     {
-    uint windowId(){return info_.windowId;}
+        uint windowId(){return info_.windowId;}
     }
 
     //Immediate-mode user interface handling
@@ -272,6 +272,21 @@ class SDLCanvas: ICanvas
                                 case SDLK_DOWN:
                                 case SDLK_RIGHT:
                                 case SDLK_LEFT:
+                                case SDLK_F1:
+                                case SDLK_F2:
+                                case SDLK_F3:
+                                case SDLK_F4:
+                                case SDLK_F5:
+                                case SDLK_F6:
+                                case SDLK_F7:
+                                case SDLK_F8:
+                                case SDLK_F9:
+                                case SDLK_F10:
+                                case SDLK_F11:
+                                case SDLK_F12:
+                                case SDLK_F13:
+                                case SDLK_F14:
+                                case SDLK_F15:
                                     cachedKeys_ ~= fromSDL(sdlKey);
                                     break;
                                 default: break;

@@ -239,7 +239,7 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     WidgetState process()
     {
         processEvent(false);
-        
+
         Style s;
         switch (state)
         {
@@ -248,7 +248,7 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
             case WidgetState.Moving: s.fill(Color.yellow); break;
             default: break;
         }
-        
+
         canvas_.drawRectangle(currentBar_(), s);
         return state;
     }
@@ -344,6 +344,9 @@ char convertToChar(in Key key)
         case Key.Colon: return ':';
         case Key.Semicolon: return ';';
         case Key.Comma: return ',';
+        case Key.Space: return ' ';
+        case Key.Underscore: return '_';
+        case Key.Period: return '.';
         default: return '.';
     }
     assert(false);
@@ -451,6 +454,9 @@ enum Key
     Colon = SDLK_COLON,
     Semicolon = SDLK_SEMICOLON,
     Comma = SDLK_COMMA,
+    Space = SDLK_SPACE,
+    Underscore = SDLK_UNDERSCORE,
+    Period = SDLK_PERIOD,
 
     Up = SDLK_UP,
     Down = SDLK_DOWN,

@@ -8,9 +8,9 @@ import std.path;
 //There was instability in std.regex for D2.052 which is why we for now fall back to using regexp
 version = UseRegExp;
 version (UseRegex)
-import std.regex;
+    import std.regex;
 version (UseRegExp)
-import std.regexp;
+    import std.regexp;
 import std.array;
 import std.algorithm;
 import std.process;
@@ -22,9 +22,16 @@ class Tab
     this()
     {
         creator_ = new Creator;
-        activate(Folder.createRecursive("/home/gfannes", creator_));
+        string homeFolder;
+        version (Posix) homeFolder = "/home/gfannes";
+        version (Win32) homeFolder = "w:\\";
+        setFolder(homeFolder);
     }
 
+    void refresh()
+    {
+        folder_.expand(creator_, ExpandStrat.Shallow, true);
+    }
     string getPath(){return folder_.path;}
     void moveToRoot()
     {
@@ -35,6 +42,10 @@ class Tab
     {
         focusIX = focusIX_;
         return childs_;
+    }
+    void setFolder(string folder)
+    {
+        activate(Folder.createRecursive(folder, creator_));
     }
     void activate(FSTree tree)
     {
@@ -53,7 +64,7 @@ class Tab
         {
             writefln("Executing file %s", file.path);
             system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
-            system("wmctrl -a GVIM");
+            version (Posix) system("wmctrl -a GVIM");
         }
     }
     void activateFocus()
@@ -112,14 +123,14 @@ class Tab
             {
                 version (UseRegex)
                 {
-                auto m = match(child.name, re);
-                if (!m.empty)
-                    childs_ ~= child;
+                    auto m = match(child.name, re);
+                    if (!m.empty)
+                        childs_ ~= child;
                 }
                 version (UseRegExp)
                 {
-                if (re.test(child.name))
-                    childs_ ~= child;
+                    if (re.test(child.name))
+                        childs_ ~= child;
                 }
             }
         //Sort the childs using localCmp as criterion
