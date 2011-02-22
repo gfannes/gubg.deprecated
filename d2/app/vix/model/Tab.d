@@ -1,10 +1,11 @@
 module vix.model.Tab;
 
+import vix.Exit;
+
 public import gubg.FSTree;
 import gubg.Format;
 
 import std.path;
-
 //There was instability in std.regex for D2.052 which is why we for now fall back to using regexp
 version = UseRegExp;
 version (UseRegex)
@@ -15,6 +16,7 @@ import std.array;
 import std.algorithm;
 import std.process;
 import std.file;
+import std.utf;
 
 import std.stdio;
 
@@ -32,9 +34,27 @@ class Tab
     }
 
     string getContentPattern(){return contentPattern_;}
-    void refresh()
+    void refresh(ExpandStrat expandStrat)
     {
-        folder_.expand(creator_, ExpandStrat.Shallow, true);
+        folder_.expand(creator_, expandStrat, true);
+        if (ExpandStrat.Recursive == expandStrat)
+        {
+            //We expanded recursively, lets prune empty dirs too
+            while (true)
+            {
+                Folder[] emptyFolders;
+                foreach (ref Folder folder; folder_)
+                {
+                    if (folder.childs.empty)
+                        emptyFolders ~= folder;
+                }
+                if (emptyFolders.empty)
+                    break;
+                foreach (folder; emptyFolders)
+                    folder.remove;
+            }
+        }
+        updateChilds_;
     }
     string getPath(){return folder_.path;}
     void moveToRoot()
@@ -59,7 +79,7 @@ class Tab
             folder_ = folder;
             folder_.expand(creator_, ExpandStrat.Shallow);
             filter_ = "";
-            focus_ = "";
+            focus_ = getFocusForFolder_(folder.path);
             updateChilds_();
             return;
         }
@@ -90,6 +110,21 @@ class Tab
                 if (focusIX_ < childs_.length-1)
                     ++focusIX_;
                 break;
+        }
+        setFocus(childs_[focusIX_].name);
+    }
+    void deleteFocus()
+    {
+        try
+        {
+            string newFocus = (childs_.length > focusIX_+1 ? childs_[focusIX_+1].name : (focusIX_ > 0 ? childs_[focusIX_-1].name : ""));
+            std.file.remove(childs_[focusIX_].path);
+            focus_ = newFocus;
+            refresh(ExpandStrat.Shallow);
+        }
+        catch (std.file.FileException)
+        {
+            reportError(Format.immediate("Could not delete %s", childs_[focusIX_].path));
         }
     }
 
@@ -159,16 +194,22 @@ class Tab
             focusIX_ = 0;
             return;
         }
+        bool foundFocus = false;
         foreach (uint ix, child; childs_)
         {
             if (focus_ == child.name)
             {
+                foundFocus = true;
                 focusIX_ = ix;
-                return;
+                break;
             }
         }
-        focus_ = childs_[0].name;
-        focusIX_ = 0;
+        if (!foundFocus)
+        {
+            focus_ = childs_[0].name;
+            focusIX_ = 0;
+        }
+        focusPerFolder_[folder_.path] = focus_;
     }
 
     Creator creator_;
@@ -176,6 +217,13 @@ class Tab
     FSTree[] childs_;
     string focus_ = "";
     uint focusIX_ = 0;
+    string getFocusForFolder_(string path)
+    {
+        if (path in focusPerFolder_)
+            return focusPerFolder_[path];
+        return "";
+    }
+    string[string] focusPerFolder_;
     string filter_;
     string[] selection_;
     string contentPattern_;
@@ -187,7 +235,7 @@ class Creator: ICreator
     this (RegExp contentPattern = null)
     {
         reContentPattern_ = contentPattern;
-        reExtension_ = RegExp("\\.(d|c|h|cpp|txt|xml)$");
+        reExtension_ = RegExp("\\.(d|rb|cpp|h|hpp|c|txt|xml|java|pl)$");
     }
     RegExp reContentPattern_;
     RegExp reExtension_;
@@ -202,10 +250,14 @@ class Creator: ICreator
         {
             if (!reExtension_.test(path))
                 return null;
-            writefln("Reading file: %s", path);
-            auto content = readText!(string)(path);
-            if (content.length > 100_000 || !reContentPattern_.test(content))
-                return null;
+            try
+            {
+                auto content = readText!(string)(path);
+                if (content.length > 100_000 || !reContentPattern_.test(content))
+                    return null;
+            }
+            catch (std.file.FileException){reportError(Format.immediate("Could not read file %s", path));}
+            catch (std.utf.UtfException){reportError(Format.immediate("Invalid UTF in file %s", path));}
         }
         return new gubg.FSTree.File(path);
     }

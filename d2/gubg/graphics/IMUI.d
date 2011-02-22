@@ -459,6 +459,7 @@ enum Key
     Underscore = SDLK_UNDERSCORE,
     Period = SDLK_PERIOD,
     Slash = SDLK_SLASH,
+    Delete = SDLK_DELETE,
 
     Up = SDLK_UP,
     Down = SDLK_DOWN,

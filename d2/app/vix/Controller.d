@@ -35,7 +35,7 @@ class Controller
 
     bool quit() const
     {
-        return quit_ || model_.tabs_.empty;
+        return quit_ || !model_.hasTabs();
     }
     void process()
     {
@@ -72,13 +72,22 @@ class Controller
                 if (currentTab_.getFilter.empty)
                 {
                     if (allowSwitchToCommandMode)
+                    {
+                        command_ = "";
                         mode_ = Mode.Command;
+                    }
                 }
                 else
                     currentTab_.setFilter("");
                 break;
             case Mode.Command:
-                command_ = "";
+                if (!command_.empty)
+                {
+                    if (allowSwitchToCommandMode)
+                        command_ = "";
+                    else
+                        mode_ = Mode.Filter;
+                }
                 break;
         }
     }
@@ -102,6 +111,9 @@ class Controller
                              break;
             case Key.Down:
                              currentTab_.moveFocus(Tab.Movement.Down); return;
+                             break;
+            case Key.Delete:
+                             currentTab_.deleteFocus; return;
                              break;
             case Key.F1: view_.setCurrentTab(0); resetCommand_; return; break;
             case Key.F2: view_.setCurrentTab(1); resetCommand_; return; break;
@@ -130,44 +142,43 @@ class Controller
                 {
                     case ":qa\n": quit_ = true; break;
                     case ":q\n":
-                           if (1 == model_.tabs_.length)
+                           if (1 == model_.getTabs().length)
                                quit_ = true;
                            else
                            {
-                               Tab[] tabs;
                                uint tabIX;
-                               foreach (ix, tab; model_.tabs_)
-                                   if (tab == currentTab_)
-                                       tabIX = ix;
-                                   else
-                                       tabs ~= tab;
-                               if (tabIX > 0)
-                                   --tabIX;
-                               model_.tabs_ = tabs;
-                               view_.setCurrentTab(tabIX);
+                               if (model_.removeTab(currentTab_, tabIX))
+                                   view_.setCurrentTab(tabIX);
                            }
                            break;
-                    case ":t\n":
-                           model_.tabs_ ~= new Tab(currentTab_.getPath);
-                           mode_ = Mode.Filter;
-                           view_.setCurrentTab(model_.tabs_.length-1);
-                           break;
                     case "i": mode_ = Mode.Filter; break;
-                    case "r": currentTab_.refresh; break;
+                    case "r": currentTab_.refresh(ExpandStrat.Shallow); break;
+                    case "R": currentTab_.refresh(ExpandStrat.Recursive); break;
                     default:
                               if (reGoto.test(command_))
                                   currentTab_.setFolder(Format.immediate("%s:\\", reGoto[0][1]));
                               else if ('\n' == command_[$-1])
                               {
+                                  if (command_.length > 2 && command_[0 .. 2] == ":t")
+                                  {
+                                      //Opening a new tab
+                                      string folder = currentTab_.getPath;
+                                      if (4 == command_.length)
+                                          folder = Format.immediate("%s:\\", command_[2]);
+                                      uint tabIX = model_.insertTab(new Tab(folder), currentTab_);
+                                      mode_ = Mode.Filter;
+                                      view_.setCurrentTab(tabIX);
+                                  }
                                   if (reSearch.test(command_))
                                   {
+                                      //Opening a new search tab
                                       auto contentSearch = reSearch[0][1 .. $];
                                       if (!contentSearch.empty)
                                       {
                                           writefln("Search regexp: %s", contentSearch);
-                                          model_.tabs_ ~= new Tab(currentTab_.getPath, contentSearch);
+                                          model_.insertTab(new Tab(currentTab_.getPath, contentSearch), currentTab_);
                                           mode_ = Mode.Filter;
-                                          view_.setCurrentTab(model_.tabs_.length-1);
+                                          view_.setCurrentTab(model_.getTabs().length-1);
                                       }
                                   }
                               }

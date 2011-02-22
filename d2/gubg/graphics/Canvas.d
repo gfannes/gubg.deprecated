@@ -293,6 +293,7 @@ class SDLCanvas: ICanvas
                                 case SDLK_F13:
                                 case SDLK_F14:
                                 case SDLK_F15:
+                                case SDLK_DELETE:
                                     cachedKeys_ ~= fromSDL(sdlKey);
                                     break;
                                 default: break;

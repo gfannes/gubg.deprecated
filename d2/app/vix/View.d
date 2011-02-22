@@ -43,19 +43,19 @@ class View
                 }
                 version (Win32)
                 {
-                    auto re = RegExp("([A-Z]+_[A-Z_]+)");
+                    auto re = RegExp("([A-Z]+_[A-Za-z\\._\\d]+)");
                     auto path = tab.getPath;
                     if (re.test(path))
                         return re[0];
-                    return path;
+                    return std.path.basename(path);
                 }
             }
-            tabs.split(model_.tabs_.length, Direction.LeftToRight);
+            tabs.split(model_.getTabs().length, Direction.LeftToRight);
             foreach (uint ix, ref sb; tabs)
             {
-                auto tab = model_.tabs_[ix];
+                auto tab = model_.getTabs()[ix];
                 //We use _both_ the total number of tabs and the tabIX at hand as extra
-                auto w = widgets_.get((model_.tabs_.length << 16) + ix);
+                auto w = widgets_.get((model_.getTabs().length << 16) + ix);
                 string label = Format.immediate("%s - %s", ix+1, formatPathForTab_(tab));
                 switch (w.process)
                 {
@@ -118,17 +118,26 @@ class View
             uint focusIX;
             auto allChilds = currentTab.getChilds(focusIX);
             //Check that topIX_ is in range
-            if (topIX_ < 0 || (topIX_ >= allChilds.length && !allChilds.empty))
+            if (topIX_ < 0)
             {
-                reportError(Format.immediate("topIX_: %s is out of range", topIX_));
+                reportError(Format.immediate("topIX_: %s is negative", topIX_));
                 topIX_ = 0;
             }
+            else if (topIX_ >= allChilds.length && !allChilds.empty)
+            {
+                reportError(Format.immediate("topIX_: %s is negative", topIX_));
+                topIX_ = allChilds.length-1;
+            }
+
             const MaxNrEntries = 40;
             //Shift topIX_ to make sure focusIX will be shown
             if (focusIX < topIX_)
                 topIX_ = focusIX;
             else if (focusIX >= topIX_+MaxNrEntries)
                 topIX_ = focusIX-MaxNrEntries+1;
+            //Show as much entries as possible
+            if (allChilds.length <= MaxNrEntries)
+                topIX_ = 0;
             //Scrollbar
             {
                 auto w = widgets_.get();
@@ -159,7 +168,7 @@ class View
                 if (ix >= childs.length)
                     break;
                 FSTree child = childs[ix];
-                string label = child.name;
+                string label = child.name ~ (cast(Folder)child is null ? "" : std.path.sep);
                 auto w = widgets_.get(ix);
                 switch (w.process)
                 {
@@ -197,12 +206,12 @@ class View
         }
     }
 
-    Tab currentTab(){return model_.tabs_[tabIX_];}
+    Tab currentTab(){return model_.getTabs()[tabIX_];}
     void setCurrentTab(int tabIX)
     {
         tabIX_ = tabIX;
-        if (tabIX_ >= model_.tabs_.length)
-            tabIX_ = model_.tabs_.length-1;
+        if (tabIX_ >= model_.getTabs().length)
+            tabIX_ = model_.getTabs().length-1;
     }
 
     private:
