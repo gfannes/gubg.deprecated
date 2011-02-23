@@ -32,8 +32,6 @@ class Controller
         model_ = new Model(homeFolder);
         model_.setCommandGetter(&getCommand);
         view_ = new View(model_, canvas_);
-
-        reSearch = RegExp("^/(.*)");
     }
 
     bool quit() const
@@ -183,16 +181,26 @@ class Controller
                                   }
                                   else if (command_.length > 2 && command_[0 .. 1] == "n")
                                   {
-                                      //Create a new file
+                                      //Create a new file or directory
                                       string filename = command_[1 .. $-1];
-                                      auto filepath = std.path.join(currentTab_.getPath(), filename);
-                                      if (std.file.exists(filepath))
-                                          reportError(Format.immediate("File or directory %s already exists", filepath));
+                                      auto path = std.path.join(currentTab_.getPath(), filename);
+                                      if (std.file.exists(path))
+                                          reportError(Format.immediate("File or directory %s already exists", path));
                                       else
                                       {
-                                          std.file.write(filepath, "");
+                                          if (path[$-1 .. $] == std.path.sep)
+                                          {
+                                              //Create a directory
+                                              std.file.mkdir(path);
+                                              path = path[0 .. $-1];
+                                          }
+                                          else
+                                          {
+                                              //Create a file
+                                              std.file.write(path, "");
+                                          }
                                           currentTab_.refresh(ExpandStrat.Shallow);
-                                          currentTab_.setFocus(filepath);
+                                          currentTab_.setFocus(path);
                                       }
                                   }
                                   else if (command_.length > 2 && command_[0 .. 2] == ":t")
@@ -205,16 +213,30 @@ class Controller
                                       mode_ = Mode.Filter;
                                       view_.setCurrentTab(tabIX);
                                   }
-                                  if (reSearch.test(command_))
+                                  else if (command_.length > 3 && command_[0 .. 2] == "//")
                                   {
-                                      //Opening a new search tab
-                                      auto contentSearch = reSearch[0][1 .. $];
+                                      //Opening a new search tab and fully expand it
+                                      auto contentSearch = command_[2 .. $-1];
                                       if (!contentSearch.empty)
                                       {
                                           writefln("Search regexp: %s", contentSearch);
-                                          model_.insertTab(new Tab(currentTab_.getPath, contentSearch), currentTab_);
+                                          auto tab = new Tab(currentTab_.getPath, contentSearch);
+                                          tab.refresh(ExpandStrat.Recursive);
+                                          uint tabIX = model_.insertTab(tab, currentTab_);
+                                          view_.setCurrentTab(tabIX);
                                           mode_ = Mode.Filter;
-                                          view_.setCurrentTab(model_.getTabs().length-1);
+                                      }
+                                  }
+                                  else if (command_.length > 2 && command_[0 .. 1] == "/")
+                                  {
+                                      //Opening a new search tab
+                                      auto contentSearch = command_[1 .. $-1];
+                                      if (!contentSearch.empty)
+                                      {
+                                          writefln("Search regexp: %s", contentSearch);
+                                          uint tabIX = model_.insertTab(new Tab(currentTab_.getPath, contentSearch), currentTab_);
+                                          view_.setCurrentTab(tabIX);
+                                          mode_ = Mode.Filter;
                                       }
                                   }
                               }

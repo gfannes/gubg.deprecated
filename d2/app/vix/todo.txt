@@ -1,0 +1,20 @@
+# Todo for vix #
+ * Loading folders and searching should be done in a thread, making sure vix remains responsive
+ * Keep a cache of file content for faster searching
+ * Instead of deleting files, move them to VIX_HOME and delete them only after a week or so
+ * Files types and the actions for them should be loaded from a file, resorting to some default upon failure
+ * vix should start in the current folder
+ * Introduce a // search that will expand recursively immediately
+ * Add file preview and allow syntax highlighting per file type
+ * The file types that need content searching should be configurable
+ * Create an installation package
+ * Provide support for multiple actions on 1 file type (editing, building)
+ * Provide support for copy-past and moving of files
+ * Provide undo support for these types of actions
+ * Create an icon
+ * Allow vix to be resized, with or without border should be configurable
+ * Create a help page
+ * Allow content search on non-utf files
+ * Provide support for page-up and page-down
+ * Listen to WM events to refresh a bit faster
+
