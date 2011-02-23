@@ -148,10 +148,21 @@ class View
                         w.set(new Scroller(scroller.area, buttons.area, canvas_));
                         break;
                     case WidgetState.ScrollDown:
-                        topIX_ = min(topIX_+10, allChilds.length-1);
+                        if (allChilds.length > MaxNrEntries)
+                            topIX_ = min(topIX_+10, allChilds.length-MaxNrEntries);
+                        if (focusIX < topIX_)
+                        {
+                            focusIX = topIX_;
+                            currentTab.setFocus(focusIX);
+                        }
                         break;
                     case WidgetState.ScrollUp:
                         topIX_ = max(topIX_-10, 0);
+                        if (focusIX >= topIX_+MaxNrEntries)
+                        {
+                            focusIX = topIX_+MaxNrEntries-1;
+                            currentTab.setFocus(focusIX);
+                        }
                         break;
                     default:
                         auto sb = w.get!(Scroller);

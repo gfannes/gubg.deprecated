@@ -82,23 +82,27 @@ class Tab
     }
     void activate(FSTree tree)
     {
-        auto folder = cast(Folder)tree;
-        if (!(folder is null))
+        try
         {
-            folder_ = folder;
-            folder_.expand(creator_, ExpandStrat.Shallow);
-            filter_ = "";
-            focus_ = getFocusForFolder_(folder.path);
-            updateChilds_();
-            return;
+            auto folder = cast(Folder)tree;
+            if (!(folder is null))
+            {
+                folder.expand(creator_, ExpandStrat.Shallow);
+                folder_ = folder;
+                filter_ = "";
+                focus_ = getFocusForFolder_(folder.path);
+                updateChilds_();
+                return;
+            }
+            auto file = cast(gubg.FSTree.File)tree;
+            if (!(file is null))
+            {
+                writefln("Executing file %s", file.path);
+                system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
+                version (Posix) system("wmctrl -a GVIM");
+            }
         }
-        auto file = cast(gubg.FSTree.File)tree;
-        if (!(file is null))
-        {
-            writefln("Executing file %s", file.path);
-            system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
-            version (Posix) system("wmctrl -a GVIM");
-        }
+        catch (std.file.FileException){reportError(Format.immediate("Could not activate %s", tree.path));}
     }
     void activateFocus()
     {
@@ -120,7 +124,7 @@ class Tab
                     ++focusIX_;
                 break;
         }
-        setFocus(childs_[focusIX_].path);
+        setFocus_(childs_[focusIX_].path);
     }
     void deleteFocus()
     {
@@ -148,10 +152,9 @@ class Tab
         filter_ ~= c;
         updateChilds_();
     }
-    void setFocus(string focus)
+    void setFocus(uint focusIX)
     {
-        focus_ = focus;
-        updateFocus_;
+        setFocus_((focusIX < childs_.length ? childs_[focusIX].path : ""));
     }
     const(string[]) getSelection() const {return selection_;}
     void addToSelection(string selected){selection_ ~= selected;}
@@ -231,6 +234,11 @@ class Tab
             childs_ = newChilds;
         }
         catch (std.regexp.RegExpException){}
+        updateFocus_;
+    }
+    void setFocus_(string focus)
+    {
+        focus_ = focus;
         updateFocus_;
     }
     //Tries to update focusIX_ based on focus_

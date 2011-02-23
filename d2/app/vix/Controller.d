@@ -29,7 +29,6 @@ class Controller
         model_.setCommandGetter(&getCommand);
         view_ = new View(model_, canvas_);
 
-        reGoto = RegExp("^g(.)");
         reSearch = RegExp("^/(.*)");
     }
 
@@ -155,11 +154,24 @@ class Controller
                     case "r": currentTab_.refresh(ExpandStrat.Shallow); break;
                     case "R": currentTab_.refresh(ExpandStrat.Recursive); break;
                     default:
-                              if (reGoto.test(command_))
-                                  currentTab_.setFolder(Format.immediate("%s:\\", reGoto[0][1]));
-                              else if ('\n' == command_[$-1])
+                              if ('\n' == command_[$-1])
                               {
-                                  if (command_.length > 2 && command_[0 .. 2] == ":t")
+                                  if (command_.length > 2 && command_[0 .. 1] == "g")
+                                  {
+                                      auto location = command_[1 .. $-1];
+                                      writefln("Going to location %s", location);
+                                      version (Posix)
+                                      {
+                                          currentTab_.setFolder(location);
+                                      }
+                                      version (Win32)
+                                      {
+                                          if (location.length == 2 && location[1] == ":")
+                                              location ~= std.path.sep;
+                                          currentTab_.setFolder(location);
+                                      }
+                                  }
+                                  else if (command_.length > 2 && command_[0 .. 2] == ":t")
                                   {
                                       //Opening a new tab
                                       string folder = currentTab_.getPath;
@@ -210,7 +222,6 @@ class Controller
     enum Mode {Filter, Command};
     Mode mode_ = Mode.Filter;
     string command_ = "";
-    RegExp reGoto;
     RegExp reSearch;
     bool quit_ = false;
     SDLCanvas canvas_;
