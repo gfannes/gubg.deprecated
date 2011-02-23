@@ -348,6 +348,7 @@ char convertToChar(in Key key)
         case Key.Underscore: return '_';
         case Key.Period: return '.';
         case Key.Slash: return '/';
+        case Key.Backslash: return '\\';
         default: return '.';
     }
     assert(false);
@@ -459,6 +460,7 @@ enum Key
     Underscore = SDLK_UNDERSCORE,
     Period = SDLK_PERIOD,
     Slash = SDLK_SLASH,
+    Backslash = SDLK_BACKSLASH,
     Delete = SDLK_DELETE,
 
     Up = SDLK_UP,

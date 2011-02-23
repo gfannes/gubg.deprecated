@@ -116,7 +116,8 @@ class View
         {
             //Get all the childs and the focusIX
             uint focusIX;
-            auto allChilds = currentTab.getChilds(focusIX);
+            Tab.DisplayMode displayMode;
+            auto allChilds = currentTab.getChilds(focusIX, displayMode);
             //Check that topIX_ is in range
             if (topIX_ < 0)
             {
@@ -168,7 +169,19 @@ class View
                 if (ix >= childs.length)
                     break;
                 FSTree child = childs[ix];
-                string label = child.name ~ (cast(Folder)child is null ? "" : std.path.sep);
+                string label;
+                switch (displayMode)
+                {
+                    case Tab.DisplayMode.Mixed:
+                        label = child.name ~ (cast(Folder)child is null ? "" : std.path.sep);
+                        break;
+                    case Tab.DisplayMode.Files:
+                        label = child.path;
+                        string baseDir = currentPath_ ~ std.path.sep;
+                        if (label.length > baseDir.length && label[0 .. baseDir.length] == baseDir)
+                            label = label[baseDir.length .. $];
+                        break;
+                }
                 auto w = widgets_.get(ix);
                 switch (w.process)
                 {

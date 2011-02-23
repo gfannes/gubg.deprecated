@@ -33,26 +33,33 @@ class Tab
         setFolder(folder);
     }
 
+    void setDisplayMode(DisplayMode dm){displayMode_ = dm;}
     string getContentPattern(){return contentPattern_;}
     void refresh(ExpandStrat expandStrat)
     {
         folder_.expand(creator_, expandStrat, true);
-        if (ExpandStrat.Recursive == expandStrat)
+        switch (expandStrat)
         {
-            //We expanded recursively, lets prune empty dirs too
-            while (true)
-            {
-                Folder[] emptyFolders;
-                foreach (ref Folder folder; folder_)
+            case ExpandStrat.Recursive:
+                //We expanded recursively, lets prune empty dirs too
+                while (true)
                 {
-                    if (folder.childs.empty)
-                        emptyFolders ~= folder;
+                    Folder[] emptyFolders;
+                    foreach (ref Folder folder; folder_)
+                    {
+                        if (folder.childs.empty)
+                            emptyFolders ~= folder;
+                    }
+                    if (emptyFolders.empty)
+                        break;
+                    foreach (folder; emptyFolders)
+                        folder.remove;
                 }
-                if (emptyFolders.empty)
-                    break;
-                foreach (folder; emptyFolders)
-                    folder.remove;
-            }
+                setDisplayMode(DisplayMode.Files);
+                break;
+            case ExpandStrat.Shallow:
+                setDisplayMode(DisplayMode.Mixed);
+                break;
         }
         updateChilds_;
     }
@@ -62,9 +69,11 @@ class Tab
         if (folder_.parent)
             activate(folder_.parent);
     }
-    FSTree[] getChilds(ref uint focusIX)
+    enum DisplayMode {Mixed, Files};
+    FSTree[] getChilds(ref uint focusIX, ref DisplayMode dm)
     {
         focusIX = focusIX_;
+        dm = displayMode_;
         return childs_;
     }
     void setFolder(string folder)
@@ -111,13 +120,13 @@ class Tab
                     ++focusIX_;
                 break;
         }
-        setFocus(childs_[focusIX_].name);
+        setFocus(childs_[focusIX_].path);
     }
     void deleteFocus()
     {
         try
         {
-            string newFocus = (childs_.length > focusIX_+1 ? childs_[focusIX_+1].name : (focusIX_ > 0 ? childs_[focusIX_-1].name : ""));
+            string newFocus = (childs_.length > focusIX_+1 ? childs_[focusIX_+1].path : (focusIX_ > 0 ? childs_[focusIX_-1].path : ""));
             std.file.remove(childs_[focusIX_].path);
             focus_ = newFocus;
             refresh(ExpandStrat.Shallow);
@@ -150,42 +159,81 @@ class Tab
     private:
     void updateChilds_()
     {
-        childs_.length = 0;
-        //Append only the non-hidden files and folders which match the filter_ (case insensitive)
-        auto reStr = (filter_.empty ? "." : filter_);
-        version (UseRegex)
-            auto re = regex(reStr, "i");
-        version (UseRegExp)
-            auto re = RegExp(reStr, "i");
-        foreach (child; folder_.childs)
-            if (child.name[0] != '.')
-            {
-                version (UseRegex)
-                {
-                    auto m = match(child.name, re);
-                    if (!m.empty)
-                        childs_ ~= child;
-                }
-                version (UseRegExp)
-                {
-                    if (re.test(child.name))
-                        childs_ ~= child;
-                }
-            }
-        //Sort the childs using localCmp as criterion
-        bool localCmp(FSTree lhs, FSTree rhs)
+        try
         {
-            //First Folders, then Files
-            if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
-                return true;
-            if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
-                return false;
-            //If the type results in a tie, sort alphabetically
-            return lhs.name < rhs.name;
+            FSTree[] newChilds;
+            //Append only the non-hidden files and folders which match the filter_ (case insensitive)
+            auto reStr = (filter_.empty ? "." : filter_);
+            switch (displayMode_)
+            {
+                case DisplayMode.Mixed:
+                    version (UseRegex)
+                        auto re = regex(reStr, "i");
+                    version (UseRegExp)
+                        auto re = RegExp(reStr, "i");
+                    foreach (child; folder_.childs)
+                        if (child.name[0] != '.')
+                        {
+                            version (UseRegex)
+                            {
+                                auto m = match(child.name, re);
+                                if (!m.empty)
+                                    newChilds ~= child;
+                            }
+                            version (UseRegExp)
+                            {
+                                if (re.test(child.name))
+                                    newChilds ~= child;
+                            }
+                        }
+                    //Sort the childs using localCmp as criterion
+                    bool localCmpMixed(FSTree lhs, FSTree rhs)
+                    {
+                        //First Folders, then Files
+                        if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
+                            return true;
+                        if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
+                            return false;
+                        //If the type results in a tie, sort alphabetically
+                        return lhs.name < rhs.name;
+                    }
+                    sort!(localCmpMixed)(newChilds);
+                    break;
+
+                case DisplayMode.Files:
+                    version (UseRegex)
+                        auto re = regex(reStr);
+                    version (UseRegExp)
+                        auto re = RegExp(reStr);
+                    foreach (ref gubg.FSTree.File file; folder_)
+                        if (file.name[0] != '.')
+                        {
+                            version (UseRegex)
+                            {
+                                auto m = match(file.path, re);
+                                if (!m.empty)
+                                    newChilds ~= file;
+                            }
+                            version (UseRegExp)
+                            {
+                                if (re.test(file.path))
+                                    newChilds ~= file;
+                            }
+                        }
+                    //Sort the childs using localCmp as criterion
+                    bool localCmpFiles(FSTree lhs, FSTree rhs)
+                    {
+                        return lhs.path < rhs.path;
+                    }
+                    sort!(localCmpFiles)(newChilds);
+                    break;
+            }
+            childs_ = newChilds;
         }
-        sort!(localCmp)(childs_);
+        catch (std.regexp.RegExpException){}
         updateFocus_;
     }
+    //Tries to update focusIX_ based on focus_
     void updateFocus_()
     {
         if (childs_.empty)
@@ -197,7 +245,7 @@ class Tab
         bool foundFocus = false;
         foreach (uint ix, child; childs_)
         {
-            if (focus_ == child.name)
+            if (focus_ == child.path)
             {
                 foundFocus = true;
                 focusIX_ = ix;
@@ -206,7 +254,7 @@ class Tab
         }
         if (!foundFocus)
         {
-            focus_ = childs_[0].name;
+            focus_ = childs_[0].path;
             focusIX_ = 0;
         }
         focusPerFolder_[folder_.path] = focus_;
@@ -224,6 +272,7 @@ class Tab
         return "";
     }
     string[string] focusPerFolder_;
+    DisplayMode displayMode_ = DisplayMode.Mixed;
     string filter_;
     string[] selection_;
     string contentPattern_;
