@@ -2,6 +2,7 @@ module vix.Controller;
 
 import vix.View;
 import vix.Model;
+import vix.Exit;
 
 import gubg.OnlyOnce;
 import gubg.graphics.Canvas;
@@ -20,7 +21,10 @@ class Controller
     {
         fastProcessing_ = FewTimes(10);
 
-        canvas_ = new SDLCanvas(width, height, false);
+        version (Posix) bool showBorder = false;
+        version (Win32) bool showBorder = true;
+        canvas_ = new SDLCanvas(width, height, showBorder);
+        canvas_.setTitle("ViX: The Vi-Inspired file eXplorer", "ViX");
 
         string homeFolder;
         version (Posix) homeFolder = "/home/gfannes";
@@ -111,6 +115,12 @@ class Controller
             case Key.Down:
                              currentTab_.moveFocus(Tab.Movement.Down); return;
                              break;
+            case Key.PageUp:
+                             currentTab_.moveFocus(Tab.Movement.PageUp); return;
+                             break;
+            case Key.PageDown:
+                             currentTab_.moveFocus(Tab.Movement.PageDown); return;
+                             break;
             case Key.Delete:
                              currentTab_.deleteFocus; return;
                              break;
@@ -158,8 +168,8 @@ class Controller
                               {
                                   if (command_.length > 2 && command_[0 .. 1] == "g")
                                   {
+                                      //Go to a location
                                       auto location = command_[1 .. $-1];
-                                      writefln("Going to location %s", location);
                                       version (Posix)
                                       {
                                           currentTab_.setFolder(location);
@@ -169,6 +179,20 @@ class Controller
                                           if (location.length == 2 && location[1] == ":")
                                               location ~= std.path.sep;
                                           currentTab_.setFolder(location);
+                                      }
+                                  }
+                                  else if (command_.length > 2 && command_[0 .. 1] == "n")
+                                  {
+                                      //Create a new file
+                                      string filename = command_[1 .. $-1];
+                                      auto filepath = std.path.join(currentTab_.getPath(), filename);
+                                      if (std.file.exists(filepath))
+                                          reportError(Format.immediate("File or directory %s already exists", filepath));
+                                      else
+                                      {
+                                          std.file.write(filepath, "");
+                                          currentTab_.refresh(ExpandStrat.Shallow);
+                                          currentTab_.setFocus(filepath);
                                       }
                                   }
                                   else if (command_.length > 2 && command_[0 .. 2] == ":t")

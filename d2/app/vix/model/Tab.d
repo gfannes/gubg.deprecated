@@ -110,7 +110,7 @@ class Tab
             return;
         activate(childs_[focusIX_]);
     }
-    enum Movement {Up, Down}
+    enum Movement {Up, Down, PageUp, PageDown}
     void moveFocus(Movement movement)
     {
         switch (movement)
@@ -123,8 +123,20 @@ class Tab
                 if (focusIX_ < childs_.length-1)
                     ++focusIX_;
                 break;
+            case Movement.PageUp:
+                if (focusIX_ > 10)
+                    focusIX_ -= 10;
+                else
+                    focusIX_ = 0;
+                break;
+            case Movement.PageDown:
+                if (focusIX_ < childs_.length-10)
+                    focusIX_ += 10;
+                else
+                    focusIX_ = childs_.length-1;
+                break;
         }
-        setFocus_(childs_[focusIX_].path);
+        setFocus(childs_[focusIX_].path);
     }
     void deleteFocus()
     {
@@ -152,12 +164,18 @@ class Tab
         filter_ ~= c;
         updateChilds_();
     }
-    void setFocus(uint focusIX)
-    {
-        setFocus_((focusIX < childs_.length ? childs_[focusIX].path : ""));
-    }
     const(string[]) getSelection() const {return selection_;}
     void addToSelection(string selected){selection_ ~= selected;}
+
+    void setFocus(uint focusIX)
+    {
+        setFocus((focusIX < childs_.length ? childs_[focusIX].path : ""));
+    }
+    void setFocus(string focus)
+    {
+        focus_ = focus;
+        updateFocus_;
+    }
 
     private:
     void updateChilds_()
@@ -234,11 +252,6 @@ class Tab
             childs_ = newChilds;
         }
         catch (std.regexp.RegExpException){}
-        updateFocus_;
-    }
-    void setFocus_(string focus)
-    {
-        focus_ = focus;
         updateFocus_;
     }
     //Tries to update focusIX_ based on focus_

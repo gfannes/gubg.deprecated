@@ -8,6 +8,7 @@ import gubg.graphics.IMUI;
 import gubg.Format;
 import derelict.sdl.sdl;
 import std.array;
+import std.string;
 
 import std.stdio;
 
@@ -77,6 +78,10 @@ class SDLCanvas: ICanvas
         SDL_GetWMInfo(&info_);
 
         cairo_ = new gubg.graphics.Cairo.Context(cast(ubyte*)(SDLSurface_.pixels), width_, height_);
+    }
+    void setTitle(string windowTitle, string iconTitle)
+    {
+        SDL_WM_SetCaption(toStringz(windowTitle), toStringz(iconTitle));
     }
 
     bool initializeDraw()
@@ -276,6 +281,8 @@ class SDLCanvas: ICanvas
                             {
                                 case SDLK_UP:
                                 case SDLK_DOWN:
+                                case SDLK_PAGEUP:
+                                case SDLK_PAGEDOWN:
                                 case SDLK_RIGHT:
                                 case SDLK_LEFT:
                                 case SDLK_F1:

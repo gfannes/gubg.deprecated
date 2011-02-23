@@ -243,7 +243,7 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
         Style s;
         switch (state)
         {
-            case WidgetState.Idle: s.fill(Color.purple); break;
+            case WidgetState.Idle: s.fill(Color.coolRed); break;
             case WidgetState.Highlighted: s.fill(Color.coolGreen); break;
             case WidgetState.Moving: s.fill(Color.yellow); break;
             default: break;
@@ -467,6 +467,8 @@ enum Key
     Down = SDLK_DOWN,
     Right = SDLK_RIGHT,
     Left = SDLK_LEFT,
+    PageUp = SDLK_PAGEUP,
+    PageDown = SDLK_PAGEDOWN,
 
     Escape = SDLK_ESCAPE,
 }
