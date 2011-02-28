@@ -25,6 +25,19 @@ class Controller
         version (Win32) bool showBorder = true;
         canvas_ = new SDLCanvas(width, height, showBorder);
         canvas_.setTitle("ViX: The Vi-Inspired file eXplorer", "ViX");
+        version (Posix)
+        {
+            auto icon = import("resources/icon-64x64.bmp");
+            string iconPath = "/tmp/vix-icon.bmp";
+            std.file.write(iconPath, icon);
+        }
+        version (Win32)
+        {
+            auto icon = import("resources/icon-32x32.bmp");
+            string iconPath = "c:/tmp/vix-icon.bmp";
+            std.file.write(iconPath, icon);
+        }
+        canvas_.setIcon(iconPath, Color.white);
 
         string homeFolder;
         version (Posix) homeFolder = "/home/gfannes";

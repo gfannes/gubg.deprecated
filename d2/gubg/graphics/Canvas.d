@@ -83,6 +83,16 @@ class SDLCanvas: ICanvas
     {
         SDL_WM_SetCaption(toStringz(windowTitle), toStringz(iconTitle));
     }
+    void setIcon(string iconPath, Color alphaColor = Color.invalid)
+    {
+        auto icon = SDL_LoadBMP(toStringz(iconPath));
+        if (alphaColor.isValid)
+        {
+            auto colorkey = SDL_MapRGB(icon.format, alphaColor.redByte, alphaColor.greenByte, alphaColor.blueByte);
+            SDL_SetColorKey(icon, SDL_SRCCOLORKEY, colorkey);              
+        }
+        SDL_WM_SetIcon(icon, null);
+    }
 
     bool initializeDraw()
     {
