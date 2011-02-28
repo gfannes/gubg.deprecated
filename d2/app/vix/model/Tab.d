@@ -1,22 +1,16 @@
 module vix.model.Tab;
 
 import vix.Exit;
+import vix.model.SearchPattern;
 
 public import gubg.FSTree;
 import gubg.Format;
 
 import std.path;
-//There was instability in std.regex for D2.052 which is why we for now fall back to using regexp
-version = UseRegExp;
-version (UseRegex)
-    import std.regex;
-version (UseRegExp)
-    import std.regexp;
 import std.array;
 import std.algorithm;
 import std.process;
 import std.file;
-import std.utf;
 
 import std.stdio;
 
@@ -25,16 +19,13 @@ class Tab
     this(string folder, string contentPattern = "")
     {
         if (!contentPattern.empty)
-        {
-            contentPattern_ = contentPattern;
-            reContentPattern_ = RegExp(contentPattern);
-        }
-        creator_ = new Creator(reContentPattern_);
+            contentPattern_ = new SearchPattern(contentPattern);
+        creator_ = new Creator(contentPattern_);
         setFolder(folder);
     }
 
     void setDisplayMode(DisplayMode dm){displayMode_ = dm;}
-    string getContentPattern(){return contentPattern_;}
+    string getContentPattern() const {return contentPattern_ is null ? "" : contentPattern_.getPattern;}
     void refresh(ExpandStrat expandStrat)
     {
         folder_.expand(creator_, expandStrat, true);
@@ -180,78 +171,50 @@ class Tab
     private:
     void updateChilds_()
     {
-        try
+        FSTree[] newChilds;
+        //Append only the non-hidden files and folders which match the filter_ (case insensitive)
+        auto reStr = (filter_.empty ? "." : filter_);
+        switch (displayMode_)
         {
-            FSTree[] newChilds;
-            //Append only the non-hidden files and folders which match the filter_ (case insensitive)
-            auto reStr = (filter_.empty ? "." : filter_);
-            switch (displayMode_)
-            {
-                case DisplayMode.Mixed:
-                    version (UseRegex)
-                        auto re = regex(reStr, "i");
-                    version (UseRegExp)
-                        auto re = RegExp(reStr, "i");
-                    foreach (child; folder_.childs)
-                        if (child.name[0] != '.')
-                        {
-                            version (UseRegex)
-                            {
-                                auto m = match(child.name, re);
-                                if (!m.empty)
-                                    newChilds ~= child;
-                            }
-                            version (UseRegExp)
-                            {
-                                if (re.test(child.name))
-                                    newChilds ~= child;
-                            }
-                        }
-                    //Sort the childs using localCmp as criterion
-                    bool localCmpMixed(FSTree lhs, FSTree rhs)
+            case DisplayMode.Mixed:
+                auto re = new SearchPattern(reStr, SearchPattern.Case.Insensitive);
+                foreach (child; folder_.childs)
+                    if (child.name[0] != '.')
                     {
-                        //First Folders, then Files
-                        if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
-                            return true;
-                        if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
-                            return false;
-                        //If the type results in a tie, sort alphabetically
-                        return lhs.name < rhs.name;
+                        if (re.matches(child.name))
+                            newChilds ~= child;
                     }
-                    sort!(localCmpMixed)(newChilds);
-                    break;
+                //Sort the childs using localCmp as criterion
+                bool localCmpMixed(FSTree lhs, FSTree rhs)
+                {
+                    //First Folders, then Files
+                    if (cast(Folder)lhs && cast(gubg.FSTree.File)rhs)
+                        return true;
+                    if (cast(gubg.FSTree.File)lhs && cast(Folder)rhs)
+                        return false;
+                    //If the type results in a tie, sort alphabetically
+                    return lhs.name < rhs.name;
+                }
+                sort!(localCmpMixed)(newChilds);
+                break;
 
-                case DisplayMode.Files:
-                    version (UseRegex)
-                        auto re = regex(reStr);
-                    version (UseRegExp)
-                        auto re = RegExp(reStr);
-                    foreach (ref gubg.FSTree.File file; folder_)
-                        if (file.name[0] != '.')
-                        {
-                            version (UseRegex)
-                            {
-                                auto m = match(file.path, re);
-                                if (!m.empty)
-                                    newChilds ~= file;
-                            }
-                            version (UseRegExp)
-                            {
-                                if (re.test(file.path))
-                                    newChilds ~= file;
-                            }
-                        }
-                    //Sort the childs using localCmp as criterion
-                    bool localCmpFiles(FSTree lhs, FSTree rhs)
+            case DisplayMode.Files:
+                auto re = new SearchPattern(reStr, SearchPattern.Case.Sensitive);
+                foreach (ref gubg.FSTree.File file; folder_)
+                    if (file.name[0] != '.')
                     {
-                        return lhs.path < rhs.path;
+                        if (re.matches(file.path))
+                            newChilds ~= file;
                     }
-                    sort!(localCmpFiles)(newChilds);
-                    break;
-            }
-            childs_ = newChilds;
+                //Sort the childs using localCmp as criterion
+                bool localCmpFiles(FSTree lhs, FSTree rhs)
+                {
+                    return lhs.path < rhs.path;
+                }
+                sort!(localCmpFiles)(newChilds);
+                break;
         }
-        catch (std.regexp.RegExpException){}
+        childs_ = newChilds;
         updateFocus_;
     }
     //Tries to update focusIX_ based on focus_
@@ -296,19 +259,18 @@ class Tab
     DisplayMode displayMode_ = DisplayMode.Mixed;
     string filter_;
     string[] selection_;
-    string contentPattern_;
-    RegExp reContentPattern_;
+    SearchPattern contentPattern_;
 }
 
 class Creator: ICreator
 {
-    this (RegExp contentPattern = null)
+    this(SearchPattern contentPattern = null)
     {
-        reContentPattern_ = contentPattern;
-        reExtension_ = RegExp("\\.(d|rb|cpp|h|hpp|c|txt|xml|java|pl)$");
+        contentPattern_ = contentPattern;
+        extensionPattern_ = new SearchPattern("\\.(d|rb|cpp|h|hpp|c|txt|xml|java|pl)$");
     }
-    RegExp reContentPattern_;
-    RegExp reExtension_;
+    SearchPattern contentPattern_;
+    SearchPattern extensionPattern_;
 
     Folder createFolder(string path)
     {
@@ -316,18 +278,18 @@ class Creator: ICreator
     }
     gubg.FSTree.File createFile(string path)
     {
-        if (!(reContentPattern_ is null))
+        if (!(contentPattern_ is null))
         {
-            if (!reExtension_.test(path))
+            if (!extensionPattern_.matches(path))
                 return null;
             try
             {
-                auto content = readText!(string)(path);
-                if (content.length > 100_000 || !reContentPattern_.test(content))
+                const MaxSizeToSearch = 100_000;
+                auto content = read(path);
+                if (content.length >= MaxSizeToSearch || !contentPattern_.matches(content))
                     return null;
             }
             catch (std.file.FileException){reportError(Format.immediate("Could not read file %s", path));}
-            catch (std.utf.UtfException){reportError(Format.immediate("Invalid UTF in file %s", path));}
         }
         return new gubg.FSTree.File(path);
     }
