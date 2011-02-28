@@ -181,16 +181,12 @@ class Controller
                                   {
                                       //Go to a location
                                       auto location = command_[1 .. $-1];
-                                      version (Posix)
-                                      {
-                                          currentTab_.setFolder(location);
-                                      }
                                       version (Win32)
                                       {
-                                          if (location.length == 2 && location[1] == ":")
+                                          if (location.length == 2 && location[1 .. 2] == ":")
                                               location ~= std.path.sep;
-                                          currentTab_.setFolder(location);
                                       }
+                                      currentTab_.setFolder(location);
                                   }
                                   else if (command_.length > 2 && command_[0 .. 1] == "n")
                                   {
@@ -220,8 +216,15 @@ class Controller
                                   {
                                       //Opening a new tab
                                       string folder = currentTab_.getPath;
-                                      if (4 == command_.length)
-                                          folder = Format.immediate("%s:\\", command_[2]);
+                                      if (command_.length > 3)
+                                      {
+                                          folder = command_[2 .. $-1];
+                                          version (Win32)
+                                          {
+                                              if (folder.length == 2 && folder[1 .. 2] == ":")
+                                                  folder ~= std.path.sep;
+                                          }
+                                      }
                                       uint tabIX = model_.insertTab(new Tab(folder), currentTab_);
                                       mode_ = Mode.Filter;
                                       view_.setCurrentTab(tabIX);

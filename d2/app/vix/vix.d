@@ -28,7 +28,7 @@ int main(string[] args)
     auto timer = Timer(ResetType.NoAuto);
 
     version (Posix) uint width = 1920, height = 1080;
-    version (Win32) uint width = 1440, height = 874;
+    version (Win32) uint width = 1440, height = 850;
     if (switches["small"])
     {
         width = 640;
