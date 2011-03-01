@@ -349,6 +349,10 @@ char convertToChar(in Key key)
         case Key.Period: return '.';
         case Key.Slash: return '/';
         case Key.Backslash: return '\\';
+        case Key.LeftParenthesis: return '(';
+        case Key.RightParenthesis: return ')';
+        case Key.LeftBracket: return '[';
+        case Key.RightBracket: return ']';
         default: return '.';
     }
     assert(false);
@@ -469,6 +473,11 @@ enum Key
     Left = SDLK_LEFT,
     PageUp = SDLK_PAGEUP,
     PageDown = SDLK_PAGEDOWN,
+
+    LeftParenthesis = SDLK_LEFTPAREN,
+    RightParenthesis = SDLK_RIGHTPAREN,
+    LeftBracket = SDLK_LEFTBRACKET,
+    RightBracket = SDLK_RIGHTBRACKET,
 
     Escape = SDLK_ESCAPE,
 }

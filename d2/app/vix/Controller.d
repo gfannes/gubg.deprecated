@@ -33,7 +33,7 @@ class Controller
         }
         version (Win32)
         {
-            auto icon = import("resources/icon-32x32.bmp");
+            auto icon = import("icon-32x32.bmp");
             string iconPath = "c:/tmp/vix-icon.bmp";
             std.file.write(iconPath, icon);
         }
@@ -135,18 +135,18 @@ class Controller
             case Key.Delete:
                              currentTab_.deleteFocus; return;
                              break;
-            case Key.F1: view_.setCurrentTab(0); resetCommand_; return; break;
-            case Key.F2: view_.setCurrentTab(1); resetCommand_; return; break;
-            case Key.F3: view_.setCurrentTab(2); resetCommand_; return; break;
-            case Key.F4: view_.setCurrentTab(3); resetCommand_; return; break;
-            case Key.F5: view_.setCurrentTab(4); resetCommand_; return; break;
-            case Key.F6: view_.setCurrentTab(5); resetCommand_; return; break;
-            case Key.F7: view_.setCurrentTab(6); resetCommand_; return; break;
-            case Key.F8: view_.setCurrentTab(7); resetCommand_; return; break;
-            case Key.F9: view_.setCurrentTab(8); resetCommand_; return; break;
-            case Key.F10: view_.setCurrentTab(9); resetCommand_; return; break;
-            case Key.F11: view_.setCurrentTab(10); resetCommand_; return; break;
-            case Key.F12: view_.setCurrentTab(11); resetCommand_; return; break;
+            case Key.F1: view_.setCurrentTab(0);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F2: view_.setCurrentTab(1);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F3: view_.setCurrentTab(2);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F4: view_.setCurrentTab(3);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F5: view_.setCurrentTab(4);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F6: view_.setCurrentTab(5);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F7: view_.setCurrentTab(6);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F8: view_.setCurrentTab(7);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F9: view_.setCurrentTab(8);   resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F10: view_.setCurrentTab(9);  resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F11: view_.setCurrentTab(10); resetCommand_; mode_ = Mode.Filter; return; break;
+            case Key.F12: view_.setCurrentTab(11); resetCommand_; mode_ = Mode.Filter; return; break;
             default: break;
         }
         auto c = convertToChar(key);

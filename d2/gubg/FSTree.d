@@ -49,6 +49,7 @@ class Folder: FSTree
         while (dir != path)
         {
             tmp.parent = creator.createFolder(dir);
+            tmp.parent.childs = [tmp];
             tmp = tmp.parent;
             auto t = dir;
             dir = dirname(dir);

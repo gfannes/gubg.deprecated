@@ -34,7 +34,11 @@ mixin template Tree(TreeType, NodeType, LeafType)
         if (parent)
         {
             scope(exit) parent = null;
-            enforce(parent.removeChild(this));
+            if (!parent.removeChild(this))
+            {
+                writefln("Failed to remove child");
+                assert(false);
+            }
         }
     }
 }

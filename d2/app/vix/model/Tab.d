@@ -38,7 +38,7 @@ class Tab
                     Folder[] emptyFolders;
                     foreach (ref Folder folder; folder_)
                     {
-                        if (folder.childs.empty)
+                        if (folder.childs.empty && !(folder is folder_))
                             emptyFolders ~= folder;
                     }
                     if (emptyFolders.empty)
@@ -267,7 +267,7 @@ class Creator: ICreator
     this(SearchPattern contentPattern = null)
     {
         contentPattern_ = contentPattern;
-        extensionPattern_ = new SearchPattern("\\.(d|rb|cpp|h|hpp|c|txt|xml|java|pl)$");
+        extensionPattern_ = new SearchPattern("\\.(d|rb|cpp|h|hpp|c|txt|xml|java|pl|idl)$");
     }
     SearchPattern contentPattern_;
     SearchPattern extensionPattern_;
@@ -284,7 +284,7 @@ class Creator: ICreator
                 return null;
             try
             {
-                const MaxSizeToSearch = 100_000;
+                const MaxSizeToSearch = 200_000;
                 auto content = read(path);
                 if (content.length >= MaxSizeToSearch || !contentPattern_.matches(content))
                     return null;

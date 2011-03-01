@@ -2,6 +2,8 @@ module vix.model.SearchPattern;
 
 import vix.Exit;
 
+import gubg.Format;
+
 //There was instability in std.regex for D2.052 which is why we for now fall back to using regexp
 version = UseRegExp;
 version (UseRegex)
@@ -20,23 +22,27 @@ class SearchPattern
     this(string pattern, Case cas = Case.Sensitive)
     {
         pattern_ = pattern;
-        switch (cas)
+        try
         {
-            case Case.Sensitive:
-                auto specialChars = ['$', '.', '+', '*', '?', '\\'];
-                foreach (ch; pattern_)
-                {
-                    if (canFind(specialChars, ch))
+            switch (cas)
+            {
+                case Case.Sensitive:
+                    auto specialChars = ['$', '.', '+', '*', '?', '\\'];
+                    foreach (ch; pattern_)
                     {
-                        regexpPattern_ = RegExp(pattern_);
-                        break;
+                        if (canFind(specialChars, ch))
+                        {
+                            regexpPattern_ = RegExp(pattern_);
+                            break;
+                        }
                     }
-                }
-                break;
-            case Case.Insensitive:
-                regexpPattern_ = RegExp(pattern_, "i");
-                break;
+                    break;
+                case Case.Insensitive:
+                    regexpPattern_ = RegExp(pattern_, "i");
+                    break;
+            }
         }
+        catch (std.regexp.RegExpException){reportError(Format.immediate("Invalid regular expression: %s", pattern_));}
     }
     string getPattern() const {return pattern_;}
 
