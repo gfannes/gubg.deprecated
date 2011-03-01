@@ -96,7 +96,7 @@ class TagsCommand: ArgsCommand
         OnlyOnce createTagsFile;
         foreach (path; locations)
         {
-            foreach (gubg.FSTree.File file; new DCollection(path))
+            foreach (gubg.FSTree.File file; new Collection(path))
             {
                 writeln(file.path);
                 string command;
@@ -144,7 +144,7 @@ class ExeCommand: ArgsCommand
 
         //Create the Collection of all files to compile
         // * The initial tree defined by the main source file
-        auto collection = new DCollection(dirname(filepath));
+        auto collection = new Collection(dirname(filepath));
         // * Extend this set with the externalTrees
         auto config = new Configuration(Runtime.configurationFilename, dirname(filepath), true);
         string[] externalTrees;

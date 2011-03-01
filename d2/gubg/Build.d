@@ -3,6 +3,7 @@ module gubg.Build;
 import gubg.Format;
 import std.process;
 import std.path;
+
 import std.stdio;
 
 string objectExtension()
@@ -25,14 +26,29 @@ class Compile
     bool execute(bool verbose = true)
     {
         Format format;
-        format("dmd -c -version=phobos -of\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
-        format.delimiter = " ";
-        foreach (includePath; includePaths_)
-            format("-I\"%s\"", includePath);
-        foreach (v; versions_)
-            format("-version=%s", v);
-        foreach (option; options_)
-            format(option);
+        switch (sourceType_)
+        {
+            case SourceType.D:
+                format("dmd -c -version=phobos -of\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
+                format.delimiter = " ";
+                foreach (includePath; includePaths_)
+                    format("-I\"%s\"", includePath);
+                foreach (v; versions_)
+                    format("-version=%s", v);
+                foreach (option; options_)
+                    format(option);
+                break;
+            case SourceType.Cpp:
+                format("g++ -c -o\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
+                format.delimiter = " ";
+                foreach (includePath; includePaths_)
+                    format("-I\"%s\"", includePath);
+                foreach (v; versions_)
+                    format("-D%s", v);
+                foreach (option; options_)
+                    format(option);
+                break;
+        }
 
         //Execute the command
         if (verbose)
@@ -63,6 +79,16 @@ class Compile
 
     private:
     string sourceFilepath_;
+    enum SourceType {D, Cpp};
+    SourceType sourceType_()
+    {
+        writefln("Checking source type for %s", sourceFilepath_);
+        switch (getExt(sourceFilepath_))
+        {
+            case "d": return SourceType.D; break;
+            case "cpp": return SourceType.Cpp; break;
+        }
+    }
     string objectFilepath_;
     string[] includePaths_;
     string[] versions_;

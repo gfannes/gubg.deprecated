@@ -14,19 +14,19 @@ class DParser
     //else, the required include path is given to find fp by importing modName
     static string includePathForModule(string fp, string modName)
     {
-	    auto drive = getDrive(fp);
-	    if (drive)
-		    fp = fp[drive.length .. $];
+        auto drive = getDrive(fp);
+        if (drive)
+            fp = fp[drive.length .. $];
         //Create a range that iterates backwards over the parts of fp
-	auto fpParts = appender!(string[]);
-	if (std.path.altsep.empty)
-		std.algorithm.copy(std.algorithm.splitter(fp, std.path.sep), fpParts);
-	else
-		std.algorithm.copy(std.regex.splitter(fp, regex("[/\\\\]")), fpParts);
+        auto fpParts = appender!(string[]);
+        if (std.path.altsep.empty)
+            std.algorithm.copy(std.algorithm.splitter(fp, std.path.sep), fpParts);
+        else
+            std.algorithm.copy(std.regex.splitter(fp, regex("[/\\\\]")), fpParts);
         auto reverseFpParts = retro(fpParts.data);
-	auto filename = reverseFpParts.front;
-	auto extension = getExt(filename);
-	reverseFpParts.front = basename(filename, "." ~ extension);
+        auto filename = reverseFpParts.front;
+        auto extension = getExt(filename);
+        reverseFpParts.front = basename(filename, "." ~ extension);
 
         //Check if the last part of fp is a known D extension
         if (std.algorithm.find(["d", "di", "apd"], extension).empty)
@@ -45,15 +45,15 @@ class DParser
 
         //We have a valid match, join the remaining parts from reverseFpParts into the include path
         auto includePath = appender!(char[]);
-	if (drive)
-		includePath.put(drive);
+        if (drive)
+            includePath.put(drive);
         for (; !reverseFpParts.empty; reverseFpParts.popBack)
         {
             auto part = reverseFpParts.back;
             if ("" != part)
             {
-		    includePath.put(std.path.sep);
-		    includePath.put(part);
+                includePath.put(std.path.sep);
+                includePath.put(part);
             }
         }
         return cast(string)includePath.data;
@@ -89,19 +89,19 @@ class DParser
     }
 }
 
-version (parsing_D)
+version (UnitTest)
 {
     import std.stdio;
     void main()
     {
         auto p = new DParser;
         writeln(p.parse("D.d").imports);
-	if (std.path.sep == "/")
-		writefln("Include path: %s", DParser.includePathForModule("/home/gfannes/gubg/test.d", "gubg.test"));
-	if (std.path.sep == "\\")
-	{
-		writefln("Include path: %s", DParser.includePathForModule("h:\\My Dropbox\\gubg\\test.d", "gubg.test"));
-		writefln("Include path: %s", DParser.includePathForModule("h:/My Dropbox/gubg/test.d", "gubg.test"));
-	}
+        if (std.path.sep == "/")
+            writefln("Include path: %s", DParser.includePathForModule("/home/gfannes/gubg/test.d", "gubg.test"));
+        if (std.path.sep == "\\")
+        {
+            writefln("Include path: %s", DParser.includePathForModule("h:\\My Dropbox\\gubg\\test.d", "gubg.test"));
+            writefln("Include path: %s", DParser.includePathForModule("h:/My Dropbox/gubg/test.d", "gubg.test"));
+        }
     }
 }
