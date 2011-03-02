@@ -115,10 +115,10 @@ class Controller
                              if (Mode.Filter != mode_)
                                  break;
             case Key.Right:
-                             currentTab_.activateFocus; return;
+                             currentTab_.activateFocus; mode_ = Mode.Filter; return;
                              break;
             case Key.Left:
-                             currentTab_.moveToRoot; return;
+                             currentTab_.moveToRoot; mode_ = Mode.Filter; return;
                              break;
             case Key.Up:
                              currentTab_.moveFocus(Tab.Movement.Up); return;

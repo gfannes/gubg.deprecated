@@ -14,12 +14,20 @@ class CppParser
     //else, the required include path is given to find fp by importing header
     static string includePathForHeader(string fp, string header)
     {
+        version (Win32)
+        {
+            string origFp = fp;
+            fp = replace(fp, std.path.sep, std.path.altsep);
+            header = replace(header, std.path.sep, std.path.altsep);
+        }
         //Check if header fits at the end of fp
         auto ix = lastIndexOf(fp, header);
         if (-1 == ix)
             return null;
         if (ix != fp.length-header.length)
             return null;
+        version (Win32)
+            fp = origFp;
         return fp[0 .. ix-1];
     }
     class CppModule

@@ -2,7 +2,7 @@
 require("gubg/utils")
 
 localSources = %w[gb Collection Configuration MetaInfo Commands Exit Runtime]
-gubgSources = %w[Tree FSTree JSON Build Format FileCache OnlyOnce OptionParser parsing/D]
+gubgSources = %w[Tree FSTree JSON Build Format FileCache OnlyOnce OptionParser parsing/D parsing/Cpp]
 
 objectExtension = ("Linux" == operatingSystem ? "o" : "obj")
 
