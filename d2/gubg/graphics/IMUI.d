@@ -466,6 +466,7 @@ enum Key
     Slash = SDLK_SLASH,
     Backslash = SDLK_BACKSLASH,
     Delete = SDLK_DELETE,
+    Backspace = SDLK_BACKSPACE,
 
     Up = SDLK_UP,
     Down = SDLK_DOWN,

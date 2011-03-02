@@ -8,6 +8,7 @@ import gubg.Format;
 
 import std.path;
 import std.array;
+import std.string;
 import std.algorithm;
 import std.process;
 import std.file;
@@ -154,6 +155,14 @@ class Tab
     {
         filter_ ~= c;
         updateChilds_();
+    }
+    void popFromFilter()
+    {
+        if (!filter_.empty())
+        {
+            filter_.popBack();
+            updateChilds_();
+        }
     }
     const(string[]) getSelection() const {return selection_;}
     void addToSelection(string selected){selection_ ~= selected;}

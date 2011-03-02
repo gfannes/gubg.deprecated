@@ -229,10 +229,14 @@ class ExeCommand: ArgsCommand
         auto fi = FileInfo(execName);
         foreach (objectFilepath; objectFilepaths)
             fi.add("objectFilepath", objectFilepath);
+        string[] linkingOptions;
+        config.get(linkingOptions, "linking");
+        foreach(option; linkingOptions)
+            fi.add("linkingOptions", option);
         string uniqExecName = createExecName_(fileCache.filepath(fi));
         bool link(FileInfo fi)
         {
-            auto l = new LinkExecutable(uniqExecName);
+            auto l = new LinkExecutable(uniqExecName, gubg.Build.guessSourceType(filepath));
             foreach (objectFilepath; fi.get!(string[])("objectFilepath"))
                 l.addObjectFilepath(objectFilepath);
             string[] libraries;
@@ -241,6 +245,8 @@ class ExeCommand: ArgsCommand
                 foreach (library; libraries)
                     l.addLibrary(library);
             }
+            foreach (option; fi.get!(string[])("linkingOptions"))
+                l.addOption(option);
             return l.execute(true);
         }
         fileCache.create(fi, &link);

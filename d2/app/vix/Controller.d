@@ -132,6 +132,13 @@ class Controller
             case Key.PageDown:
                              currentTab_.moveFocus(Tab.Movement.PageDown); return;
                              break;
+            case Key.Backspace:
+                             switch (mode_)
+                             {
+                                 case Mode.Filter: currentTab_.popFromFilter(); return; break;
+                                 case Mode.Command: if (!command_.empty) command_.popBack(); return; break;
+                             }
+                             break;
             case Key.Delete:
                              currentTab_.deleteFocus; return;
                              break;

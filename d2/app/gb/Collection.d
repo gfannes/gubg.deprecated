@@ -11,7 +11,7 @@ import std.array;
 
 import std.stdio;
 
-bool verbose__ = true;
+bool verbose__ = false;
 
 //A collection of filesystem trees containing D files
 class Collection
@@ -35,8 +35,9 @@ class Collection
                 return;
 
         //The path seems not to be present yet, so we add it
+        //We make sure that _none_ of the already present files will be part of this new external tree
         bool[string] allIncludedPaths;
-        foreach (ref DFile file; this)
+        foreach (ref TaggedFile file; this)
             allIncludedPaths[file.path] = true;
         auto externalTree = createFSTreeFromPath(path, creator_);
         bool atLeastOneLeft = false;
@@ -93,7 +94,7 @@ class Collection
         //Remove all files that are not tagged (referenced)
         foreach(ref TaggedFile file; this)
         {
-            if (!file.isTagged && filepath != file.path)
+            if (!file.isTagged)
                 file.remove;
         }
 

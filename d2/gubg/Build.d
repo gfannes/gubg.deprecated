@@ -12,11 +12,32 @@ string objectExtension()
     version (Win32) return "obj";
 }
 
-class Compile
+enum SourceType {D, Cpp};
+SourceType guessSourceType(string filepath)
+{
+    switch (getExt(filepath))
+    {
+        case "d": return SourceType.D; break;
+        case "cpp": return SourceType.Cpp; break;
+    }
+}
+
+abstract class Options
+{
+    void addOption(string option)
+    {
+        options_ ~= option;
+    }
+    protected:
+    string[] options_;
+}
+
+class Compile: Options
 {
     this(string sourceFilepath)
     {
         sourceFilepath_ = sourceFilepath;
+        sourceType_ = guessSourceType(sourceFilepath_);
     }
     void setObjectFilepath(string objectFilepath)
     {
@@ -39,7 +60,7 @@ class Compile
                     format(option);
                 break;
             case SourceType.Cpp:
-                format("g++ -c -o\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
+                format("g++ -std=c++0x -c -o\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
                 format.delimiter = " ";
                 foreach (includePath; includePaths_)
                     format("-I\"%s\"", includePath);
@@ -66,10 +87,6 @@ class Compile
     {
         versions_ ~= v;
     }
-    void addOption(string option)
-    {
-        options_ ~= option;
-    }
     string objectFilepath()
     {
         if (objectFilepath_)
@@ -79,24 +96,19 @@ class Compile
 
     private:
     string sourceFilepath_;
-    enum SourceType {D, Cpp};
-    SourceType sourceType_()
-    {
-        writefln("Checking source type for %s", sourceFilepath_);
-        switch (getExt(sourceFilepath_))
-        {
-            case "d": return SourceType.D; break;
-            case "cpp": return SourceType.Cpp; break;
-        }
-    }
+    SourceType sourceType_;
     string objectFilepath_;
     string[] includePaths_;
     string[] versions_;
-    string[] options_;
 }
 
-class Link
+class Link: Options
 {
+    this (SourceType sourceType)
+    {
+        sourceType_ = sourceType;
+    }
+
     abstract string extraSettings();
 
     bool execute(bool verbose)
@@ -105,7 +117,11 @@ class Link
         version (Posix)
         {
             format.delimiter = " ";
-            format("dmd");
+            switch (sourceType_)
+            {
+                case SourceType.D: format("dmd"); break;
+                case SourceType.Cpp: format("g++ -std=c++0x"); break;
+            }
             format(extraSettings());
             foreach (objectFilepath; objectFilepaths_)
                 format("\"" ~ objectFilepath ~ "\"");
@@ -113,7 +129,7 @@ class Link
         version (Win32)
         {
             format.delimiter = " ";
-            format("d-link ");
+            format("d-link");
             {
                 Format objectFiles;
                 objectFiles.delimiter = "+";
@@ -124,6 +140,8 @@ class Link
             format.delimiter = ", ";
             format(extraSettings());
         }
+        foreach (option; options_)
+            format(option);
 
         //Execute the command
         if (verbose)
@@ -141,12 +159,14 @@ class Link
 
     protected:
     string[] objectFilepaths_;
+    SourceType sourceType_;
 }
 class LinkExecutable: Link
 {
-    this(string exeName)
+    this(string exeName, SourceType sourceType)
     {
         exeName_ = exeName;
+        super(sourceType);
     }
 
     //Abstract interface from Link
@@ -155,11 +175,23 @@ class LinkExecutable: Link
         Format format;
         version (Posix)
         {
-            format("-of\"%s\"", exeName_);
-            format.delimiter = " ";
-            format("-L-Map=\"%s.map\"", exeName_);
-            foreach (libName; libraries)
-                format("-L-l%s", libName);
+            switch (sourceType_)
+            {
+                case SourceType.D:
+                    format("-of\"%s\"", exeName_);
+                    format.delimiter = " ";
+                    format("-L-Map=\"%s.map\"", exeName_);
+                    foreach (libName; libraries)
+                        format("-L-l%s", libName);
+                    break;
+                case SourceType.Cpp:
+                    format("-o\"%s\"", exeName_);
+                    format.delimiter = " ";
+                    //format("-L-Map=\"%s.map\"", exeName_);
+                    foreach (libName; libraries)
+                        format("-l%s", libName);
+                    break;
+            }
         }
         version (Win32)
         {
@@ -187,9 +219,10 @@ class LinkExecutable: Link
 }
 class LinkLibrary: Link
 {
-    this(string libName)
+    this(string libName, SourceType sourceType)
     {
         libName = libName_;
+        super(sourceType);
     }
 
     string extraSettings()

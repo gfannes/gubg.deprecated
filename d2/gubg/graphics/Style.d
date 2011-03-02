@@ -42,14 +42,14 @@ struct Color
 	    else
             this(-shade, 0, 0);
 	}
-    real[] rgb(){return [r, g, b];}
+    real[] rgb() const {return [r, g, b];}
 
-    ubyte redByte(){return cast(ubyte)(255*r);}
-    ubyte greenByte(){return cast(ubyte)(255*g);}
-    ubyte blueByte(){return cast(ubyte)(255*b);}
-    ubyte[] rgbByte(){return [cast(ubyte)(255*r), cast(ubyte)(255*g), cast(ubyte)(255*b)];}
+    ubyte redByte() const {return cast(ubyte)(255*r);}
+    ubyte greenByte() const {return cast(ubyte)(255*g);}
+    ubyte blueByte() const {return cast(ubyte)(255*b);}
+    ubyte[] rgbByte() const {return [cast(ubyte)(255*r), cast(ubyte)(255*g), cast(ubyte)(255*b)];}
 
-    bool isValid(){return InvalidValue != r;}
+    bool isValid() const {return InvalidValue != r;}
     
     string toString() const {return Format.immediate("#(%s, %s, %s)", r, g, b);}
 
@@ -76,13 +76,13 @@ struct Style
         width_ = width;
         return this;
     }
-    bool hasFill(){return fill_.isValid();}
-    bool hasStroke(){return stroke_.isValid() && InvalidWidth != width_;}
-    Color fillColor(){assert(hasFill()); return fill_;}
-    Color strokeColor(){assert(hasStroke()); return stroke_;}
-    real strokeWidth(){assert(hasStroke()); return width_;}
+    bool hasFill() const {return fill_.isValid();}
+    bool hasStroke() const {return stroke_.isValid() && InvalidWidth != width_;}
+    Color fillColor() const {assert(hasFill()); return fill_;}
+    Color strokeColor() const {assert(hasStroke()); return stroke_;}
+    real strokeWidth() const {assert(hasStroke()); return width_;}
 
-    string toString()
+    string toString() const
     {
         Format format;
         format.delimiter = ", ";
