@@ -1,0 +1,24 @@
+# Installation #
+
+## Linux ##
+
+## Windows ##
+ * Install g++
+    * Install ruby from http://www.rubyinstaller.org
+    * Install devkit, this will install the g++ compiler
+ * Install SDL
+    * Download the SDL sources from http://www.libsdl.org and unzip
+    * Compile SDL and install via the command line into c:/usr/local
+       * Make c:/usr/local directory
+       * sh configure --prefix=c:/usr/local
+       * make
+       * make install
+ * Install cairomm
+    * Download and install cairmm as part of gtkmm from http://www.gtkmm.org
+       * sigc++config.h can be found in lib/sigc++-2.0/include
+       * Compilation with this sigc++config.h fails currently when -std=c++0x is specified. I did not try it without c++0x yet...
+       => We will install libsigc++ from http://libsigc.sourceforge.net/index.shtml
+          * sh configure --prefix=c:/usr/local
+          * make
+          * make install
+

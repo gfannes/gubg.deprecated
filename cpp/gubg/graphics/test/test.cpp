@@ -7,7 +7,7 @@
 using namespace gubg;
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
     cout << Color::red << endl;
     cout << Color(0.1, 0.2, 0.3) << endl;

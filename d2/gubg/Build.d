@@ -114,31 +114,38 @@ class Link: Options
     bool execute(bool verbose)
     {
         Format format;
-        version (Posix)
+        format.delimiter = " ";
+        switch (sourceType_)
         {
-            format.delimiter = " ";
-            switch (sourceType_)
-            {
-                case SourceType.D: format("dmd"); break;
-                case SourceType.Cpp: format("g++ -std=c++0x"); break;
-            }
-            format(extraSettings());
-            foreach (objectFilepath; objectFilepaths_)
-                format("\"" ~ objectFilepath ~ "\"");
-        }
-        version (Win32)
-        {
-            format.delimiter = " ";
-            format("d-link");
-            {
-                Format objectFiles;
-                objectFiles.delimiter = "+";
+            case SourceType.D:
+                version (Posix)
+                {
+                    format("dmd");
+                    format(extraSettings());
+                    foreach (objectFilepath; objectFilepaths_)
+                        format("\"" ~ objectFilepath ~ "\"");
+                }
+                version (Win32)
+                {
+                    //This is the digitalmars link that was renamed to d-link
+                    format("d-link");
+                    {
+                        Format objectFiles;
+                        objectFiles.delimiter = "+";
+                        foreach (objectFilepath; objectFilepaths_)
+                            objectFiles("\"" ~ objectFilepath ~ "\"");
+                        format(objectFiles.toString);
+                    }
+                    format.delimiter = ", ";
+                    format(extraSettings());
+                }
+                break;
+            case SourceType.Cpp:
+                format("g++ -std=c++0x");
+                format(extraSettings());
                 foreach (objectFilepath; objectFilepaths_)
-                    objectFiles("\"" ~ objectFilepath ~ "\"");
-                format(objectFiles.toString);
-            }
-            format.delimiter = ", ";
-            format(extraSettings());
+                    format("\"" ~ objectFilepath ~ "\"");
+                break;
         }
         foreach (option; options_)
             format(option);
@@ -173,36 +180,36 @@ class LinkExecutable: Link
     string extraSettings()
     {
         Format format;
-        version (Posix)
+        switch (sourceType_)
         {
-            switch (sourceType_)
-            {
-                case SourceType.D:
+            case SourceType.D:
+                version (Posix)
+                {
                     format("-of\"%s\"", exeName_);
                     format.delimiter = " ";
                     format("-L-Map=\"%s.map\"", exeName_);
                     foreach (libName; libraries)
                         format("-L-l%s", libName);
-                    break;
-                case SourceType.Cpp:
-                    format("-o\"%s\"", exeName_);
-                    format.delimiter = " ";
-                    //format("-L-Map=\"%s.map\"", exeName_);
-                    foreach (libName; libraries)
-                        format("-l%s", libName);
-                    break;
-            }
-        }
-        version (Win32)
-        {
-            format("\"%s\", , ", exeName_);
-            {
-                Format libFiles;
-                libFiles.delimiter = "+";
+                }
+                version (Win32)
+                {
+                    format("\"%s\", , ", exeName_);
+                    {
+                        Format libFiles;
+                        libFiles.delimiter = "+";
+                        foreach (libName; libraries)
+                            libFiles("%s.lib", libName);
+                        format(libFiles.toString);
+                    }
+                }
+                break;
+            case SourceType.Cpp:
+                format("-o\"%s\"", exeName_);
+                format.delimiter = " ";
+                //format("-L-Map=\"%s.map\"", exeName_);
                 foreach (libName; libraries)
-                    libFiles("%s.lib", libName);
-                format(libFiles.toString);
-            }
+                    format("-l%s", libName);
+                break;
         }
 
         return format.toString();
