@@ -46,7 +46,6 @@ namespace gubg
             PointT p0;
             PointT p1;
 
-#if 0
             //L2 distance
             T length() const {return sqrt(pow(p0.x-p1.x, 2) + pow(p0.y-p1.y, 2));}
             T width() const {return abs(moveX());}
@@ -56,7 +55,7 @@ namespace gubg
             //The distance to move across a certain axis to go from p0 to p1
             T moveX() const {return p1.x-p0.x;}
             T moveY() const {return p1.y-p0.y;}
-            bool isInside(in Point p) const
+            bool isInside(const Point<> &p) const
             {
                 //Check the X-axis
                 if (p0.x <= p1.x)
@@ -81,7 +80,6 @@ namespace gubg
                 //All axis match => p is inside the rectangle
                 return true;
             }
-#endif
         };
 }
 template <typename T>

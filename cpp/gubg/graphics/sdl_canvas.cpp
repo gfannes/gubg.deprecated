@@ -189,9 +189,9 @@ namespace gubg
             cairoContext_->stroke();
         }
 #endif
-        void SDLCanvas::clear(unsigned int rgb)
+        void SDLCanvas::clear(const Color &color)
         {
-            SDL_FillRect(SDLSurface_, 0, rgb);
+            SDL_FillRect(SDLSurface_, 0, color.rgb());
         }
         void SDLCanvas::setStrokeStyle_(const Style &style)
         {

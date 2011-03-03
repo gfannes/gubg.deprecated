@@ -21,7 +21,7 @@ interface IWidget
 }
 //We don't actually listen to any event, we just process
 enum Alignment {Left, Center};
-class Button: StateMachine!(bool, WidgetState),  IWidget
+class Button: StateMachine!(bool, WidgetState), IWidget
 {
     this (TwoPoint dimensions, string label, Alignment alignment, SDLCanvas canvas)
     {

@@ -50,6 +50,7 @@ namespace gubg
         unsigned char redByte() const {return 255*r;}
         unsigned char greenByte() const {return 255*g;}
         unsigned char blueByte() const {return 255*b;}
+        unsigned int rgb() const {return (redByte()<<16) | (greenByte()<<8) | (blueByte());}
 
         bool isValid() const;
     };

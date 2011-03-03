@@ -2,6 +2,9 @@
 #include "graphics/sdl.hpp"
 #include "graphics/canvas.hpp"
 #include "graphics/sdl_canvas.hpp"
+#include "graphics/imui.hpp"
+#include "sleep.hpp"
+#include "sequence.hpp"
 #include <iostream>
 #include <array>
 using namespace gubg;
@@ -21,9 +24,28 @@ int main(int argc, char *argv[])
     auto sdl2 = SDL::initialize();
 
     SDLCanvas canvas(100, 100);
-    ICanvas::DrawScope sc(canvas);
-    
-    for (int i = 0; i < 1000000; ++i)
-        ;
+    struct DrawColor: Sequence<double>::EachBlock
+    {
+        DrawColor(SDLCanvas &c):
+            canvas(c){}
+        SDLCanvas &canvas;
+        bool yield(double v)
+        {
+            ICanvas::DrawScope sc(canvas);
+            canvas.clear(Color(v));
+            canvas.drawCircle(Point<>(50, 50), 40, Style().stroke(Color::red).width(3));
+            canvas.drawRectangle(TwoPoint<>(25, 25, 75, 75), Style().stroke(Color::green).width(3));
+            nanosleep(0, 5000000);
+            return true;
+        }
+    } dc(canvas);
+    for (int i = 0; i < 5; ++i)
+    {
+        //From red to green
+        Sequence<double>(-1, 1, 0.01).each(dc);
+        //From green to red
+        Sequence<double>(1, -1, -0.01).each(dc);
+    }
+
     return 0;
 }

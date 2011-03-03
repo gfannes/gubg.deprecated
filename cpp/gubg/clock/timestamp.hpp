@@ -3,19 +3,17 @@
 
 #include <sys/time.h>
 #include <iostream>
-
 using namespace std;
 
 class TimeStamp
 {
-public:
-
-    TimeStamp(long seconds = 0, long microseconds = 0)
+    public:
+        TimeStamp(long seconds = 0, long microseconds = 0)
         {
             set(seconds, microseconds);
         }
 
-    bool set(long seconds, long microseconds)
+        bool set(long seconds, long microseconds)
         {
             int nrSec = microseconds/1000000;
             microseconds -= nrSec*1000000;
@@ -24,59 +22,59 @@ public:
                 --nrSec;
                 microseconds += 1000000;
             }
-            mTimeVal.tv_sec = seconds + nrSec;
-            mTimeVal.tv_usec = microseconds;
-            mBrokenTime.valid = false;
+            timeVal_.tv_sec = seconds + nrSec;
+            timeVal_.tv_usec = microseconds;
+            brokenTime_.valid = false;
             return true;
         }
-    long seconds() const{return mTimeVal.tv_sec;}
-    long microSeconds() const{return mTimeVal.tv_usec;}
-    bool now()
+        long seconds() const{return timeVal_.tv_sec;}
+        long microSeconds() const{return timeVal_.tv_usec;}
+        bool now()
         {
-            if (gettimeofday(&mTimeVal, NULL))
+            if (gettimeofday(&timeVal_, NULL))
             {
-                cerr << "Could not get the time" << endl;
+                std::cerr << "Could not get the time" << std::endl;
                 return false;
             }
-            mBrokenTime.valid = false;
+            brokenTime_.valid = false;
             return true;
         }
-    bool add(const TimeStamp &offset)
+        bool add(const TimeStamp &offset)
         {
-            if (mTimeVal.tv_usec + offset.mTimeVal.tv_usec > 1000000)
+            if (timeVal_.tv_usec + offset.timeVal_.tv_usec > 1000000)
             {
-                mTimeVal.tv_usec = mTimeVal.tv_usec + offset.mTimeVal.tv_usec - 1000000;
-                mTimeVal.tv_sec++;
+                timeVal_.tv_usec = timeVal_.tv_usec + offset.timeVal_.tv_usec - 1000000;
+                timeVal_.tv_sec++;
             } else
-                mTimeVal.tv_usec += offset.mTimeVal.tv_usec;
-            mTimeVal.tv_sec += offset.mTimeVal.tv_sec;
-            mBrokenTime.valid = false;
+                timeVal_.tv_usec += offset.timeVal_.tv_usec;
+            timeVal_.tv_sec += offset.timeVal_.tv_sec;
+            brokenTime_.valid = false;
             return true;
         }
-    bool diff(const TimeStamp &rhs)
+        bool diff(const TimeStamp &rhs)
         {
             return set(seconds()-rhs.seconds(), microSeconds()-rhs.microSeconds());
         }
-    bool breakDown(bool absolute = true);
+        bool breakDown(bool absolute = true);
 
-    friend ostream &operator<<(ostream &os, const TimeStamp &ts);
+        friend ostream &operator<<(ostream &os, const TimeStamp &ts);
 
-private:
-    typedef struct
-    {
-        bool valid;
-        bool absolute;
-        int year;
-        int month;
-        int day;
-        int hour;
-        int minute;
-        int second;
-        int microsecond;
-    } BrokenTime;
+    private:
+        typedef struct
+        {
+            bool valid;
+            bool absolute;
+            int year;
+            int month;
+            int day;
+            int hour;
+            int minute;
+            int second;
+            int microsecond;
+        } BrokenTime;
 
-    BrokenTime mBrokenTime;
-    struct timeval mTimeVal;
+        BrokenTime brokenTime_;
+        struct timeval timeVal_;
 };
 
 #endif
