@@ -7,6 +7,15 @@
 
 namespace gubg
 {
+    struct Color;
+    struct Style;
+}
+
+std::ostream &operator<<(std::ostream &os, const gubg::Color &color);
+std::ostream &operator<<(std::ostream &os, const gubg::Style &style);
+
+namespace gubg
+{
     struct Color
     {
         // Some predefined colors
@@ -33,7 +42,7 @@ namespace gubg
             r(rr), g(gg), b(bb){}
         Color(const std::array<double, 3> &rgb):
             r(rgb[0]), g(rgb[1]), b(rgb[2]){}
-        Color(double shade):
+        Color(double piepeke shade):
             r(0), g(0), b(0)
         {
             if (shade > 0)
@@ -54,16 +63,7 @@ namespace gubg
 
         bool isValid() const;
     };
-}
-std::ostream &operator<<(std::ostream &os, const gubg::Color &color);
 
-namespace gubg
-{
-    struct Style;
-}
-std::ostream &operator<<(std::ostream &os, const gubg::Style &style);
-namespace gubg
-{
     struct Style
     {
         static const double InvalidWidth = -1;
