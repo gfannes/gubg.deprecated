@@ -1,6 +1,6 @@
 {
     "externalTrees": ["h:\\My Dropbox\\gubg\\cpp\\gubg"],
     "libraries": [],
-    "compilation": ["-Iw:\\win32\\include", "-Ih:\\software\\usr\\local\\include", "-Ih:\\software\\gtkmm\\include\\cairomm-1.0", "-Ih:\\software\\usr\\local\\include\\sigc++-2.0", "-Ih:\\software\\gtkmm\\include\\cairo", "-Ih:\\software\\gtkmm\\include", "-Ih:\\software\\gtkmm\\include\\freetype2"],
+    "compilation": ["-DMINGW32", "-Iw:\\win32\\include", "-Ih:\\software\\usr\\local\\include", "-Ih:\\software\\gtkmm\\include\\cairomm-1.0", "-Ih:\\software\\usr\\local\\include\\sigc++-2.0", "-Ih:\\software\\gtkmm\\include\\cairo", "-Ih:\\software\\gtkmm\\include", "-Ih:\\software\\gtkmm\\include\\freetype2"],
     "linking": ["-Wl,-lmingw32,-lSDLmain,-lSDL,-Lh:\\software\\usr\\local\\lib,-lcairomm-1.0.dll,-Lh:\\software\\gtkmm\\lib", "-mwindows"]
 }
