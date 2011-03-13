@@ -7,6 +7,15 @@
 
 namespace gubg
 {
+    struct Color;
+    struct Style;
+}
+
+std::ostream &operator<<(std::ostream &os, const gubg::Color &color);
+std::ostream &operator<<(std::ostream &os, const gubg::Style &style);
+
+namespace gubg
+{
     struct Color
     {
         // Some predefined colors
@@ -54,16 +63,7 @@ namespace gubg
 
         bool isValid() const;
     };
-}
-std::ostream &operator<<(std::ostream &os, const gubg::Color &color);
 
-namespace gubg
-{
-    struct Style;
-}
-std::ostream &operator<<(std::ostream &os, const gubg::Style &style);
-namespace gubg
-{
     struct Style
     {
         static const double InvalidWidth = -1;

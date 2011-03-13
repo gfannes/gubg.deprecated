@@ -1,5 +1,9 @@
 #include "graphics/imui_key.hpp"
 
+std::ostream &operator<<(std::ostream &os, gubg::Key key)
+{
+    return os << (int)key;
+}
 namespace gubg
 {
     Key fromSDL(int sdlKey){return (Key)sdlKey;}

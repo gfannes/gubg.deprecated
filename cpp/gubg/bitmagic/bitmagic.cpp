@@ -1,7 +1,6 @@
 #include "bitmagic.hpp"
-using namespace gubg::bitmagic;
 
-unsigned int reverseBits(unsigned int v)
+unsigned int gubg::bitmagic::reverseBits(unsigned int v)
 {
     if (0 == v)
         return v;

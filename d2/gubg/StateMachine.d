@@ -1,12 +1,14 @@
 module gubg.StateMachine;
 
+//General interface that handles an event
+//True indicates that the event could be handled
 interface IEventHandler(Event)
 {
     //Returns true if the event is handled
     bool processEvent(Event event);
 }
 
-//Normal state machine base class with support for hooking into state changes
+//Normal state machine base class with support for hooking into state changes via enterState()
 class StateMachine(Event, State): IEventHandler!(Event)
 {
     this (State state)
