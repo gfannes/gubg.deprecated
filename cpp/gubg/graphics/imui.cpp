@@ -4,6 +4,11 @@
 #include "bitmagic.hpp"
 using namespace gubg;
 
+#define nullptr ((void*)0)
+
+//#define L_ENABLE_DEBUG
+#include "debug.hpp"
+
 bool IMUI::processInput()
 {
     if (processInput_())
@@ -83,22 +88,43 @@ bool IMUI::checkMouseButton(MouseButton button, ButtonState cmpState)
     return false;
 }
 
-void Widgets::WidgetProxy::set(std::auto_ptr<IWidget> widget)
+WidgetProxy::WidgetProxy()
+{
+    DEBUG_PRINT("ctor: " << std::hex << this);
+}
+WidgetProxy::WidgetProxy(const WidgetProxy &rhs):
+    widget_(rhs.widget_)
+{
+    DEBUG_PRINT("copy ctor: " << std::hex << this);
+}
+WidgetProxy::~WidgetProxy()
+{
+    DEBUG_PRINT("dtor: " << std::hex << this);
+}
+WidgetProxy &WidgetProxy::operator=(const WidgetProxy &rhs)
+{
+    DEBUG_PRINT("operator=");
+    widget_ = rhs.widget_;
+    return *this;
+}
+
+void WidgetProxy::set(std::auto_ptr<IWidget> widget)
 {
     //Internally, we keep the object in a shared_ptr since WidgetProxy has to be storable in an STL container
+    DEBUG_PRINT("widget: " << widget.get());
     widget_.reset(widget.release());
 }
 
-WidgetState Widgets::WidgetProxy::process()
+WidgetState WidgetProxy::process()
 {
     if (!widget_)
         return WidgetState::Empty;
     return widget_->process();
 }
 
-Widgets::WidgetProxy &Widgets::get(unsigned int extra)
+WidgetProxy &Widgets::get(unsigned int extra)
 {
-    void *callerLocation;
+    void *callerLocation = nullptr;
 #if 0
     asm
     {

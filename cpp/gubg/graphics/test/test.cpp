@@ -3,6 +3,7 @@
 #include "graphics/canvas.hpp"
 #include "graphics/sdl_canvas.hpp"
 #include "graphics/imui.hpp"
+#include "graphics/imui_button.hpp"
 #include "sleep.hpp"
 #include "sequence.hpp"
 #include <iostream>
@@ -24,6 +25,8 @@ int main(int argc, char *argv[])
     auto sdl2 = SDL::initialize();
 
     SDLCanvas canvas(100, 100);
+
+#if 0
     struct DrawColor: Sequence<double>::EachBlock
     {
         DrawColor(SDLCanvas &c):
@@ -45,6 +48,21 @@ int main(int argc, char *argv[])
         Sequence<double>(-1, 1, 0.01).each(dc);
         //From green to red
         Sequence<double>(1, -1, -0.01).each(dc);
+    }
+#endif
+
+    Widgets widgets;
+    for (int i = 0; i < 300; ++i)
+    {
+        ICanvas::DrawScope sc(canvas);
+        WidgetProxy &b1 = widgets.get();
+        switch (b1.process())
+        {
+            case WidgetState::Empty:
+                b1.set(auto_ptr<IWidget>(new Button(TwoPoint<>(0, 0, 100, 25), "Boerke", Alignment::Left, canvas)));
+                break;
+        }
+        nanosleep(0, 10000000);
     }
 
     return 0;

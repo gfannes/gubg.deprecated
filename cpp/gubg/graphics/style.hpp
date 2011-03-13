@@ -42,7 +42,7 @@ namespace gubg
             r(rr), g(gg), b(bb){}
         Color(const std::array<double, 3> &rgb):
             r(rgb[0]), g(rgb[1]), b(rgb[2]){}
-        Color(double piepeke shade):
+        Color(double shade):
             r(0), g(0), b(0)
         {
             if (shade > 0)

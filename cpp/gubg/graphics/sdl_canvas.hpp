@@ -3,6 +3,7 @@
 
 #include "graphics/canvas.hpp"
 #include "graphics/sdl.hpp"
+#include "graphics/imui.hpp"
 #include "SDL/SDL.h"
 #include "SDL/SDL_syswm.h"
 #include "cairomm/context.h"
@@ -24,9 +25,9 @@ namespace gubg
             virtual void drawCircle(const Point<> &center, double radius, const Style &);
             virtual void drawRectangle(const TwoPoint<> &fromTo, const Style &);
             virtual void setFont(const std::string &font);
-#if 0
             virtual void drawText(const std::string &text, const TwoPoint<> &box, VAlign, HAlign, const Style &);
 
+#if 0
             void setTitle(string windowTitle, string iconTitle)
             {
                 SDL_WM_SetCaption(toStringz(windowTitle), toStringz(iconTitle));
@@ -41,16 +42,17 @@ namespace gubg
                 }
                 SDL_WM_SetIcon(icon, null);
             }
-            IMUI imui_;
 #endif
+            typedef std::shared_ptr<gubg::IMUI> IMUIPtr;
+            IMUIPtr getIMUI();
+
             void clear(const Color &color = Color::coolBlue);
 
         private:
-#if 0
             void flip(){SDL_Flip(SDLSurface_);}
-#endif
             void setStrokeStyle_(const Style &);
             void setFillStyle_(const Style &);
+            TwoPoint<> textBB_(const std::string &str);
 
         private:
             SDL_Surface *SDLSurface_;
@@ -61,6 +63,8 @@ namespace gubg
             int width_;
             int height_;
             SDL_SysWMinfo info_;
+
+            IMUIPtr imui_;
     };
 }
 

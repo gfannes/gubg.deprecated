@@ -3,7 +3,6 @@
 
 #include "point.hpp"
 #include "graphics/imui_key.hpp"
-#include "boost/shared_ptr.hpp"
 #include <deque>
 #include <map>
 #include <memory>
@@ -30,35 +29,40 @@ namespace gubg
     class IWidget
     {
         public:
+            virtual ~IWidget(){}
             //Processes the widget (draw etc. if any is present)
             //and returns its current state
             virtual WidgetState process() = 0;
     };
 
-    class Widgets
+    struct WidgetProxy: IWidget
     {
-        public:
-            struct WidgetProxy: IWidget
+        //The caller _gives_ the widget object to us to be managed
+        //If a new one is set, the old one will be deleted
+        void set(std::auto_ptr<IWidget> widget);
+
+        //Returns the object, if any is present, but you are not expected to delete it
+        template <typename T>
+            T *get()
             {
-                //The caller _gives_ the widget object to us to be managed
-                //If a new one is set, the old one will be deleted
-                void set(std::auto_ptr<IWidget> widget);
+                return dynamic_cast<T*>(widget_.get());
+            }
 
-                //Returns the object, if any is present, but you are not expected to delete it
-                template <typename T>
-                    T *get()
-                    {
-                        return dynamic_cast<T*>(widget_.get());
-                    }
+        //IWidget interface
+        virtual WidgetState process();
 
-                //IWidget interface
-                virtual WidgetState process();
+        friend struct std::map<unsigned int, WidgetProxy>;
+        WidgetProxy();
+        WidgetProxy(const WidgetProxy &);
+        virtual ~WidgetProxy();
+        WidgetProxy &operator=(const WidgetProxy &);
 
-                private:
-                boost::shared_ptr<IWidget> widget_;
-            };
-
-            WidgetProxy &get(unsigned int extra = 0);
+        private:
+        std::shared_ptr<IWidget> widget_;
+    };
+    struct Widgets
+    {
+        WidgetProxy &get(unsigned int extra = 0);
 
         private:
             unsigned int createId_(void *location, unsigned int extra);

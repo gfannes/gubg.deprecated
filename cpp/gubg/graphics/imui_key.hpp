@@ -3,6 +3,7 @@
 
 #include "SDL/SDL_keysym.h"
 #include <cassert>
+#include <ostream>
 
 namespace gubg
 {
@@ -135,5 +136,6 @@ namespace gubg
     bool convertToDigit(unsigned char &digit, Key key);
     char convertToChar(Key key);
 }
+std::ostream &operator<<(std::ostream &os, gubg::Key);
 
 #endif
