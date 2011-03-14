@@ -5,6 +5,7 @@
 #include "graphics/imui.hpp"
 #include "graphics/imui_button.hpp"
 #include "sleep.hpp"
+#include "timer.hpp"
 #include "sequence.hpp"
 #include <iostream>
 #include <array>
