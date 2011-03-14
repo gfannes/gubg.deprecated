@@ -4,6 +4,10 @@ std::ostream &operator<<(std::ostream &os, gubg::Key key)
 {
     return os << (int)key;
 }
+bool operator<=(gubg::Key lhs, gubg::Key rhs)
+{
+    return (int)lhs <= (int)rhs;
+}
 namespace gubg
 {
     Key fromSDL(int sdlKey){return (Key)sdlKey;}

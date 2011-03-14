@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 
     SDLCanvas canvas(100, 100);
 
-#if 0
     struct DrawColor: Sequence<double>::EachBlock
     {
         DrawColor(SDLCanvas &c):
@@ -42,14 +41,13 @@ int main(int argc, char *argv[])
             return true;
         }
     } dc(canvas);
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         //From red to green
         Sequence<double>(-1, 1, 0.01).each(dc);
         //From green to red
         Sequence<double>(1, -1, -0.01).each(dc);
     }
-#endif
 
     Widgets widgets;
     for (int i = 0; i < 300; ++i)

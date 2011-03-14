@@ -13,7 +13,7 @@ namespace gubg
 #endif
     void nanosleep(int nrSec, int nrNanoSec)
     {
-        Sleep(1000*nrSec + nrNanoSec%1000000);
+        Sleep(1000*nrSec + nrNanoSec/1000000);
     }
 }
 

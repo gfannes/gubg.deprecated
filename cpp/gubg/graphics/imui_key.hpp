@@ -137,5 +137,6 @@ namespace gubg
     char convertToChar(Key key);
 }
 std::ostream &operator<<(std::ostream &os, gubg::Key);
+bool operator<=(gubg::Key, gubg::Key);
 
 #endif
