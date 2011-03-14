@@ -7,9 +7,12 @@ namespace gubg
     const Color Color::red(1.0, 0.0, 0.0);
     const Color Color::green(0.0, 1.0, 0.0);
     const Color Color::blue(0.0, 0.0, 1.0);
-    const Color Color::purple(1.0, 0.0, 1.0);
+    const Color Color::fuchsia(1.0, 0.0, 1.0);
     const Color Color::cyan(0.0, 1.0, 1.0);
     const Color Color::yellow(1.0, 1.0, 0.0);
+    const Color Color::olive(0.5, 0.5, 0.0);
+    const Color Color::teal(0.0, 0.5, 0.5);
+    const Color Color::purple(0.5, 0.0, 0.5);
     const Color Color::gray(0.5, 0.5, 0.5);
     const Color Color::coolRed(0.33, 0.07, 0.20);
     const Color Color::darkRed(0.25, 0.06, 0.15);

@@ -7,8 +7,32 @@
 #include <map>
 #include <memory>
 
+//Provides support for immediate mode user interfaces: instead of linking events to callbacks etc., a single instance of (a derived class from) IMUI
+//keeps track of user input, while widgets are drawn and handled immediately, each time we cycle through the main loop.
+//Make sure you sleep somewhere, otherwise you will consume all CPU
+
+//Typical application would be:
+// * Create some derived IMUI, e.g., SDLCanvas, which returns a IMUI via getIMUI()
+// * Create a single Widgets instance that will manage all widgets (you can create several ones if you like, e.g., for optimization per logical page or so)
+// * If some widget needs to be drawn and handled, create a WidgetProxy via widgets.get(...), call its process() method and set an instance of the desired
+//   widget into this proxy when process() returns WidgetState::Empty.
+// * Handle other, widget-dependent states accordingly, e.g., WidgetState::Activated is the one return by process() when a Button is pressed
+
 namespace gubg
 {
+    enum class WidgetState
+    {
+        Empty,        //No widget is present yet in the WidgetProxy, you should set() one
+        Emerging,     //The widget is being born
+        Idle,         //
+        Highlighted,  //Mouse is currently hoovering over it
+        Selected,     //
+        Activating,   //Button: Left mouse button down
+        Activated,    //Button: Left mouse button up while still hoovering over the same widget where left mouse went down
+        Moving,       //Scrollbar
+        ScrollDown,   //Scrollbar
+        ScrollUp      //Scrollbar
+    };
     enum class MouseButton
     {
         Left,
@@ -24,8 +48,6 @@ namespace gubg
         IsOrWentUp,
         IsOrWentDown,
     };
-
-    enum class WidgetState {Empty, Emerging, Idle, Highlighted, Selected, Activating, Activated, Moving, ScrollDown, ScrollUp};
     class IWidget
     {
         public:
@@ -70,7 +92,7 @@ namespace gubg
             std::map<unsigned int, WidgetProxy> widgetPerId_;
     };
 
-    //Immediate-mode user interface
+    //Immediate-mode user interface base class that keeps track of relevant user input
     class IMUI
     {
         public:

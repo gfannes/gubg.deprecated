@@ -24,9 +24,12 @@ namespace gubg
         static const Color red;
         static const Color green;
         static const Color blue;
-        static const Color purple;
+        static const Color fuchsia;
         static const Color cyan;
         static const Color yellow;
+        static const Color olive;
+        static const Color teal;
+        static const Color purple;
         static const Color gray;
         static const Color coolRed;
         static const Color darkRed;
@@ -42,13 +45,25 @@ namespace gubg
             r(rr), g(gg), b(bb){}
         Color(const std::array<double, 3> &rgb):
             r(rgb[0]), g(rgb[1]), b(rgb[2]){}
-        Color(double shade):
-            r(0), g(0), b(0)
+        template <int Min, int Max>
+        static Color shade(double sh)
         {
-            if (shade > 0)
-                g = shade;
-            else
-                r = -shade;
+            if (sh < Min)
+                return Color::red;
+            if (sh > Max)
+                return Color::green;
+            //For symmetric color shades, we use black as the "middle" value to make it clear when the middle is hit
+            if (Max == -Min)
+            {
+                const double middle = 0.5*(Max+Min);
+                const double half = 0.5*(Max-Min);
+                if (sh < middle)
+                    return Color((middle-sh)/half, 0, 0);
+                return Color(0, (sh-middle)/half, 0);
+            }
+            //Else, we just create a smooth range from red to green
+            const double green = (sh-Min)/(Max-Min);
+            return Color(1.0-green, green, 0);
         }
 
         // Data fields
