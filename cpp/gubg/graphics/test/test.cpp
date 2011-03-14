@@ -50,7 +50,8 @@ int main(int argc, char *argv[])
     }
 
     Widgets widgets;
-    for (int i = 0; i < 300; ++i)
+    Timer timer(ResetType::NoAuto);
+    while (timer.difference() < 10)
     {
         ICanvas::DrawScope sc(canvas);
         WidgetProxy &b1 = widgets.get();

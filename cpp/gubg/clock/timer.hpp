@@ -15,6 +15,7 @@ namespace gubg
             reset();
         }
 
+        //Elapsed difference in seconds
         double difference()
         {
             auto diff = getCurrentTime_() - startTime_;
