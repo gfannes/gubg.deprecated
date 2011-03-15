@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ostream>
+#include <sstream>
 #include <memory>
 #include <vector>
 
@@ -50,7 +51,15 @@ namespace gubg
                 tag_(tag){}
 
             //Adds an xml content child to this and returns this (i.e., chainable)
-            Element &operator<<(const std::string &value);
+            template <typename T>
+            Element &operator<<(const T &value)
+            {
+                //In general, we use std::ostringstream to convert value into a std::string
+                //Next, we use the specialization to stream the std::string
+                std::ostringstream oss;
+                oss << value;
+                return operator<<(oss.str());
+            }
 
             //Adds an xml element child to this and returns this _new_ xml element
             //Using something like "auto &newElement = element("tag")" to create a new subtag seems convenient
@@ -70,6 +79,10 @@ namespace gubg
             typedef std::vector<ChildPtr> Childs;
             Childs childs_;
         };
+
+        //Specialization for adding an std::string xml content
+        template <>
+        Element &Element::operator<< <std::string> (const std::string &value);
     }
 }
 

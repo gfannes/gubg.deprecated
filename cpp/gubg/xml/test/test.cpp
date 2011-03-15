@@ -12,6 +12,8 @@ int main()
     body("br");
     body << "Second line" << "This is another content child, but should show on the same line in a browser";
 
+    body << 123 << 456;
+
     cout << html;
     return 0;
 }

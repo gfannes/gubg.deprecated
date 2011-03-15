@@ -21,7 +21,8 @@ std::ostream &operator<<(std::ostream &os, const Indent &indent)
 }
 
 using namespace gubg::xml;
-Element &Element::operator<<(const std::string &value)
+template <>
+Element &Element::operator<< <std::string> (const std::string &value)
 {
     childs_.push_back(ChildPtr(new Content(value)));
     return *this;
