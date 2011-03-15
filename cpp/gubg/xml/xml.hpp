@@ -6,6 +6,7 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include <map>
 
 namespace gubg
 {
@@ -65,6 +66,15 @@ namespace gubg
             //Using something like "auto &newElement = element("tag")" to create a new subtag seems convenient
             Element &operator()(const std::string &tag);
 
+            //Adds an option and returns this
+            template <typename T>
+            Element &option(const std::string &name, const T &value)
+            {
+                std::ostringstream oss;
+                oss << value;
+                return option(name, oss.str());
+            }
+
             protected:
             virtual void output_(std::ostream &, unsigned int indent) const;
 
@@ -75,6 +85,10 @@ namespace gubg
 
             std::string tag_;
 
+            typedef std::map<std::string, std::string> Options;
+            Options options_;
+            void appendOptions_(std::ostream &os) const;
+
             typedef std::shared_ptr<IChild> ChildPtr;
             typedef std::vector<ChildPtr> Childs;
             Childs childs_;
@@ -83,6 +97,10 @@ namespace gubg
         //Specialization for adding an std::string xml content
         template <>
         Element &Element::operator<< <std::string> (const std::string &value);
+
+        //Specialization for adding an std::string option
+        template <>
+        Element &Element::option<std::string>(const std::string &name, const std::string &value);
     }
 }
 
