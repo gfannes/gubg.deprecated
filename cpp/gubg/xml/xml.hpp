@@ -19,43 +19,54 @@ namespace gubg
 {
     namespace xml
     {
+        //Base class for an xlm element and content
         struct IChild
         {
+            //This virtual function is used to achieve polymorphic streaming
             virtual void output_(std::ostream &, unsigned int indent) const = 0;
         };
-        typedef std::shared_ptr<IChild> ChildPtr;
+
+        //Represents xml content, i.e., everything outside <...> or &...;
         struct Content: IChild
         {
             Content(const std::string &value):
                 value_(value){}
+
             protected:
             virtual void output_(std::ostream &, unsigned int indent) const;
+
             private:
             std::string value_;
         };
+
+        //Represents an xml element with a certain tag name and its childs (other xml elements and xml content):
+        //<tag>
+        //   content
+        //   <otherTag>...</otherTag>
+        //</tag>
         struct Element: IChild
         {
             Element(const std::string &tag):
                 tag_(tag){}
 
-            Element &operator<<(const std::string &value)
-            {
-                childs_.push_back(ChildPtr(new Content(value)));
-                return *this;
-            }
-            Element &operator()(const std::string &tag)
-            {
-                Element *subElement = new Element(tag);
-                childs_.push_back(ChildPtr(subElement));
-                return *subElement;
-            }
+            //Adds an xml content child to this and returns this (i.e., chainable)
+            Element &operator<<(const std::string &value);
+
+            //Adds an xml element child to this and returns this _new_ xml element
+            //Using something like "auto &newElement = element("tag")" to create a new subtag seems convenient
+            Element &operator()(const std::string &tag);
 
             protected:
             virtual void output_(std::ostream &, unsigned int indent) const;
+
             private:
+            //We don't allow copying nor assignment
             Element(const Element &);
             Element &operator=(const Element &);
+
             std::string tag_;
+
+            typedef std::shared_ptr<IChild> ChildPtr;
             typedef std::vector<ChildPtr> Childs;
             Childs childs_;
         };

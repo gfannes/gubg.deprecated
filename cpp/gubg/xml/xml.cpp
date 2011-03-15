@@ -19,7 +19,19 @@ std::ostream &operator<<(std::ostream &os, const Indent &indent)
 {
     return os << std::string(2*indent.indent_, ' ');
 }
+
 using namespace gubg::xml;
+Element &Element::operator<<(const std::string &value)
+{
+    childs_.push_back(ChildPtr(new Content(value)));
+    return *this;
+}
+Element &Element::operator()(const std::string &tag)
+{
+    Element *subElement = new Element(tag);
+    childs_.push_back(ChildPtr(subElement));
+    return *subElement;
+}
 void Element::output_(std::ostream &os, unsigned int indent) const
 {
     if (childs_.empty())
@@ -34,6 +46,7 @@ void Element::output_(std::ostream &os, unsigned int indent) const
         os << Indent(indent) << "</" << tag_ << ">" << std::endl;
     }
 }
+
 void Content::output_(std::ostream &os, unsigned int indent) const
 {
     os << Indent(indent) << value_ << std::endl;
