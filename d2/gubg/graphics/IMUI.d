@@ -314,7 +314,14 @@ class Widgets
 }
 
 //Key is basically the same order as SDL uses...
-Key fromSDL(int sdlKey){return cast(Key)sdlKey;}
+Key fromSDL(int sdlKey, int sdlMod = 0)
+{
+    //A bad solution to handle control keys...
+    if (sdlMod & (KMOD_LCTRL | KMOD_RCTRL))
+        return cast(Key)(sdlKey+ControlOffset);
+    else
+        return cast(Key)sdlKey;
+}
 bool convertToDigit(out ubyte digit, in Key key)
 {
     if (Key.Dec0 <= key && key <= Key.Dec9)
@@ -368,6 +375,7 @@ bool convertToChar(out char ch, in Key key)
     }
     return true;
 }
+const uint ControlOffset = 1000;
 enum Key
 {
     None = 0,
@@ -484,6 +492,8 @@ enum Key
     Left = SDLK_LEFT,
     PageUp = SDLK_PAGEUP,
     PageDown = SDLK_PAGEDOWN,
+    CtrlPageUp = SDLK_PAGEUP + ControlOffset,
+    CtrlPageDown = SDLK_PAGEDOWN + ControlOffset,
 
     LeftParenthesis = SDLK_LEFTPAREN,
     RightParenthesis = SDLK_RIGHTPAREN,

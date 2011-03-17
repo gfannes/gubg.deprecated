@@ -286,6 +286,7 @@ class SDLCanvas: ICanvas
                         }
                         else
                         {
+                            auto sdlMod = event.key.keysym.mod;
                             auto sdlKey = event.key.keysym.sym;
                             switch (sdlKey)
                             {
@@ -311,7 +312,7 @@ class SDLCanvas: ICanvas
                                 case SDLK_F14:
                                 case SDLK_F15:
                                 case SDLK_DELETE:
-                                    cachedKeys_ ~= fromSDL(sdlKey);
+                                    cachedKeys_ ~= fromSDL(sdlKey, sdlMod);
                                     break;
                                 default: break;
                             }

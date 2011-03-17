@@ -231,12 +231,15 @@ class View
     }
 
     Tab currentTab(){return model_.getTabs()[tabIX_];}
+    int currentTabIX(){return tabIX_;}
     bool setCurrentTab(int tabIX)
     {
         if (0 == model_.getTabs().length)
             return false;
         tabIX_ = tabIX;
-        if (tabIX_ >= model_.getTabs().length)
+        if (tabIX_ < 0)
+            tabIX_ = 0;
+        else if (tabIX_ >= model_.getTabs().length)
             tabIX_ = model_.getTabs().length-1;
         return true;
     }

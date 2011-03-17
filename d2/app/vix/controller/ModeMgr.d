@@ -282,6 +282,12 @@ class ModeMgr: MetaStateMachine!(Key, IMode)
             case Key.Delete:
                 currentTab_().deleteFocus;
                 break;
+            case Key.CtrlPageUp:
+                controller_.setCurrentTab(controller_.currentTabIX()-1);
+                break;
+            case Key.CtrlPageDown:
+                controller_.setCurrentTab(controller_.currentTabIX()+1);
+                break;
             case Key.F1:  setCurrentTab_(0); filterMode_.reset(); changeState(filterMode_); break;
             case Key.F2:  setCurrentTab_(1); filterMode_.reset(); changeState(filterMode_); break;
             case Key.F3:  setCurrentTab_(2); filterMode_.reset(); changeState(filterMode_); break;

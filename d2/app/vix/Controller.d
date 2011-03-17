@@ -81,9 +81,13 @@ class Controller
     {
         return model_.insertTab(newTab, afterTab);
     }
-    void setCurrentTab(uint tabIX)
+    void setCurrentTab(int tabIX)
     {
         view_.setCurrentTab(tabIX);
+    }
+    int currentTabIX()
+    {
+        return view_.currentTabIX();
     }
 
     //Processing called by the IMUI mainloop
