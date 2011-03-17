@@ -79,7 +79,9 @@ class Tab
             auto folder = cast(Folder)tree;
             if (!(folder is null))
             {
-                folder.expand(creator_, ExpandStrat.Shallow);
+                //We refresh if there is only one child: getting rid of single or empty directory folders
+                //create via Folder.createRecursive()
+                folder.expand(creator_, ExpandStrat.Shallow, folder.childs.length <= 1);
                 folder_ = folder;
                 filter_ = "";
                 focus_ = getFocusForFolder_(folder.path);
