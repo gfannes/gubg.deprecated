@@ -14,6 +14,10 @@ void reportError(string message)
 {
     writefln("ERROR::%s", message);
 }
+void reportMessage(string message)
+{
+    writefln("MESSAGE::%s", message);
+}
 
 scope class Scoper
 {

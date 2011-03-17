@@ -329,34 +329,44 @@ bool convertToDigit(out ubyte digit, in Key key)
     }
     return false;
 }
-char convertToChar(in Key key)
+bool convertToChar(out char ch, in Key key)
 {
     ubyte digit;
     if (convertToDigit(digit, key))
-        return cast(char)('0'+digit);
+    {
+        ch =  cast(char)('0'+digit);
+        return true;
+    }
     if (Key.a <= key && key <= Key.z)
-        return cast(char)('a'+key-Key.a);
+    {
+        ch = cast(char)('a'+key-Key.a);
+        return true;
+    }
     if (Key.A <= key && key <= Key.Z)
-        return cast(char)('A'+key-Key.A);
+    {
+        ch = cast(char)('A'+key-Key.A);
+        return true;
+    }
     switch (key)
     {
-        case Key.Return: return '\n';
-        case Key.Colon: return ':';
-        case Key.Semicolon: return ';';
-        case Key.Comma: return ',';
-        case Key.Space: return ' ';
-        case Key.Underscore: return '_';
-        case Key.Period: return '.';
-        case Key.Slash: return '/';
-        case Key.Backslash: return '\\';
-        case Key.LeftParenthesis: return '(';
-        case Key.RightParenthesis: return ')';
-        case Key.LeftBracket: return '[';
-        case Key.RightBracket: return ']';
-        default: return '.';
+        case Key.Return:           ch = '\n'; break;
+        case Key.Colon:            ch = ':';  break;
+        case Key.Semicolon:        ch = ';';  break;
+        case Key.Comma:            ch = ',';  break;
+        case Key.Space:            ch = ' ';  break;
+        case Key.Underscore:       ch = '_';  break;
+        case Key.Period:           ch = '.';  break;
+        case Key.Slash:            ch = '/';  break;
+        case Key.Backslash:        ch = '\\'; break;
+        case Key.LeftParenthesis:  ch = '(';  break;
+        case Key.RightParenthesis: ch = ')';  break;
+        case Key.LeftBracket:      ch = '[';  break;
+        case Key.RightBracket:     ch = ']';  break;
+        default:
+                                   return false;
+                 break;
     }
-    assert(false);
-    return '.';
+    return true;
 }
 enum Key
 {
