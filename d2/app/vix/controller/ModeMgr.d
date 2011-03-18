@@ -40,6 +40,11 @@ class CommandMode: IMode
                 if (!command_.empty())
                     command_.popBack();
                 break;
+            case Key.Return:
+                //In command-mode, we left Return have the same effect as Key.Right (i.e., let the meta machine handle the event)
+                //_only_ if the command buffer is empty, else we will add it to our command_ buffer
+                if (command_.empty())
+                    return false;
             default:
                 char ch;
                 if (!convertToChar(ch, key))
