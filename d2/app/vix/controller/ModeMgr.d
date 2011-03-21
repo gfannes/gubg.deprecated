@@ -88,6 +88,7 @@ class CommandMode: IMode
                                   location ~= std.path.sep;
                           }
                           currentTab_().setFolder(location);
+                          meta_.changeToFilterMode();
                       }
                       else if (command_.length > 2 && command_[0 .. 1] == "n")
                       {
