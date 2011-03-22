@@ -92,8 +92,31 @@ class Tab
             if (!(file is null))
             {
                 writefln("Executing file %s", file.path);
-                system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
-                version (Posix) system("wmctrl -a GVIM");
+                switch (std.path.getExt(file.path))
+                {
+                    case "cpp":
+                    case "c":
+                    case "cc":
+                    case "h":
+                    case "hpp":
+                    case "hh":
+                    case "d":
+                    case "rb":
+                    case "java":
+                    case "bat":
+                    case "txt":
+                    case "xml":
+                    case "idl":
+                    case "":
+                        system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
+                        version (Posix) system("wmctrl -a GVIM");
+                        break;
+
+                    default:
+                        version (Posix) system(Format.immediate("gnome-open \"%s\"", file.path));
+                        version (Win32) system(file.path);
+                        break;
+                }
             }
         }
         catch (std.file.FileException){reportError(Format.immediate("Could not activate %s", tree.path));}
