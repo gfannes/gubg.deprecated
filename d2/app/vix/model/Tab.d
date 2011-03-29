@@ -107,6 +107,7 @@ class Tab
                     case "txt":
                     case "xml":
                     case "idl":
+                    case "vbs":
                     case "":
                         system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
                         version (Posix) system("wmctrl -a GVIM");
