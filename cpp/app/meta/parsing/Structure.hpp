@@ -3,6 +3,7 @@
 
 #include "meta/parsing/Token.hpp"
 #include "meta/parsing/Component.hpp"
+#include "boost/range/iterator_range.hpp"
 #include <vector>
 #include <string>
 
@@ -18,9 +19,12 @@ namespace meta
         Structure &operator=(Structure &&);
 
         std::string code_;
-        std::vector<Token*> tokens_;
-        std::vector<Component*> components_;
+        typedef std::vector<Token*> Tokens;
+        Tokens tokens_;
+        typedef std::vector<Component*> Components;
+        Components components_;
     };
+    typedef boost::iterator_range<Structure::Tokens::iterator> TokenRange;
 }
 
 #endif

@@ -8,14 +8,14 @@ Structure Parser::parse(const std::string &code)
 
     //Parse res.code_ into tokens
     {
-        const char *chBegin = res.code_.c_str();
-        while (*chBegin)
+        const char *ch = res.code_.c_str();
+        while (auto token = Token::tryCreate(ch))
         {
-            const char *chEnd = chBegin;
-            if (parseNumber_(chEnd))
+            res.tokens_.push_back(token);
+            if (token->isEnd())
+                break;
         }
     }
-
 
     return std::move(res);
 }
@@ -24,7 +24,7 @@ Structure Parser::parse(const std::string &code)
 #include <string>
 int main()
 {
-    string code("#include <test.h>");
+    string code("//comment 123\n#include <test.h>");
     Parser parser;
     auto s = parser.parse(code);
     return 0;

@@ -11,6 +11,7 @@ namespace meta
     struct Composite: Component
     {
         std::vector<Component*> childs_;
+        void add(Component *component){childs_.push_back(component);}
     };
 }
 

@@ -2,7 +2,7 @@
 using namespace meta;
 using namespace std;
 
-#define L_ENABLE_DEBUG
+//#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 Structure::Structure(const std::string &code):

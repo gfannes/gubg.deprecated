@@ -5,7 +5,7 @@ using namespace meta;
 using namespace std;
 using namespace boost;
 
-#define L_ENABLE_DEBUG
+//#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 namespace

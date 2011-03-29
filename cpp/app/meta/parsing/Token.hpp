@@ -12,6 +12,7 @@ namespace meta
             end_(end){}
 
         virtual bool isEnd(){return false;}
+        virtual bool isSymbol(char wanted){return false;}
 
         static Token *tryCreate(const char *&ch);
 
@@ -29,6 +30,11 @@ namespace meta
     {
         Symbol(const char *ch):
             Token(ch, ch+1){}
+        
+        virtual bool isSymbol(char wanted)
+        {
+            return *start_ == wanted;
+        }
     };
     struct Newline: Symbol
     {
