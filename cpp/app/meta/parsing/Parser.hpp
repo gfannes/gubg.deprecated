@@ -10,7 +10,7 @@ namespace meta
     {
         public:
 
-            bool parse(Structure &result, const std::string &code);
+            Structure parse(const std::string &code);
     };
 }
 

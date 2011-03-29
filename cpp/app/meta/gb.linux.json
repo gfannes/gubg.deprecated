@@ -1,4 +1,4 @@
 {
     "externalTrees": ["~/gubg/cpp/gubg"],
-    "libraries": []
+    "libraries": ["boost_regex"]
 }
