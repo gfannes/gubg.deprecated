@@ -515,32 +515,36 @@ class Collection < Array
 end
 
 $timingLevel = 0
-$maxTimingLevel = 0
-def time(str, newline = false)
+$prevLevel = 0
+def time(str, oa = {addNewline: false, verbose: true})
     raise "You have to provide a block that contains the code that should be timed" if !block_given?
-    if $maxTimingLevel == $timingLevel
-        $stdout.print("#{'  '*$timingLevel}#{str} ... ")
-        $stdout.print("\n") if newline
-    else
-        $maxTimingLevel = $timingLevel
-        $stdout.print("\n#{'  '*$timingLevel}#{str} ... ")
-        $stdout.print("\n") if newline
+    if oa[:verbose]
+	    if $prevLevel == $timingLevel
+		    $stdout.print("#{'  '*$timingLevel}#{str} ... ")
+		    $stdout.print("\n") if oa[:addNewline]
+	    else
+		    $stdout.print("\n#{'  '*$timingLevel}#{str} ... ")
+		    $stdout.print("\n") if oa[:addNewline]
+	    end
+	    $stdout.flush
     end
-    $stdout.flush
+    $prevLevel = $timingLevel
     $timingLevel += 1
     startTime = Time.now
     res = yield
     stopTime = Time.now
     timeStr = "%.3f sec"%(stopTime-startTime)
     $timingLevel -= 1
-    if $maxTimingLevel == $timingLevel
-        # We did not go deeper recursively, close without enter
-        puts("finished (#{timeStr})")
-    else
-        # We went deeper recursively
-        $maxTimingLevel = $timingLevel
-        puts("#{'  '*$timingLevel}finished (#{timeStr})")
+    if oa[:verbose]
+	    if $prevLevel == $timingLevel
+		    # We did not go deeper recursively, close without enter
+		    puts("finished (#{timeStr})")
+	    else
+		    # We went deeper recursively
+		    puts("#{'  '*$timingLevel}finished (#{timeStr})")
+	    end
     end
+    $prevLevel = $timingLevel
     res
 end
 
