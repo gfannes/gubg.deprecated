@@ -2,6 +2,7 @@
 #define meta_parsing_Parser_hpp
 
 #include "parsing/Structure.hpp"
+#include "gubg/Exception.hpp"
 #include <string>
 
 namespace meta
@@ -9,6 +10,10 @@ namespace meta
     class Parser
     {
         public:
+            struct EmptyCode: gubg::Exception
+        {
+            EmptyCode(): gubg::Exception("Source code is empty"){}
+        };
 
             Structure parse(const std::string &code);
     };

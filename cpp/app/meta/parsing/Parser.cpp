@@ -1,4 +1,5 @@
 #include "parsing/Parser.hpp"
+#include "parsing/Composites.hpp"
 using namespace meta;
 using namespace std;
 
@@ -15,6 +16,25 @@ Structure Parser::parse(const std::string &code)
             if (token->isEnd())
                 break;
         }
+    }
+
+    //Initialize the TokenRange that will be used for creating the Composites
+    TokenRange range(res.tokens_);
+    if (range.empty())
+        gubg::Exception::raise(EmptyCode());
+
+    //Create the Composites
+    while (!range.empty())
+    {
+        Component *component = 0;
+        if (auto comment = Comment::tryCreate(range))
+            component = comment;
+        else
+        {
+            range.advance_begin(1);
+            continue;
+        }
+        res.components_.push_back(component);
     }
 
     return std::move(res);
