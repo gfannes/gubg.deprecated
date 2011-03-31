@@ -1,12 +1,12 @@
 #ifndef gubg_graphics_sdl_hpp
 #define gubg_graphics_sdl_hpp
 
-#include "boost/shared_ptr.hpp"
+#include <memory>
 
 namespace gubg
 {
     struct SDL;
-    typedef boost::shared_ptr<SDL> SDLPtr;
+    typedef std::shared_ptr<SDL> SDLPtr;
     struct SDL
     {
         public:
