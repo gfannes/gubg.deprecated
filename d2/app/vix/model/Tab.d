@@ -108,6 +108,7 @@ class Tab
                     case "xml":
                     case "idl":
                     case "vbs":
+                    case "vim":
                     case "":
                         system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
                         version (Posix) system("wmctrl -a GVIM");
@@ -115,7 +116,7 @@ class Tab
 
                     default:
                         version (Posix) system(Format.immediate("gnome-open \"%s\"", file.path));
-                        version (Win32) system(file.path);
+                        version (Win32) system(Format.immediate("\"%s\"", file.path));
                         break;
                 }
             }

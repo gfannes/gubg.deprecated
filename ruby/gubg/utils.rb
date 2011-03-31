@@ -152,42 +152,42 @@ class Array
         end
     end
     def minmax
-	    mi, ma = nil, nil
-	    if block_given?
-		    each_with_index do |vv, ix|
-			    v = yield(vv)
-			    if ix == 0
-				    mi = ma = v
-			    else
-				    if v < mi
-					    mi = v
-				    elsif v > ma
-					    ma = v
-				    end
-			    end
-		    end
-	    else
-		    each_with_index do |v, ix|
-			    if ix == 0
-				    mi = ma = v
-			    else
-				    if v < mi
-					    mi = v
-				    elsif v > ma
-					    ma = v
-				    end
-			    end
-		    end
-	    end
-	    return mi, ma
+        mi, ma = nil, nil
+        if block_given?
+            each_with_index do |vv, ix|
+                v = yield(vv)
+                if ix == 0
+                    mi = ma = v
+                else
+                    if v < mi
+                        mi = v
+                    elsif v > ma
+                        ma = v
+                    end
+                end
+            end
+        else
+            each_with_index do |v, ix|
+                if ix == 0
+                    mi = ma = v
+                else
+                    if v < mi
+                        mi = v
+                    elsif v > ma
+                        ma = v
+                    end
+                end
+            end
+        end
+        return mi, ma
     end
     def to_s
-	    "["+join('; ')+"]"
+        "["+join('; ')+"]"
     end
     def collect_with_index
-	    ix = -1
-	    collect do |el|
-		    ix += 1
+        ix = -1
+        collect do |el|
+            ix += 1
             yield(el, ix)
         end
     end
@@ -196,7 +196,7 @@ end
 class Dir
     # Descends recursively in each subdir and calls the block, passing it each directory and filename it finds
     # recursor can be a Proc that indicates with true in which subdirs should be recursed
-    def Dir.each(startDir = "./", recursor = nil, permissionDenied = nil, level = 0)
+    def Dir.each(startDir = "./", recursor = nil, permissionDenied = nil, level = 0, &block)
         raise "ERROR::I expect a block for eachFile" if !block_given?
         subDirs = []
         begin
@@ -207,7 +207,13 @@ class Dir
                     if fnDir.length > startDir.length
                         if File.file?(fnDir)
                             if File.readable?(fnDir)
-                                return if yield(startDir.dup, entry.dup)
+                                case block.call(startDir.dup, entry.dup)
+                                when :ok
+                                when :stop
+                                    return
+                                else
+                                    raise("ERROR::You have to return :ok or :stop from the Dir.each block.")
+                                end
                             else
                                 permissionDenied << fnDir if permissionDenied
                             end
@@ -215,15 +221,15 @@ class Dir
                             subDirs << fnDir if !(recursor and !recursor.call(fnDir))
                         end
                     end
-		rescue Encoding::CompatibilityError
-			puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" due to incompatibility issues.")
+                rescue Encoding::CompatibilityError
+                    puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" due to incompatibility issues.")
                     #         rescue ArgumentError
                     #           puts("WARNING::Skipping file \"#{entry}\" in \"#{startDir}\" because it does not seem to exist.")
                     #           raise "STOP"
                 end
             end
             subDirs.each do |subDir|
-                each(subDir,recursor,permissionDenied,level+1){|base,fn|return if yield(base,fn)}
+                each(subDir, recursor, permissionDenied, level+1, &block)
             end
         rescue Errno::EACCES
             permissionDenied << startDir if permissionDenied
@@ -305,7 +311,7 @@ class String
         File.read(fileName, encoding: "ascii-8bit")||""
     end
     def String.loadBinary(fileName)
-	    open(fileName, "rb"){|fi|fi.read}
+        open(fileName, "rb"){|fi|fi.read}
     end
     def String.loadLines(fileName)
         String.load(fileName).split("\n")
@@ -416,34 +422,34 @@ class String
     end
 
     def hexdump(doPrint = true)
-	    lines = []
-	    nrBytesPerLine = 32
-	    bytes = self.bytes.to_a
-	    len = bytes.length
-	    ix = 0
-	    while ix < len
-		    line = ("0x%x ("%ix).rjust(9) + "#{ix}): ".ljust(8)
-		    chars = []
-		    ix.upto(ix + nrBytesPerLine-1) do |i|
-			    if i < len
-				    line += ("%02x"%bytes[i]).ljust(3)
-				    chars << bytes[i]
-			    end
-		    end
-		    ix += nrBytesPerLine
-		    chars.collect! do |b|
-			    case b
-			    when Collection.new((?a.ord .. ?z.ord), (?A.ord .. ?Z.ord), (?0.ord .. ?9.ord), ?_.ord, ' '.ord)
-				    "%c"%b
-			    else
-				    "."
-			    end
-		    end
-		    line += ":: " + chars.join('')
-		    lines << line
-	    end
-	    puts(lines.join("\n")) if doPrint
-	    lines
+        lines = []
+        nrBytesPerLine = 32
+        bytes = self.bytes.to_a
+        len = bytes.length
+        ix = 0
+        while ix < len
+            line = ("0x%x ("%ix).rjust(9) + "#{ix}): ".ljust(8)
+            chars = []
+            ix.upto(ix + nrBytesPerLine-1) do |i|
+                if i < len
+                    line += ("%02x"%bytes[i]).ljust(3)
+                    chars << bytes[i]
+                end
+            end
+            ix += nrBytesPerLine
+            chars.collect! do |b|
+                case b
+                when Collection.new((?a.ord .. ?z.ord), (?A.ord .. ?Z.ord), (?0.ord .. ?9.ord), ?_.ord, ' '.ord)
+                    "%c"%b
+                else
+                    "."
+                end
+            end
+            line += ":: " + chars.join('')
+            lines << line
+        end
+        puts(lines.join("\n")) if doPrint
+        lines
     end
 
 end
@@ -519,14 +525,14 @@ $prevLevel = 0
 def time(str, oa = {addNewline: false, verbose: true})
     raise "You have to provide a block that contains the code that should be timed" if !block_given?
     if oa[:verbose]
-	    if $prevLevel == $timingLevel
-		    $stdout.print("#{'  '*$timingLevel}#{str} ... ")
-		    $stdout.print("\n") if oa[:addNewline]
-	    else
-		    $stdout.print("\n#{'  '*$timingLevel}#{str} ... ")
-		    $stdout.print("\n") if oa[:addNewline]
-	    end
-	    $stdout.flush
+        if $prevLevel == $timingLevel
+            $stdout.print("#{'  '*$timingLevel}#{str} ... ")
+            $stdout.print("\n") if oa[:addNewline]
+        else
+            $stdout.print("\n#{'  '*$timingLevel}#{str} ... ")
+            $stdout.print("\n") if oa[:addNewline]
+        end
+        $stdout.flush
     end
     $prevLevel = $timingLevel
     $timingLevel += 1
@@ -536,13 +542,13 @@ def time(str, oa = {addNewline: false, verbose: true})
     timeStr = "%.3f sec"%(stopTime-startTime)
     $timingLevel -= 1
     if oa[:verbose]
-	    if $prevLevel == $timingLevel
-		    # We did not go deeper recursively, close without enter
-		    puts("finished (#{timeStr})")
-	    else
-		    # We went deeper recursively
-		    puts("#{'  '*$timingLevel}finished (#{timeStr})")
-	    end
+        if $prevLevel == $timingLevel
+            # We did not go deeper recursively, close without enter
+            puts("finished (#{timeStr})")
+        else
+            # We went deeper recursively
+            puts("#{'  '*$timingLevel}finished (#{timeStr})")
+        end
     end
     $prevLevel = $timingLevel
     res
@@ -552,23 +558,23 @@ end
 def tempDir(dir = '/tmp', subdir = nil)
     tmpDir = nil
     if subdir
-	    tmpDir = File.expand_path(subdir, dir)
-	    FileUtils.rm_r(tmpDir) if File.exist?(tmpDir)
+        tmpDir = File.expand_path(subdir, dir)
+        FileUtils.rm_r(tmpDir) if File.exist?(tmpDir)
     else
-	    begin
-		    tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
-	    end while File.exist?(tmpDir)
+        begin
+            tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
+        end while File.exist?(tmpDir)
     end
     Dir.mkdir(tmpDir)
     if block_given?
-	    begin
-		    yield(tmpDir)
-	    ensure
-		    FileUtils.rm_r(tmpDir)
-	    end
-	    nil
+        begin
+            yield(tmpDir)
+        ensure
+            FileUtils.rm_r(tmpDir)
+        end
+        nil
     else
-	    tmpDir
+        tmpDir
     end
 end
 def tempPath(dir = '/tmp')
