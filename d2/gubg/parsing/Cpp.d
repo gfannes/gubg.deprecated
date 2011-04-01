@@ -41,7 +41,7 @@ class CppParser
         string[] includes()
         {
             string[] res;
-            auto re = RegExp("#include +[\"<]([a-zA-Z_\\./]+)[\">]");
+            auto re = RegExp("#include +[\"<]([a-zA-Z_][a-zA-Z_\\d\\./]*)[\">]");
             foreach (m; re.search(content_))
             {
                 res ~= m[1];

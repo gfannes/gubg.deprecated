@@ -18,6 +18,11 @@ namespace gubg
             throw ExceptionT(std::move(exc));
         }
     };
+    struct NotImplemented: Exception
+    {
+        NotImplemented(const std::string &msg):
+            Exception(msg){}
+    };
 }
 std::ostream &operator<<(std::ostream &os, const gubg::Exception &exc);
 

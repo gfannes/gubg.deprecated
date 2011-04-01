@@ -81,7 +81,7 @@ namespace gubg
 
     struct Style
     {
-        static const double InvalidWidth = -1;
+        static constexpr double InvalidWidth = -1;
         Style():
             width_(InvalidWidth){}
 
