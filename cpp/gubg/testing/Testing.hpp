@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include <sstream>
+
 namespace gubg
 {
     struct SourceLocation;
@@ -108,6 +110,16 @@ namespace gubg
     };
 #define HERE() gubg::SourceLocation(__FILE__, __LINE__)
 
+    namespace
+    {
+        template <typename T>
+        std::string toString_(const T &t)
+        {
+            std::ostringstream oss;
+            oss << &t;
+            return oss.str();
+        }
+    }
     template<typename ExpectedT, typename ActualT>
         void test_eq(const ExpectedT &expected, const ActualT &actual, SourceLocation location)
         {
@@ -116,7 +128,7 @@ namespace gubg
             else
             {
                 TestMgr::instance().failure();
-                std::cout << location << ": " << expected << " was expected, but " << actual << " was received." << std::endl;
+                std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
             }
         }
 #define TEST_EQ(expected, actual) gubg::test_eq(expected, actual, HERE())

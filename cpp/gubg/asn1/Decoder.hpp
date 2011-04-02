@@ -1,9 +1,10 @@
-#ifndef gubg_ASN1_hpp
-#define gubg_ASN1_hpp
+#ifndef gubg_asn1_Decoder_hpp
+#define gubg_asn1_Decoder_hpp
 
 #include "Exception.hpp"
 #include "boost/range/iterator_range.hpp"
 #include <string>
+#include <memory>
 
 namespace gubg
 {
@@ -18,15 +19,16 @@ namespace gubg
         class Decoder
         {
             public:
+                Decoder(){}
                 Decoder(const std::string &der);
                 void reset(const std::string &der);
 
                 //We don't know how to construct a general object, the object should construct itself
                 template <typename T>
-                bool decode(T &t)
+                bool decode(T &res)
                 {
                     auto restoreRange = range_;
-                    if (!t.construct(*this))
+                    if (!res.construct(*this))
                     {
                         //If construction failed, we restore the original range
                         range_ = restoreRange;
@@ -34,6 +36,33 @@ namespace gubg
                     }
                     return true;
                 }
+                template <typename T>
+                bool decode(std::vector<T> &res)
+                {
+                    ValueInfo vi;
+                    if (!decompose_(vi, range_))
+                        return false;
+                    //Check that we have a sequence
+                    if (0x10 != vi.tag)
+                        return false;
+                    //Fill res with the values, if they are ints
+                    res.clear();
+                    {
+                        auto subdecoder = createSubDecoder_(vi.content);
+                        while (!subdecoder.empty())
+                        {
+                            T t;
+                            if (!subdecoder.decode(t))
+                                return false;
+                            res.push_back(t);
+                        }
+                    }
+                    //We successfuly read an integer, proceed range_ to the end of the content
+                    proceedToEnd_(range_, vi.content.end());
+                    return true;
+                }
+
+                bool empty() const {return range_.empty();}
 
             private:
                 typedef std::string::const_iterator Iterator;
@@ -50,7 +79,12 @@ namespace gubg
                 static bool decompose_(ValueInfo &, Range &range);
                 static void proceedToEnd_(Range &range, const Iterator &end);
 
-                std::string der_;
+                //Creates a decoder which will work on the _same_ der_
+                Decoder createSubDecoder_(Range &subRange) const;
+                //Make sure that the range is inside der_
+                void setRange_(Range &range){range_ = range;}
+
+                std::shared_ptr<std::string> der_;
                 Range range_;
         };
         //Reads an asn.1 Integer
@@ -59,6 +93,9 @@ namespace gubg
         //Reads both an asn.1 OctetString or an IA5String
         template <>
             bool Decoder::decode<std::string>(std::string &);
+        //Reads a subdecoder, e.g., for a sequence
+        template <>
+            bool Decoder::decode<Decoder>(Decoder &subDecoder);
     }
 }
 

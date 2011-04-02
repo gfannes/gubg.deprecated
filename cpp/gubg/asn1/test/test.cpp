@@ -1,4 +1,4 @@
-#include "ASN1.hpp"
+#include "asn1/Decoder.hpp"
 #include "Testing.hpp"
 #include <iostream>
 using namespace gubg;
@@ -7,7 +7,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
     TEST_SUITE(asn1);
-    asn1::Decoder decoder("");
+    asn1::Decoder decoder;
     {
         TEST_CASE(integer);
         int i;
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
             TEST_TRUE(decoder.decode(i));
             TEST_EQ(0, i);
 
-            //Read 0x34, single byte
+            //Read 34, single byte
             decoder.reset({0x02, 0x01, 34});
             TEST_TRUE(decoder.decode(i));
             TEST_EQ(34, i);
@@ -111,12 +111,39 @@ int main(int argc, char **argv)
     }
 
     {
+        TEST_CASE(sequence_simple);
+        vector<int> vec;
+
+        {
+            TEST_PART(success);
+
+            //Read sequence of 3 integers
+            decoder.reset({0x30, 0x09,   0x02, 0x01, 1,   0x02, 0x01, 2,   0x02, 0x01, 3});
+            TEST_TRUE(decoder.decode(vec));
+            vector<int> wanted = {1, 2, 3};
+            TEST_EQ(wanted, vec);
+        }
+        {
+            TEST_PART(failure);
+
+            //Not all integers
+            decoder.reset({0x30, 0x09,   0x02, 0x01, 1,   0x02, 0x01, 2,   0x04, 0x01, 3});
+            TEST_FALSE(decoder.decode(vec));
+        }
+    }
+
+    {
         TEST_CASE(general);
 
         struct S
         {
             int i;
             string str;
+
+            bool operator==(const S &rhs) const
+            {
+                return rhs.i == i && rhs.str == str;
+            }
 
             private:
             friend class asn1::Decoder;
@@ -126,14 +153,25 @@ int main(int argc, char **argv)
             }
         };
         S s;
+        vector<S> vec;
 
         {
-            TEST_PART(success);
+            TEST_PART(success_single);
 
+            //Read a single S from an integer and a string
             decoder.reset({0x02, 0x01, 34,    0x04, 0x05, 0x31, 0x32, 0x33, 0x34, 0x35});
             TEST_TRUE(decoder.decode(s));
             TEST_EQ(34, s.i);
             TEST_EQ("12345", s.str);
+        }
+        {
+            TEST_PART(success_sequence);
+
+            //Read a vector of S from a sequence of alternating integers and strings
+            decoder.reset({0x30, 0x0c,   0x02, 0x01, 1,  0x04, 0x01, 0x31,   0x02, 0x01, 2,  0x04, 0x01, 0x32});
+            TEST_TRUE(decoder.decode(vec));
+            vector<S> wanted = {{1, "1"}, {2, "2"}};
+            TEST_EQ(wanted, vec);
         }
         {
             TEST_PART(failure);

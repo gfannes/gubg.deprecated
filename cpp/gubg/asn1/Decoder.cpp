@@ -1,18 +1,26 @@
-#include "ASN1.hpp"
+#include "asn1/Decoder.hpp"
 using namespace gubg::asn1;
 using namespace std;
 
 #define L_ENABLE_DEBUG
 #include "debug.hpp"
 
-Decoder::Decoder(const string &der):
-    der_(der),
-    range_(der_){}
-
-void Decoder::reset(const std::string &der)
+Decoder::Decoder(const string &der)
 {
-    der_ = der;
-    range_ = Range(der_);
+    reset(der);
+}
+
+Decoder Decoder::createSubDecoder_(Range &subRange) const
+{
+    Decoder res(*this);
+    res.setRange_(subRange);
+    return res;
+}
+
+void Decoder::reset(const string &der)
+{
+    der_.reset(new string(der));
+    range_ = Range(*der_);
 }
 
 template <>
@@ -57,6 +65,24 @@ bool Decoder::decode<string>(string &res)
     proceedToEnd_(range_, vi.content.end());
     return true;
 }
+
+template <>
+bool decode<Decoder>(Decoder &subDecoder)
+{
+    ValueInfo vi;
+    if (!decompose_(vi, range_))
+        return false;
+    //Check that we have a sequence
+    if (0x10 != vi.tag)
+        return false;
+    subDecoder = createSubDecoder_(vi.content);
+    Exception::raise(NotImplemented("WIP"));
+    return true;
+    //We successfuly read an integer, proceed range_ to the end of the content
+    proceedToEnd_(range_, vi.content.end());
+    return true;
+}
+
 //Private methods
 bool Decoder::decompose_(ValueInfo &vi, Range &range)
 {
