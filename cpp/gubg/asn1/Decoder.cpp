@@ -67,7 +67,7 @@ bool Decoder::decode<string>(string &res)
 }
 
 template <>
-bool decode<Decoder>(Decoder &subDecoder)
+bool Decoder::decode<Decoder>(Decoder &subDecoder)
 {
     ValueInfo vi;
     if (!decompose_(vi, range_))
