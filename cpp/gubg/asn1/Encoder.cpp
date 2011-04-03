@@ -8,13 +8,13 @@ void Encoder::clear()
     oss_.str("");
 }
 
-string Encoder::toString() const
+string Encoder::encode() const
 {
     return oss_.str();
 }
 
 template <>
-void Encoder::encode<int>(const int &i)
+void Encoder::append<int>(const int &i)
 {
     addByte_(0x02);
     if (-128 <= i && i <= 127)
@@ -23,7 +23,7 @@ void Encoder::encode<int>(const int &i)
         addByte_(0x02).addByte_(i >> 8).addByte_(i & 0xff);
 }
 
-void Encoder::encode(const std::string &str, StringType type)
+void Encoder::append(const std::string &str, StringType type)
 {
     switch (type)
     {

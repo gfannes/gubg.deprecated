@@ -21,7 +21,7 @@ namespace gubg
 
                 //We don't know how to construct a general object, the object should construct itself
                 template <typename T>
-                bool decode(T &res)
+                bool extract(T &res)
                 {
                     auto restoreRange = range_;
                     if (!res.construct(*this))
@@ -33,7 +33,7 @@ namespace gubg
                     return true;
                 }
                 template <typename T>
-                bool decode(std::vector<T> &res)
+                bool extract(std::vector<T> &res)
                 {
                     ValueInfo vi;
                     if (!decompose_(vi, range_))
@@ -48,7 +48,7 @@ namespace gubg
                         while (!subdecoder.empty())
                         {
                             T t;
-                            if (!subdecoder.decode(t))
+                            if (!subdecoder.extract(t))
                                 return false;
                             res.push_back(t);
                         }
@@ -91,13 +91,13 @@ namespace gubg
         };
         //Reads an asn.1 Integer
         template <>
-            bool Decoder::decode<int>(int &);
+            bool Decoder::extract<int>(int &);
         //Reads both an asn.1 OctetString or an IA5String
         template <>
-            bool Decoder::decode<std::string>(std::string &);
+            bool Decoder::extract<std::string>(std::string &);
         //Reads a subdecoder, e.g., for a sequence
         template <>
-            bool Decoder::decode<Decoder>(Decoder &subDecoder);
+            bool Decoder::extract<Decoder>(Decoder &subDecoder);
     }
 }
 

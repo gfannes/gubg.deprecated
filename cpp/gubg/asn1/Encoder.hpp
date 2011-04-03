@@ -15,11 +15,11 @@ namespace gubg
                 void clear();
 
                 template <typename T>
-                void encode(const T &t);
+                void append(const T &t);
 
-                void encode(const std::string &str, StringType type);
+                void append(const std::string &str, StringType type);
 
-                std::string toString() const;
+                std::string encode() const;
 
             private:
                 Encoder &addByte_(char ch){oss_ << ch; return *this;}
@@ -28,7 +28,7 @@ namespace gubg
                 std::ostringstream oss_;
         };
         template <>
-            void Encoder::encode<int>(const int &i);
+            void Encoder::append<int>(const int &i);
     }
 }
 

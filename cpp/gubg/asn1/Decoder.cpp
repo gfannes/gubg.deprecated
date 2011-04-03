@@ -38,7 +38,7 @@ void Decoder::reset(const string &der)
 }
 
 template <>
-bool Decoder::decode<int>(int &res)
+bool Decoder::extract<int>(int &res)
 {
     ValueInfo vi;
     if (!decompose_(vi, range_))
@@ -60,7 +60,7 @@ bool Decoder::decode<int>(int &res)
 }
 
 template <>
-bool Decoder::decode<string>(string &res)
+bool Decoder::extract<string>(string &res)
 {
     ValueInfo vi;
     if (!decompose_(vi, range_))
@@ -81,7 +81,7 @@ bool Decoder::decode<string>(string &res)
 }
 
 template <>
-bool Decoder::decode<Decoder>(Decoder &subDecoder)
+bool Decoder::extract<Decoder>(Decoder &subDecoder)
 {
     ValueInfo vi;
     if (!decompose_(vi, range_))
