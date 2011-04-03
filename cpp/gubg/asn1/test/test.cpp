@@ -1,4 +1,5 @@
 #include "asn1/Decoder.hpp"
+#include "asn1/Encoder.hpp"
 #include "Testing.hpp"
 #include <iostream>
 using namespace gubg;
@@ -7,6 +8,31 @@ using namespace std;
 int main(int argc, char **argv)
 {
     TEST_SUITE(asn1);
+    asn1::Encoder encoder;
+    {
+        TEST_CASE(encoder);
+
+        encoder.clear();
+        encoder.encode(0);
+        TEST_EQ(string({0x02, 0x01, 0}), encoder.toString());
+
+        encoder.clear();
+        encoder.encode(123);
+        TEST_EQ(string({0x02, 0x01, 123}), encoder.toString());
+
+        encoder.clear();
+        encoder.encode(0x1234);
+        TEST_EQ(string({0x02, 0x02, 0x12, 0x34}), encoder.toString());
+
+        encoder.clear();
+        encoder.encode("12345", asn1::StringType::Octet);
+        TEST_EQ(string({0x04, 0x05, 0x31, 0x32, 0x33, 0x34, 0x35}), encoder.toString());
+
+        encoder.clear();
+        encoder.encode("12345", asn1::StringType::IA5);
+        TEST_EQ(string({0x16, 0x05, 0x31, 0x32, 0x33, 0x34, 0x35}), encoder.toString());
+    }
+
     asn1::Decoder decoder;
     {
         TEST_CASE(integer);

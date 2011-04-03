@@ -107,7 +107,7 @@ Dir.each("./",recursor) do |dir, fn|
       end
     end
   end
-  nil
+  :ok
 end
 
 case action

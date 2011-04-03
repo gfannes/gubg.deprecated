@@ -18,6 +18,8 @@ std::ostream &operator<<(std::ostream &os, const gubg::SourceLocation &location)
 
 namespace gubg
 {
+    std::string toHex(const std::string &binary);
+
     struct TestTag
     {
         TestTag(){}

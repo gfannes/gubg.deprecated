@@ -1,19 +1,31 @@
 #include "asn1/Decoder.hpp"
+#include "asn1/Error.hpp"
 using namespace gubg::asn1;
 using namespace std;
 
 #define L_ENABLE_DEBUG
 #include "debug.hpp"
 
+Decoder::Decoder():
+    parent_(0),
+    isBlocked_(false){}
 Decoder::Decoder(const string &der)
 {
     reset(der);
 }
+Decoder::~Decoder()
+{
+    //TODO::If the decoder is empty, we assume everything was ok, and we can proceed the parent
+    if (parent_)
+        parent_->isBlocked_ = false;
+}
 
-Decoder Decoder::createSubDecoder_(Range &subRange) const
+Decoder Decoder::createSubDecoder_(Range &subRange)
 {
     Decoder res(*this);
     res.setRange_(subRange);
+    res.parent_ = this;
+    isBlocked_ = true;
     return res;
 }
 
@@ -21,6 +33,8 @@ void Decoder::reset(const string &der)
 {
     der_.reset(new string(der));
     range_ = Range(*der_);
+    parent_ = 0;
+    isBlocked_ = false;
 }
 
 template <>
@@ -123,7 +137,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
             {
                 //Definite length
                 if (octet > 4)
-                    Exception::raise(ASN1Error("Cannot handle length of more that 4 octets"));
+                    Exception::raise(Error("Cannot handle length of more that 4 octets"));
                 unsigned int contentLength = content.size();
                 if (contentLength < octet+1)
                 {

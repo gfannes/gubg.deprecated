@@ -2,6 +2,8 @@
 #include "OnlyOnce.hpp"
 #include "boost/thread/mutex.hpp"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 using namespace std;
 
 //#define L_ENABLE_DEBUG
@@ -20,6 +22,15 @@ namespace
 
 namespace gubg
 {
+    string toHex(const string &binary)
+    {
+        ostringstream res;
+        res << hex;
+        for (auto byte: binary)
+            res << "0x" << setw(2) << setfill('0') << (int)byte << ", ";
+        return res.str();
+    }
+
     TestMgr &TestMgr::instance()
     {
         boost::mutex::scoped_lock lock(testMgrMutex);

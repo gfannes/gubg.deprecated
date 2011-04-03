@@ -1,7 +1,6 @@
 #ifndef gubg_asn1_Decoder_hpp
 #define gubg_asn1_Decoder_hpp
 
-#include "Exception.hpp"
 #include "boost/range/iterator_range.hpp"
 #include <string>
 #include <memory>
@@ -10,17 +9,14 @@ namespace gubg
 {
     namespace asn1
     {
-        struct ASN1Error: Exception
-        {
-            ASN1Error(const std::string &msg):
-                Exception(msg){}
-        };
         //DER-specific decoder
         class Decoder
         {
             public:
-                Decoder(){}
+                Decoder();
                 Decoder(const std::string &der);
+                virtual ~Decoder();
+
                 void reset(const std::string &der);
 
                 //We don't know how to construct a general object, the object should construct itself
@@ -80,12 +76,18 @@ namespace gubg
                 static void proceedToEnd_(Range &range, const Iterator &end);
 
                 //Creates a decoder which will work on the _same_ der_
-                Decoder createSubDecoder_(Range &subRange) const;
+                Decoder createSubDecoder_(Range &subRange);
                 //Make sure that the range is inside der_
                 void setRange_(Range &range){range_ = range;}
 
                 std::shared_ptr<std::string> der_;
                 Range range_;
+
+                //A subdecoder is always created from a parent_.
+                //The parent_ will be blocked until the subdecoder is destructed
+                //When the subdecoder destructs, it will unblock its parent decoder
+                Decoder *parent_;
+                bool isBlocked_;
         };
         //Reads an asn.1 Integer
         template <>
