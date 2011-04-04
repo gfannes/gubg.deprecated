@@ -2,6 +2,7 @@
 #include "OnlyOnce.hpp"
 #include "boost/thread/tss.hpp"
 #include <mutex>
+#include <memory>
 using namespace gubg::testing;
 using namespace std;
 
@@ -10,7 +11,7 @@ using namespace std;
 
 namespace
 {
-    TestMaster *testMaster = nullptr;
+    unique_ptr<TestMaster> testMaster;
     mutex testMasterMutex;
 
     //This will hold the thread-specific root tag
@@ -94,11 +95,15 @@ void TestTag::ThreadStats::addResult(TestResult result)
 }
 
 //TestMaster methods
+TestMaster::~TestMaster()
+{
+    cout << *this << endl;
+}
 TestMaster &TestMaster::instance()
 {
     lock_guard<mutex> lock(testMasterMutex);
-    if (nullptr == testMaster)
-        testMaster = new TestMaster;
+    if (!testMaster)
+        testMaster.reset(new TestMaster);
     return *testMaster;
 }
 void TestMaster::report(const TestTag::ThreadStats &threadStats)

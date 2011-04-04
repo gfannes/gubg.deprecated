@@ -69,6 +69,7 @@ namespace gubg
         class TestMaster
         {
             public:
+                virtual ~TestMaster();
                 static TestMaster &instance();
 
                 void report(const TestTag::ThreadStats &root);
