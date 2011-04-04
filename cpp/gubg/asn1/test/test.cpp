@@ -7,10 +7,10 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-    TEST_SUITE(asn1);
+    TEST_TAG(asn1);
     asn1::Encoder encoder;
     {
-        TEST_CASE(encoder);
+        TEST_TAG(encoder);
 
         encoder.clear();
         encoder.append(0);
@@ -35,10 +35,10 @@ int main(int argc, char **argv)
 
     asn1::Decoder decoder;
     {
-        TEST_CASE(integer);
+        TEST_TAG(integer);
         int i;
         {
-            TEST_PART(success);
+            TEST_TAG(success);
 
             //Read 0
             decoder.reset({0x02, 0x00});
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
             TEST_EQ(0x12345679, i);
         }
         {
-            TEST_PART(failure);
+            TEST_TAG(failure);
 
             //No length
             decoder.reset({0x02});
@@ -94,10 +94,10 @@ int main(int argc, char **argv)
     }
 
     {
-        TEST_CASE(string);
+        TEST_TAG(string);
         string str;
         {
-            TEST_PART(success);
+            TEST_TAG(success);
 
             //Read empty octet string
             decoder.reset({0x04, 0x00});
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
             TEST_EQ("4321", str);
         }
         {
-            TEST_PART(failure);
+            TEST_TAG(failure);
 
             //Not an octet string nor IA5String
             decoder.reset({0x02, 0x01, 34});
@@ -137,11 +137,11 @@ int main(int argc, char **argv)
     }
 
     {
-        TEST_CASE(sequence_simple);
+        TEST_TAG(sequence_simple);
         vector<int> vec;
 
         {
-            TEST_PART(success);
+            TEST_TAG(success);
 
             //Read sequence of 3 integers
             decoder.reset({0x30, 0x09,   0x02, 0x01, 1,   0x02, 0x01, 2,   0x02, 0x01, 3});
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
             TEST_EQ(wanted, vec);
         }
         {
-            TEST_PART(failure);
+            TEST_TAG(failure);
 
             //Not all integers
             decoder.reset({0x30, 0x09,   0x02, 0x01, 1,   0x02, 0x01, 2,   0x04, 0x01, 3});
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     }
 
     {
-        TEST_CASE(general);
+        TEST_TAG(general);
 
         struct S
         {
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
         vector<S> vec;
 
         {
-            TEST_PART(success_single);
+            TEST_TAG(success_single);
 
             //Read a single S from an integer and a string
             decoder.reset({0x02, 0x01, 34,    0x04, 0x05, 0x31, 0x32, 0x33, 0x34, 0x35});
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
             TEST_EQ("12345", s.str);
         }
         {
-            TEST_PART(success_sequence);
+            TEST_TAG(success_sequence);
 
             //Read a vector of S from a sequence of alternating integers and strings
             decoder.reset({0x30, 0x0c,   0x02, 0x01, 1,  0x04, 0x01, 0x31,   0x02, 0x01, 2,  0x04, 0x01, 0x32});
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
             TEST_EQ(wanted, vec);
         }
         {
-            TEST_PART(failure);
+            TEST_TAG(failure);
 
             //Cannot construct S from 2 integers
             decoder.reset({0x02, 0x01, 34,    0x02, 0x01, 35});

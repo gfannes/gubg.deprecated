@@ -1,5 +1,6 @@
 #include "testing/Testing.hpp"
 #include "OnlyOnce.hpp"
+#include "threading/Thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include <iostream>
 #include <sstream>
@@ -34,7 +35,7 @@ int main()
         TEST_TAG(test_positives);
         {
             TEST_TAG(test_eq);
-            const unsigned int NrTests = 10;
+            const unsigned int NrTests = 2;
             const string str("test123");
             for (unsigned int i = 0; i < NrTests; ++i)
             {
@@ -61,21 +62,17 @@ int main()
         TEST_TAG(test_negatives);
         {
             TEST_TAG(test_neq);
-            const unsigned int NrTests = 10;
             const string str("test123");
-            for (unsigned int i = 0; i < NrTests; ++i)
             {
-                {
-                    gubg::testing::TestTag tag("integers");
-                    test_neq(1, 1, HERE(), tag);
-                    test_neq(1, 2, HERE(), tag);
-                    TEST_NEQ(1, 3);
-                }
-                {
-                    TEST_TAG(strings);
-                    TEST_NEQ("test123", str);
-                    TEST_NEQ(str, "test123");
-                }
+                gubg::testing::TestTag tag("integers");
+                test_neq(1, 1, HERE(), tag);
+                test_neq(1, 2, HERE(), tag);
+                TEST_NEQ(1, 3);
+            }
+            {
+                TEST_TAG(strings);
+                TEST_NEQ("test123", str);
+                TEST_NEQ(str, "test123");
             }
         }
         {
@@ -84,5 +81,22 @@ int main()
             TEST_FALSE(false);
         }
     }
+    TEST_REPORT();
+
+    struct Thread: gubg::threading::Thread<Thread>
+    {
+        Thread():thread_(boost::ref(*this)){}
+        void operator()()
+        {
+            TEST_TAG(Thread);
+            TEST_TRUE(true);
+            delete this;
+        }
+        boost::thread thread_;
+    };
+    for (unsigned int i = 0; i < 1000; ++i)
+        new Thread;
+
+    while (Thread::nrInstances() > 0){}
 }
 #endif

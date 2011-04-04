@@ -118,7 +118,7 @@ std::ostream &operator<<(std::ostream &os, const TestTag::ThreadStats::Tags &tag
     for (const auto &v: tags)
     {
         if (!skipDelimiter())
-            os << "=>";
+            os << "|";
         os << v;
     }
     return os;
