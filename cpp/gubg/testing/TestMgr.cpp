@@ -1,10 +1,11 @@
 #include "testing/TestMgr.hpp"
+#include "OnlyOnce.hpp"
 #include "boost/thread/tss.hpp"
 #include <mutex>
 using namespace gubg::testing;
 using namespace std;
 
-#define L_ENABLE_DEBUG
+//#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 namespace
@@ -28,6 +29,12 @@ void Statistics::addResult(TestResult result)
         case TestResult::Success: ++nrSuccess; break;
         case TestResult::Failure: ++nrFailure; break;
     }
+}
+Statistics &Statistics::operator+=(const Statistics &rhs)
+{
+    nrFailure += rhs.nrFailure;
+    nrSuccess += rhs.nrSuccess;
+    return *this;
 }
 unsigned int Statistics::nrTotal() const
 {
@@ -100,6 +107,25 @@ void TestMaster::report(const TestTag::ThreadStats &threadStats)
     lock_guard<mutex> lock(testMasterMutex);
     threadStatss_.push_back(threadStats);
 }
+std::ostream &operator<<(std::ostream &os, const TestTag::ThreadStats::Tags &tags)
+{
+    gubg::OnlyOnce skipDelimiter;
+    for (const auto &v: tags)
+    {
+        if (!skipDelimiter())
+            os << "=>";
+        os << v;
+    }
+    return os;
+}
+std::ostream &operator<<(std::ostream &os, const Statistics &stats)
+{
+    if (stats.nrFailure > 0)
+        os << stats.nrFailure << " out of " << stats.nrTotal() << " test(s) FAILED";
+    else
+        os << "All " << stats.nrTotal() << " test(s) SUCCEEDED";
+    return os;
+}
 std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
 {
     os << "I received results from " << testMaster.threadStatss_.size() << " thread(s)" << endl;
@@ -108,10 +134,14 @@ std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
     {
         for (const auto &v: threadStats.statsPerTags_)
         {
-            const TestTag::ThreadStats::Tags &tags =  v.first;
-            const Statistics &stats = v.second;
+            const TestTag::ThreadStats::Tags &t =  v.first;
+            const Statistics &s = v.second;
+            if (s.nrFailure > 0)
+                os << t << ": " << s << endl;
+            stats += s;
         }
     }
+    os << "Global: " << stats;
     return os;
 }
 
@@ -121,8 +151,18 @@ int main()
     {
         TestTag root("root");
         TestTag level1("level1");
+        level1.addResult(TestResult::Success);
         TestTag level2("level2");
         level2.addResult(TestResult::Success);
+    }
+    cout << TestMaster::instance() << endl;
+    {
+        TestTag root("root");
+        TestTag level1("level1");
+        level1.addResult(TestResult::Failure);
+        TestTag level2("level2");
+        level2.addResult(TestResult::Success);
+        level2.addResult(TestResult::Failure);
     }
     cout << TestMaster::instance() << endl;
 }

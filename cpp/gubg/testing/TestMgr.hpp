@@ -25,6 +25,7 @@ namespace gubg
         {
             Statistics();
             void addResult(TestResult);
+            Statistics &operator+=(const Statistics &rhs);
             unsigned int nrTotal() const;
 
             unsigned int nrSuccess;
