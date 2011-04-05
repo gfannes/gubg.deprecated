@@ -1,6 +1,7 @@
 #ifndef gubg_asn1_Decoder_hpp
 #define gubg_asn1_Decoder_hpp
 
+#include "Exception.hpp"
 #include "boost/range/iterator_range.hpp"
 #include <string>
 #include <memory>
@@ -19,10 +20,18 @@ namespace gubg
 
                 void reset(const std::string &der);
 
+                //We extracting from a decoder, it is always checked that we are not blocked by a subdecoder
+                //If this is the case, a Decoder::Blocked exception will be thrown
+                struct Blocked: Exception
+                {
+                    Blocked(): Exception("Decoder is blocked"){}
+                };
+
                 //We don't know how to construct a general object, the object should construct itself
                 template <typename T>
                 bool extract(T &res)
                 {
+                    checkNotBlocked_();
                     auto restoreRange = range_;
                     if (!res.construct(*this))
                     {
@@ -35,6 +44,7 @@ namespace gubg
                 template <typename T>
                 bool extract(std::vector<T> &res)
                 {
+                    checkNotBlocked_();
                     ValueInfo vi;
                     if (!decompose_(vi, range_))
                         return false;
@@ -44,7 +54,8 @@ namespace gubg
                     //Fill res with the values, if they are ints
                     res.clear();
                     {
-                        auto subdecoder = createSubDecoder_(vi.content);
+                        Decoder subdecoder;
+                        createSubDecoder_(subdecoder, vi.content);
                         while (!subdecoder.empty())
                         {
                             T t;
@@ -60,7 +71,11 @@ namespace gubg
 
                 bool empty() const {return range_.empty();}
 
+                void indicateDecodingOK(){decodingOK_ = true;}
+
             private:
+                Decoder &operator=(const Decoder &);
+
                 typedef std::string::const_iterator Iterator;
                 typedef boost::iterator_range<Iterator> Range;
                 //TODO::These things can be moved into an anonymous namespace in the source file
@@ -76,9 +91,7 @@ namespace gubg
                 static void proceedToEnd_(Range &range, const Iterator &end);
 
                 //Creates a decoder which will work on the _same_ der_
-                Decoder createSubDecoder_(Range &subRange);
-                //Make sure that the range is inside der_
-                void setRange_(Range &range){range_ = range;}
+                void createSubDecoder_(Decoder &subdecoder, Range &subRange);
 
                 std::shared_ptr<std::string> der_;
                 Range range_;
@@ -88,6 +101,11 @@ namespace gubg
                 //When the subdecoder destructs, it will unblock its parent decoder
                 Decoder *parent_;
                 bool isBlocked_;
+                //The method check that we are _not_ blocked. If we are, it will throw a Decoder::Blocked exception
+                void checkNotBlocked_() const throw (Decoder::Blocked);
+                //If a subdecoder could be read correctly, this will be set to true via indicateDecodingOK()
+                //As such, its dtor will advance the range_ of the parent
+                bool decodingOK_;
         };
         //Reads an asn.1 Integer
         template <>
@@ -97,7 +115,7 @@ namespace gubg
             bool Decoder::extract<std::string>(std::string &);
         //Reads a subdecoder, e.g., for a sequence
         template <>
-            bool Decoder::extract<Decoder>(Decoder &subDecoder);
+            bool Decoder::extract<Decoder>(Decoder &subdecoder);
     }
 }
 

@@ -74,14 +74,19 @@ namespace gubg
 
                 void report(const TestTag::ThreadStats &root);
 
+                enum class ReportType {Full, OnlyErrors};
+                const static ReportType defaultReportType = ReportType::OnlyErrors;
+                void set(ReportType reportType){reportType_ = reportType;}
+
             private:
                 friend std::ostream &::operator<<(std::ostream &, const TestMaster &);
-                TestMaster(){}
+                TestMaster();
                 TestMaster(const TestMaster &);
                 TestMaster &operator=(const TestMaster &);
 
                 typedef std::list<TestTag::ThreadStats> ThreadStatss;
                 ThreadStatss threadStatss_;
+                ReportType reportType_;
         };
     }
 }

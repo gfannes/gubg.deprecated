@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <ostream>
 
+#include <iostream>
+
 namespace gubg
 {
     struct Exception: std::runtime_error
@@ -15,6 +17,7 @@ namespace gubg
         template <typename ExceptionT>
         static void raise(ExceptionT &&exc)
         {
+//            std::cout << "THROWING AN EXCEPTION: " << exc << std::endl;
             throw ExceptionT(std::move(exc));
         }
     };

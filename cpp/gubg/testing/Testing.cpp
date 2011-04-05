@@ -1,4 +1,5 @@
 #include "testing/Testing.hpp"
+#include "Exception.hpp"
 #include "OnlyOnce.hpp"
 #include "threading/Thread.hpp"
 #include "boost/thread/mutex.hpp"
@@ -81,6 +82,11 @@ int main()
             TEST_FALSE(false);
         }
     }
+    {
+        TEST_TAG(exceptions);
+        TEST_THROW(gubg::Exception, throw gubg::Exception(""));
+    }
+    TEST_REPORT_TYPE(Full);
     TEST_REPORT();
 
     struct Thread: gubg::threading::Thread<Thread>
@@ -98,5 +104,8 @@ int main()
         new Thread;
 
     while (Thread::nrInstances() > 0){}
+
+    TEST_REPORT_TYPE(OnlyErrors);
+    //We the program closes, another test report will be presented. Make sure we don't show the 1000 successes from the threads in Full
 }
 #endif

@@ -3,30 +3,41 @@
 using namespace gubg::asn1;
 using namespace std;
 
-#define L_ENABLE_DEBUG
+//#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 Decoder::Decoder():
     parent_(0),
-    isBlocked_(false){}
+    isBlocked_(false),
+    decodingOK_(false)
+{
+    DEBUG_PRINT("Decoder default ctor: " << this);
+}
 Decoder::Decoder(const string &der)
 {
+    DEBUG_PRINT("Decoder ctor from string: " << this);
     reset(der);
 }
 Decoder::~Decoder()
 {
-    //TODO::If the decoder is empty, we assume everything was ok, and we can proceed the parent
     if (parent_)
+    {
+        if (decodingOK_)
+            proceedToEnd_(parent_->range_, range_.end());
+        DEBUG_PRINT("Unblocking decoder " << parent_ << " in dtor " << this);
         parent_->isBlocked_ = false;
+    }
 }
 
-Decoder Decoder::createSubDecoder_(Range &subRange)
+void Decoder::createSubDecoder_(Decoder &subdecoder, Range &subRange)
 {
-    Decoder res(*this);
-    res.setRange_(subRange);
-    res.parent_ = this;
+    subdecoder.der_ = der_;
+    subdecoder.range_ = subRange;
+    subdecoder.parent_ = this;
+    subdecoder.isBlocked_ = false;
+    subdecoder.decodingOK_ = false;
+    DEBUG_PRINT("Blocking decoder " << this);
     isBlocked_ = true;
-    return res;
 }
 
 void Decoder::reset(const string &der)
@@ -34,12 +45,16 @@ void Decoder::reset(const string &der)
     der_.reset(new string(der));
     range_ = Range(*der_);
     parent_ = 0;
+    DEBUG_PRINT("Unblocking decoder in reset " << this);
     isBlocked_ = false;
+    decodingOK_ = false;
 }
 
 template <>
 bool Decoder::extract<int>(int &res)
 {
+    DEBUG_PRINT("Extracting an int");
+    checkNotBlocked_();
     ValueInfo vi;
     if (!decompose_(vi, range_))
         return false;
@@ -62,6 +77,7 @@ bool Decoder::extract<int>(int &res)
 template <>
 bool Decoder::extract<string>(string &res)
 {
+    checkNotBlocked_();
     ValueInfo vi;
     if (!decompose_(vi, range_))
         return false;
@@ -81,19 +97,17 @@ bool Decoder::extract<string>(string &res)
 }
 
 template <>
-bool Decoder::extract<Decoder>(Decoder &subDecoder)
+bool Decoder::extract<Decoder>(Decoder &subdecoder)
 {
+    checkNotBlocked_();
     ValueInfo vi;
     if (!decompose_(vi, range_))
         return false;
     //Check that we have a sequence
     if (0x10 != vi.tag)
         return false;
-    subDecoder = createSubDecoder_(vi.content);
-    Exception::raise(NotImplemented("WIP"));
-    return true;
-    //We successfuly read an integer, proceed range_ to the end of the content
-    proceedToEnd_(range_, vi.content.end());
+    createSubDecoder_(subdecoder, vi.content);
+    //this->range_ will be adjusted when the subdecoder destructs, only if you indicated that decoding was OK via indicateDecodingOK()
     return true;
 }
 
@@ -179,4 +193,13 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
 void Decoder::proceedToEnd_(Range &range, const Iterator &end)
 {
     range = Range(end, range.end());
+}
+void Decoder::checkNotBlocked_() const throw (Decoder::Blocked)
+{
+    DEBUG_PRINT("checkNotBlocked_: " << isBlocked_);
+    if (isBlocked_)
+    {
+        DEBUG_PRINT("Decoder is blocked, I will throw Decoder::Blocked");
+        Exception::raise(Blocked());
+    }
 }

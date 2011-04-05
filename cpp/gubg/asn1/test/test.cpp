@@ -5,6 +5,9 @@
 using namespace gubg;
 using namespace std;
 
+//#define L_ENABLE_DEBUG
+#include "debug.hpp"
+
 int main(int argc, char **argv)
 {
     TEST_TAG(asn1);
@@ -155,6 +158,66 @@ int main(int argc, char **argv)
             //Not all integers
             decoder.reset({0x30, 0x09,   0x02, 0x01, 1,   0x02, 0x01, 2,   0x04, 0x01, 3});
             TEST_FALSE(decoder.extract(vec));
+        }
+    }
+
+    {
+        TEST_TAG(subdecoder);
+
+        //A sequence of 2 int (1, 2), followed by another int (99)
+        const string der = {0x30, 0x06,   0x02, 0x01, 1,   0x02, 0x01, 2,         0x02, 0x01, 99};
+        int i;
+        {
+            TEST_TAG(success);
+
+            decoder.reset(der);
+            {
+                //We read the first 2 ints using a subdecoder
+                asn1::Decoder subdecoder;
+                TEST_TRUE(decoder.extract(subdecoder));
+                TEST_TRUE(subdecoder.extract(i));
+                TEST_EQ(1, i);
+                TEST_TRUE(subdecoder.extract(i));
+                TEST_EQ(2, i);
+                TEST_TRUE(subdecoder.empty());
+                subdecoder.indicateDecodingOK();
+            }
+            //We read the last int using the toplevel decoder
+            TEST_TRUE(decoder.extract(i));
+            TEST_EQ(99, i);
+            TEST_TRUE(decoder.empty());
+        }
+        {
+            TEST_TAG(failure);
+
+            //We do the same as above, but try to make as many mistakes as possible
+            decoder.reset(der);
+            string str;
+            {
+                //We read the first 2 ints using a subdecoder
+                asn1::Decoder subdecoder;
+                TEST_FALSE(decoder.extract(i));
+                TEST_TRUE(decoder.extract(subdecoder));
+                TEST_FALSE(subdecoder.empty());
+                TEST_FALSE(subdecoder.extract(str));
+                TEST_TRUE(subdecoder.extract(i));
+                TEST_FALSE(subdecoder.empty());
+                TEST_EQ(1, i);
+                TEST_FALSE(subdecoder.extract(str));
+                TEST_TRUE(subdecoder.extract(i));
+                TEST_EQ(2, i);
+                TEST_FALSE(subdecoder.extract(str));
+                TEST_FALSE(subdecoder.extract(i));
+                TEST_TRUE(subdecoder.empty());
+                TEST_THROW(asn1::Decoder::Blocked, decoder.extract(i));
+                subdecoder.indicateDecodingOK();
+            }
+            //We read the last int using the toplevel decoder
+            TEST_FALSE(decoder.extract(str));
+            TEST_FALSE(decoder.empty());
+            TEST_TRUE(decoder.extract(i));
+            TEST_EQ(99, i);
+            TEST_TRUE(decoder.empty());
         }
     }
 

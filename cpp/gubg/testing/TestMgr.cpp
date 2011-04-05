@@ -95,6 +95,8 @@ void TestTag::ThreadStats::addResult(TestResult result)
 }
 
 //TestMaster methods
+TestMaster::TestMaster():
+    reportType_(defaultReportType){}
 TestMaster::~TestMaster()
 {
     cout << *this << endl;
@@ -141,8 +143,16 @@ std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
         {
             const TestTag::ThreadStats::Tags &t =  v.first;
             const Statistics &s = v.second;
-            if (s.nrFailure > 0)
-                os << t << ": " << s << endl;
+            switch (testMaster.reportType_)
+            {
+                case TestMaster::ReportType::Full:
+                    os << t << ": " << s << endl;
+                    break;
+                case TestMaster::ReportType::OnlyErrors:
+                    if (s.nrFailure > 0)
+                        os << t << ": " << s << endl;
+                    break;
+            }
             stats += s;
         }
     }

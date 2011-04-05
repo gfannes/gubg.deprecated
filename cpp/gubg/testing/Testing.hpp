@@ -24,6 +24,7 @@ namespace gubg
     gubg::testing::TestTag l_gubg_testing_test_tag_(#tag)
 
 #define TEST_REPORT() std::cout << gubg::testing::TestMaster::instance() << std::endl
+#define TEST_REPORT_TYPE(type) gubg::testing::TestMaster::instance().set(gubg::testing::TestMaster::ReportType::type)
     
     struct SourceLocation
     {
@@ -85,6 +86,18 @@ namespace gubg
                 std::cout << location << ": it should be false, but it is true." << std::endl;
         }
 #define TEST_FALSE(value) gubg::test_false(value, HERE(), l_gubg_testing_test_tag_)
+
+#define TEST_THROW(ExceptionType, expr) \
+    try \
+    { \
+        expr; \
+        l_gubg_testing_test_tag_.addResult(gubg::testing::TestResult::Failure) ; \
+        std::cout << HERE() << ": an exception of class " #ExceptionType " was expected, but not received." << std::endl; \
+    } \
+    catch (ExceptionType &exc) \
+    { \
+        l_gubg_testing_test_tag_.addResult(gubg::testing::TestResult::Success) ; \
+    }
 }
 
 #endif
