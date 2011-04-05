@@ -7,9 +7,9 @@ using namespace std;
 #include "debug.hpp"
 
 Decoder::Decoder():
-    parent_(0),
+    parent_(nullptr),
     isBlocked_(false),
-    decodingOK_(false)
+    decodingStatus_(DecodingStatus::Unknown)
 {
     DEBUG_PRINT("Decoder default ctor: " << this);
 }
@@ -22,10 +22,20 @@ Decoder::~Decoder()
 {
     if (parent_)
     {
-        if (decodingOK_)
-            proceedToEnd_(parent_->range_, range_.end());
-        DEBUG_PRINT("Unblocking decoder " << parent_ << " in dtor " << this);
-        parent_->isBlocked_ = false;
+        switch (decodingStatus_)
+        {
+            case DecodingStatus::Success:
+                proceedToEnd_(parent_->range_, range_.end());
+                //Fall-through is intentional
+            case DecodingStatus::Failure:
+                DEBUG_PRINT("Unblocking decoder " << parent_ << " in dtor " << this);
+                parent_->isBlocked_ = false;
+                break;
+            default:
+                //We won't unblock the parent, an unknown DecodingStatus is present
+                cout << "You forgot to set the DecodingStatus for decoder " << this << endl;
+                break;
+        }
     }
 }
 
@@ -35,7 +45,7 @@ void Decoder::createSubDecoder_(Decoder &subdecoder, Range &subRange)
     subdecoder.range_ = subRange;
     subdecoder.parent_ = this;
     subdecoder.isBlocked_ = false;
-    subdecoder.decodingOK_ = false;
+    subdecoder.decodingStatus_ = DecodingStatus::Unknown;
     DEBUG_PRINT("Blocking decoder " << this);
     isBlocked_ = true;
 }
@@ -44,10 +54,10 @@ void Decoder::reset(const string &der)
 {
     der_.reset(new string(der));
     range_ = Range(*der_);
-    parent_ = 0;
+    parent_ = nullptr;
     DEBUG_PRINT("Unblocking decoder in reset " << this);
     isBlocked_ = false;
-    decodingOK_ = false;
+    decodingStatus_ = DecodingStatus::Unknown;
 }
 
 template <>
@@ -68,7 +78,12 @@ bool Decoder::extract<int>(int &res)
     //Set the res value
     res = 0;
     for (int i = 0; i < contentSize; ++i)
-        res = (res << 8) + vi.content[i];
+    {
+        unsigned char byte = (unsigned char)vi.content[i];
+        if (0 == i && byte & 0x80)
+            res = -1;
+        res = (res << 8) | byte;
+    }
     //We successfuly read an integer, proceed range_ to the end of the content
     proceedToEnd_(range_, vi.content.end());
     return true;
@@ -109,6 +124,11 @@ bool Decoder::extract<Decoder>(Decoder &subdecoder)
     createSubDecoder_(subdecoder, vi.content);
     //this->range_ will be adjusted when the subdecoder destructs, only if you indicated that decoding was OK via indicateDecodingOK()
     return true;
+}
+
+void Decoder::indicateDecodingOK(bool ok)
+{
+    decodingStatus_ = (ok ? DecodingStatus::Success : DecodingStatus::Failure);
 }
 
 //Private methods

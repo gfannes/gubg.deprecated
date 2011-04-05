@@ -3,21 +3,47 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 namespace gubg
 {
     namespace asn1
     {
-        enum class StringType {Octet, IA5};
+        enum class StringType {IA5, Octet};
+        enum class StructuredType {Sequence, Set};
         class Encoder
         {
             public:
                 void clear();
 
+                //This is the most general template
                 template <typename T>
-                void append(const T &t);
+                void append(const T &t)
+                {
+                    t.serialize(*this);
+                }
+                template <typename T>
+                void append(const std::vector<T> &vec)
+                {
+                    Encoder encoder;
+                    for (const auto &v: vec)
+                        encoder.append(v);
+                    auto content = encoder.encode();
+                    addByte_(0x30).addLength_(content.size()).addBytes_(content);
+                }
 
-                void append(const std::string &str, StringType type);
+                //Template only used for inline strings
+                //I'm not really sure why, but this seems to work
+                template <typename T>
+                void append(T const * t)
+                {
+                    append(t, StringType::IA5);
+                }
+
+                void append(const std::string &str, StringType);
+                void append(const char *str, StringType);
+
+                void append(const Encoder &encoder, StructuredType);
 
                 std::string encode() const;
 
@@ -29,6 +55,8 @@ namespace gubg
         };
         template <>
             void Encoder::append<int>(const int &i);
+        template <>
+            void Encoder::append<std::string>(const std::string &str);
     }
 }
 

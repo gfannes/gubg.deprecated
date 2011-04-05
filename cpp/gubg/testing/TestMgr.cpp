@@ -143,15 +143,18 @@ std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
         {
             const TestTag::ThreadStats::Tags &t =  v.first;
             const Statistics &s = v.second;
-            switch (testMaster.reportType_)
+            if (s.nrTotal() > 0)
             {
-                case TestMaster::ReportType::Full:
-                    os << t << ": " << s << endl;
-                    break;
-                case TestMaster::ReportType::OnlyErrors:
-                    if (s.nrFailure > 0)
+                switch (testMaster.reportType_)
+                {
+                    case TestMaster::ReportType::Full:
                         os << t << ": " << s << endl;
-                    break;
+                        break;
+                    case TestMaster::ReportType::OnlyErrors:
+                        if (s.nrFailure > 0)
+                            os << t << ": " << s << endl;
+                        break;
+                }
             }
             stats += s;
         }

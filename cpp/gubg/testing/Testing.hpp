@@ -55,7 +55,7 @@ namespace gubg
             if (!success)
                 std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
         }
-#define TEST_EQ(expected, actual) gubg::test_eq(expected, actual, HERE(),l_gubg_testing_test_tag_)
+#define TEST_EQ(expected, actual) gubg::test_eq((expected), (actual), HERE(),l_gubg_testing_test_tag_)
 
     template<typename NotExpectedT, typename ActualT>
         void test_neq(const NotExpectedT &notExpected, const ActualT &actual, SourceLocation location, gubg::testing::TestTag &testTag)
@@ -65,7 +65,7 @@ namespace gubg
             if (!success)
                 std::cout << location << ": " << notExpected << " was not expected, but it was received." << std::endl;
         }
-#define TEST_NEQ(notExpected, actual) gubg::test_neq(notExpected, actual, HERE(), l_gubg_testing_test_tag_)
+#define TEST_NEQ(notExpected, actual) gubg::test_neq((notExpected), (actual), HERE(), l_gubg_testing_test_tag_)
 
     template<typename T>
         void test_true(const T &v, SourceLocation location, gubg::testing::TestTag &testTag)
@@ -75,7 +75,7 @@ namespace gubg
             if (!success)
                 std::cout << location << ": it should be true, but it is false." << std::endl;
         }
-#define TEST_TRUE(value) gubg::test_true(value, HERE(), l_gubg_testing_test_tag_)
+#define TEST_TRUE(value) gubg::test_true((value), HERE(), l_gubg_testing_test_tag_)
 
     template<typename T>
         void test_false(const T &v, SourceLocation location, gubg::testing::TestTag &testTag)
@@ -85,12 +85,12 @@ namespace gubg
             if (!success)
                 std::cout << location << ": it should be false, but it is true." << std::endl;
         }
-#define TEST_FALSE(value) gubg::test_false(value, HERE(), l_gubg_testing_test_tag_)
+#define TEST_FALSE(value) gubg::test_false((value), HERE(), l_gubg_testing_test_tag_)
 
 #define TEST_THROW(ExceptionType, expr) \
     try \
     { \
-        expr; \
+        (expr); \
         l_gubg_testing_test_tag_.addResult(gubg::testing::TestResult::Failure) ; \
         std::cout << HERE() << ": an exception of class " #ExceptionType " was expected, but not received." << std::endl; \
     } \

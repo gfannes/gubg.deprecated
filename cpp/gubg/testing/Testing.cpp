@@ -23,7 +23,7 @@ namespace gubg
         ostringstream res;
         res << hex;
         for (auto byte: binary)
-            res << "0x" << setw(2) << setfill('0') << (int)byte << ", ";
+            res << "0x" << setw(2) << setfill('0') << (int)(0xff & byte) << ", ";
         return res.str();
     }
 }

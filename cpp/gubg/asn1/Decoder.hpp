@@ -60,9 +60,13 @@ namespace gubg
                         {
                             T t;
                             if (!subdecoder.extract(t))
+                            {
+                                subdecoder.indicateDecodingOK(false);
                                 return false;
+                            }
                             res.push_back(t);
                         }
+                        subdecoder.indicateDecodingOK(true);
                     }
                     //We successfuly read an integer, proceed range_ to the end of the content
                     proceedToEnd_(range_, vi.content.end());
@@ -71,7 +75,8 @@ namespace gubg
 
                 bool empty() const {return range_.empty();}
 
-                void indicateDecodingOK(){decodingOK_ = true;}
+                //Use this method to indicate whether decoding from a subdecoder went OK
+                void indicateDecodingOK(bool);
 
             private:
                 Decoder &operator=(const Decoder &);
@@ -103,9 +108,12 @@ namespace gubg
                 bool isBlocked_;
                 //The method check that we are _not_ blocked. If we are, it will throw a Decoder::Blocked exception
                 void checkNotBlocked_() const throw (Decoder::Blocked);
-                //If a subdecoder could be read correctly, this will be set to true via indicateDecodingOK()
-                //As such, its dtor will advance the range_ of the parent
-                bool decodingOK_;
+                //After using a subdecoder, you have to indicate what its decoding status is (Success or Failure) using indicateDecodingOK()
+                //Depending on this, the dtor of the subdecoder will either proceed the parent_->range_, or leave it untouched
+                //If you forget to indicate the DecodingStatus before the dtor is called, the parent won't be unblocked
+                //(It is against general C++ advice to throw from a dtor, so we won't do this)
+                enum class DecodingStatus {Unknown, Success, Failure};
+                DecodingStatus decodingStatus_;
         };
         //Reads an asn.1 Integer
         template <>

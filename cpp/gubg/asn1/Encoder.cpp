@@ -22,16 +22,36 @@ void Encoder::append<int>(const int &i)
     else if (-32768 <= i && i <= 32767)
         addByte_(0x02).addByte_(i >> 8).addByte_(i & 0xff);
 }
+template <>
+void Encoder::append<string>(const string &str)
+{
+    Encoder::append(str, StringType::IA5);
+}
 
-void Encoder::append(const std::string &str, StringType type)
+void Encoder::append(const string &str, StringType type)
 {
     switch (type)
     {
-        case StringType::Octet: addByte_(0x04); break;
         case StringType::IA5: addByte_(0x16); break;
+        case StringType::Octet: addByte_(0x04); break;
     }
     addLength_(str.size());
     addBytes_(str);
+}
+void Encoder::append(const char *str, StringType type)
+{
+    append(string(str), type);
+}
+
+void Encoder::append(const Encoder &encoder, StructuredType type)
+{
+    switch (type)
+    {
+        case StructuredType::Sequence: addByte_(0x30); break;
+        case StructuredType::Set:      addByte_(0x31); break;
+    }
+    const string content = encoder.encode();
+    addLength_(content.size()).addBytes_(content);
 }
 
 //Private methods
