@@ -26,7 +26,7 @@ Dir.each('./') do |dir,fn|
   if fn
     fn=File.expand_path(fn,dir)
     puts("Removing #{fn}")
-    `rm #{fn}`
+    `rm "#{fn}"`
   end
   :ok
 end
