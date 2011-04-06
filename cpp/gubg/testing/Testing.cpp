@@ -5,7 +5,6 @@
 #include "boost/thread/mutex.hpp"
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 using namespace std;
 
 //#define L_ENABLE_DEBUG
@@ -18,14 +17,16 @@ std::ostream &operator<<(std::ostream &os, const gubg::SourceLocation &location)
 
 namespace gubg
 {
-    string toHex(const string &binary)
-    {
-        ostringstream res;
-        res << hex;
-        for (auto byte: binary)
-            res << "0x" << setw(2) << setfill('0') << (int)(0xff & byte) << ", ";
-        return res.str();
-    }
+    template <>
+        bool areEqual<char, char>(const std::string &lhs, const std::string &rhs)
+        {
+            return lhs == rhs;
+        }
+    template <>
+        bool areEqual<unsigned char, unsigned char>(const std::basic_string<unsigned char> &lhs, const std::basic_string<unsigned char> &rhs)
+        {
+            return lhs == rhs;
+        }
 }
 
 #ifdef UnitTest

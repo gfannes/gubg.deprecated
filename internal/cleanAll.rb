@@ -2,7 +2,7 @@ require("gubg/utils")
 
 system("ce")
 
-tabReplacement = ' '*8
+#tabReplacement = ' '*8
 
 Dir.each('./') do |dir,fn|
   case fn
@@ -12,6 +12,7 @@ Dir.each('./') do |dir,fn|
   when /^a\.out$/
   when /^gmon\.out$/
   when /^execTest/
+  when /^test$/
   when /\.unit$/
   when /\.map$/
   when /((\.cpp)|(\.hpp))$/
@@ -27,5 +28,5 @@ Dir.each('./') do |dir,fn|
     puts("Removing #{fn}")
     `rm #{fn}`
   end
-  nil
+  :ok
 end

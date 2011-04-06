@@ -18,6 +18,11 @@ Decoder::Decoder(const string &der)
     DEBUG_PRINT("Decoder ctor from string: " << this);
     reset(der);
 }
+Decoder::Decoder(const Octets &der)
+{
+    DEBUG_PRINT("Decoder ctor from Octets: " << this);
+    reset(der);
+}
 Decoder::~Decoder()
 {
     if (parent_)
@@ -50,9 +55,18 @@ void Decoder::createSubDecoder_(Decoder &subdecoder, Range &subRange)
     isBlocked_ = true;
 }
 
+void Decoder::reset(const Octets &der)
+{
+    der_.reset(new Octets(der));
+    range_ = Range(*der_);
+    parent_ = nullptr;
+    DEBUG_PRINT("Unblocking decoder in reset " << this);
+    isBlocked_ = false;
+    decodingStatus_ = DecodingStatus::Unknown;
+}
 void Decoder::reset(const string &der)
 {
-    der_.reset(new string(der));
+    der_.reset(new Octets((const unsigned char *)der.data(), der.size()));
     range_ = Range(*der_);
     parent_ = nullptr;
     DEBUG_PRINT("Unblocking decoder in reset " << this);
@@ -101,6 +115,26 @@ bool Decoder::extract<string>(string &res)
         case 0x04://Octet string
         case 0x16://IA5String
             res = string(vi.content.begin(), vi.content.end());
+            break;
+        default:
+            return false;
+            break;
+    }
+    //We successfuly read an integer, proceed range_ to the end of the content
+    proceedToEnd_(range_, vi.content.end());
+    return true;
+}
+template <>
+bool Decoder::extract<Octets>(Octets &res)
+{
+    checkNotBlocked_();
+    ValueInfo vi;
+    if (!decompose_(vi, range_))
+        return false;
+    switch (vi.tag)
+    {
+        case 0x04://Octet string
+            res = Octets(vi.content.begin(), vi.content.end());
             break;
         default:
             return false;

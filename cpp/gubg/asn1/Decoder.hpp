@@ -1,6 +1,7 @@
 #ifndef gubg_asn1_Decoder_hpp
 #define gubg_asn1_Decoder_hpp
 
+#include "asn1/Types.hpp"
 #include "Exception.hpp"
 #include "boost/range/iterator_range.hpp"
 #include <string>
@@ -16,9 +17,11 @@ namespace gubg
             public:
                 Decoder();
                 Decoder(const std::string &der);
+                Decoder(const Octets &der);
                 virtual ~Decoder();
 
                 void reset(const std::string &der);
+                void reset(const Octets &der);
 
                 //We extracting from a decoder, it is always checked that we are not blocked by a subdecoder
                 //If this is the case, a Decoder::Blocked exception will be thrown
@@ -81,7 +84,7 @@ namespace gubg
             private:
                 Decoder &operator=(const Decoder &);
 
-                typedef std::string::const_iterator Iterator;
+                typedef Octets::const_iterator Iterator;
                 typedef boost::iterator_range<Iterator> Range;
                 //TODO::These things can be moved into an anonymous namespace in the source file
                 enum class Class {Universal, Application, ContextSpecific, Private};
@@ -98,7 +101,7 @@ namespace gubg
                 //Creates a decoder which will work on the _same_ der_
                 void createSubDecoder_(Decoder &subdecoder, Range &subRange);
 
-                std::shared_ptr<std::string> der_;
+                std::shared_ptr<Octets> der_;
                 Range range_;
 
                 //A subdecoder is always created from a parent_.
@@ -121,6 +124,9 @@ namespace gubg
         //Reads both an asn.1 OctetString or an IA5String
         template <>
             bool Decoder::extract<std::string>(std::string &);
+        //Reads an asn.1 OctetString
+        template <>
+            bool Decoder::extract<Octets>(Octets &);
         //Reads a subdecoder, e.g., for a sequence
         template <>
             bool Decoder::extract<Decoder>(Decoder &subdecoder);

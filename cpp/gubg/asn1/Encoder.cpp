@@ -5,10 +5,10 @@ using namespace std;
 
 void Encoder::clear()
 {
-    oss_.str("");
+    oss_.str(Octets());
 }
 
-string Encoder::encode() const
+Octets Encoder::encode() const
 {
     return oss_.str();
 }
@@ -50,7 +50,7 @@ void Encoder::append(const Encoder &encoder, StructuredType type)
         case StructuredType::Sequence: addByte_(0x30); break;
         case StructuredType::Set:      addByte_(0x31); break;
     }
-    const string content = encoder.encode();
+    const Octets content = encoder.encode();
     addLength_(content.size()).addBytes_(content);
 }
 

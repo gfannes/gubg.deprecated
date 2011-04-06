@@ -1,6 +1,7 @@
 #ifndef gubg_asn1_Encoder_hpp
 #define gubg_asn1_Encoder_hpp
 
+#include "asn1/Types.hpp"
 #include <string>
 #include <sstream>
 #include <vector>
@@ -45,13 +46,14 @@ namespace gubg
 
                 void append(const Encoder &encoder, StructuredType);
 
-                std::string encode() const;
+                Octets encode() const;
 
             private:
-                Encoder &addByte_(char ch){oss_ << ch; return *this;}
-                Encoder &addBytes_(const std::string &str){oss_ << str; return *this;}
+                Encoder &addByte_(unsigned char ch){oss_ << ch; return *this;}
+                Encoder &addBytes_(const std::string &str){oss_.write((const unsigned char *)str.data(), str.size()); return *this;}
+                Encoder &addBytes_(const Octets &str){oss_ << str; return *this;}
                 Encoder &addLength_(unsigned int length);
-                std::ostringstream oss_;
+                std::basic_ostringstream<unsigned char> oss_;
         };
         template <>
             void Encoder::append<int>(const int &i);
