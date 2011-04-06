@@ -3,14 +3,14 @@
 using namespace meta;
 using namespace std;
 
-Structure Parser::parse(const std::string &code)
+Structure Parser::parse(Code &code)
 {
     Structure res(code);
 
     //Parse res.code_ into tokens
     {
-        const char *ch = res.code_.c_str();
-        while (auto token = Token::tryCreate(ch))
+        CodeRange codeRange(res.code_);
+        while (auto token = Token::tryCreate(codeRange))
         {
             res.tokens_.push_back(token);
             if (token->isEnd())
@@ -19,19 +19,19 @@ Structure Parser::parse(const std::string &code)
     }
 
     //Initialize the TokenRange that will be used for creating the Composites
-    TokenRange range(res.tokens_);
-    if (range.empty())
+    TokenRange tokenRange(res.tokens_);
+    if (tokenRange.empty())
         gubg::Exception::raise(EmptyCode());
 
     //Create the Composites
-    while (!range.empty())
+    while (!tokenRange.empty())
     {
         Component *component = 0;
-        if (auto comment = Comment::tryCreate(range))
+        if (auto comment = Comment::tryCreate(tokenRange))
             component = comment;
         else
         {
-            range.advance_begin(1);
+            tokenRange.pop_front();
             continue;
         }
         res.components_.push_back(component);
@@ -44,7 +44,7 @@ Structure Parser::parse(const std::string &code)
 #include <string>
 int main()
 {
-    string code("//comment 123\n#include <test.h>");
+    Code code("//comment 123\n#include \"test.h\"");
     Parser parser;
     auto s = parser.parse(code);
     return 0;

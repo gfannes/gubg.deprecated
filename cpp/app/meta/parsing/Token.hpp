@@ -1,60 +1,64 @@
 #ifndef meta_parsing_Token_hpp
 #define meta_parsing_Token_hpp
 
+#include "parsing/Code.hpp"
 #include "parsing/Component.hpp"
 
 namespace meta
 {
+    class Token;
+    typedef std::vector<Token*> Tokens;
+    typedef boost::iterator_range<Tokens::iterator> TokenRange;
+
+    //A Token is the leaf Component
     struct Token: Component
     {
-        Token(const char *start, const char *end):
-            start_(start),
-            end_(end){}
+        Token(const CodeRange &range):
+            range_(range){}
 
         virtual bool isEnd(){return false;}
-        virtual bool isSymbol(char wanted){return false;}
+        virtual bool isSymbol(const char wanted){return false;}
+        bool isNewline(){return isSymbol('\n');}
 
-        static Token *tryCreate(const char *&ch);
+        static Token *tryCreate(CodeRange &range);
 
-        const char *start_;
-        const char *end_;
+        CodeRange range_;
     };
     struct End: Token
     {
-        End(const char *ch):
-            Token(ch, ch){}
-
+        End(const CodeRange &range):
+            Token(range){}
         virtual bool isEnd(){return true;}
     };
     struct Symbol: Token
     {
-        Symbol(const char *ch):
-            Token(ch, ch+1){}
+        Symbol(const CodeRange &range):
+            Token(range){}
         
-        virtual bool isSymbol(char wanted)
+        virtual bool isSymbol(const char wanted)
         {
-            return *start_ == wanted;
+            return wanted == range_.front();
         }
     };
     struct Newline: Symbol
     {
-        Newline(const char *ch):
-            Symbol(ch){}
+        Newline(const CodeRange &range):
+            Symbol(range){}
     };
     struct Name: Token
     {
-        Name(const char *start, const char *end):
-            Token(start, end){}
+        Name(const CodeRange &range):
+            Token(range){}
     };
     struct Number: Token
     {
-        Number(const char *start, const char *end):
-            Token(start, end){}
+        Number(const CodeRange &range):
+            Token(range){}
     };
     struct Whitespace: Token
     {
-        Whitespace(const char *start, const char *end):
-            Token(start, end){}
+        Whitespace(const CodeRange &range):
+            Token(range){}
     };
 }
 

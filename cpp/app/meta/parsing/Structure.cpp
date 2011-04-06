@@ -5,7 +5,7 @@ using namespace std;
 //#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
-Structure::Structure(const std::string &code):
+Structure::Structure(Code &code):
     code_(code)
 {
     DEBUG_PRINT("Structure ctor");
@@ -37,7 +37,7 @@ Structure &Structure::operator=(Structure &&rhs)
 #include <iostream>
 int main()
 {
-    string code("#include <test.h>");
+    Code code("#include <test.h>");
     Structure s(code);
     return 0;
 }

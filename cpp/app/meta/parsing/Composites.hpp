@@ -2,11 +2,11 @@
 #define meta_parsing_Composites_hpp
 
 #include "parsing/Component.hpp"
-#include "parsing/Structure.hpp"
+#include "parsing/Token.hpp"
 
 namespace meta
 {
-    struct Comment: Composite
+    struct Comment: TokenComposite
     {
         static Comment *tryCreate(TokenRange &tokens);
     };
