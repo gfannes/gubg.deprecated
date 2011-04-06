@@ -565,7 +565,7 @@ def tempDir(dir = '/tmp', subdir = nil)
             tmpDir = File.expand_path("tempDir-#{rand(1000000000)}.tmp", dir)
         end while File.exist?(tmpDir)
     end
-    Dir.mkdir(tmpDir)
+    FileUtils.mkdir_p(tmpDir)
     if block_given?
         begin
             yield(tmpDir)

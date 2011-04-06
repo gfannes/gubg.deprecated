@@ -9,6 +9,7 @@ Dir.each('./') do |dir,fn|
   when /\.o$/
   when /\.s$/
   when /\.exec$/
+  when /\.exe$/
   when /^a\.out$/
   when /^gmon\.out$/
   when /^execTest/
