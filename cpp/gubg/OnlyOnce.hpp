@@ -7,6 +7,8 @@ namespace gubg
     {
         OnlyOnce():
             firstTime_(true){}
+        OnlyOnce(bool firstTime):
+            firstTime_(firstTime){}
 
         bool operator()()
         {

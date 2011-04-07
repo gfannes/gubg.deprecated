@@ -29,6 +29,10 @@ Structure Parser::parse(Code &code)
         Component *component = 0;
         if (auto comment = Comment::tryCreate(tokenRange))
             component = comment;
+        else if (auto incl = Include::tryCreate(tokenRange))
+            component = incl;
+        else if (auto str = String::tryCreate(tokenRange))
+            component = str;
         else
         {
             tokenRange.pop_front();
@@ -44,7 +48,7 @@ Structure Parser::parse(Code &code)
 #include <string>
 int main()
 {
-    Code code("//comment 123\n#include \"test.h\"");
+    Code code("//comment 123\n#include \"test.h\" \"inline string with \\\"-quotes and \\n other escaped \\\\ characters\"");
     Parser parser;
     auto s = parser.parse(code);
     return 0;

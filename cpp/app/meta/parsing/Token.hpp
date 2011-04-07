@@ -18,7 +18,10 @@ namespace meta
 
         virtual bool isEnd(){return false;}
         virtual bool isSymbol(const char wanted){return false;}
+        virtual bool isSymbol(char &actual, const std::string &symbols){return false;}
         bool isNewline(){return isSymbol('\n');}
+        virtual bool isName(const std::string &){return false;}
+        virtual bool isWhitespace() { return false; }
 
         static Token *tryCreate(CodeRange &range);
 
@@ -39,6 +42,14 @@ namespace meta
         {
             return wanted == range_.front();
         }
+        virtual bool isSymbol(char &actual, const std::string &symbols)
+        {
+            size_t pos = symbols.find(range_.front());
+            if (std::string::npos == pos)
+                return false;
+            actual = symbols[pos];
+            return true;
+        }
     };
     struct Newline: Symbol
     {
@@ -49,6 +60,11 @@ namespace meta
     {
         Name(const CodeRange &range):
             Token(range){}
+
+        virtual bool isName(const std::string &str)
+        {
+            return str == toCode(range_);
+        }
     };
     struct Number: Token
     {
@@ -59,6 +75,8 @@ namespace meta
     {
         Whitespace(const CodeRange &range):
             Token(range){}
+
+        virtual bool isWhitespace() { return true; }
     };
 }
 

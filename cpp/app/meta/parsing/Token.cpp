@@ -41,7 +41,7 @@ Token *Token::tryCreate(CodeRange &range)
     {
         auto m = match[0];
         DEBUG_PRINT("Whitespace: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
-        return new Name(reduce(range, m.length()));
+        return new Whitespace(reduce(range, m.length()));
     }
 
     DEBUG_PRINT("Symbol: \"" << *ch << "\"");
