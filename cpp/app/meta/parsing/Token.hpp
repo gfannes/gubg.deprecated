@@ -3,12 +3,24 @@
 
 #include "parsing/Code.hpp"
 #include "parsing/Component.hpp"
+#include <list>
 
 namespace meta
 {
     class Token;
-    typedef std::vector<Token*> Tokens;
-    typedef boost::iterator_range<Tokens::iterator> TokenRange;
+    typedef std::list<Token*> Tokens;
+    struct TokenRange
+    {
+        TokenRange(Tokens &t):
+            tokens(t),
+            range(tokens){}
+
+        bool empty() const {return range.empty();}
+        void pop_front() {range.pop_front();}
+
+        Tokens &tokens;
+        boost::iterator_range<Tokens::iterator> range;
+    };
 
     //A Token is the leaf Component
     struct Token: Component

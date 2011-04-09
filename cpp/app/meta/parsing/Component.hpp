@@ -2,6 +2,7 @@
 #define meta_parsing_Component_hpp
 
 #include <vector>
+#include <string>
 
 namespace meta
 {
@@ -20,6 +21,7 @@ namespace meta
     {
         std::vector<Token*> childs_;
         void add(Token *token){childs_.push_back(token);}
+        std::string toString() const;
     };
     //A Composite consists of multiple Components
     struct Composite: Component

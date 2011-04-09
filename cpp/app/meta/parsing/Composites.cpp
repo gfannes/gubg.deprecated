@@ -5,26 +5,56 @@ using namespace meta;
 #define L_ENABLE_DEBUG
 #include "debug.hpp"
 
+namespace
+{
+    struct RestoreRange
+    {
+        RestoreRange(TokenRange &r):
+            orig_(r),
+            ref_(r),
+            doRestore_(true){}
+        ~RestoreRange()
+        {
+            if (doRestore_)
+                ref_.range = orig_.range;
+        }
+
+        void commit(){doRestore_ = false;}
+
+        TokenRange orig_;
+        TokenRange &ref_;
+        bool doRestore_;
+    };
+
+    //Returns true if a token (!= from End Token) could be popped
+    bool popToken(Token *&token, TokenRange &tr)
+    {
+        if (tr.empty())
+            return false;
+        token = tr.range.front();
+        if (token->isEnd())
+            return false;
+        tr.pop_front();
+        return true;
+    }
+}
+
 Comment *Comment::tryCreate(TokenRange &tr)
 {
-    if (tr.size() >= 2 && tr[0]->isSymbol('/') && tr[1]->isSymbol('/'))
+    RestoreRange rr(tr);
+    Token *token;
+    if (popToken(token, tr) && token->isSymbol('/') && popToken(token, tr) && token->isSymbol('/'))
     {
         DEBUG_PRINT("Found a comment:");
         auto comment = new Comment;
-        comment->add(tr[0]);
-        comment->add(tr[1]);
-        tr.advance_begin(2);
-        while (!tr.empty())
+        while (popToken(token, tr))
         {
-            auto token = tr.front();
-            if (token->isEnd())
-                break;
             comment->add(token);
-            tr.pop_front();
             if (token->isNewline())
                 break;
         }
-        DEBUG_PRINT(toCode(CodeRange(comment->childs_.front()->range_.begin(), comment->childs_.back()->range_.end())));
+        DEBUG_PRINT(comment->toString());
+        rr.commit();
         return comment;
     }
     return nullptr;
@@ -32,21 +62,24 @@ Comment *Comment::tryCreate(TokenRange &tr)
 
 Include *Include::tryCreate(TokenRange &tr)
 {
+    RestoreRange rr(tr);
+    Token *token;
     char lch;
-    if (tr.size() >= 6 && tr[0]->isSymbol('#') && tr[1]->isName("include") && tr[2]->isWhitespace() && tr[3]->isSymbol(lch, "\"<"))
+    if (popToken(token, tr) && token->isSymbol('#') &&
+            popToken(token, tr) && token->isName("include") &&
+            popToken(token, tr) && token->isWhitespace() && 
+            popToken(token, tr) && token->isSymbol(lch, "\"<"))
     {
         DEBUG_PRINT("Found an include:");
         auto incl = new Include;
-        tr.advance_begin(4);
-        while (!tr.empty())
+        while (popToken(token, tr))
         {
-            auto token = tr.front();
-            tr.pop_front();
             char rch;
             if (token->isSymbol(rch, "\">") && (('\"' == lch && '\"' == rch) || ('<' == lch && '>' == rch)))
             {
                 //We found the closing '"' or '>' symbol
-                DEBUG_PRINT(toCode(CodeRange(incl->childs_.front()->range_.begin(), incl->childs_.back()->range_.end())));
+                DEBUG_PRINT(incl->toString());
+                rr.commit();
                 return incl;
             }
             incl->add(token);
@@ -58,30 +91,50 @@ Include *Include::tryCreate(TokenRange &tr)
 
 String *String::tryCreate(TokenRange &tr)
 {
-    if (tr.size() >= 2 && tr[0]->isSymbol('\"'))
+    RestoreRange rr(tr);
+    Token *token;
+    if (popToken(token, tr) && token->isSymbol('\"'))
     {
         DEBUG_PRINT("Found a string:");
         auto str = new String;
-        tr.pop_front();
-        //escapedCharater will be reset if we encounter a backslash, indicating that the next character is to be taken literally
-        gubg::OnlyOnce escapedCharacter(false);
-        while (!tr.empty())
+        while (popToken(token, tr))
         {
-            auto token = tr.front();
-            tr.pop_front();
             char ch;
-            if (!escapedCharacter() && token->isSymbol(ch, "\\\""))
+            if (token->isSymbol(ch, "\\\""))
             {
                 switch (ch)
                 {
                     case '\"':
-                        //This prints incorrectly, skipped escape-backslashes will be printed too...
-                        DEBUG_PRINT(toCode(CodeRange(str->childs_.front()->range_.begin(), str->childs_.back()->range_.end())));
+                        DEBUG_PRINT(str->toString());
+                        rr.commit();
                         return str;
                         break;
                     case '\\':
-                        escapedCharacter.reset();
-                        continue;
+                        str->add(token);
+                        //The next character is escaped, but it might be part of a longer name or number, in which case we have to split it
+                        //e.g. "bla\nbla" => a Name reading nbla is _not_ what we want
+                        //We keep an iterator to the Token that we have to split
+                        auto it = tr.range.begin();
+                        if (!popToken(token, tr))
+                                gubg::Exception::raise(gubg::Exception("No token following an escape character"));
+                        if (token->range_.empty())
+                            gubg::Exception::raise(gubg::Exception("Empty token following an escape character"));
+                        //Split the first character of the Token
+                        auto cr = reduce(token->range_, 1);
+                        //Create and insert the new token. We do not attempt to translate it into the real, unescaped character
+                        //This would be problematic, either changing the original Code, or storing this new character somewhere else
+                        auto escape = Token::tryCreate(cr);
+                        tr.tokens.insert(it, escape);
+                        //If the original Token without the first character is empty now, we remove it from the Tokens list
+                        if (token->range_.empty())
+                        {
+                            tr.tokens.erase(it);
+                            delete token;
+                            //token will be added hereunder
+                            token = escape;
+                        }
+                        else
+                            str->add(escape);
                         break;
                 }
             }

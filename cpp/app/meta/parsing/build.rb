@@ -5,7 +5,7 @@ def finalize(msg)
     exit(-1)
 end
 
-options = {clean: true}
+options = {clean: !ARGV.empty?}
 
 if options[:clean]
 finalize("Could not clean gb") if !system("gb clean")

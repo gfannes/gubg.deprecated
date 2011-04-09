@@ -13,13 +13,17 @@ namespace meta
         virtual ~Structure();
         Structure(const Structure &);
         Structure(Structure &&);
-        Structure &operator=(const Structure &);
-        Structure &operator=(Structure &&);
+
+        std::list<std::string> allNames() const;
 
         Code code_;
         Tokens tokens_;
         typedef std::vector<Component*> Components;
         Components components_;
+
+        private:
+        Structure &operator=(const Structure &);
+        Structure &operator=(Structure &&);
     };
 }
 

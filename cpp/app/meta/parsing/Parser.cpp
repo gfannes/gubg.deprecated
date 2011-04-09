@@ -48,9 +48,12 @@ Structure Parser::parse(Code &code)
 #include <string>
 int main()
 {
-    Code code("//comment 123\n#include \"test.h\" \"inline string with \\\"-quotes and \\n other escaped \\\\ characters\"");
+    Code code("//comment 123\n#include \"test.h\" \"inline string with \\\"-quotes and \\nbla other escaped \\\\ characters\"");
     Parser parser;
     auto s = parser.parse(code);
+    auto names = s.allNames();
+    for (auto &name: names)
+        cout << name << endl;
     return 0;
 }
 #endif
