@@ -14,6 +14,8 @@ namespace meta
     //This is achieved with the Composite pattern. Component is the base class of all object type in the layers
     struct Component
     {
+        //Component is polymorphic
+        virtual ~Component(){}
     };
     //A Composite consisting of _only_ Tokens
     class Token;

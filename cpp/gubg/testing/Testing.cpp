@@ -10,23 +10,44 @@ using namespace std;
 //#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
-std::ostream &operator<<(std::ostream &os, const gubg::SourceLocation &location)
+std::ostream &operator<<(std::ostream &os, const gubg::testing::SourceLocation &location)
 {
     return os << location.filename << ":" << location.lineNr;
+}
+std::ostream &operator<<(std::ostream &os, const std::nullptr_t &ptr)
+{
+    return os << "nullptr";
+}
+
+namespace
+{
+    template <typename T>
+    string toStringValue_(const T &t)
+    {
+        ostringstream oss;
+        oss << t;
+        return oss.str();
+    }
 }
 
 namespace gubg
 {
-    template <>
-        bool areEqual<char, char>(const std::string &lhs, const std::string &rhs)
-        {
-            return lhs == rhs;
-        }
-    template <>
-        bool areEqual<unsigned char, unsigned char>(const std::basic_string<unsigned char> &lhs, const std::basic_string<unsigned char> &rhs)
-        {
-            return lhs == rhs;
-        }
+    namespace testing
+    {
+        template <>
+            std::string toString_<nullptr_t>(const nullptr_t &p){return "nullptr";}
+
+        template <>
+            bool areEqual<char, char>(const std::string &lhs, const std::string &rhs)
+            {
+                return lhs == rhs;
+            }
+        template <>
+            bool areEqual<unsigned char, unsigned char>(const std::basic_string<unsigned char> &lhs, const std::basic_string<unsigned char> &rhs)
+            {
+                return lhs == rhs;
+            }
+    }
 }
 
 #ifdef UnitTest
@@ -86,6 +107,21 @@ int main()
     {
         TEST_TAG(exceptions);
         TEST_THROW(gubg::Exception, throw gubg::Exception(""));
+    }
+    {
+        TEST_TAG(nullptr);
+        TEST_EQ(nullptr, nullptr);
+        int *p = 0;
+        TEST_EQ(nullptr, p);
+        TEST_EQ(p, nullptr);
+        int i;
+        p = &i;
+        cout << "p: " << p << ", &p: " << &p << endl;
+        TEST_NEQ(nullptr, p);
+        TEST_NEQ(p, nullptr);
+
+        TEST_EQ(nullptr, p);
+        TEST_EQ(p, nullptr);
     }
     TEST_REPORT_TYPE(Full);
     TEST_REPORT();

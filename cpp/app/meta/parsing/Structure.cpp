@@ -28,6 +28,14 @@ Structure::Structure(Structure &&rhs):
 {
     DEBUG_PRINT("Structure move ctor");
 }
+Structure &Structure::operator=(Structure &&rhs)
+{
+    DEBUG_PRINT("Structure move operator=");
+    code_ = std::move(rhs.code_);
+    tokens_ = std::move(rhs.tokens_);
+    components_ = std::move(rhs.components_);
+    return *this;
+}
 
 list<string> Structure::allNames() const
 {

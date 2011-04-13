@@ -45,15 +45,47 @@ Structure Parser::parse(Code &code)
 }
 
 #ifdef UnitTest
+#include "Testing.hpp"
 #include <string>
 int main()
 {
-    Code code("//comment 123\n#include \"test.h\" \"inline string with \\\"-quotes and \\nbla other escaped \\\\ characters\"");
     Parser parser;
-    auto s = parser.parse(code);
-    auto names = s.allNames();
-    for (auto &name: names)
-        cout << name << endl;
+
+    Structure s;
+
+    TEST_TAG(meta|parsing|Parser);
+    TEST_REPORT_TYPE(Full);
+    {
+        {
+            TEST_TAG(Comment);
+            s = parser.parse(Code("//Comment 123"));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s.components_.front()));
+            s = parser.parse(Code("//Comment 123\n"));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s.components_.front()));
+        }
+
+        {
+            TEST_TAG(Include);
+            s = parser.parse(Code("#include \"test.h\""));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<Include*>(s.components_.front()));
+            s = parser.parse(Code("#include <test.h>"));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<Include*>(s.components_.front()));
+        }
+
+        {
+            TEST_TAG(String);
+            s = parser.parse(Code("\"inline string\""));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<String*>(s.components_.front()));
+            s = parser.parse(Code("\"\\\"\\nbla\\\\\""));
+            TEST_EQ(1, s.components_.size());
+            TEST_NOT_NULL(dynamic_cast<String*>(s.components_.front()));
+        }
+    }
     return 0;
 }
 #endif
