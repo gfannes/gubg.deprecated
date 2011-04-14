@@ -15,7 +15,7 @@ namespace meta
             EmptyCode(): gubg::Exception("Source code is empty"){}
         };
 
-            Structure parse(const std::string &code);
+            Structure::Ptr parse(Code &code);
     };
 }
 

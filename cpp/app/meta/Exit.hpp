@@ -5,8 +5,9 @@
 
 namespace meta
 {
+    enum class Status {Ok, Error};
     //Exits the application, printing msg first
-    void finalize(const std::string &msg);
+    void finalize(const std::string &msg, Status = Status::Error);
 }
 
 #endif

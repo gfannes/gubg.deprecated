@@ -2,7 +2,7 @@
 #include "OnlyOnce.hpp"
 using namespace meta;
 
-#define L_ENABLE_DEBUG
+//#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 namespace
@@ -39,7 +39,7 @@ namespace
     }
 }
 
-Comment *Comment::tryCreate(TokenRange &tr)
+Comment *Comment::construct(TokenRange &tr)
 {
     RestoreRange rr(tr);
     Token *token;
@@ -60,7 +60,7 @@ Comment *Comment::tryCreate(TokenRange &tr)
     return nullptr;
 }
 
-Include *Include::tryCreate(TokenRange &tr)
+Include *Include::construct(TokenRange &tr)
 {
     RestoreRange rr(tr);
     Token *token;
@@ -89,7 +89,49 @@ Include *Include::tryCreate(TokenRange &tr)
     return nullptr;
 }
 
-String *String::tryCreate(TokenRange &tr)
+Define *Define::construct(TokenRange &tr)
+{
+    RestoreRange rr(tr);
+    Token *token;
+    if (popToken(token, tr) && token->isSymbol('#') &&
+            popToken(token, tr) && token->isName("define") &&
+            popToken(token, tr) && token->isWhitespace())
+    {
+        DEBUG_PRINT("Found a define:");
+        auto def = new Define;
+        bool continueOnNextLine = false;
+        while (popToken(token, tr))
+        {
+            if (token->isNewline())
+            {
+                if (!continueOnNextLine)
+                    break;
+                continueOnNextLine = false;
+            }
+            else if (token->isSymbol('\\'))
+            {
+                //We saw a '\', with our current knowledge, we have to continue on the next line
+                continueOnNextLine = true;
+            }
+            else if (token->isWhitespace())
+            {
+                //A whitespace does not modify the fact that we have to continue on the next line
+            }
+            else
+            {
+                //All other tokens _do_ modify if we have to continue
+                continueOnNextLine = false;
+            }
+            def->add(token);
+        }
+        DEBUG_PRINT(def->toString());
+        rr.commit();
+        return def;
+    }
+    return nullptr;
+}
+
+String *String::construct(TokenRange &tr)
 {
     RestoreRange rr(tr);
     Token *token;
@@ -123,7 +165,7 @@ String *String::tryCreate(TokenRange &tr)
                         auto cr = reduce(token->range_, 1);
                         //Create and insert the new token. We do not attempt to translate it into the real, unescaped character
                         //This would be problematic, either changing the original Code, or storing this new character somewhere else
-                        auto escape = Token::tryCreate(cr);
+                        auto escape = Token::construct(cr);
                         tr.tokens.insert(it, escape);
                         //If the original Token without the first character is empty now, we remove it from the Tokens list
                         if (token->range_.empty())
@@ -145,6 +187,32 @@ String *String::tryCreate(TokenRange &tr)
     return nullptr;
 }
 
+Character *Character::construct(TokenRange &tr)
+{
+    RestoreRange rr(tr);
+    Token *token;
+    if (popToken(token, tr) && token->isSymbol('\''))
+    {
+        DEBUG_PRINT("Found a character:");
+        auto character = new Character;
+        if (!popToken(token, tr))
+            gubg::Exception::raise(gubg::Exception("Incomplete character literal found"));
+        if (token->isSymbol('\\'))
+        {
+            character->add(token);
+            if (!popToken(token, tr))
+                gubg::Exception::raise(gubg::Exception("No token following an escape character"));
+        }
+        character->add(token);
+        if (!popToken(token, tr) || !token->isSymbol('\''))
+            gubg::Exception::raise(gubg::Exception("Incomplete character literal found"));
+        DEBUG_PRINT(character->toString());
+        rr.commit();
+        return character;
+    }
+    return nullptr;
+}
+
 #ifdef UnitTest
 int main()
 {
@@ -161,7 +229,7 @@ int main()
     tokens.push_back(new Newline(reduce(cr, 1)));
     tokens.push_back(new Name(reduce(cr, 4)));
     TokenRange tr(tokens);
-    auto comment = Comment::tryCreate(tr);
+    auto comment = Comment::construct(tr);
     return 0;
 }
 #endif

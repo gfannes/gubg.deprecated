@@ -6,19 +6,27 @@
 
 namespace meta
 {
-    //The static method tryCreate() tries to create a TokenComposite of a specific type.
+    //The static method construct() tries to create a TokenComposite of a specific type.
     //If this fails, nullptr is returned.
     struct Comment: TokenComposite
     {
-        static Comment *tryCreate(TokenRange &);
+        static Comment *construct(TokenRange &);
     };
     struct Include: TokenComposite
     {
-        static Include *tryCreate(TokenRange &);
+        static Include *construct(TokenRange &);
+    };
+    struct Define: TokenComposite
+    {
+        static Define *construct(TokenRange &);
     };
     struct String: TokenComposite
     {
-        static String *tryCreate(TokenRange &);
+        static String *construct(TokenRange &);
+    };
+    struct Character: TokenComposite
+    {
+        static Character *construct(TokenRange &);
     };
 }
 

@@ -11,12 +11,12 @@ using namespace boost;
 namespace
 {
     //Regular expressions
-    regex reName("^[a-zA-Z_][a-zA-Z_\\d]*");
-    regex reNumber("^\\d+");
-    regex reWhitespace("^[ \\t]+");
+    regex reName("\\A[a-zA-Z_][a-zA-Z_\\d]*");
+    regex reNumber("\\A\\d+");
+    regex reWhitespace("\\A[ \\t]+");
 }
 
-Token *Token::tryCreate(CodeRange &range)
+Token *Token::construct(CodeRange &range)
 {
     if (range.empty()) 
         return new End(range);
@@ -55,7 +55,7 @@ int main()
 {
     Code code("name1 \t 123.456 name2");
     CodeRange range(code);
-    while (auto token = Token::tryCreate(range))
+    while (auto token = Token::construct(range))
     {
         if (token->isEnd())
             break;

@@ -1,41 +1,36 @@
-#ifndef file_h
-#define file_h
+#ifndef gubg_file_hpp
+#define gubg_file_hpp
 
 #include <string>
 #include <fstream>
 
-using namespace std;
-
-namespace File
+namespace file
 {
-    bool readAll(char *&data,string fileName)
+    bool readContent(std::string &content, const std::string &filename)
     {
-        // Open the file
-        ifstream fi(fileName.c_str(),ios::binary);
-        // Get the file size
-        int size;
-        if (fi.is_open())
+        //Open the file
+        std::ifstream fi(filename, std::ifstream::binary);
+        if (!fi.is_open())
         {
-            long begin,end;
-            begin = fi.tellg();
-            fi.seekg(0, ios::end);
-            end = fi.tellg();
-            size = end-begin;
-        } else
-        {
-            cerr << "Could not open file " << fileName << endl;
+            std::cerr << "Could not open file " << filename << std::endl;
             return false;
         }
-        // Allocate data
-        data = new char[size];
-        // Read the file into data
-        if (data)
-        {
-            fi.seekg(0, ios::beg);
-            fi.read(data,size);
-        }
+
+        //Get the file size
+        auto begin = fi.tellg();
+        fi.seekg(0, std::ios::end);
+        auto end = fi.tellg();
+        auto size = end - begin;
+
+        //Allocate enough space to fit the file
+        content.resize(size);
+
+        //Read the file
+        fi.seekg(0, std::ios::beg);
+        fi.read(&content[0], size);
         fi.close();
-        return data != NULL;
+
+        return true;
     }
 
 };

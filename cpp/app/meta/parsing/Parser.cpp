@@ -3,23 +3,24 @@
 using namespace meta;
 using namespace std;
 
-Structure Parser::parse(Code &code)
+Structure::Ptr Parser::parse(Code &code)
 {
-    Structure res(code);
+    Structure::Ptr res(new Structure(code));
+    auto &stru = *res;
 
-    //Parse res.code_ into tokens
+    //Parse stru.code_ into tokens
     {
-        CodeRange codeRange(res.code_);
-        while (auto token = Token::tryCreate(codeRange))
+        CodeRange codeRange(stru.code_);
+        while (auto token = Token::construct(codeRange))
         {
-            res.tokens_.push_back(token);
+            stru.tokens_.push_back(token);
             if (token->isEnd())
                 break;
         }
     }
 
     //Initialize the TokenRange that will be used for creating the Composites
-    TokenRange tokenRange(res.tokens_);
+    TokenRange tokenRange(stru.tokens_);
     if (tokenRange.empty())
         gubg::Exception::raise(EmptyCode());
 
@@ -27,21 +28,25 @@ Structure Parser::parse(Code &code)
     while (!tokenRange.empty())
     {
         Component *component = 0;
-        if (auto comment = Comment::tryCreate(tokenRange))
+        if (auto comment = Comment::construct(tokenRange))
             component = comment;
-        else if (auto incl = Include::tryCreate(tokenRange))
+        else if (auto incl = Include::construct(tokenRange))
             component = incl;
-        else if (auto str = String::tryCreate(tokenRange))
+        else if (auto def = Define::construct(tokenRange))
+            component = def;
+        else if (auto str = String::construct(tokenRange))
             component = str;
+        else if (auto ch = Character::construct(tokenRange))
+            component = ch;
         else
         {
             tokenRange.pop_front();
             continue;
         }
-        res.components_.push_back(component);
+        stru.components_.push_back(component);
     }
 
-    return std::move(res);
+    return res;
 }
 
 #ifdef UnitTest
@@ -51,7 +56,7 @@ int main()
 {
     Parser parser;
 
-    Structure s;
+    Structure::Ptr s;
 
     TEST_TAG(meta|parsing|Parser);
     TEST_REPORT_TYPE(Full);
@@ -59,31 +64,61 @@ int main()
         {
             TEST_TAG(Comment);
             s = parser.parse(Code("//Comment 123"));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<Comment*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front()));
             s = parser.parse(Code("//Comment 123\n"));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<Comment*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front()));
         }
 
         {
             TEST_TAG(Include);
             s = parser.parse(Code("#include \"test.h\""));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<Include*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front()));
             s = parser.parse(Code("#include <test.h>"));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<Include*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front()));
+        }
+
+        {
+            TEST_TAG(Define);
+            s = parser.parse(Code("#define ABC"));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front()));
+            s = parser.parse(Code("#define ABC \\\n\tbla\\\nbli\nfrot"));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front()));
         }
 
         {
             TEST_TAG(String);
             s = parser.parse(Code("\"inline string\""));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<String*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front()));
             s = parser.parse(Code("\"\\\"\\nbla\\\\\""));
-            TEST_EQ(1, s.components_.size());
-            TEST_NOT_NULL(dynamic_cast<String*>(s.components_.front()));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front()));
+        }
+
+        {
+            TEST_TAG(Character);
+            s = parser.parse(Code("\'a\'"));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front()));
+            s = parser.parse(Code("\'\\\"\'"));
+            TEST_TRUE(s);
+            TEST_EQ(1, s->components_.size());
+            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front()));
         }
     }
     return 0;

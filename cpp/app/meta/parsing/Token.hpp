@@ -35,7 +35,7 @@ namespace meta
         virtual bool isName(const std::string &){return false;}
         virtual bool isWhitespace() { return false; }
 
-        static Token *tryCreate(CodeRange &range);
+        static Token *construct(CodeRange &range);
 
         CodeRange range_;
     };
