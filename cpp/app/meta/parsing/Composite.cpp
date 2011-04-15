@@ -1,6 +1,8 @@
-#include "parsing/Composites.hpp"
+#include "parsing/Composite.hpp"
 #include "OnlyOnce.hpp"
+#include <sstream>
 using namespace meta;
+using namespace std;
 
 //#define L_ENABLE_DEBUG
 #include "debug.hpp"
@@ -27,7 +29,7 @@ namespace
     };
 
     //Returns true if a token (!= from End Token) could be popped
-    bool popToken(Token *&token, TokenRange &tr)
+    bool popToken(Token::Ptr &token, TokenRange &tr)
     {
         if (tr.empty())
             return false;
@@ -39,14 +41,23 @@ namespace
     }
 }
 
-Comment *Comment::construct(TokenRange &tr)
+string TokenComposite::toString() const
 {
+    ostringstream oss;
+    for (auto &v: childs_)
+        oss << toCode(v->range_);
+    return oss.str();
+}
+
+Comment::Ptr Comment::construct(TokenRange &tr)
+{
+    Comment::Ptr comment;
     RestoreRange rr(tr);
-    Token *token;
+    Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('/') && popToken(token, tr) && token->isSymbol('/'))
     {
         DEBUG_PRINT("Found a comment:");
-        auto comment = new Comment;
+        comment.reset(new Comment);
         while (popToken(token, tr))
         {
             comment->add(token);
@@ -55,15 +66,15 @@ Comment *Comment::construct(TokenRange &tr)
         }
         DEBUG_PRINT(comment->toString());
         rr.commit();
-        return comment;
     }
-    return nullptr;
+    return comment;
 }
 
-Include *Include::construct(TokenRange &tr)
+Include::Ptr Include::construct(TokenRange &tr)
 {
+    Include::Ptr incl;
     RestoreRange rr(tr);
-    Token *token;
+    Token::Ptr token;
     char lch;
     if (popToken(token, tr) && token->isSymbol('#') &&
             popToken(token, tr) && token->isName("include") &&
@@ -71,7 +82,7 @@ Include *Include::construct(TokenRange &tr)
             popToken(token, tr) && token->isSymbol(lch, "\"<"))
     {
         DEBUG_PRINT("Found an include:");
-        auto incl = new Include;
+        incl.reset(new Include);
         while (popToken(token, tr))
         {
             char rch;
@@ -86,19 +97,20 @@ Include *Include::construct(TokenRange &tr)
         }
         gubg::Exception::raise(gubg::Exception("Could not find the closing tag for an include statement"));
     }
-    return nullptr;
+    return incl;
 }
 
-Define *Define::construct(TokenRange &tr)
+Define::Ptr Define::construct(TokenRange &tr)
 {
+    Define::Ptr def;
     RestoreRange rr(tr);
-    Token *token;
+    Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('#') &&
             popToken(token, tr) && token->isName("define") &&
             popToken(token, tr) && token->isWhitespace())
     {
         DEBUG_PRINT("Found a define:");
-        auto def = new Define;
+        def.reset(new Define);
         bool continueOnNextLine = false;
         while (popToken(token, tr))
         {
@@ -126,19 +138,19 @@ Define *Define::construct(TokenRange &tr)
         }
         DEBUG_PRINT(def->toString());
         rr.commit();
-        return def;
     }
-    return nullptr;
+    return def;
 }
 
-String *String::construct(TokenRange &tr)
+String::Ptr String::construct(TokenRange &tr)
 {
+    String::Ptr str;
     RestoreRange rr(tr);
-    Token *token;
+    Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('\"'))
     {
         DEBUG_PRINT("Found a string:");
-        auto str = new String;
+        str.reset(new String);
         while (popToken(token, tr))
         {
             char ch;
@@ -158,7 +170,7 @@ String *String::construct(TokenRange &tr)
                         //We keep an iterator to the Token that we have to split
                         auto it = tr.range.begin();
                         if (!popToken(token, tr))
-                                gubg::Exception::raise(gubg::Exception("No token following an escape character"));
+                            gubg::Exception::raise(gubg::Exception("No token following an escape character"));
                         if (token->range_.empty())
                             gubg::Exception::raise(gubg::Exception("Empty token following an escape character"));
                         //Split the first character of the Token
@@ -171,7 +183,6 @@ String *String::construct(TokenRange &tr)
                         if (token->range_.empty())
                         {
                             tr.tokens.erase(it);
-                            delete token;
                             //token will be added hereunder
                             token = escape;
                         }
@@ -184,17 +195,18 @@ String *String::construct(TokenRange &tr)
         }
         gubg::Exception::raise(gubg::Exception("Could not find the closing quote for an inline string"));
     }
-    return nullptr;
+    return str;
 }
 
-Character *Character::construct(TokenRange &tr)
+Character::Ptr Character::construct(TokenRange &tr)
 {
+    Character::Ptr character;
     RestoreRange rr(tr);
-    Token *token;
+    Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('\''))
     {
         DEBUG_PRINT("Found a character:");
-        auto character = new Character;
+        character.reset(new Character);
         if (!popToken(token, tr))
             gubg::Exception::raise(gubg::Exception("Incomplete character literal found"));
         if (token->isSymbol('\\'))
@@ -208,9 +220,8 @@ Character *Character::construct(TokenRange &tr)
             gubg::Exception::raise(gubg::Exception("Incomplete character literal found"));
         DEBUG_PRINT(character->toString());
         rr.commit();
-        return character;
     }
-    return nullptr;
+    return character;
 }
 
 #ifdef UnitTest
@@ -219,15 +230,15 @@ int main()
     Code code("//bla bli blo\nflap");
     CodeRange cr(code);
     Tokens tokens;
-    tokens.push_back(new Symbol(reduce(cr, 1)));
-    tokens.push_back(new Symbol(reduce(cr, 1)));
-    tokens.push_back(new Name(reduce(cr, 3)));
-    tokens.push_back(new Whitespace(reduce(cr, 1)));
-    tokens.push_back(new Name(reduce(cr, 3)));
-    tokens.push_back(new Whitespace(reduce(cr, 1)));
-    tokens.push_back(new Name(reduce(cr, 3)));
-    tokens.push_back(new Newline(reduce(cr, 1)));
-    tokens.push_back(new Name(reduce(cr, 4)));
+    tokens.push_back(Token::Ptr(new Symbol(reduce(cr, 1))));
+    tokens.push_back(Token::Ptr(new Symbol(reduce(cr, 1))));
+    tokens.push_back(Token::Ptr(new Name(reduce(cr, 3))));
+    tokens.push_back(Token::Ptr(new Whitespace(reduce(cr, 1))));
+    tokens.push_back(Token::Ptr(new Name(reduce(cr, 3))));
+    tokens.push_back(Token::Ptr(new Whitespace(reduce(cr, 1))));
+    tokens.push_back(Token::Ptr(new Name(reduce(cr, 3))));
+    tokens.push_back(Token::Ptr(new Newline(reduce(cr, 1))));
+    tokens.push_back(Token::Ptr(new Name(reduce(cr, 4))));
     TokenRange tr(tokens);
     auto comment = Comment::construct(tr);
     return 0;

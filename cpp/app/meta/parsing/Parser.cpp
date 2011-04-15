@@ -1,5 +1,5 @@
 #include "parsing/Parser.hpp"
-#include "parsing/Composites.hpp"
+#include "parsing/Composite.hpp"
 using namespace meta;
 using namespace std;
 
@@ -27,7 +27,7 @@ Structure::Ptr Parser::parse(Code &code)
     //Create the Composites
     while (!tokenRange.empty())
     {
-        Component *component = 0;
+        Component::Ptr component;
         if (auto comment = Comment::construct(tokenRange))
             component = comment;
         else if (auto incl = Include::construct(tokenRange))
@@ -66,11 +66,11 @@ int main()
             s = parser.parse(Code("//Comment 123"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front().get()));
             s = parser.parse(Code("//Comment 123\n"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Comment*>(s->components_.front().get()));
         }
 
         {
@@ -78,11 +78,11 @@ int main()
             s = parser.parse(Code("#include \"test.h\""));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front().get()));
             s = parser.parse(Code("#include <test.h>"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Include*>(s->components_.front().get()));
         }
 
         {
@@ -90,11 +90,11 @@ int main()
             s = parser.parse(Code("#define ABC"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front().get()));
             s = parser.parse(Code("#define ABC \\\n\tbla\\\nbli\nfrot"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front().get()));
         }
 
         {
@@ -102,11 +102,11 @@ int main()
             s = parser.parse(Code("\"inline string\""));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front().get()));
             s = parser.parse(Code("\"\\\"\\nbla\\\\\""));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<String*>(s->components_.front().get()));
         }
 
         {
@@ -114,11 +114,11 @@ int main()
             s = parser.parse(Code("\'a\'"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front().get()));
             s = parser.parse(Code("\'\\\"\'"));
             TEST_TRUE(s);
             TEST_EQ(1, s->components_.size());
-            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front()));
+            TEST_NOT_NULL(dynamic_cast<Character*>(s->components_.front().get()));
         }
     }
     return 0;

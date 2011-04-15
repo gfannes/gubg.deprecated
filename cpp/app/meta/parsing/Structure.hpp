@@ -19,7 +19,7 @@ namespace meta
 
         Code code_;
         Tokens tokens_;
-        typedef std::list<Component*> Components;
+        typedef std::list<Component::Ptr> Components;
         Components components_;
 
         private:

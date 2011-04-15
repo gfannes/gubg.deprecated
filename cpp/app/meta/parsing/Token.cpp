@@ -16,38 +16,44 @@ namespace
     regex reWhitespace("\\A[ \\t]+");
 }
 
-Token *Token::construct(CodeRange &range)
+Token::Ptr Token::construct(CodeRange &range)
 {
-    if (range.empty()) 
-        return new End(range);
-    if ('\n' == range.front())
-        return new Newline(reduce(range, 1));
-
-    //We use an smatch here iso a cmatch, sometime, this function is called with a range
-    //that is _not_ the full string, but that needs to end earlier (e.g., when we split a Name that comes after an escape-character)
-    smatch match;
-    auto str = toCode(range);
-    if (regex_search(str, match, reName))
+    Token::Ptr res;
+    if (range.empty())
+        res.reset(new End(range));
+    else if ('\n' == range.front())
+        res.reset(new Newline(reduce(range, 1)));
+    else
     {
-        auto m = match[0];
-        DEBUG_PRINT("Name: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
-        return new Name(reduce(range, m.length()));
+        //We use an smatch here iso a cmatch, sometime, this function is called with a range
+        //that is _not_ the full string, but that needs to end earlier (e.g., when we split a Name that comes after an escape-character)
+        smatch match;
+        auto str = toCode(range);
+        if (regex_search(str, match, reName))
+        {
+            auto m = match[0];
+            DEBUG_PRINT("Name: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
+            res.reset(new Name(reduce(range, m.length())));
+        }
+        else if (regex_search(str, match, reNumber))
+        {
+            auto m = match[0];
+            DEBUG_PRINT("Number: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
+            res.reset(new Number(reduce(range, m.length())));
+        }
+        else if (regex_search(str, match, reWhitespace))
+        {
+            auto m = match[0];
+            DEBUG_PRINT("Whitespace: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
+            res.reset(new Whitespace(reduce(range, m.length())));
+        }
+        else
+        {
+            DEBUG_PRINT("Symbol: \"" << str[0] << "\"");
+            res.reset(new Symbol(reduce(range, 1)));
+        }
     }
-    if (regex_search(str, match, reNumber))
-    {
-        auto m = match[0];
-        DEBUG_PRINT("Number: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
-        return new Number(reduce(range, m.length()));
-    }
-    if (regex_search(str, match, reWhitespace))
-    {
-        auto m = match[0];
-        DEBUG_PRINT("Whitespace: size: " << match.size() << ", match[0]: " << m << ", match[0].length(): " << m.length());
-        return new Whitespace(reduce(range, m.length()));
-    }
-
-    DEBUG_PRINT("Symbol: \"" << str[0] << "\"");
-    return new Symbol(reduce(range, 1));
+    return res;
 }
 
 #ifdef UnitTest

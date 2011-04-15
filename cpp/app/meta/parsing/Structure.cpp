@@ -15,7 +15,7 @@ map<string, unsigned int> Structure::countPerName() const
 
     for (auto token: tokens_)
     {
-        auto name = dynamic_cast<Name*>(token);
+        auto name = dynamic_cast<Name*>(token.get());
         if (name)
             ++cpn[toCode(name->range_)];
     }

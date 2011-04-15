@@ -4,11 +4,31 @@
 #include "parsing/Code.hpp"
 #include "parsing/Component.hpp"
 #include <list>
+#include <memory>
 
 namespace meta
 {
-    class Token;
-    typedef std::list<Token*> Tokens;
+    //A Token is the leaf Component
+    struct Token: Component
+    {
+        typedef std::shared_ptr<Token> Ptr;
+
+        Token(const CodeRange &range):
+            range_(range){}
+
+        virtual bool isEnd(){return false;}
+        virtual bool isSymbol(const char wanted){return false;}
+        virtual bool isSymbol(char &actual, const std::string &symbols){return false;}
+        bool isNewline(){return isSymbol('\n');}
+        virtual bool isName(const std::string &){return false;}
+        virtual bool isWhitespace() { return false; }
+
+        static Token::Ptr construct(CodeRange &range);
+
+        CodeRange range_;
+    };
+
+    typedef std::list<Token::Ptr> Tokens;
     struct TokenRange
     {
         TokenRange(Tokens &t):
@@ -22,23 +42,7 @@ namespace meta
         boost::iterator_range<Tokens::iterator> range;
     };
 
-    //A Token is the leaf Component
-    struct Token: Component
-    {
-        Token(const CodeRange &range):
-            range_(range){}
-
-        virtual bool isEnd(){return false;}
-        virtual bool isSymbol(const char wanted){return false;}
-        virtual bool isSymbol(char &actual, const std::string &symbols){return false;}
-        bool isNewline(){return isSymbol('\n');}
-        virtual bool isName(const std::string &){return false;}
-        virtual bool isWhitespace() { return false; }
-
-        static Token *construct(CodeRange &range);
-
-        CodeRange range_;
-    };
+    //Different types of Tokens
     struct End: Token
     {
         End(const CodeRange &range):
