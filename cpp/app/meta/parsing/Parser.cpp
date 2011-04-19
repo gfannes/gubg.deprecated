@@ -40,8 +40,8 @@ Structure::Ptr Parser::parse(Code &code)
             component = ch;
         else
         {
+            component = tokenRange.front();
             tokenRange.pop_front();
-            continue;
         }
         stru.components_.push_back(component);
     }

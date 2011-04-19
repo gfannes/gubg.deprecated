@@ -65,6 +65,7 @@ int main(int argc, char **argv)
             meta::finalize("Could not read the file");
 
         auto structure = parser.parse(code);
+        OUTPUT(structure->toString() << endl);
         auto cpn = structure->countPerName();
         for (auto nc: cpn)
             OUTPUT("\t" << nc.first << ": " << nc.second << endl);

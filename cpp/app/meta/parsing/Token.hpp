@@ -37,6 +37,7 @@ namespace meta
 
         bool empty() const {return range.empty();}
         void pop_front() {range.pop_front();}
+        Token::Ptr front() const {return range.front();}
 
         Tokens &tokens;
         boost::iterator_range<Tokens::iterator> range;

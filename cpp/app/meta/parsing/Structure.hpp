@@ -17,12 +17,15 @@ namespace meta
 
         std::map<std::string, unsigned int> countPerName() const;
 
+        std::string toString() const;
+
         Code code_;
         Tokens tokens_;
         typedef std::list<Component::Ptr> Components;
         Components components_;
 
         private:
+        //Tokens keep iterators into code_, copying them will fail miserably
         Structure(const Structure &);
         Structure(Structure &&);
         Structure &operator=(Structure &&);

@@ -1,4 +1,5 @@
 #include "parsing/Structure.hpp"
+#include <sstream>
 using namespace meta;
 using namespace std;
 
@@ -21,6 +22,13 @@ map<string, unsigned int> Structure::countPerName() const
     }
 
     return std::move(cpn);
+}
+
+std::string Structure::toString() const
+{
+    ostringstream oss;
+    oss << "Nr tokens: " << tokens_.size() << ", nr components: " << components_.size();
+    return oss.str();
 }
 
 #ifdef UnitTest
