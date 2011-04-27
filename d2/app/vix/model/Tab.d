@@ -59,7 +59,7 @@ class Tab
     void moveToRoot()
     {
         if (folder_.parent)
-            activate(folder_.parent);
+            activate(folder_.parent, ActivationType.Irrelevant);
     }
     enum DisplayMode {Mixed, Files};
     FSTree[] getChilds(ref uint focusIX, ref DisplayMode dm)
@@ -70,9 +70,11 @@ class Tab
     }
     void setFolder(string folder)
     {
-        activate(Folder.createRecursive(folder, creator_));
+        activate(Folder.createRecursive(folder, creator_), ActivationType.Irrelevant);
     }
-    void activate(FSTree tree)
+
+    enum ActivationType {Native, OS, Irrelevant}
+    void activate(FSTree tree, ActivationType activationType)
     {
         try
         {
@@ -92,42 +94,29 @@ class Tab
             if (!(file is null))
             {
                 writefln("Executing file %s", file.path);
-                switch (std.path.getExt(file.path))
+                switch (activationType)
                 {
-                    case "cpp":
-                    case "c":
-                    case "cc":
-                    case "h":
-                    case "hpp":
-                    case "hh":
-                    case "d":
-                    case "rb":
-                    case "java":
-                    case "bat":
-                    case "txt":
-                    case "xml":
-                    case "idl":
-                    case "vbs":
-                    case "vim":
-                    case "":
+                    case ActivationType.Native:
                         system(Format.immediate("gvim --remote-tab-silent \"%s\"", file.path));
                         version (Posix) system("wmctrl -a GVIM");
                         break;
-
-                    default:
+                    case ActivationType.OS:
                         version (Posix) system(Format.immediate("gnome-open \"%s\"", file.path));
                         version (Win32) system(Format.immediate("\"%s\"", file.path));
+                        break;
+                    default:
+                        reportError("Illegal ActivationType in activate on a file");
                         break;
                 }
             }
         }
         catch (std.file.FileException){reportError(Format.immediate("Could not activate %s", tree.path));}
     }
-    void activateFocus()
+    void activateFocus(ActivationType activationType)
     {
         if (childs_.empty)
             return;
-        activate(childs_[focusIX_]);
+        activate(childs_[focusIX_], activationType);
     }
     enum Movement {Up, Down, PageUp, PageDown}
     void moveFocus(Movement movement)

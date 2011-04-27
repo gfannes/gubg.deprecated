@@ -200,7 +200,7 @@ class View
                         w.set(new Button(sb.area, label, Alignment.Left, canvas_));
                         break;
                     case WidgetState.Activated:
-                        currentTab.activate(child);
+                        currentTab.activate(child, Tab.ActivationType.Native);
                         break;
                     default:
                         auto button = w.get!(Button).setLabel(label);

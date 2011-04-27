@@ -265,8 +265,11 @@ class ModeMgr: MetaStateMachine!(Key, IMode)
                 changeState(commandMode_);
                 break;
             case Key.Return:
+                currentTab_().activateFocus(Tab.ActivationType.OS);
+                changeState(filterMode_);
+                break;
             case Key.Right:
-                currentTab_().activateFocus;
+                currentTab_().activateFocus(Tab.ActivationType.Native);
                 changeState(filterMode_);
                 break;
             case Key.Left:
