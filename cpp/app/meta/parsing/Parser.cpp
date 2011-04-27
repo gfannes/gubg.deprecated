@@ -3,6 +3,9 @@
 using namespace meta;
 using namespace std;
 
+#define L_ENABLE_DEBUG
+#include "debug.hpp"
+
 Structure::Ptr Parser::parse(Code &code)
 {
     Structure::Ptr res(new Structure(code));
@@ -40,10 +43,15 @@ Structure::Ptr Parser::parse(Code &code)
             component = ch;
         else
         {
-            component = tokenRange.front();
+            auto token = tokenRange.front();
             tokenRange.pop_front();
+            if (token->isEnd()){}//We filter the end
+            else if (token->isWhitespace()){}//We filter whitespaces
+            else
+                component = token;
         }
-        stru.components_.push_back(component);
+        if (component)
+            stru.components_.push_back(component);
     }
 
     return res;
@@ -93,7 +101,7 @@ int main()
             TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front().get()));
             s = parser.parse(Code("#define ABC \\\n\tbla\\\nbli\nfrot"));
             TEST_TRUE(s);
-            TEST_EQ(1, s->components_.size());
+            TEST_EQ(2, s->components_.size());
             TEST_NOT_NULL(dynamic_cast<Define*>(s->components_.front().get()));
         }
 

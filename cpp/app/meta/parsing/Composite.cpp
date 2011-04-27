@@ -4,7 +4,7 @@
 using namespace meta;
 using namespace std;
 
-//#define L_ENABLE_DEBUG
+#define L_ENABLE_DEBUG
 #include "debug.hpp"
 
 namespace
@@ -56,8 +56,8 @@ Comment::Ptr Comment::construct(TokenRange &tr)
     Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('/') && popToken(token, tr) && token->isSymbol('/'))
     {
-        DEBUG_PRINT("Found a comment:");
         comment.reset(new Comment);
+        DEBUG_PRINT("Found a comment: " << comment.get());
         while (popToken(token, tr))
         {
             comment->add(token);
