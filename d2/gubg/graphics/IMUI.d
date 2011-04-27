@@ -369,9 +369,22 @@ bool convertToChar(out char ch, in Key key)
         case Key.RightParenthesis: ch = ')';  break;
         case Key.LeftBracket:      ch = '[';  break;
         case Key.RightBracket:     ch = ']';  break;
+        case Key.Tilde:            ch = '~';  break;
+        case Key.Plus:             ch = '+';  break;
+        case Key.Minus:            ch = '-';  break;
+        case Key.Equals:           ch = '=';  break;
+        case Key.At:               ch = '@';  break;
+        case Key.Hash:             ch = '#';  break;
+        case Key.Dollar:           ch = '$';  break;
+        case Key.Exclamation:      ch = '!';  break;
+        case Key.Question:         ch = '?';  break;
+        case Key.Asterisk:          ch = '*';  break;
+        case Key.Caret:            ch = '^';  break;
+        case Key.Ampersand:        ch = '&';  break;
+        case Key.Pipe:             ch = '|';  break;
         default:
                                    return false;
-                 break;
+                                   break;
     }
     return true;
 }
@@ -485,6 +498,19 @@ enum Key
     Backslash = SDLK_BACKSLASH,
     Delete = SDLK_DELETE,
     Backspace = SDLK_BACKSPACE,
+    Tilde = 126,
+    Caret = SDLK_CARET,
+    Question = SDLK_QUESTION,
+    Equals = SDLK_EQUALS,
+    Exclamation = SDLK_EXCLAIM,
+    Ampersand = SDLK_AMPERSAND,
+    Dollar = SDLK_DOLLAR,
+    Pipe = 124,
+    Asterisk = SDLK_ASTERISK,
+    Plus = SDLK_PLUS,
+    Minus = SDLK_MINUS,
+    Hash = SDLK_HASH,
+    At = SDLK_AT,
 
     Up = SDLK_UP,
     Down = SDLK_DOWN,

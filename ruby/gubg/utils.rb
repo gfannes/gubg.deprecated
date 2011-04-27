@@ -569,6 +569,9 @@ def tempDir(dir = '/tmp', subdir = nil)
     if block_given?
         begin
             yield(tmpDir)
+        rescue => exc
+            puts("I caught an exception: #{exc}, I'll cleanup and rethrow the exception")
+            raise
         ensure
             FileUtils.rm_r(tmpDir)
         end
@@ -577,7 +580,8 @@ def tempDir(dir = '/tmp', subdir = nil)
         tmpDir
     end
 end
-def tempPath(dir = '/tmp')
+def tempPath(dir = nil)
+    dir ||= "/tmp"
     res = nil
     if %w[Linux Linux64].include?(operatingSystem)
         dir[/\/$/] = '' if dir[dir.length-1]==47
@@ -589,8 +593,8 @@ def tempPath(dir = '/tmp')
     end
     res
 end
-def tempFile(extension)
-    File.basename(tempPath)+'.'+extension.gsub(/^\./,'')
+def tempFile(extension, na = {dir: nil})
+    File.basename(tempPath(na[:dir]))+'.'+extension.gsub(/^\./,'')
 end
 
 def md5sum(fileName)

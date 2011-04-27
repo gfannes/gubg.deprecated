@@ -21,9 +21,9 @@ interface ICommand
 }
 
 version (Posix)
-private string fileCachePath_ = "/tmp/gb";
+    private string fileCachePath_ = "/tmp/gb";
 version (Windows)
-private string fileCachePath_ = "c:\\tmp\\gb";
+    private string fileCachePath_ = "c:\\tmp\\gb";
 ICommand createCommand(string[] args)
 {
     ICommand res;
@@ -145,14 +145,18 @@ class ExeCommand: ArgsCommand
         //Create the Collection of all files to compile
         // * The initial tree defined by the main source file
         auto collection = new Collection(dirname(filepath));
-        // * Extend this set with the externalTrees
+        // * Extend this set with the location where the configuration file is found and any externalTrees that are defined
         auto config = new Configuration(Runtime.configurationFilename, dirname(filepath), true);
-        string[] externalTrees;
-        config.get(externalTrees, "externalTrees");
-        foreach(ref externalTree; externalTrees)
+        if (config.isValid())
         {
-            externalTree = expandTilde(externalTree);
-            collection.addExternalTree(externalTree);
+            collection.addExternalTree(dirname(config.filepath));
+            string[] externalTrees;
+            config.get(externalTrees, "externalTrees");
+            foreach(ref externalTree; externalTrees)
+            {
+                externalTree = expandTilde(externalTree);
+                collection.addExternalTree(externalTree);
+            }
         }
         // * Prune unreferenced files and get the necessay include paths also
         string[] includePaths;
@@ -311,18 +315,18 @@ class ConfigCommand: ICommand
         Format format;
         format.delimiter = "\n";
         format(`{`);
-        format(`    "externalTrees": ["~/gubg/d2/gubg"],`);
-        format(`    "libraries": ["dl", "cairo"]`);
-        format(`}`);
-        format(``);
-        try
-        {
+            format(`    "externalTrees": ["~/gubg/d2/gubg"],`);
+            format(`    "libraries": ["dl", "cairo"]`);
+            format(`}`);
+            format(``);
+            try
+            {
                 std.file.write(Runtime.configurationFilename(), format.toString);
-        } catch(FileException)
-        {
-            return false;
-        }
-        return true;
+            } catch(FileException)
+            {
+                return false;
+            }
+            return true;
     }
     string toString(){return "ConfigCommand";}
 }

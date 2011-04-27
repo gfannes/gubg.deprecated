@@ -11,7 +11,7 @@ import std.array;
 
 import std.stdio;
 
-bool verbose__ = false;
+bool verbose__ = true;
 
 //A collection of filesystem trees containing D files
 class Collection
@@ -20,13 +20,15 @@ class Collection
     {
         scope factory = new Factory(path);
         creator_ = factory.createCreator(path);
-        
+
         internalTree_ = createFSTreeFromPath(path, creator_);
     }
 
     //Adds an extra filesystem tree
     void addExternalTree(string path)
     {
+        if (verbose__)
+            writefln("Adding external tree %s", path);
         //Check that the path is not the same as the internal or any external path
         if (path == internalTree_.path)
             return;
@@ -146,8 +148,8 @@ class Collection
         }
         Folder createFolder(string path)
         {
-                //We refuse to create test folders, except if this was our basepath, which is meant
-                //for compiling unit tests
+            //We refuse to create test folders, except if this was our basepath, which is meant
+            //for compiling unit tests
             if ("test" == basename(path) && basepath_ != path)
                 return null;
             if (verbose__)
