@@ -63,9 +63,9 @@ int main(string[] args)
     if (!parser.parse(args))
         exitApp(ExitCode.error, Format.immediate("Failed to parse option \"%s\"\n\n%s", args.front, parser.help));
 
-    //Create the command from the left-over arguments
-    auto command = Commands.createCommand(args);
-    if (command is null)
+    //Create the commands from the left-over arguments
+    auto commands = Commands.createCommands(args);
+    if (commands.empty)
     {
         if (args.empty)
             exitApp(ExitCode.error, Format.immediate("No command was specified.\n\n%s", parser.help));
@@ -73,9 +73,12 @@ int main(string[] args)
             exitApp(ExitCode.error, Format.immediate("Could not recognize the command from \"%s\".\n\n%s", args.front, parser.help));
     }
 
-    //Execute the command
-    if (!command.execute)
+    //Execute the commands
+    foreach (command; commands)
+    {
+        if (!command.execute)
             exitApp(ExitCode.error, Format.immediate("Failed to execute %s.", command.toString));
+    }
 
     //Everything went OK, time to leave
     exitApp(ExitCode.ok, Format.immediate("Everything went OK."));

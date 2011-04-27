@@ -14,6 +14,8 @@ import std.path;
 import std.stdio;
 import std.process;
 
+private bool verbose__ = true;
+
 interface ICommand
 {
     bool execute();
@@ -24,50 +26,73 @@ version (Posix)
     private string fileCachePath_ = "/tmp/gb";
 version (Windows)
     private string fileCachePath_ = "c:\\tmp\\gb";
-ICommand createCommand(string[] args)
+ICommand[] createCommands(ref string[] args)
 {
-    ICommand res;
+    ICommand[] commands;
 
-    if (args.empty)
-        return res;
-
-    auto commandString = args.front;
-    args.popFront;
-    switch (commandString)
+    while (!args.empty)
     {
-        case "tags":
-            res = new TagsCommand(args);
-            break;
-        case "exe":
-            res = new ExeCommand(args);
-            break;
-        case "unit":
-            res = new ExeCommand(args, true);
-            break;
-        case "lib":
-            res = new LibCommand(args);
-            break;
-        case "doc":
-            res = new DocCommand(args);
-            break;
-        case "clean":
-            res = new CleanCommand;
-            break;
-        case "config":
-            res = new ConfigCommand;
-            break;
-        default:
-            break;
+        auto commandString = args.front;
+        if (verbose__)
+            writefln("Command: %s", commandString);
+        auto argsRestore = args;
+        args.popFront;
+        ICommand command;
+        switch (commandString)
+        {
+            case "tags":
+                command = new TagsCommand(args);
+                break;
+            case "exe":
+                command = new ExeCommand(args);
+                break;
+            case "unit":
+                command = new ExeCommand(args, true);
+                break;
+            case "lib":
+                command = new LibCommand(args);
+                break;
+            case "doc":
+                command = new DocCommand(args);
+                break;
+            case "clean":
+                command = new CleanCommand;
+                break;
+            case "config":
+                command = new ConfigCommand;
+                break;
+            default:
+                writefln("Unexpected command %s", commandString);
+                args = argsRestore;
+                return [];
+                break;
+        }
+        commands ~= command;
     }
 
-    return res;
+    return commands;
 }
 
 class ArgsCommand: ICommand
 {
-    this(string[] args)
+    enum Amount {Zero, One, All}
+    this(ref string[] args, Amount amount)
     {
-        args_ = args.dup;
+        switch (amount)
+        {
+            case Amount.Zero:
+                break;
+            case Amount.One:
+                if (args.empty())
+                    throw new Exception("I expected one argument");
+                args_ = [args.front()];
+                args.popFront();
+                break;
+            case Amount.All:
+                for (; !args.empty(); args.popFront())
+                    args_ ~= args.front();
+                break;
+        }
     }
 
     abstract bool execute();
@@ -79,9 +104,9 @@ class ArgsCommand: ICommand
 
 class TagsCommand: ArgsCommand
 {
-    this(string[] args)
+    this(ref string[] args)
     {
-        super(args);
+        super(args, ArgsCommand.Amount.All);
     }
     //ICommand implementation
     bool execute()
@@ -114,9 +139,9 @@ class TagsCommand: ArgsCommand
 }
 class ExeCommand: ArgsCommand
 {
-    this(string[] args, bool isUnitTest = false)
+    this(ref string[] args, bool isUnitTest = false)
     {
-        super(args);
+        super(args, ArgsCommand.Amount.One);
         isUnitTest_ = isUnitTest;
     }
     //ICommand implementation
@@ -280,9 +305,9 @@ class ExeCommand: ArgsCommand
 }
 class LibCommand: ArgsCommand
 {
-    this(string[] args)
+    this(ref string[] args)
     {
-        super(args);
+        super(args, ArgsCommand.Amount.All);
     }
     //ICommand implementation
     bool execute(){return false;}
@@ -290,9 +315,9 @@ class LibCommand: ArgsCommand
 }
 class DocCommand: ArgsCommand
 {
-    this(string[] args)
+    this(ref string[] args)
     {
-        super(args);
+        super(args, ArgsCommand.Amount.All);
     }
     //ICommand implementation
     bool execute(){return false;}

@@ -16,11 +16,14 @@ namespace meta
         Token(const CodeRange &range):
             range_(range){}
 
+        virtual std::string toString() const {return toCode(range_) + "|";}
+
         virtual bool isEnd(){return false;}
         virtual bool isSymbol(const char wanted){return false;}
         virtual bool isSymbol(char &actual, const std::string &symbols){return false;}
         bool isNewline(){return isSymbol('\n');}
         virtual bool isName(const std::string &){return false;}
+        virtual bool getName(std::string &){return false;}
         virtual bool isWhitespace() { return false; }
 
         static Token::Ptr construct(CodeRange &range);
@@ -40,7 +43,8 @@ namespace meta
         Token::Ptr front() const {return range.front();}
 
         Tokens &tokens;
-        boost::iterator_range<Tokens::iterator> range;
+        typedef boost::iterator_range<Tokens::iterator> Range;
+        Range range;
     };
 
     //Different types of Tokens
@@ -81,6 +85,11 @@ namespace meta
         virtual bool isName(const std::string &str)
         {
             return str == toCode(range_);
+        }
+        virtual bool getName(std::string &str)
+        {
+            str = toCode(range_);
+            return true;
         }
     };
     struct Number: Token

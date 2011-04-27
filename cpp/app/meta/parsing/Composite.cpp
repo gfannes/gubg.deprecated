@@ -9,23 +9,36 @@ using namespace std;
 
 namespace
 {
+    template <typename Range, typename Ptr>
     struct RestoreRange
     {
-        RestoreRange(TokenRange &r):
+        RestoreRange(Range &r, Ptr &ptr):
             orig_(r),
             ref_(r),
-            doRestore_(true){}
+            ptr_(ptr){}
         ~RestoreRange()
         {
-            if (doRestore_)
-                ref_.range = orig_.range;
+            if (!ptr_)
+                ref_ = orig_;
         }
 
-        void commit(){doRestore_ = false;}
-
-        TokenRange orig_;
-        TokenRange &ref_;
-        bool doRestore_;
+        Range orig_;
+        Range &ref_;
+        Ptr &ptr_;
+    };
+    template <typename Ptr>
+    struct RestoreTokenRange: private RestoreRange<TokenRange::Range, Ptr>
+    {
+        typedef RestoreRange<TokenRange::Range, Ptr> BaseT;
+        RestoreTokenRange(TokenRange &tr, Ptr &ptr):
+            BaseT(tr.range, ptr){}
+    };
+    template <typename Ptr>
+    struct RestoreComponentRange: private RestoreRange<ComponentRange, Ptr>
+    {
+        typedef RestoreRange<ComponentRange, Ptr> BaseT;
+        RestoreComponentRange(ComponentRange &cr, Ptr &ptr):
+            BaseT(cr, ptr){}
     };
 
     //Returns true if a token (!= from End Token) could be popped
@@ -39,6 +52,20 @@ namespace
         tr.pop_front();
         return true;
     }
+    bool popToken(Token::Ptr &token, ComponentRange &cr)
+    {
+        if (cr.empty())
+            return false;
+        //Check if we have a Token at the front
+        token = dynamic_pointer_cast<Token, Component>(cr.front());
+        if (!token)
+            return false;
+
+        if (token->isEnd())
+            return false;
+        cr.pop_front();
+        return true;
+    }
 }
 
 string TokenComposite::toString() const
@@ -49,10 +76,17 @@ string TokenComposite::toString() const
     return oss.str();
 }
 
+string Composite::toString() const
+{
+    ostringstream oss;
+    for (auto &v: childs_)
+        oss << v->toString();
+    return oss.str();
+}
 Comment::Ptr Comment::construct(TokenRange &tr)
 {
-    Comment::Ptr comment;
-    RestoreRange rr(tr);
+    Ptr comment;
+    RestoreTokenRange<Ptr> rr(tr, comment);
     Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('/') && popToken(token, tr) && token->isSymbol('/'))
     {
@@ -65,15 +99,14 @@ Comment::Ptr Comment::construct(TokenRange &tr)
                 break;
         }
         DEBUG_PRINT(comment->toString());
-        rr.commit();
     }
     return comment;
 }
 
 Include::Ptr Include::construct(TokenRange &tr)
 {
-    Include::Ptr incl;
-    RestoreRange rr(tr);
+    Ptr incl;
+    RestoreTokenRange<Ptr> rr(tr, incl);
     Token::Ptr token;
     char lch;
     if (popToken(token, tr) && token->isSymbol('#') &&
@@ -90,11 +123,11 @@ Include::Ptr Include::construct(TokenRange &tr)
             {
                 //We found the closing '"' or '>' symbol
                 DEBUG_PRINT(incl->toString());
-                rr.commit();
                 return incl;
             }
             incl->add(token);
         }
+        incl.reset();
         gubg::Exception::raise(gubg::Exception("Could not find the closing tag for an include statement"));
     }
     return incl;
@@ -102,8 +135,8 @@ Include::Ptr Include::construct(TokenRange &tr)
 
 Define::Ptr Define::construct(TokenRange &tr)
 {
-    Define::Ptr def;
-    RestoreRange rr(tr);
+    Ptr def;
+    RestoreTokenRange<Ptr> rr(tr, def);
     Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('#') &&
             popToken(token, tr) && token->isName("define") &&
@@ -137,15 +170,14 @@ Define::Ptr Define::construct(TokenRange &tr)
             def->add(token);
         }
         DEBUG_PRINT(def->toString());
-        rr.commit();
     }
     return def;
 }
 
 String::Ptr String::construct(TokenRange &tr)
 {
-    String::Ptr str;
-    RestoreRange rr(tr);
+    Ptr str;
+    RestoreTokenRange<Ptr> rr(tr, str);
     Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('\"'))
     {
@@ -160,7 +192,6 @@ String::Ptr String::construct(TokenRange &tr)
                 {
                     case '\"':
                         DEBUG_PRINT(str->toString());
-                        rr.commit();
                         return str;
                         break;
                     case '\\':
@@ -193,6 +224,7 @@ String::Ptr String::construct(TokenRange &tr)
             }
             str->add(token);
         }
+        str.reset();
         gubg::Exception::raise(gubg::Exception("Could not find the closing quote for an inline string"));
     }
     return str;
@@ -200,8 +232,8 @@ String::Ptr String::construct(TokenRange &tr)
 
 Character::Ptr Character::construct(TokenRange &tr)
 {
-    Character::Ptr character;
-    RestoreRange rr(tr);
+    Ptr character;
+    RestoreTokenRange<Ptr> rr(tr, character);
     Token::Ptr token;
     if (popToken(token, tr) && token->isSymbol('\''))
     {
@@ -219,9 +251,47 @@ Character::Ptr Character::construct(TokenRange &tr)
         if (!popToken(token, tr) || !token->isSymbol('\''))
             gubg::Exception::raise(gubg::Exception("Incomplete character literal found"));
         DEBUG_PRINT(character->toString());
-        rr.commit();
     }
     return character;
+}
+
+Namespace::Ptr Namespace::construct(ComponentRange &cr)
+{
+    Ptr ns;
+    RestoreComponentRange<Ptr> rr(cr, ns);
+    Token::Ptr token;
+    if (popToken(token, cr) && token->isName("namespace"))
+    {
+        ns.reset(new Namespace);
+        if (popToken(token, cr) &&
+                (!token->getName(ns->name_) || popToken(token, cr)) &&//"namespace" can be followed by a name
+                token->isSymbol('{'))
+        {
+            DEBUG_PRINT("Found a namespace " << ns->name_);
+            unsigned int level = 1;
+            while (!cr.empty() && level > 0)
+            {
+                if (popToken(token, cr))
+                {
+                    if (token->isSymbol('{'))
+                        ++level;
+                    else if (token->isSymbol('}'))
+                        --level;
+                    if (level > 0)
+                        ns->add(token);
+                }
+                else
+                {
+                    ns->add(cr.front());
+                    cr.pop_front();
+                }
+            }
+            DEBUG_PRINT("Namespace body: " << ns->toString());
+        }
+        else
+                gubg::Exception::raise(gubg::Exception("I expect a block after namespace"));
+    }
+    return ns;
 }
 
 #ifdef UnitTest

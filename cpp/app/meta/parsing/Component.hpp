@@ -1,6 +1,8 @@
 #ifndef meta_parsing_Component_hpp
 #define meta_parsing_Component_hpp
 
+#include "boost/range/iterator_range.hpp"
+#include <list>
 #include <memory>
 
 namespace meta
@@ -17,7 +19,11 @@ namespace meta
 
         //Component is polymorphic
         virtual ~Component(){}
+
+        virtual std::string toString() const = 0;
     };
+    typedef std::list<Component::Ptr> Components;
+    typedef boost::iterator_range<Components::iterator> ComponentRange;
 }
 
 #endif

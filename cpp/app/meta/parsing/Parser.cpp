@@ -27,7 +27,7 @@ Structure::Ptr Parser::parse(Code &code)
     if (tokenRange.empty())
         gubg::Exception::raise(EmptyCode());
 
-    //Create the Composites
+    //Create the TokenComposites, Composites consisting only of Tokens
     while (!tokenRange.empty())
     {
         Component::Ptr component;
@@ -47,12 +47,31 @@ Structure::Ptr Parser::parse(Code &code)
             tokenRange.pop_front();
             if (token->isEnd()){}//We filter the end
             else if (token->isWhitespace()){}//We filter whitespaces
+            else if (token->isNewline()){}//We filter newlines
             else
                 component = token;
         }
         if (component)
             stru.components_.push_back(component);
     }
+
+    //Create the general Composites
+    Components newComponents;
+    ComponentRange componentRange(stru.components_);
+    while (!componentRange.empty())
+    {
+        Component::Ptr component;
+        if (auto ns = Namespace::construct(componentRange))
+            component = ns;
+        else
+        {
+            component = componentRange.front();
+            componentRange.pop_front();
+        }
+        if (component)
+            newComponents.push_back(component);
+    }
+    stru.components_.swap(newComponents);
 
     return res;
 }

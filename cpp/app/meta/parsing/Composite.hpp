@@ -13,13 +13,14 @@ namespace meta
     {
         std::vector<Token::Ptr> childs_;
         void add(Token::Ptr token){childs_.push_back(token);}
-        std::string toString() const;
+        virtual std::string toString() const;
     };
     //A Composite consists of multiple Components
     struct Composite: Component
     {
         std::vector<Component::Ptr> childs_;
         void add(Component::Ptr component){childs_.push_back(component);}
+        virtual std::string toString() const;
     };
 
     //The static method construct() tries to create a TokenComposite of a specific type.
@@ -48,6 +49,14 @@ namespace meta
     {
         typedef std::shared_ptr<Character> Ptr;
         static Character::Ptr construct(TokenRange &);
+    };
+
+    struct Namespace: Composite
+    {
+        typedef std::shared_ptr<Namespace> Ptr;
+        static Namespace::Ptr construct(ComponentRange &);
+
+        std::string name_;
     };
 }
 
