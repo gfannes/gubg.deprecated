@@ -205,6 +205,7 @@ class Tab
     }
 
     private:
+    //Updates childs_ based on the current setting of displayMode_, filter_ and folder_
     void updateChilds_()
     {
         FSTree[] newChilds;

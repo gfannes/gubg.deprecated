@@ -41,7 +41,7 @@ class Configuration
                 path = dirname(path);
             }
         } else if (exists(filename))
-                filepath_ = join(path, filename);
+            filepath_ = join(path, filename);
 
         //If we found the configuration file, parse it
         if (filepath_)
@@ -52,6 +52,7 @@ class Configuration
         if (!jsonIsParsed_) return false;
         return true;
     }
+    string filepath() const {return filepath_;}
 
     bool get(out string value, string key)
     {
