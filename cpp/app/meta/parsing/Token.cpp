@@ -56,6 +56,31 @@ Token::Ptr Token::construct(CodeRange &range)
     return res;
 }
 
+bool meta::popToken(Token::Ptr &token, TokenRange &tr)
+{
+    if (tr.empty())
+        return false;
+    token = tr.range.front();
+    if (token->isEnd())
+        return false;
+    tr.pop_front();
+    return true;
+}
+bool meta::popToken(Token::Ptr &token, ComponentRange &cr)
+{
+    if (cr.empty())
+        return false;
+    //Check if we have a Token at the front
+    token = dynamic_pointer_cast<Token, Component>(cr.front());
+    if (!token)
+        return false;
+
+    if (token->isEnd())
+        return false;
+    cr.pop_front();
+    return true;
+}
+
 #ifdef UnitTest
 int main()
 {

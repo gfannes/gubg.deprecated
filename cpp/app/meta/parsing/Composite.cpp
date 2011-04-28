@@ -1,4 +1,5 @@
 #include "parsing/Composite.hpp"
+#include "parsing/Parser.hpp"
 #include "OnlyOnce.hpp"
 #include <sstream>
 using namespace meta;
@@ -40,32 +41,6 @@ namespace
         RestoreComponentRange(ComponentRange &cr, Ptr &ptr):
             BaseT(cr, ptr){}
     };
-
-    //Returns true if a token (!= from End Token) could be popped
-    bool popToken(Token::Ptr &token, TokenRange &tr)
-    {
-        if (tr.empty())
-            return false;
-        token = tr.range.front();
-        if (token->isEnd())
-            return false;
-        tr.pop_front();
-        return true;
-    }
-    bool popToken(Token::Ptr &token, ComponentRange &cr)
-    {
-        if (cr.empty())
-            return false;
-        //Check if we have a Token at the front
-        token = dynamic_pointer_cast<Token, Component>(cr.front());
-        if (!token)
-            return false;
-
-        if (token->isEnd())
-            return false;
-        cr.pop_front();
-        return true;
-    }
 }
 
 string TokenComposite::toString() const
@@ -268,24 +243,7 @@ Namespace::Ptr Namespace::construct(ComponentRange &cr)
                 token->isSymbol('{'))
         {
             DEBUG_PRINT("Found a namespace " << ns->name_);
-            unsigned int level = 1;
-            while (!cr.empty() && level > 0)
-            {
-                if (popToken(token, cr))
-                {
-                    if (token->isSymbol('{'))
-                        ++level;
-                    else if (token->isSymbol('}'))
-                        --level;
-                    if (level > 0)
-                        ns->add(token);
-                }
-                else
-                {
-                    ns->add(cr.front());
-                    cr.pop_front();
-                }
-            }
+            ns->childs_ = Parser::parseBlock(cr);
             DEBUG_PRINT("Namespace body: " << ns->toString());
         }
         else

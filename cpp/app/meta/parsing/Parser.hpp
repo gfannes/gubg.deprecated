@@ -16,6 +16,11 @@ namespace meta
         };
 
             Structure::Ptr parse(Code &code);
+
+            //Parses a block from ComponentRange:
+            // * Until the range is empty
+            // * An extra closing '}' is found
+            static Components parseBlock(ComponentRange &);
     };
 }
 

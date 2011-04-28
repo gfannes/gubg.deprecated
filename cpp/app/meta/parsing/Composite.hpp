@@ -3,7 +3,6 @@
 
 #include "parsing/Component.hpp"
 #include "parsing/Token.hpp"
-#include <vector>
 #include <string>
 
 namespace meta
@@ -11,14 +10,14 @@ namespace meta
     //A Composite consisting of _only_ Tokens
     struct TokenComposite: Component
     {
-        std::vector<Token::Ptr> childs_;
+        std::list<Token::Ptr> childs_;
         void add(Token::Ptr token){childs_.push_back(token);}
         virtual std::string toString() const;
     };
     //A Composite consists of multiple Components
     struct Composite: Component
     {
-        std::vector<Component::Ptr> childs_;
+        Components childs_;
         void add(Component::Ptr component){childs_.push_back(component);}
         virtual std::string toString() const;
     };

@@ -46,6 +46,9 @@ namespace meta
         typedef boost::iterator_range<Tokens::iterator> Range;
         Range range;
     };
+    //Returns true if a token (!= from End Token) could be popped
+    bool popToken(Token::Ptr &token, TokenRange &tr);
+    bool popToken(Token::Ptr &token, ComponentRange &cr);
 
     //Different types of Tokens
     struct End: Token

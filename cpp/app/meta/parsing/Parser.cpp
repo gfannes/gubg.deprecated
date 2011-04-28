@@ -28,6 +28,7 @@ Structure::Ptr Parser::parse(Code &code)
         gubg::Exception::raise(EmptyCode());
 
     //Create the TokenComposites, Composites consisting only of Tokens
+    Components tokenComposites;
     while (!tokenRange.empty())
     {
         Component::Ptr component;
@@ -52,28 +53,55 @@ Structure::Ptr Parser::parse(Code &code)
                 component = token;
         }
         if (component)
-            stru.components_.push_back(component);
+            tokenComposites.push_back(component);
     }
 
     //Create the general Composites
-    Components newComponents;
-    ComponentRange componentRange(stru.components_);
-    while (!componentRange.empty())
+    ComponentRange cr(tokenComposites);
+    stru.components_ = parseBlock(cr);
+
+    return res;
+}
+
+Components Parser::parseBlock(ComponentRange &cr)
+{
+    DEBUG_PRINT("Entering parseBlock");
+    Components components;
+
+    unsigned int level = 1;
+    while (!cr.empty() && level > 0)
     {
+        DEBUG_PRINT("level: " << level);
         Component::Ptr component;
-        if (auto ns = Namespace::construct(componentRange))
+        if (auto ns = Namespace::construct(cr))
             component = ns;
         else
         {
-            component = componentRange.front();
-            componentRange.pop_front();
+            ComponentRange savepoint = cr;
+            Token::Ptr token;
+            if (popToken(token, cr))
+            {
+                if (token->isSymbol('{'))
+                    ++level;
+                else if (token->isSymbol('}'))
+                    --level;
+                if (level > 0)
+                    component = token;
+                else
+                    cr = savepoint;
+            }
+            else
+            {
+                component = cr.front();
+                cr.pop_front();
+            }
         }
         if (component)
-            newComponents.push_back(component);
+            components.push_back(component);
     }
-    stru.components_.swap(newComponents);
 
-    return res;
+    DEBUG_PRINT("Leaving parseBlock");
+    return components;
 }
 
 #ifdef UnitTest

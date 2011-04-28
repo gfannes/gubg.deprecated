@@ -66,9 +66,11 @@ int main(int argc, char **argv)
 
         auto structure = parser.parse(code);
         OUTPUT(structure->toString() << endl);
+#if 0
         auto cpn = structure->countPerName();
         for (auto nc: cpn)
             OUTPUT("\t" << nc.first << ": " << nc.second << endl);
+#endif
     }
     OUTPUT("All files are processed." << endl);
     return 0;
