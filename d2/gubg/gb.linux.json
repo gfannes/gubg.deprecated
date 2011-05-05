@@ -1,0 +1,6 @@
+{
+    "externalTrees": ["~/d/src/Derelict2"],
+    "libraries": ["cairo"],
+    "compilation": [],
+    "linking": []
+}
