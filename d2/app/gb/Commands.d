@@ -337,16 +337,9 @@ class ConfigCommand: ICommand
 {
     bool execute()
     {
-        Format format;
-        format.delimiter = "\n";
-        format(`{`);
-            format(`    "externalTrees": ["~/gubg/d2/gubg"],`);
-            format(`    "libraries": ["dl", "cairo"]`);
-            format(`}`);
-            format(``);
             try
             {
-                std.file.write(Runtime.configurationFilename(), format.toString);
+                std.file.write(Runtime.configurationFilename(), Configuration.Configuration.example());
             } catch(FileException)
             {
                 return false;
