@@ -246,7 +246,7 @@ class SDLCanvas: ICanvas
         cairo_.stroke();
     }
     void clear(uint rgb = 0x123456){SDL_FillRect(SDLSurface_, null, rgb);}
-    version (posix)
+    version (Posix)
     {
         uint windowId(){return info_.windowId;}
     }

@@ -1,6 +1,6 @@
 module gubg.OnlyOnce;
 
-//A small class meant to keep track of things that should happen only the first time
+//A small struct meant to keep track of things that should happen only the first time
 //Upon its first invocation, firstTime() will return true, next, it will always return false
 struct OnlyOnce
 {
@@ -11,6 +11,8 @@ struct OnlyOnce
         notFirstTime_ = true;
         return true;
     }
+
+    void reset(){notFirstTime_ = false;}
 
     private:
         //This variable will get initialized to false

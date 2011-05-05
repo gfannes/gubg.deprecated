@@ -5,8 +5,8 @@ module gubg.Tree;
 // * mixin Node!(T) into the Composite (here called N) and derive from T
 // * mixix Leaf!(T) into the Leaf (here called L) and derive from T
 //As such, you get the Composite pattern that is aware of the actual classes you want to apply it to
-//and you don't use you single class inheritance.
-//Data members can be placed to will, either in T, N and/or L
+//and you don't consume the single class inheritance.
+//Data members can be placed at will, either in T, N and/or L
 
 //This module only contains mixin templates, which is why we make this a public import
 public import std.exception;

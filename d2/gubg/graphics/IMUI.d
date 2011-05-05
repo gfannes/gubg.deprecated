@@ -21,6 +21,64 @@ interface IWidget
 }
 //We don't actually listen to any event, we just process
 enum Alignment {Left, Center};
+class Label: IWidget
+{
+    this (TwoPoint dimensions, string label, Alignment alignment, SDLCanvas canvas)
+    {
+        dimensions_ = dimensions;
+        label_ = label;
+        alignment_ = alignment;
+        canvas_ = canvas;
+    }
+    Label setLabel(string label)
+    {
+        label_ = label;
+        return this;
+    }
+    Label setFillColor(Color fillColor)
+    {
+        fillColor_ = fillColor;
+        return this;
+    }
+    Label resetFillColor()
+    {
+        fillColor_ = Color.invalid;
+        return this;
+    }
+    //IWidget interface
+    WidgetState process()
+    {
+        Style s;
+        if (fillColor_.isValid)
+            s.fill(fillColor_);
+        else
+            s.fill(Color.darkBlue);
+        canvas_.drawRectangle(dimensions_, s);
+        //Draw the label
+        if (!label_.empty())
+        {
+            Style ts;
+            ts.fill(Color.black).stroke(Color.white).width(2.0);
+            HAlign ha;
+            switch (alignment_)
+            {
+                case Alignment.Center: ha = HAlign.Center; break;
+                case Alignment.Left: ha = HAlign.Left; break;
+            }
+            auto lh = dimensions_.height*0.75;
+            auto lw = dimensions_.width - (dimensions_.height-lh);
+            canvas_.drawText(label_, TwoPoint.centered(dimensions_.centerX, dimensions_.centerY, lw, lh), VAlign.Center, ha, ts);
+        }
+        return WidgetState.Idle;
+    }
+
+    private:
+    TwoPoint dimensions_;
+    string label_;
+    Color fillColor_ = Color.invalid;
+    Alignment alignment_;
+    SDLCanvas canvas_;
+}
 class Button: StateMachine!(bool, WidgetState), IWidget
 {
     this (TwoPoint dimensions, string label, Alignment alignment, SDLCanvas canvas)
@@ -269,6 +327,8 @@ class Scroller: StateMachine!(bool, WidgetState),  IWidget
     SDLCanvas canvas_;
 }
 
+//Holds widgets per source code location. Optionally, you can pass some extra discriminator (extra), e.g., when you
+//are creating widgets from within a loop
 class Widgets
 {
     WidgetProxy get(uint extra = 0)
@@ -667,18 +727,79 @@ abstract class IMUI
 version (UnitTest)
 {
     import core.thread;
+    import gubg.Timer;
+    import gubg.OnlyOnce;
+    import gubg.Format;
     void main()
     {
         auto canvas = new SDLCanvas(640, 480);
-        int i = 0;
-        while (!canvas.imui.escapeIsPressed)
+        auto widgets = new Widgets;
+
+        auto timer = Timer(ResetType.NoAuto);
+        enum Test {Label, Button, ButtonGrid}
+        auto tests = [Test.ButtonGrid, Test.Label, Test.Button];
+        auto printTest = OnlyOnce();
+        while (!canvas.imui.escapeIsPressed && !tests.empty())
         {
             canvas.imui.processInput();
-            ++i;
-            if (i > 100)
-                return;
+
+            scope ds = canvas.new DrawScope;
+
+            if (printTest.firstTime())
+                writefln("Test: %s", tests.front());
+            switch (tests.front())
+            {
+                case Test.Label:
+                    auto label = widgets.get();
+                    switch (label.process())
+                    {
+                        case WidgetState.Empty: label.set(new Label(TwoPoint([0.0, 0.0], [640.0, 40.0]), "Label", Alignment.Center, canvas));
+                        default: break;
+                    }
+                    break;
+                case Test.Button:
+                    auto button = widgets.get();
+                    switch (button.process())
+                    {
+                        case WidgetState.Empty: button.set(new Button(TwoPoint([0.0, 0.0], [640.0, 40.0]), "Button", Alignment.Center, canvas));
+                        default: break;
+                    }
+                    break;
+                case Test.ButtonGrid:
+                    const int NrX = 10;
+                    const int NrY = 30;
+                    auto w = 640.0/NrX;
+                    auto h = 480.0/NrY;
+                    foreach (x; 0 .. NrX)
+                    {
+                        foreach (y; 0 .. NrY)
+                        {
+                            auto button = widgets.get(x+NrX*y);
+                            auto label = Format.immediate("(%s, %s)", x, y);
+                            switch (button.process())
+                            {
+                                case WidgetState.Empty:
+                                    button.set(new Button(TwoPoint([x*w, y*h], [(x+1)*w, (y+1)*h]), label, Alignment.Center, canvas));
+                                    break;
+                                case WidgetState.Activated:
+                                    writefln("Button %s was pressed", label);
+                                    break;
+                                default: break;
+                            }
+                        }
+                    }
+                    break;
+            }
+
             //Sleep for 10ms
             Thread.sleep(100000);
+
+            if (timer.difference() > 3.0)
+            {
+                tests.popFront();
+                printTest.reset();
+                timer.reset();
+            }        
         }
     }
 }

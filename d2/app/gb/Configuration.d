@@ -1,6 +1,7 @@
 module Configuration;
 
 import gubg.JSON;
+import gubg.Format;
 import std.file;
 import std.path;
 import std.stdio;
@@ -71,6 +72,20 @@ class Configuration
             return false;
         }
         return true;
+    }
+
+    static string example()
+    {
+        Format format;
+        format.delimiter = "\n";
+        format(`{`);
+            format(`    "externalTrees": ["<path to external tree>"],`);
+            format(`    "libraries": ["<library name>"],`);
+            format(`    "compilation": ["<compilation option>"],`);
+            format(`    "linking": ["<linker option>"]`);
+            format(`}`);
+            format(``);
+            return format.toString();
     }
 
     private:
