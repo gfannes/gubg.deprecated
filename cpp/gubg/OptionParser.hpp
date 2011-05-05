@@ -20,28 +20,42 @@ namespace gubg
             bool parse(Args &args, bool stripExe = true);
 
             template <typename Lambda>
-            void addSwitch(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
-            {
-                switchCallbacks_[shortHand] = lambda;
-                switchCallbacks_[longHand] = lambda;
-                addHelpLine_(shortHand, longHand, description);
-            }
+                void addSwitch(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
+                {
+                    switchCallbacks_[shortHand] = lambda;
+                    switchCallbacks_[longHand] = lambda;
+                    addHelpLine_(shortHand, longHand, description);
+                }
 
+            //longHand can be of the form: "--<option> <name>"
             template <typename Lambda>
-            void addOptional(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
-            {
-                optionalCallbacks_[shortHand] = lambda;
-                optionalCallbacks_[longHand] = lambda;
-                addHelpLine_(shortHand, longHand, description);
-            }
+                void addOptional(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
+                {
+                    optionalCallbacks_[shortHand] = lambda;
+                    {
+                        std::string longOption = longHand;
+                        size_t pos = longOption.find(' ');
+                        if (pos != std::string::npos)
+                            longOption.resize(pos);
+                        optionalCallbacks_[longOption] = lambda;
+                    }
+                    addHelpLine_(shortHand, longHand, description);
+                }
 
+            //longHand can be of the form: "--<option> <name>"
             template <typename Lambda>
-            void addMandatory(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
-            {
-                mandatoryCallbacks_[shortHand] = lambda;
-                mandatoryCallbacks_[longHand] = lambda;
-                addHelpLine_(shortHand, longHand, description);
-            }
+                void addMandatory(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
+                {
+                    mandatoryCallbacks_[shortHand] = lambda;
+                    {
+                        std::string longOption = longHand;
+                        size_t pos = longOption.find(' ');
+                        if (pos != std::string::npos)
+                            longOption.resize(pos);
+                        mandatoryCallbacks_[longOption] = lambda;
+                    }
+                    addHelpLine_(shortHand, longHand, description);
+                }
 
             std::string help() const;
 

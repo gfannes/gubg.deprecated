@@ -310,7 +310,7 @@ class Creator: ICreator
                 return null;
             try
             {
-                const MaxSizeToSearch = 200_000;
+                const MaxSizeToSearch = 400_000;
                 auto content = read(path);
                 if (content.length >= MaxSizeToSearch || !contentPattern_.matches(content))
                     return null;
