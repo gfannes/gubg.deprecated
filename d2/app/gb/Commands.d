@@ -189,8 +189,13 @@ class ExeCommand: ArgsCommand
         if (Runtime.verbose)
         {
             writeln("I will build these files:");
+            uint nr = 0;
             foreach (gubg.FSTree.File file; collection)
+            {
+                ++nr;
                 writefln("\t%s", file.path);
+            }
+            writefln("\t => %s files", nr);
         }
 
         //Compile the sources and collect the object filepaths

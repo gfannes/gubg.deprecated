@@ -152,7 +152,7 @@ class Collection
             //for compiling unit tests
             if ("test" == basename(path) && basepath_ != path)
                 return null;
-            if (verbose__)
+            if (false && verbose__)
                 writefln("createFolder: %s", path);
             return new Folder(path);
         }
@@ -166,7 +166,7 @@ class Collection
         {
             if ("d" == getExt(path))
             {
-                if (verbose__)
+                if (false && verbose__)
                     writefln("createFile: %s", path);
                 return new DFile(path);
             }
@@ -217,7 +217,7 @@ class Collection
                     return new HppFile(path);
                     break;
                 case "d":
-                    if (verbose__)
+                    if (false && verbose__)
                         writefln("createFile: %s", path);
                     return new DFile(path);
                     break;
@@ -272,7 +272,7 @@ class Collection
             //Collect recursively all imported modules and the filepath where this module can be found
             string[string] fpPerModule;
             auto modulesToCheck = parser.parse(filepath).imports;
-            for (uint level = 0; !modulesToCheck.empty; ++level)
+            for (uint level = 0; level == 0 || !modulesToCheck.empty; ++level)
             {
                 if (verbose__)
                 {

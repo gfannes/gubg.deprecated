@@ -6,6 +6,7 @@ import gubg.BitMagic;
 import gubg.StateMachine;
 import gubg.Timer;
 import gubg.Math;
+import gubg.Layout;
 import derelict.sdl.sdl;
 public import std.range;
 import core.thread;
@@ -23,16 +24,28 @@ interface IWidget
 enum Alignment {Left, Center};
 class Label: IWidget
 {
-    this (TwoPoint dimensions, string label, Alignment alignment, SDLCanvas canvas)
+    this (TwoPoint dimensions, Alignment alignment, SDLCanvas canvas)
     {
         dimensions_ = dimensions;
-        label_ = label;
+        label_ = [];
         alignment_ = alignment;
         canvas_ = canvas;
     }
-    Label setLabel(string label)
+    Label setLabel(string label, Color color = Color.white)
     {
-        label_ = label;
+        label_ = [MarkupString(label, color)];
+        return this;
+    }
+    Label setLabel(string[] labels, Color color = Color.white)
+    {
+        label_ = [];
+        foreach (label; labels)
+            label_ ~= MarkupString(label, color);
+        return this;
+    }
+    Label setLabel(MarkupString[] labels)
+    {
+        label_ = labels;
         return this;
     }
     Label setFillColor(Color fillColor)
@@ -58,7 +71,7 @@ class Label: IWidget
         if (!label_.empty())
         {
             Style ts;
-            ts.fill(Color.black).stroke(Color.white).width(2.0);
+            ts.fill(Color.black).width(2.0);
             HAlign ha;
             switch (alignment_)
             {
@@ -67,14 +80,28 @@ class Label: IWidget
             }
             auto lh = dimensions_.height*0.75;
             auto lw = dimensions_.width - (dimensions_.height-lh);
-            canvas_.drawText(label_, TwoPoint.centered(dimensions_.centerX, dimensions_.centerY, lw, lh), VAlign.Center, ha, ts);
+            auto box = new Box(TwoPoint.centered(dimensions_.centerX, dimensions_.centerY, lw, lh));
+            box.split(label_.length, Direction.TopDown);
+            foreach (ix, b; box)
+            {
+                ts.stroke(Color.white);
+                canvas_.drawText(label_[ix], b.area, VAlign.Center, ha, ts);
+                version (brol)
+                {
+                foreach (str, color; label_[ix])
+                {
+                    ts.stroke(color);
+                    canvas_.drawText(str, b.area, VAlign.Center, ha, ts);
+                }
+                }
+            }
         }
         return WidgetState.Idle;
     }
 
     private:
     TwoPoint dimensions_;
-    string label_;
+    MarkupString[] label_;
     Color fillColor_ = Color.invalid;
     Alignment alignment_;
     SDLCanvas canvas_;
@@ -353,7 +380,7 @@ class Widgets
     {
         this(uint id)
         {}
-        void set(IWidget widget){widget_ = widget;}
+        WidgetType set(WidgetType)(WidgetType widget){widget_ = widget; return widget;}
         T get(T)(){return cast(T)widget_;}
         //IWidget interface
         WidgetState process()
@@ -737,23 +764,37 @@ version (UnitTest)
 
         auto timer = Timer(ResetType.NoAuto);
         enum Test {Label, Button, ButtonGrid}
-        auto tests = [Test.ButtonGrid, Test.Label, Test.Button];
-        auto printTest = OnlyOnce();
+        auto tests = [Test.Label, Test.ButtonGrid, Test.Button];
+        OnlyOnce newTest;
+        uint fps;
         while (!canvas.imui.escapeIsPressed && !tests.empty())
         {
             canvas.imui.processInput();
 
             scope ds = canvas.new DrawScope;
 
-            if (printTest.firstTime())
+            if (newTest())
+            {
                 writefln("Test: %s", tests.front());
+                fps = 0;
+            }
             switch (tests.front())
             {
                 case Test.Label:
-                    auto label = widgets.get();
-                    switch (label.process())
+                    auto labelCenter = widgets.get();
+                    switch (labelCenter.process())
                     {
-                        case WidgetState.Empty: label.set(new Label(TwoPoint([0.0, 0.0], [640.0, 40.0]), "Label", Alignment.Center, canvas));
+                        case WidgetState.Empty:
+                            auto label = [MarkupString("Long lines have ", Color.red).add("lots", Color.yellow).add(" of characters", Color.red),
+                                 MarkupString("s", Color.green),
+                                 MarkupString("blablabla", Color.purple)];
+                            labelCenter.set(new Label(TwoPoint([0.0, 0.0], [640.0, 40.0]), Alignment.Center, canvas)).setLabel(label);
+                        default: break;
+                    }
+                    auto labelLeft = widgets.get();
+                    switch (labelLeft.process())
+                    {
+                        case WidgetState.Empty: labelLeft.set(new Label(TwoPoint([0.0, 40.0], [640.0, 80.0]), Alignment.Left, canvas)).setLabel(["Long lines have lots of characters", "s", "blablabla"], Color.yellow);
                         default: break;
                     }
                     break;
@@ -792,13 +833,15 @@ version (UnitTest)
             }
 
             //Sleep for 10ms
-            Thread.sleep(100000);
+//            Thread.sleep(100000);
+            ++fps;
 
             if (timer.difference() > 3.0)
             {
                 tests.popFront();
-                printTest.reset();
+                newTest.reset();
                 timer.reset();
+                writefln("Frames per second: %s", fps);
             }        
         }
     }

@@ -1,5 +1,5 @@
-#ifndef gubg_log_hpp
-#define gubg_log_hpp
+#ifndef gubg_logging_Log_hpp
+#define gubg_logging_Log_hpp
 
 #include <string>
 #include <vector>

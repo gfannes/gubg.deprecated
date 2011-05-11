@@ -11,6 +11,10 @@ struct OnlyOnce
         notFirstTime_ = true;
         return true;
     }
+    bool opCall()
+    {
+        return firstTime();
+    }
 
     void reset(){notFirstTime_ = false;}
 
@@ -50,10 +54,12 @@ version (UnitTest)
     void main()
     {
         OnlyOnce oo;
-        assert(oo.firstTime);
-        assert(!oo.firstTime);
-        assert(!oo.firstTime);
-        assert(!oo.firstTime);
+        assert(oo.firstTime());
+        assert(!oo.firstTime());
+        assert(!oo.firstTime());
+        oo.reset();
+        assert(oo());
+        assert(!oo());
         writeln("Everything went OK");
     }
 }
