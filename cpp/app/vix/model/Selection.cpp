@@ -31,4 +31,10 @@ void Selection::setFilter(const string &filter)
         filter_.reset();
     else
         filter_.reset(new regex(filter, regex_constants::icase));
+    updated_();
+}
+
+boost::signals2::connection Selection::connect(const UpdateSignal::slot_type &subscriber)
+{
+    return updated_.connect(subscriber);
 }

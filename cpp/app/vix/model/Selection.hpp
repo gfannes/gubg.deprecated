@@ -3,6 +3,7 @@
 
 #include "boost/filesystem.hpp"
 #include "boost/regex.hpp"
+#include "boost/signals2.hpp"
 #include <vector>
 #include <string>
 
@@ -29,6 +30,8 @@ namespace vix
         class Selection
         {
             public:
+                typedef boost::signals2::signal<void ()> UpdateSignal;
+
                 Selection(const std::string &path);
 
                 std::string path() const {return path_.string();}
@@ -36,7 +39,11 @@ namespace vix
 
                 void setFilter(const std::string &);
 
+                boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
+
             private:
+                UpdateSignal updated_;
+
                 boost::filesystem::path path_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
                 Regex filter_;
