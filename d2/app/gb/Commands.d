@@ -13,6 +13,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.process;
+import std.string;
 
 private bool verbose__ = true;
 
@@ -48,6 +49,10 @@ ICommand[] createCommands(ref string[] args)
                 break;
             case "unit":
                 command = new ExeCommand(args, true);
+                break;
+            case "moc":
+                //Qt MetaObject Compiler
+                command = new MocCommand(args);
                 break;
             case "lib":
                 command = new LibCommand(args);
@@ -307,6 +312,64 @@ class ExeCommand: ArgsCommand
         return name;
     }
     bool isUnitTest_;
+}
+class MocCommand: ArgsCommand
+{
+    this(ref string[] args)
+    {
+        super(args, ArgsCommand.Amount.Zero);
+    }
+    bool execute()
+    {
+        auto fileCache = new FileCache(fileCachePath_);
+        auto collection = new Collection(std.path.curdir);
+        foreach (gubg.FSTree.File file; collection)
+        {
+            auto filepath = file.path;
+            if (filepath.getExt == "hpp")
+            {
+                auto mocFilepath = std.path.getName(filepath) ~ "_moc.cpp";
+                auto fi = FileInfo(mocFilepath);
+                fi.set("filepath", filepath);
+                fi.addFile(filepath);
+
+                //Moc, if necessary
+                bool moc(FileInfo fi)
+                {
+                    auto filepath = fi.get!(string)("filepath");
+                    auto content = cast(string)std.file.read(filepath);
+                    if (std.string.indexOf(content, "Q_OBJECT") >= 0)
+                    {
+                        if (Runtime.verbose)
+                            writefln("Running moc against %s => %s", filepath, mocFilepath);
+                        return 0 == system(Format.immediate("moc %s -o %s", filepath, fileCache.filepath(fi)));
+                    }
+                    //We create an empty file ...
+                    std.file.write(fileCache.filepath(fi), "");
+                    return true;
+                }
+                switch (fileCache.create(fi, &moc))
+                {
+                    case FileCache.Result.AlreadyPresent:
+                    case FileCache.Result.CreationOK:
+                        auto fp = fileCache.filepath(fi);
+                        auto fs = std.file.getSize(fp);
+                        if (fs > 0)
+                        {
+                            if (!std.file.exists(mocFilepath) || fs != std.file.getSize(mocFilepath))
+                                system(Format.immediate("cp %s %s", fp, mocFilepath));
+                        }
+                        break;
+                    case FileCache.Result.CreationFailed:
+                        exitApp(ExitCode.error, Format.immediate("ERROR::Failed to moc %s", filepath));
+                        writefln("ERROR::Failed to moc %s", filepath);
+                        break;
+                }
+            }
+        }
+        return true;
+    }
+    string toString(){return "MocCommand";}
 }
 class LibCommand: ArgsCommand
 {

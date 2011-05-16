@@ -340,6 +340,7 @@ class Collection
                                     writefln("I found header %s in %s", headerName, includePath);
                                 file.isTagged = true;
                                 sourcePaths ~= std.path.addExt(file.path, "cpp");
+                                sourcePaths ~= std.path.addExt(std.path.getName(file.path)~"_moc", "cpp");
                                 foreach (newInclude; uniq(parser.parse(file.path).includes))
                                     newHeadersToCheck[newInclude] = true;
                                 isPathIncluded[includePath] = true;

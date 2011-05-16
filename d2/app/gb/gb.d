@@ -52,6 +52,7 @@ int main(string[] args)
     parser.addLine("\ttags\tCreate a ctags file");
     parser.addLine("\texe\tCreate an executable");
     parser.addLine("\tunit\tCreate and run a unit test");
+    parser.addLine("\tmoc\tRun Qt's moc");
     parser.addLine("\tlib\tCreate a library");
     parser.addLine("\tdoc\tCreate documentation");
     parser.addLine("\tclean\tClean the file cache");

@@ -55,7 +55,10 @@ class Tab
         }
         updateChilds_;
     }
-    string getPath(){return folder_.path;}
+    string getPath()
+    {
+        return folder_.path;
+    }
     void moveToRoot()
     {
         if (folder_.parent)
