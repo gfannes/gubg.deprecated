@@ -8,6 +8,7 @@
 #include <QStringListModel>
 #include <QLabel>
 #include <QLineEdit>
+#include "boost/signals2.hpp"
 
 namespace vix
 {
@@ -20,16 +21,21 @@ namespace vix
 
         public slots:
             void process4Commandline(QChar);
+            void process4Commandline(int);
 
         private:
             void updateSelection_();
 
+            bool gotoSelection_();
+
             QMainWindow mainWindow_;
-            QStringListModel stringListModel_;
-            QLabel path_;
-            QLineEdit commandLine_;
-            vix::model::Selection selectionModel_;
+            QLabel pathLabel_;
             vix::view::Selection selectionView_;
+            QLineEdit commandLine_;
+
+            QStringListModel stringListModel_;
+            vix::model::Selection selectionModel_;
+            boost::signals2::connection selectionModelUpdatedConnection_;
     };
 }
 

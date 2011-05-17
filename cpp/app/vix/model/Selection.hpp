@@ -35,7 +35,9 @@ namespace vix
                 Selection(const std::string &path);
 
                 std::string path() const {return path_.string();}
-                Files getFiles() const;
+                void setPath(const std::string &);
+
+                void getFiles(Files &, int &selectedIX) const;
 
                 void setFilter(const std::string &);
 

@@ -11,8 +11,12 @@ namespace vix
         {
             Q_OBJECT
 
+            public:
+                bool selectedIX(int &) const;
+
             signals:
-                void keyPress(QChar);
+                void readableKeyPressed(QChar);
+                void keycodePressed(int);
 
             protected:
                 void keyPressEvent(QKeyEvent *);

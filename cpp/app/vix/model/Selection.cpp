@@ -8,9 +8,15 @@ using namespace boost::filesystem;
 Selection::Selection(const string &path):
     path_(path){}
 
-Files Selection::getFiles() const
+void Selection::setPath(const string &path)
 {
-    Files files;
+    path_ = path;
+    updated_();
+}
+
+void Selection::getFiles(Files &files, int &selectedIX) const
+{
+    files.clear();
     for (auto it = directory_iterator(path_); it != directory_iterator(); ++it)
     {
         File file(it->path());
@@ -22,7 +28,7 @@ Files Selection::getFiles() const
         }
     }
     std::sort(files.begin(), files.end());
-    return files;
+    selectedIX = 0;
 }
 
 void Selection::setFilter(const string &filter)
