@@ -17,6 +17,7 @@ namespace vix
             signals:
                 void readableKeyPressed(QChar);
                 void keycodePressed(int);
+                virtual void currentChanged(const QModelIndex &, const QModelIndex &);
 
             protected:
                 void keyPressEvent(QKeyEvent *);

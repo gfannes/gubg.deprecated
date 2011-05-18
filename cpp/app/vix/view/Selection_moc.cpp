@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'Selection.hpp'
 **
-** Created: Tue May 17 22:25:42 2011
+** Created: Wed May 18 22:19:51 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,23 +23,25 @@ static const uint qt_meta_data_vix__view__Selection[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       2,       // signalCount
+       3,       // signalCount
 
  // signals: signature, parameters, type, tag, flags
       22,   21,   21,   21, 0x05,
       48,   21,   21,   21, 0x05,
+      70,   68,   21,   21, 0x05,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_vix__view__Selection[] = {
     "vix::view::Selection\0\0readableKeyPressed(QChar)\0"
-    "keycodePressed(int)\0"
+    "keycodePressed(int)\0,\0"
+    "currentChanged(QModelIndex,QModelIndex)\0"
 };
 
 const QMetaObject vix::view::Selection::staticMetaObject = {
@@ -73,9 +75,10 @@ int vix::view::Selection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: readableKeyPressed((*reinterpret_cast< QChar(*)>(_a[1]))); break;
         case 1: keycodePressed((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: currentChanged((*reinterpret_cast< const QModelIndex(*)>(_a[1])),(*reinterpret_cast< const QModelIndex(*)>(_a[2]))); break;
         default: ;
         }
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
@@ -92,5 +95,12 @@ void vix::view::Selection::keycodePressed(int _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 1, _a);
+}
+
+// SIGNAL 2
+void vix::view::Selection::currentChanged(const QModelIndex & _t1, const QModelIndex & _t2)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
+    QMetaObject::activate(this, &staticMetaObject, 2, _a);
 }
 QT_END_MOC_NAMESPACE

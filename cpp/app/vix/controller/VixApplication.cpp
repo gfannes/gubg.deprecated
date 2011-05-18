@@ -21,6 +21,7 @@ VixApplication::VixApplication(int argc, char **argv):
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
     selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this));
+    connect(static_cast<QListView*>(&selectionView_), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(setSelected(const QModelIndex &, const QModelIndex &)));
 
     updateSelection_();
 }
@@ -37,7 +38,7 @@ void VixApplication::process4Commandline(QChar ch)
         case 13:
             {
                 boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                if (gotoSelection_())
+                if (selectionModel_.gotoSelected())
                     commandLine_.setText("");
             }
             break;
@@ -74,7 +75,7 @@ void VixApplication::process4Commandline(int keycode)
         case KeyCode::Right:
             {
                 boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                if (gotoSelection_())
+                if (selectionModel_.gotoSelected())
                     commandLine_.setText("");
             }
             break;
@@ -83,6 +84,11 @@ void VixApplication::process4Commandline(int keycode)
             break;
     }
     selectionModel_.setFilter(commandLine_.text().toStdString());
+}
+
+void VixApplication::setSelected(const QModelIndex &, const QModelIndex &)
+{
+    cout << "setSelected" << endl;
 }
 
 void VixApplication::updateSelection_()
@@ -98,22 +104,4 @@ void VixApplication::updateSelection_()
     cout << "selectedIX: " << selectedIX << endl;
     auto ix = stringListModel_.index(selectedIX);
     selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
-}
-
-bool VixApplication::gotoSelection_()
-{
-    int selectedIX;
-    if (!selectionView_.selectedIX(selectedIX))
-        return false;
-
-    auto selected = stringListModel_.stringList()[selectedIX].toStdString();
-    auto p = boost::filesystem::path(selectionModel_.path());
-    p /= selected;
-    if (!is_directory(p))
-        return false;
-
-    cout << "Current selection: " << selected << ", new path: " << p.string() << endl;
-    selectionModel_.setPath(p.string());
-
-    return true;
 }

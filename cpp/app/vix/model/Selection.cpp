@@ -13,6 +13,11 @@ void Selection::setPath(const string &path)
     path_ = path;
     updated_();
 }
+void Selection::setSelected(const string &selected)
+{
+    selected_ = selected;
+    updated_();
+}
 
 void Selection::getFiles(Files &files, int &selectedIX) const
 {
@@ -29,6 +34,26 @@ void Selection::getFiles(Files &files, int &selectedIX) const
     }
     std::sort(files.begin(), files.end());
     selectedIX = 0;
+    for (auto it = files.begin(); it != files.end(); ++it)
+    {
+        if (selected_ == it->name)
+        {
+            selectedIX = it-files.begin();
+            break;
+        }
+    }
+}
+
+bool Selection::gotoSelected()
+{
+    auto newPath = path_ / selected_;
+    if (!is_directory(newPath))
+        return false;
+
+    newPath.swap(path_);
+    selected_ = "";
+    updated_();
+    return true;
 }
 
 void Selection::setFilter(const string &filter)

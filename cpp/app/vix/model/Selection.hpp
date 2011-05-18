@@ -36,8 +36,10 @@ namespace vix
 
                 std::string path() const {return path_.string();}
                 void setPath(const std::string &);
+                void setSelected(const std::string &);
 
                 void getFiles(Files &, int &selectedIX) const;
+                bool gotoSelected();
 
                 void setFilter(const std::string &);
 
@@ -47,6 +49,7 @@ namespace vix
                 UpdateSignal updated_;
 
                 boost::filesystem::path path_;
+                std::string selected_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
                 Regex filter_;
         };
