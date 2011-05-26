@@ -1,5 +1,5 @@
-#include "log_xml.hpp"
-#include "log_primitives.hpp"
+#include "logging/Xml.hpp"
+#include "logging/Primitives.hpp"
 
 #include <sstream>
 

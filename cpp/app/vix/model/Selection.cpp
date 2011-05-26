@@ -34,11 +34,13 @@ void Selection::getFiles(Files &files, int &selectedIX) const
     }
     std::sort(files.begin(), files.end());
     selectedIX = 0;
+    cout << "Searching for " << selected_ << endl;
     for (auto it = files.begin(); it != files.end(); ++it)
     {
         if (selected_ == it->name)
         {
             selectedIX = it-files.begin();
+            cout << "Joepie, gevonden" << endl;
             break;
         }
     }

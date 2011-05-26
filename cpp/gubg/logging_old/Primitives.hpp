@@ -1,7 +1,7 @@
-#ifndef gubg_log_primitives_hpp
-#define gubg_log_primitives_hpp
+#ifndef gubg_logging_Primitives_hpp
+#define gubg_logging_Primitives_hpp
 
-#include "log.hpp"
+#include "logging/Log.hpp"
 
 #include <fstream>
 

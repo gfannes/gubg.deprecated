@@ -1,5 +1,5 @@
-#include "log_tree.hpp"
-#include "log_primitives.hpp"
+#include "logging/Tree.hpp"
+#include "logging/Primitives.hpp"
 
 #include <sstream>
 

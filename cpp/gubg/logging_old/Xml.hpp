@@ -1,7 +1,7 @@
-#ifndef gubg_log_xml_hpp
-#define gubg_log_xml_hpp
+#ifndef gubg_logging_Xml_hpp
+#define gubg_logging_Xml_hpp
 
-#include "log.hpp"
+#include "logging/Log.hpp"
 
 namespace gubg
 {
