@@ -7,7 +7,11 @@ using namespace std;
 
 VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
+#ifdef __linux
     selectionModel_("/home/gfannes")
+#else
+    selectionModel_("h:/")
+#endif
 {
     QWidget *centralWidget = new QWidget(&mainWindow_); 
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
