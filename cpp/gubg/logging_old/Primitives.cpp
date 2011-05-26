@@ -1,4 +1,4 @@
-#include "log_primitives.hpp"
+#include "logging/Primitives.hpp"
 
 #include <iostream>
 

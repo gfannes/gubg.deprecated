@@ -3,6 +3,20 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+
+#define LOG_S(msg) \
+    gubg::Log::addIfEmpty(gubg::Log::Tree, gubg::Log::COut); \
+    std::ostringstream local_gubg_logging_scope_message; \
+    local_gubg_logging_scope_message << msg; \
+    gubgLogScope(local_gubg_logging_scope_message.str())
+#define LOG_M(msg) \
+    { \
+        gubg::Log::addIfEmpty(gubg::Log::Tree, gubg::Log::COut); \
+        std::ostringstream local_gubg_logging_message; \
+        local_gubg_logging_message << msg; \
+        gubgLog(local_gubg_logging_message.str()); \
+    } while (false)
 
 #define gubgLogScope(message) gubg::Log::Scope gubg_Log_Scope(__FILE__, __LINE__, message)
 #define gubgLog(message) gubg_Log_Scope(__FILE__, __LINE__, message)
@@ -77,6 +91,7 @@ namespace gubg
             File,
         };
         static void add(LogFormat logFormat, LogSink logSink, const std::string &fileName = "");
+        static void addIfEmpty(LogFormat logFormat, LogSink logSink, const std::string &fileName = "");
 
         void newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag);
         void closeLevel(const std::string &tag);

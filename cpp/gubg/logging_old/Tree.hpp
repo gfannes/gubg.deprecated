@@ -1,7 +1,7 @@
-#ifndef gubg_log_tree_hpp
-#define gubg_log_tree_hpp
+#ifndef gubg_logging_Tree_hpp
+#define gubg_logging_Tree_hpp
 
-#include "log.hpp"
+#include "logging/Log.hpp"
 
 namespace gubg
 {

@@ -1,8 +1,8 @@
-#include "log.hpp"
+#include "logging/Log.hpp"
 
-#include "log_primitives.hpp"
-#include "log_xml.hpp"
-#include "log_tree.hpp"
+#include "logging/Primitives.hpp"
+#include "logging/Xml.hpp"
+#include "logging/Tree.hpp"
 
 #include <sstream>
 
@@ -56,6 +56,12 @@ void Log::add(Log::LogFormat logFormat, Log::LogSink logSink, const std::string 
 
     Log &log = Log::instance();
     log._outputs.push_back(output);
+}
+void Log::addIfEmpty(Log::LogFormat logFormat, Log::LogSink logSink, const std::string &fileName)
+{
+    Log &log = Log::instance();
+    if (log._outputs.empty())
+        add(logFormat, logSink);
 }
 
 void Log::newLevel(const std::string &fileName, unsigned int lineNr, const std::string &tag)
