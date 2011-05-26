@@ -188,6 +188,7 @@ class Collection
                     break;
                 case "h":
                 case "hpp":
+                case "":
                     if (verbose__)
                         writefln("createFile: %s", path);
                     return new HppFile(path);
@@ -212,6 +213,7 @@ class Collection
                     break;
                 case "h":
                 case "hpp":
+                case "":
                     if (verbose__)
                         writefln("createFile: %s", path);
                     return new HppFile(path);
