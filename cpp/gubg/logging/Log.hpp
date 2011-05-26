@@ -2,11 +2,13 @@
 #define gubg_logging_Log_hpp
 
 #include "Singleton.hpp"
+#include "boost/thread/thread.hpp"
 #include "boost/thread/tss.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "boost/algorithm/string/join.hpp"
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #ifdef GUBG_LOG
 #define LOG_S(tag, msg...) \
@@ -30,11 +32,15 @@ namespace gubg
         struct Scope
         {
             typedef std::vector<std::string> NameStack;
-            Scope(const std::string &name)
+            Scope(const std::string &name):
+                threadId_(boost::this_thread::get_id())
             {
                 auto &nameStack = gubg::Singleton<boost::thread_specific_ptr<NameStack>>::instance();
                 if (!(nameStack_ = nameStack.get()))
+                {
+                    std::cout << "Thread " << threadId_ << " logs for the first time" << std::endl;
                     nameStack.reset(nameStack_ = new NameStack);
+                }
                 nameStack_->push_back(name);
             }
             ~Scope()
@@ -48,11 +54,14 @@ namespace gubg
             {
                 if (!indent_)
                 {
-                    indent_.reset(new std::string(boost::algorithm::join(*nameStack_, "|")));
+                    std::ostringstream oss;
+                    oss << threadId_ << "|" << boost::algorithm::join(*nameStack_, "|");
+                    indent_.reset(new std::string(oss.str()));
                 }
                 return *indent_;
             }
 
+            boost::thread::id threadId_;
             NameStack *nameStack_;
             boost::scoped_ptr<std::string> indent_;
         };
