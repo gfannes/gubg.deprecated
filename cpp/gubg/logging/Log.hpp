@@ -10,6 +10,18 @@
 #include <iostream>
 #include <sstream>
 
+//This header file provides logging functionality:
+// * #define GUBG_LOG to enable logging before including this header
+// * LOG_S(tag, [msg]) creates a new log scope and optionally logs a message
+//    * Not wrapped in {}
+// * LOG_M(msg) logs a message is a previously opened scope
+//    * Wrapped in {}
+
+//Support for log levels is also present
+// * #define LOG_LEVEL [Fubar|Fatal|Error|Warning|Info|Debug] before including this header
+// * Use LOG_S_(level, tag, [msg]) to open a scope in some level. The scope is alsways created, but the message might not be logged depending on the log level
+// * Use LOG_M_(level, msg) to log a message at a certain level
+
 #ifdef LOG_LEVEL
 #ifndef GUBG_LOG
 #define GUBG_LOG
@@ -22,15 +34,24 @@
 
 #ifdef GUBG_LOG
 #define LOG_S(tag, msg...) \
-    gubg::logging::Scope l_gubg_logging_scope_(#tag); \
-    std::cout << l_gubg_logging_scope_.indent() << ">>" << msg << std::endl
+    gubg::logging::Scope l_gubg_logging_scope_(#tag, true); \
+    std::ostringstream l_gubg_logging_scope_oss_; \
+    l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << msg << std::endl; \
+    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
+#define LOG_S_SILENT(tag) \
+    gubg::logging::Scope l_gubg_logging_scope_(#tag, false);
 #else
 #define LOG_S(tag, msg...)
+#define LOG_S_SILENT(tag)
 #endif
 
 #ifdef GUBG_LOG
 #define LOG_M(msg) \
-    std::cout << l_gubg_logging_scope_.indent() << "  " << msg << std::endl;
+    { \
+        std::ostringstream l_gubg_logging_message_oss_; \
+        l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << "  " << msg << std::endl; \
+        gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
+    }
 #else
 #define LOG_M(msg)
 #endif
@@ -61,44 +82,49 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Fubar
 #undef LOG_S_Fatal
-#define LOG_S_Fatal(tag, msg...)
+#define LOG_S_Fatal(tag, msg...) LOG_S_SILENT(tag)
 #undef LOG_M_Fatal
 #define LOG_M_Fatal(msg)
 #undef L_LOG_LEVEL
 #define L_LOG_LEVEL GUBG_LOG_LEVEL_Fatal
 #endif
+
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Fatal
 #undef LOG_S_Error
-#define LOG_S_Error(tag, msg...)
+#define LOG_S_Error(tag, msg...) LOG_S_SILENT(tag)
 #undef LOG_M_Error
 #define LOG_M_Error(msg)
 #undef L_LOG_LEVEL
 #define L_LOG_LEVEL GUBG_LOG_LEVEL_Error
 #endif
+
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Error
 #undef LOG_S_Warning
-#define LOG_S_Warning(tag, msg...)
+#define LOG_S_Warning(tag, msg...) LOG_S_SILENT(tag)
 #undef LOG_M_Warning
 #define LOG_M_Warning(msg)
 #undef L_LOG_LEVEL
 #define L_LOG_LEVEL GUBG_LOG_LEVEL_Warning
 #endif
+
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Warning
 #undef LOG_S_Info
-#define LOG_S_Info(tag, msg...)
+#define LOG_S_Info(tag, msg...) LOG_S_SILENT(tag)
 #undef LOG_M_Info
 #define LOG_M_Info(msg)
 #undef L_LOG_LEVEL
 #define L_LOG_LEVEL GUBG_LOG_LEVEL_Info
 #endif
+
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Info
 #undef LOG_S_Debug
-#define LOG_S_Debug(tag, msg...)
+#define LOG_S_Debug(tag, msg...) LOG_S_SILENT(tag)
 #undef LOG_M_Debug
 #define LOG_M_Debug(msg)
 #undef L_LOG_LEVEL
 #define L_LOG_LEVEL GUBG_LOG_LEVEL_Debug
 #endif
+
 #if L_LOG_LEVEL != GUBG_LOG_LEVEL_Debug
 #error You can only use LOG_LEVEL Fubar, Fatal, Error, Warning, Info or Debug
 #endif
@@ -107,23 +133,40 @@ namespace gubg
 {
     namespace logging
     {
+        struct Output
+        {
+            static void write(const std::string &str)
+            {
+                static boost::mutex mutex;
+                boost::mutex::scoped_lock lock(mutex);
+                std::cout << str;
+            }
+        };
         struct Scope
         {
             typedef std::vector<std::string> NameStack;
-            Scope(const std::string &name):
-                threadId_(boost::this_thread::get_id())
+            Scope(const std::string &name, bool verboseDtor):
+                threadId_(boost::this_thread::get_id()),
+                verboseDtor_(verboseDtor)
             {
                 auto &nameStack = gubg::Singleton<boost::thread_specific_ptr<NameStack>>::instance();
                 if (!(nameStack_ = nameStack.get()))
                 {
-                    std::cout << "Thread " << threadId_ << " logs for the first time" << std::endl;
+                    std::ostringstream oss;
+                    oss << "Thread " << threadId_ << " logs for the first time" << std::endl;
+                    Output::write(oss.str());
                     nameStack.reset(nameStack_ = new NameStack);
                 }
                 nameStack_->push_back(name);
             }
             ~Scope()
             {
-                std::cout << indent() << "<<" << std::endl;
+                if (verboseDtor_)
+                {
+                    std::ostringstream oss;
+                    oss << indent() << "<<" << std::endl;
+                    Output::write(oss.str());
+                }
                 nameStack_->pop_back();
             }
 
@@ -140,6 +183,7 @@ namespace gubg
             }
 
             boost::thread::id threadId_;
+            bool verboseDtor_;
             NameStack *nameStack_;
             boost::scoped_ptr<std::string> indent_;
         };
