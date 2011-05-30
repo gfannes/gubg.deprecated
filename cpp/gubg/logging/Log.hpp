@@ -12,14 +12,16 @@
 
 //This header file provides logging functionality:
 // * #define GUBG_LOG to enable logging before including this header
-// * LOG_S(tag, [msg]) creates a new log scope and optionally logs a message
+// * LOG_S(tag) creates a new log scope
+//    * Not wrapped in {}
+// * LOG_SM(tag, msg) creates a new log scope and logs a message
 //    * Not wrapped in {}
 // * LOG_M(msg) logs a message is a previously opened scope
 //    * Wrapped in {}
 
 //Support for log levels is also present
 // * #define LOG_LEVEL [Fubar|Fatal|Error|Warning|Info|Debug] before including this header
-// * Use LOG_S_(level, tag, [msg]) to open a scope in some level. The scope is alsways created, but the message might not be logged depending on the log level
+// * Use LOG_S[M]_(level, tag, [msg]) to open a scope in some level. The scope is alsways created, but the message might not be logged depending on the log level
 // * Use LOG_M_(level, msg) to log a message at a certain level
 
 #ifdef LOG_LEVEL
@@ -29,23 +31,23 @@
 #else
 #define LOG_LEVEL Error
 #endif
-#define LOG_S_(level, tag, msg...) LOG_S_ ## level(tag, msg...)
+#define LOG_S_(level, tag) LOG_S_ ## level(tag)
+#define LOG_SM_(level, tag, msg) LOG_SM_ ## level(tag, msg)
 #define LOG_M_(level, msg) LOG_M_ ## level(msg)
 
 #ifdef GUBG_LOG
-#define LOG_S(tag, msg...) \
+#define LOG_S(tag) \
+    gubg::logging::Scope l_gubg_logging_scope_(#tag, true); \
+    std::ostringstream l_gubg_logging_scope_oss_; \
+    l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << std::endl; \
+    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
+#define LOG_SM(tag, msg) \
     gubg::logging::Scope l_gubg_logging_scope_(#tag, true); \
     std::ostringstream l_gubg_logging_scope_oss_; \
     l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << msg << std::endl; \
     gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
 #define LOG_S_SILENT(tag) \
     gubg::logging::Scope l_gubg_logging_scope_(#tag, false);
-#else
-#define LOG_S(tag, msg...)
-#define LOG_S_SILENT(tag)
-#endif
-
-#ifdef GUBG_LOG
 #define LOG_M(msg) \
     { \
         std::ostringstream l_gubg_logging_message_oss_; \
@@ -53,6 +55,9 @@
         gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
     }
 #else
+#define LOG_S(tag)
+#define LOG_SM(tag, msg)
+#define LOG_S_SILENT(tag)
 #define LOG_M(msg)
 #endif
 
@@ -63,18 +68,24 @@
 #define GUBG_LOG_LEVEL_Fatal   4
 #define GUBG_LOG_LEVEL_Fubar   5
 
-#define LOG_S_Fubar(tag, msg...) LOG_S(tag, "Fubar::" << msg)
-#define LOG_M_Fubar(msg) LOG_M("Fubar::" << msg)
-#define LOG_S_Fatal(tag, msg...) LOG_S(tag, "Fatal::" << msg)
-#define LOG_M_Fatal(msg) LOG_M("Fatal::" << msg)
-#define LOG_S_Error(tag, msg...) LOG_S(tag, "Error::" << msg)
-#define LOG_M_Error(msg) LOG_M("Error::" << msg)
-#define LOG_S_Warning(tag, msg...) LOG_S(tag, "Warning::" << msg)
-#define LOG_M_Warning(msg) LOG_M("Warning::" << msg)
-#define LOG_S_Info(tag, msg...) LOG_S(tag, "Info::" << msg)
-#define LOG_M_Info(msg) LOG_M("Info::" << msg)
-#define LOG_S_Debug(tag, msg...) LOG_S(tag, "Debug::" << msg)
-#define LOG_M_Debug(msg) LOG_M("Debug::" << msg)
+#define LOG_S_Fubar(tag) LOG_S(tag)
+#define LOG_SM_Fubar(tag, msg) LOG_SM(tag, "<Fubar>" << msg)
+#define LOG_M_Fubar(msg) LOG_M("<Fubar>" << msg)
+#define LOG_S_Fatal(tag) LOG_S(tag)
+#define LOG_SM_Fatal(tag, msg) LOG_SM(tag, "<Fatal>" << msg)
+#define LOG_M_Fatal(msg) LOG_M("<Fatal>" << msg)
+#define LOG_S_Error(tag) LOG_S(tag)
+#define LOG_SM_Error(tag, msg) LOG_SM(tag, "<Error>" << msg)
+#define LOG_M_Error(msg) LOG_M("<Error>" << msg)
+#define LOG_S_Warning(tag) LOG_S(tag)
+#define LOG_SM_Warning(tag, msg) LOG_SM(tag, "<Warning>" << msg)
+#define LOG_M_Warning(msg) LOG_M("<Warning>" << msg)
+#define LOG_S_Info(tag) LOG_S(tag)
+#define LOG_SM_Info(tag, msg) LOG_SM(tag, "<Info>" << msg)
+#define LOG_M_Info(msg) LOG_M("<Info>" << msg)
+#define LOG_S_Debug(tag) LOG_S(tag)
+#define LOG_SM_Debug(tag, msg) LOG_SM(tag, "<Debug>" << msg)
+#define LOG_M_Debug(msg) LOG_M("<Debug>" << msg)
 
 #define L_LOG_LEVEL__(level) GUBG_LOG_LEVEL_ ## level
 #define L_LOG_LEVEL_(level) L_LOG_LEVEL__(level)
@@ -82,7 +93,9 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Fubar
 #undef LOG_S_Fatal
-#define LOG_S_Fatal(tag, msg...) LOG_S_SILENT(tag)
+#undef LOG_SM_Fatal
+#define LOG_S_Fatal(tag) LOG_S_SILENT(tag)
+#define LOG_SM_Fatal(tag, msg) LOG_S_SILENT(tag)
 #undef LOG_M_Fatal
 #define LOG_M_Fatal(msg)
 #undef L_LOG_LEVEL
@@ -91,7 +104,9 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Fatal
 #undef LOG_S_Error
-#define LOG_S_Error(tag, msg...) LOG_S_SILENT(tag)
+#undef LOG_SM_Error
+#define LOG_S_Error(tag) LOG_S_SILENT(tag)
+#define LOG_SM_Error(tag, msg) LOG_S_SILENT(tag)
 #undef LOG_M_Error
 #define LOG_M_Error(msg)
 #undef L_LOG_LEVEL
@@ -100,7 +115,9 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Error
 #undef LOG_S_Warning
-#define LOG_S_Warning(tag, msg...) LOG_S_SILENT(tag)
+#undef LOG_SM_Warning
+#define LOG_S_Warning(tag) LOG_S_SILENT(tag)
+#define LOG_SM_Warning(tag, msg) LOG_S_SILENT(tag)
 #undef LOG_M_Warning
 #define LOG_M_Warning(msg)
 #undef L_LOG_LEVEL
@@ -109,7 +126,9 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Warning
 #undef LOG_S_Info
-#define LOG_S_Info(tag, msg...) LOG_S_SILENT(tag)
+#undef LOG_SM_Info
+#define LOG_S_Info(tag) LOG_S_SILENT(tag)
+#define LOG_SM_Info(tag, msg) LOG_S_SILENT(tag)
 #undef LOG_M_Info
 #define LOG_M_Info(msg)
 #undef L_LOG_LEVEL
@@ -118,7 +137,9 @@
 
 #if L_LOG_LEVEL == GUBG_LOG_LEVEL_Info
 #undef LOG_S_Debug
-#define LOG_S_Debug(tag, msg...) LOG_S_SILENT(tag)
+#undef LOG_SM_Debug
+#define LOG_S_Debug(tag) LOG_S_SILENT(tag)
+#define LOG_SM_Debug(tag, msg) LOG_S_SILENT(tag)
 #undef LOG_M_Debug
 #define LOG_M_Debug(msg)
 #undef L_LOG_LEVEL
@@ -176,7 +197,7 @@ namespace gubg
                 if (!indent_)
                 {
                     std::ostringstream oss;
-                    oss << threadId_ << "|" << boost::algorithm::join(*nameStack_, "|");
+                    oss << threadId_ << "::" << boost::algorithm::join(*nameStack_, "::");
                     indent_.reset(new std::string(oss.str()));
                 }
                 return *indent_;

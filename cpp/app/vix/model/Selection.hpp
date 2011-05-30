@@ -38,8 +38,11 @@ namespace vix
                 void setPath(const std::string &);
                 void setSelected(const std::string &);
 
+                static const int InvalidIX = -2;
                 void getFiles(Files &, int &selectedIX) const;
                 bool gotoSelected();
+                enum class Direction {Up, Down};
+                bool move(Direction);
 
                 void setFilter(const std::string &);
 
@@ -48,10 +51,18 @@ namespace vix
             private:
                 UpdateSignal updated_;
 
+                //This is the primary data for the set of files_
                 boost::filesystem::path path_;
-                std::string selected_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
                 Regex filter_;
+                //
+                Files files_;
+                void updateFiles_();
+
+                //We first try to match selected_. If that fails, we take something as close as possible to selectedIX_
+                std::string selected_;
+                int selectedIX_;
+                void updateSelection_();
         };
     }
 }

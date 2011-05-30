@@ -1,6 +1,6 @@
 {
     "externalTrees": ["~/gubg/cpp/gubg"],
-    "libraries": ["boost_system", "boost_filesystem", "boost_regex", "QtGui", "QtCore"],
+    "libraries": ["boost_system", "boost_filesystem", "boost_regex", "boost_thread", "QtGui", "QtCore"],
     "compilation": ["-D_REENTRANT -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED", "-I/usr/share/qt/mkspecs/linux-g++ -I. -I/usr/include/QtCore -I/usr/include/QtGui"],
     "linking": [""]
 }

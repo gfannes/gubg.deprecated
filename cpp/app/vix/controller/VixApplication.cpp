@@ -1,27 +1,11 @@
 #include "controller/VixApplication.hpp"
+#define LOG_LEVEL Debug
+#include "logging/Log.hpp"
 #include <QVBoxLayout>
 #include <iostream>
 #include "boost/filesystem.hpp"
 using namespace vix;
 using namespace std;
-
-namespace
-{
-    struct Scoper
-    {
-        Scoper(const string &str):
-            str_(str)
-        {
-            cout << "Begin::" << str_ << endl; 
-        }
-        ~Scoper()
-        {
-            cout << "End::" << str_ << endl;
-        }
-        string str_;
-    };
-}
-#define SCOPE(msg) Scoper local_scoper(msg)
 
 VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
@@ -43,16 +27,16 @@ VixApplication::VixApplication(int argc, char **argv):
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
     selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this));
-    connect(&selectionView_, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(setSelected(const QModelIndex &, const QModelIndex &)));
+//    connect(&selectionView_, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(setSelected(const QModelIndex &, const QModelIndex &)));
 
     updateSelection_();
 }
 
 void VixApplication::process4Commandline(QChar ch)
 {
-    SCOPE("process4Commandline(QChar)");
+    LOG_S_(Debug, process4Commandline_QChar);
     int i = (int)ch.toAscii();
-    cout << "Process key " << i << endl;
+    LOG_M_(Debug, "Process key " << i);
     switch (i)
     {
         case 27:
@@ -81,10 +65,17 @@ enum class KeyCode
 };
 void VixApplication::process4Commandline(int keycode)
 {
-    SCOPE("process4Commandline(keycode)");
-    cout << "Process keycode " << hex << keycode << dec << endl;
+    LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << dec);
     switch (keycode)
     {
+        case KeyCode::Up:
+            selectionModel_.move(model::Selection::Direction::Up);
+            return;
+            break;
+        case KeyCode::Down:
+            selectionModel_.move(model::Selection::Direction::Down);
+            return;
+            break;
         case KeyCode::Left:
             {
                 auto p = boost::filesystem::path(selectionModel_.path());
@@ -104,7 +95,7 @@ void VixApplication::process4Commandline(int keycode)
             }
             break;
         default:
-            cout << "Doing nothing" << endl;
+            LOG_M_(Debug, "Doing nothing");
             return;
             break;
     }
@@ -113,29 +104,27 @@ void VixApplication::process4Commandline(int keycode)
 
 void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &prev)
 {
-    SCOPE("setSelected()");
+    LOG_S_(Debug, setSelected);
     auto selected = stringListModel_.data(current, Qt::DisplayRole).toString().toStdString();
-    cout << "setSelected to " << selected << endl;
+    LOG_M_(Debug, "setSelected to " << selected);
     selectionModel_.setSelected(selected);
 }
 
 void VixApplication::updateSelection_()
 {
-    SCOPE("updateSelection_()");
+    LOG_S_(Debug, updateSelection_);
     pathLabel_.setText(selectionModel_.path().c_str());
     vix::model::Files files;
     int selectedIX;
     selectionModel_.getFiles(files, selectedIX);
     QStringList stringList;
     for (auto file = files.begin(); file != files.end(); ++file)
-        stringList << file->name.c_str();
-    static bool firstTime = true;
-    if (firstTime)
     {
-        firstTime = false;
-        stringListModel_.setStringList(stringList);
+//        LOG_M_(Debug, file->name);
+        stringList << file->name.c_str();
     }
-    cout << "selectedIX: " << selectedIX << endl;
+    stringListModel_.setStringList(stringList);
+    LOG_M_(Debug, "selectedIX: " << selectedIX);
     auto ix = stringListModel_.index(selectedIX);
     selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
 }
