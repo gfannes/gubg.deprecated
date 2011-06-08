@@ -4,6 +4,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/filesystem/path.hpp"
 #include <string>
+#include <vector>
 
 namespace gubg
 {
@@ -39,9 +40,16 @@ namespace gubg
                 //File interface
                 virtual bool exists() const;
 
-                std::string filename() const;
+                std::string filepath() const;
+                std::string extension() const;
                 boost::filesystem::path toPath() const;
                 bool load(std::string &content);
+        };
+
+        enum class ExpandStrategy
+        {
+            Shallow,
+            Recursive,
         };
         class Directory: public File
         {
@@ -58,7 +66,11 @@ namespace gubg
                 bool isRoot() const;
                 std::string path() const;
                 boost::filesystem::path toPath() const;
-                void expand();
+                void expand(ExpandStrategy);
+
+            private:
+                typedef std::vector<File::Ptr> Childs;
+                Childs childs_;
         };
     }
 }

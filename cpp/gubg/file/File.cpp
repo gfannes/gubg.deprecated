@@ -1,6 +1,6 @@
 #include "file/File.hpp"
 #define GUBG_LOG
-#include "gubg/logging/Log.hpp"
+#include "logging/Log.hpp"
 #include "boost/filesystem.hpp"
 #include <fstream>
 using namespace std;
@@ -45,13 +45,18 @@ namespace gubg
             return boost::filesystem::exists(toPath());
         }
 
-        string Regular::filename() const
+        string Regular::filepath() const
         {
             if (!location_)
                 return name_;
             auto path = location_->toPath();
             path /= name();
             return path.string();
+        }
+        string Regular::extension() const
+        {
+            boost::filesystem::path path(name_);
+            return path.extension().string();
         }
         boost::filesystem::path Regular::toPath() const
         {
@@ -62,16 +67,29 @@ namespace gubg
 
         bool Regular::load(string &content)
         {
-            //Open the file
-            ifstream fi(filename(), ifstream::binary);
-            if (!fi.is_open())
+            LOG_SM(Regular::load, "Loading " << filepath());
+
+            //Check that the file exists
+            if (!exists())
+            {
+                LOG_M("File does not exist");
                 return false;
+            }
+
+            //Open the file
+            ifstream fi(filepath(), ifstream::binary);
+            if (!fi.is_open())
+            {
+                LOG_M("Could not open the file");
+                return false;
+            }
 
             //Get the file size
             auto begin = fi.tellg();
             fi.seekg(0, ios::end);
             auto end = fi.tellg();
             auto size = end - begin;
+            LOG_M("File size: " << size);
 
             //Allocate enough space to fit the file
             content.resize(size);
@@ -117,7 +135,7 @@ namespace gubg
 
         bool Directory::exists() const
         {
-            return false;
+            return boost::filesystem::exists(toPath());
         }
 
         bool Directory::isRoot() const
@@ -129,6 +147,36 @@ namespace gubg
             if (!location_)
                 return boost::filesystem::path(name_);
             return (isRoot() ? boost::filesystem::path("/") : location_->toPath() /= name_);
+        }
+
+        void Directory::expand(ExpandStrategy strategy)
+        {
+            switch (strategy)
+            {
+                case ExpandStrategy::Shallow:
+                    childs_.clear();
+                    auto path = toPath();
+                    for (auto it = directory_iterator(path); it != directory_iterator(); ++it)
+                    {
+                        auto p = it->path();
+                        File::Ptr file;
+                        if (boost::filesystem::is_regular_file(p))
+                        {
+                            file.reset(new Regular);
+                        }
+                        else if (boost::filesystem::is_directory(p))
+                        {
+                            file.reset(new Directory);
+                        }
+                        else
+                        {
+                        }
+                    }
+                    break;
+                case ExpandStrategy::Shallow:
+                    throw string("Not implemented yet");
+                    break;
+            }
         }
     }
 }

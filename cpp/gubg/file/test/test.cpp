@@ -1,5 +1,7 @@
 #include "file/File.hpp"
 #include "testing/Testing.hpp"
+#define GUBG_LOG
+#include "logging/Log.hpp"
 //#include "dir.hpp"
 
 using namespace std;
@@ -7,7 +9,8 @@ using namespace gubg;
 
 namespace
 {
-    const string thisFilename(__FILE__);
+    const string thisFilepath(__FILE__);
+    const string unexistingFilepath("/this/file/does/not/exist.txt");
 }
 
 int main()
@@ -16,24 +19,32 @@ int main()
         TEST_TAG(File);
         {
             TEST_TAG(absolute);
-            auto file = file::Regular::create(thisFilename);
+            auto file = file::Regular::create(thisFilepath);
             TEST_TRUE(file);
             TEST_EQ("test.cpp", file->name());
-            TEST_EQ(thisFilename, file->filename());
+            TEST_EQ(thisFilepath, file->filepath());
+            TEST_EQ(".cpp", file->extension());
             TEST_TRUE(file->exists());
             TEST_TRUE(file->isAbsolute());
             TEST_FALSE(file->isRelative());
         }
         {
             TEST_TAG(relative);
-            const string relativeFilename("test/test.cpp");
-            auto file = file::Regular::create(relativeFilename);
+            const string relativeFilepath("test/test.cpp");
+            auto file = file::Regular::create(relativeFilepath);
             TEST_TRUE(file);
             TEST_EQ("test.cpp", file->name());
-            TEST_EQ(relativeFilename, file->filename());
+            TEST_EQ(relativeFilepath, file->filepath());
             TEST_TRUE(file->exists());
             TEST_FALSE(file->isAbsolute());
             TEST_TRUE(file->isRelative());
+        }
+        {
+            TEST_TAG(load);
+            string content;
+            TEST_FALSE(file::Regular::create(unexistingFilepath)->load(content));
+            TEST_TRUE(file::Regular::create(thisFilepath)->load(content));
+            LOG_SM(load, "I loaded " << content.size() << " bytes from " << thisFilepath);
         }
     }
     {
