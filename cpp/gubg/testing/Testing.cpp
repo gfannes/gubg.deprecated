@@ -1,8 +1,6 @@
 #include "testing/Testing.hpp"
 #include "Exception.hpp"
 #include "OnlyOnce.hpp"
-#include "threading/Thread.hpp"
-#include "boost/thread/mutex.hpp"
 #include <iostream>
 #include <sstream>
 using namespace std;
@@ -51,7 +49,10 @@ namespace gubg
 }
 
 #ifdef UnitTest
+#include "threading/InstanceCounter.hpp"
+#include "boost/thread/mutex.hpp"
 using namespace gubg;
+
 int main()
 {
     {
@@ -126,7 +127,7 @@ int main()
     TEST_REPORT_TYPE(Full);
     TEST_REPORT();
 
-    struct Thread: gubg::threading::Thread<Thread>
+    struct Thread: gubg::threading::InstanceCounter<Thread>
     {
         Thread():thread_(boost::ref(*this)){}
         void operator()()

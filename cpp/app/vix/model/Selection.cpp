@@ -29,6 +29,7 @@ void Selection::setFilter(const string &filter)
     else
         filter_.reset(new regex(filter, regex_constants::icase));
     updateFiles_();
+    updateSelection_();
     updated_();
 }
 void Selection::setSelected(const string &selected)
@@ -142,9 +143,9 @@ void Selection::updateSelection_()
         else
         {
             if (InvalidIX == selectedIX_)
-                six = 2;
+                six = 0;
             else if (selectedIX_ < 0)
-                six = 1;
+                six = 0;
             else if (selectedIX_ >= files_.size())
                 six = files_.size()-1;
             else

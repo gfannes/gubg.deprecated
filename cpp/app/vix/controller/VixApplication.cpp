@@ -19,6 +19,8 @@ VixApplication::VixApplication(int argc, char **argv):
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
     mainWindow_.setCentralWidget(centralWidget);
     selectionView_.setModel(&stringListModel_);
+    tabBar_.addTab("Initializing");
+    vbox->addWidget(&tabBar_);
     vbox->addWidget(&pathLabel_);
     vbox->addWidget(&selectionView_);
     vbox->addWidget(&commandLine_);
@@ -27,7 +29,6 @@ VixApplication::VixApplication(int argc, char **argv):
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
     selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this));
-//    connect(&selectionView_, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(setSelected(const QModelIndex &, const QModelIndex &)));
 
     updateSelection_();
 }
@@ -56,7 +57,7 @@ void VixApplication::process4Commandline(QChar ch)
     }
     selectionModel_.setFilter(commandLine_.text().toStdString());
 }
-enum class KeyCode
+enum class KeyCode: int
 {
     Left = 0x1000012,
     Right = 0x1000014,
@@ -68,15 +69,15 @@ void VixApplication::process4Commandline(int keycode)
     LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << dec);
     switch (keycode)
     {
-        case KeyCode::Up:
+        case (int)KeyCode::Up:
             selectionModel_.move(model::Selection::Direction::Up);
             return;
             break;
-        case KeyCode::Down:
+        case (int)KeyCode::Down:
             selectionModel_.move(model::Selection::Direction::Down);
             return;
             break;
-        case KeyCode::Left:
+        case (int)KeyCode::Left:
             {
                 auto p = boost::filesystem::path(selectionModel_.path());
                 if (p.has_parent_path())
@@ -87,7 +88,7 @@ void VixApplication::process4Commandline(int keycode)
                 }
             }
             break;
-        case KeyCode::Right:
+        case (int)KeyCode::Right:
             {
                 boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
                 if (selectionModel_.gotoSelected())
@@ -119,12 +120,10 @@ void VixApplication::updateSelection_()
     selectionModel_.getFiles(files, selectedIX);
     QStringList stringList;
     for (auto file = files.begin(); file != files.end(); ++file)
-    {
-//        LOG_M_(Debug, file->name);
         stringList << file->name.c_str();
-    }
     stringListModel_.setStringList(stringList);
     LOG_M_(Debug, "selectedIX: " << selectedIX);
     auto ix = stringListModel_.index(selectedIX);
     selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
+    selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
 }

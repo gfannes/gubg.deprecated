@@ -7,6 +7,7 @@
 #include <QMainWindow>
 #include <QStringListModel>
 #include <QLabel>
+#include <QTabBar>
 #include <QLineEdit>
 #include "boost/signals2.hpp"
 
@@ -30,6 +31,7 @@ namespace vix
             bool gotoSelection_();
 
             QMainWindow mainWindow_;
+            QTabBar tabBar_;
             QLabel pathLabel_;
             vix::view::Selection selectionView_;
             QLineEdit commandLine_;
