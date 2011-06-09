@@ -79,12 +79,12 @@ void VixApplication::process4Commandline(int keycode)
             break;
         case (int)KeyCode::Left:
             {
-                auto p = boost::filesystem::path(selectionModel_.path());
-                if (p.has_parent_path())
+                auto parent = selectionModel_.path()->location();
+                if (parent)
                 {
                     commandLine_.setText("");
                     boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                    selectionModel_.setPath(p.parent_path().string());
+                    selectionModel_.setPath(parent);
                 }
             }
             break;
@@ -113,14 +113,14 @@ void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &
 
 void VixApplication::updateSelection_()
 {
-    LOG_S_(Debug, updateSelection_);
-    pathLabel_.setText(selectionModel_.path().c_str());
+    LOG_S_(Debug, VixApplication::updateSelection_);
+    pathLabel_.setText(selectionModel_.path()->path().c_str());
     vix::model::Files files;
     int selectedIX;
     selectionModel_.getFiles(files, selectedIX);
     QStringList stringList;
     for (auto file = files.begin(); file != files.end(); ++file)
-        stringList << file->name.c_str();
+        stringList << (*file)->name().c_str();
     stringListModel_.setStringList(stringList);
     LOG_M_(Debug, "selectedIX: " << selectedIX);
     auto ix = stringListModel_.index(selectedIX);

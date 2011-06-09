@@ -1,7 +1,7 @@
 #ifndef vix_model_Selection_hpp
 #define vix_model_Selection_hpp
 
-#include "boost/filesystem.hpp"
+#include "model/FileSystem.hpp"
 #include "boost/regex.hpp"
 #include "boost/signals2.hpp"
 #include <vector>
@@ -11,22 +11,6 @@ namespace vix
 {
     namespace model
     {
-        struct File
-        {
-            File(){}
-            File(const boost::filesystem::path &p):
-                path(p.root_path().string()),
-                name(p.filename().string()){}
-
-            bool operator<(const File &rhs) const {return std::make_pair(path, name) < std::make_pair(rhs.path, rhs.name);}
-
-            bool isHidden() const {return !name.empty() && name[0] == '.';}
-
-            std::string path;
-            std::string name;
-        };
-        typedef std::vector<File> Files;
-
         class Selection
         {
             public:
@@ -34,9 +18,9 @@ namespace vix
 
                 Selection(const std::string &path);
 
-                std::string path() const {return path_.string();}
-                void setPath(const std::string &);
-                void setSelected(const std::string &);
+                Path path() const {return path_;}
+                void setPath(Path);
+                void setSelected(const std::string &selected);
 
                 static const int InvalidIX = -2;
                 void getFiles(Files &, int &selectedIX) const;
@@ -52,7 +36,7 @@ namespace vix
                 UpdateSignal updated_;
 
                 //This is the primary data for the set of files_
-                boost::filesystem::path path_;
+                Path path_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
                 Regex filter_;
                 //
@@ -62,7 +46,7 @@ namespace vix
                 //We first try to match selected_. If that fails, we take something as close as possible to selectedIX_
                 std::string selected_;
                 int selectedIX_;
-                void updateSelection_();
+                void updateSelection_(const std::string &selected = "");
         };
     }
 }

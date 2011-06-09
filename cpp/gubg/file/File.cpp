@@ -6,6 +6,19 @@
 #include <fstream>
 using namespace std;
 
+std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
+{
+    return os << file->name();
+}
+std::ostream &operator<<(std::ostream &os, const gubg::file::Directory::Ptr &dir)
+{
+    return os << dir->path();
+}
+std::ostream &operator<<(std::ostream &os, const gubg::file::Regular::Ptr &regular)
+{
+    return os << regular->filepath();
+}
+
 namespace gubg
 {
     namespace file
@@ -23,6 +36,12 @@ namespace gubg
             return false;
         }
         bool File::isRelative() const {return !isAbsolute();}
+        bool File::isHidden() const
+        {
+            if (name_.empty())
+                throw string("I did not expect an empty name_");
+            return name_[0] == '.';
+        }
 
         //Directory methods
         Directory::Ptr Directory::create(boost::filesystem::path path)

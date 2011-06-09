@@ -8,14 +8,17 @@ using namespace boost;
 using namespace boost::filesystem;
 
 Selection::Selection(const string &path):
-    path_(path),
     selectedIX_(InvalidIX)
-    {
-        updateFiles_();
-        updateSelection_();
-    }
+{
+    FileSystem &filesystem = FileSystem::instance();
+    path_ = filesystem.getPath(path);
+    if (!path_)
+        path_ = filesystem.getPath("/");
+    updateFiles_();
+    updateSelection_();
+}
 
-void Selection::setPath(const string &path)
+void Selection::setPath(Path path)
 {
     path_ = path;
     updateFiles_();
@@ -29,13 +32,12 @@ void Selection::setFilter(const string &filter)
     else
         filter_.reset(new regex(filter, regex_constants::icase));
     updateFiles_();
-    updateSelection_();
+    updateSelection_(selected_);
     updated_();
 }
 void Selection::setSelected(const string &selected)
 {
-    selected_ = selected;
-    updateSelection_();
+    updateSelection_(selected);
     updated_();
 }
 
@@ -47,19 +49,21 @@ void Selection::getFiles(Files &files, int &selectedIX) const
 
 bool Selection::gotoSelected()
 {
-    LOG_SM_(Debug, gotoSelected, "path_: " << path_ << ", selected_: " << selected_);
-    auto newPath = path_ / selected_;
-    if (!is_directory(newPath))
+    if (files_.empty() || InvalidIX == selectedIX_ || selectedIX_ < 0)
+        return false;
+    auto selected = files_[selectedIX_];
+    LOG_SM_(Debug, gotoSelected, "path_: " << path_ << ", selected: " << selected);
+    auto newPath = gubg::file::Directory::create(selected);
+    if (!newPath)
     {
-        LOG_M_(Debug, "This is not a directory");
+        LOG_M_(Warning, "This is not a directory");
         return false;
     }
 
-    newPath.swap(path_);
+    path_ = newPath;
     updateFiles_();
     LOG_M_(Debug, "path_ is now: " << path_);
 
-    selected_ = "";
     updateSelection_();
 
     updated_();
@@ -69,7 +73,7 @@ bool Selection::gotoSelected()
 bool Selection::move(Direction direction)
 {
     LOG_S_(Debug, move);
-    if (files_.empty())
+    if (path_->empty())
         return false;
     if (InvalidIX == selectedIX_)
         return false;
@@ -86,7 +90,6 @@ bool Selection::move(Direction direction)
             ++selectedIX_;
             break;
     }
-    selected_ = "";
     updateSelection_();
     updated_();
     return true;
@@ -100,35 +103,55 @@ boost::signals2::connection Selection::connect(const UpdateSignal::slot_type &su
 //Private methods
 
 //Collect all entries in path_ that match our current filter and store them into files_
+namespace
+{
+    struct CmpLess
+    {
+        bool operator()(const gubg::file::File::Ptr &lhs, const gubg::file::File::Ptr &rhs) const
+        {
+            return lhs->name() < rhs->name();
+        }
+    };
+}
 void Selection::updateFiles_()
 {
     LOG_SM_(Debug, updateFiles_, "path_: " << path_);
-    files_.clear();
-    for (auto it = directory_iterator(path_); it != directory_iterator(); ++it)
+    Files allFiles;
+    if (!FileSystem::instance().getFiles(allFiles, path_))
     {
-        File file(it->path());
-        if (!file.isHidden())
+        LOG_M_(Warning, "Could not get the files");
+        return;
+    }
+    
+    files_.clear();
+    for (auto it = allFiles.begin(); it != allFiles.end(); ++it)
+    {
+        auto &file = *it;
+        if (!file->isHidden())
         {
             smatch match;
-            if (!filter_ || regex_search(file.name, match, *filter_))
+            if (!filter_ || regex_search(file->name(), match, *filter_))
                 files_.push_back(file);
         }
     }
-    std::sort(files_.begin(), files_.end());
+    std::sort(files_.begin(), files_.end(), CmpLess());
+    LOG_M_(Debug, "I selected " << files_.size() << " out of " << allFiles.size());
 }
 
-void Selection::updateSelection_()
+void Selection::updateSelection_(const std::string &selected)
 {
-    LOG_SM_(Debug, updateSelection_, "selected_: " << selected_);
+    selected_ = selected;
+    LOG_SM_(Debug, Selection::updateSelection_, "selected_: " << selected_);
     //First, we try to match based on selected_
     auto six = InvalidIX;
     if (!selected_.empty())
     {
         for (auto it = files_.begin(); it != files_.end(); ++it)
         {
-            if (selected_ == it->name)
+            auto &file = *it;
+            if (selected_ == file->name())
             {
-                six = it-files_.begin();
+                six = it - files_.begin();
                 LOG_M_(Debug, "I found " << selected_ << " at ix " << six);
                 break;
             }
@@ -150,8 +173,9 @@ void Selection::updateSelection_()
                 six = files_.size()-1;
             else
                 six = selectedIX_;
-            selected_ = files_[six].name;
+            selected_ = files_[six]->name();
         }
     }
     selectedIX_ = six;
+    LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_);
 }
