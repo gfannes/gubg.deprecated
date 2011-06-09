@@ -15,8 +15,10 @@ namespace
 
 int main()
 {
+    TEST_TAG(main);
     {
         TEST_TAG(File);
+        LOG_S(FileTests);
         {
             TEST_TAG(absolute);
             auto file = file::Regular::create(thisFilepath);
@@ -49,6 +51,13 @@ int main()
     }
     {
         TEST_TAG(Directory);
+        LOG_S(DirectoryTests);
+        const string homeDir("/home/gfannes");
+        auto dir = file::Directory::create(homeDir);
+        auto nr = file::Directory::expand(dir, file::ExpandStrategy::Shallow);
+        LOG_M("I found " << nr << " files in " << dir->path() << " using Shallow");
+        nr = file::Directory::expand(dir, file::ExpandStrategy::Recursive);
+        LOG_M("I found " << nr << " files in " << dir->path() << " using Recursive");
 #if 0
     {
         Dir dir("/home/gfannes/data/raw");

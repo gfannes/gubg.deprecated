@@ -28,23 +28,6 @@ namespace gubg
                 std::string name_;
                 boost::shared_ptr<Directory> location_;
         };
-        class Regular: public File
-        {
-            private:
-                Regular(){}
-
-            public:
-                typedef boost::shared_ptr<Regular> Ptr;
-                static Ptr create(const std::string &filename);
-
-                //File interface
-                virtual bool exists() const;
-
-                std::string filepath() const;
-                std::string extension() const;
-                boost::filesystem::path toPath() const;
-                bool load(std::string &content);
-        };
 
         enum class ExpandStrategy
         {
@@ -59,6 +42,8 @@ namespace gubg
             public:
                 typedef boost::shared_ptr<Directory> Ptr;
                 static Ptr create(boost::filesystem::path path);
+                static Ptr create(const std::string &name, Directory::Ptr location);
+                static Ptr create(File::Ptr &);
 
                 //File interface
                 virtual bool exists() const;
@@ -66,11 +51,32 @@ namespace gubg
                 bool isRoot() const;
                 std::string path() const;
                 boost::filesystem::path toPath() const;
-                void expand(ExpandStrategy);
+                static size_t expand(Ptr self, ExpandStrategy);
 
             private:
                 typedef std::vector<File::Ptr> Childs;
                 Childs childs_;
+        };
+
+        class Regular: public File
+        {
+            private:
+                friend class Directory;
+                Regular(){}
+
+            public:
+                typedef boost::shared_ptr<Regular> Ptr;
+                static Ptr create(const std::string &filename);
+                static Ptr create(const std::string &name, Directory::Ptr location);
+                static Ptr create(File::Ptr &);
+
+                //File interface
+                virtual bool exists() const;
+
+                std::string filepath() const;
+                std::string extension() const;
+                boost::filesystem::path toPath() const;
+                bool load(std::string &content);
         };
     }
 }
