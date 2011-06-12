@@ -40,6 +40,7 @@ autocmd BufEnter,BufNewFile,BufRead *.lua source $GUBG/vim/maps.lua.vim
 autocmd BufEnter,BufNewFile,BufRead *.d source $GUBG/vim/maps.d.vim
 autocmd BufEnter,BufNewFile,BufRead *.cpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.h source $GUBG/vim/maps.cpp.vim
+autocmd BufEnter,BufNewFile,BufRead *.hpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim
 "au! BufRead,BufNewFile *.json set filetype=json foldmethod=syntax 

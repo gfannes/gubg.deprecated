@@ -20,6 +20,7 @@ VixApplication::VixApplication(int argc, char **argv):
     mainWindow_.setCentralWidget(centralWidget);
     selectionView_.setModel(&stringListModel_);
     tabBar_.addTab("Initializing");
+    tabBar_.setFocusPolicy(Qt::NoFocus);
     vbox->addWidget(&tabBar_);
     vbox->addWidget(&pathLabel_);
     vbox->addWidget(&selectionView_);
@@ -46,8 +47,14 @@ void VixApplication::process4Commandline(QChar ch)
         case 13:
             {
                 boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                if (selectionModel_.gotoSelected())
-                    commandLine_.setText("");
+                switch (selectionModel_.activateSelected(model::Action::Open))
+                {
+                    case model::Activation::Directory:
+                        commandLine_.setText("");
+                        break;
+                    case model::Activation::Regular: break;
+                    default: break;
+                }
             }
             break;
         default:
@@ -91,8 +98,15 @@ void VixApplication::process4Commandline(int keycode)
         case (int)KeyCode::Right:
             {
                 boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                if (selectionModel_.gotoSelected())
-                    commandLine_.setText("");
+                switch (selectionModel_.activateSelected(model::Action::Edit))
+                {
+                    case model::Activation::Directory:
+                        commandLine_.setText("");
+                        break;
+                    case model::Activation::Regular:
+                        break;
+                    default: break;
+                }
             }
             break;
         default:

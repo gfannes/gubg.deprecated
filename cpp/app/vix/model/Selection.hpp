@@ -11,6 +11,9 @@ namespace vix
 {
     namespace model
     {
+        enum class Action {View, Edit, Open, Delete, Copy, Move};
+        enum class Activation {Error, Directory, Regular, SomethingElse};
+
         class Selection
         {
             public:
@@ -24,7 +27,7 @@ namespace vix
 
                 static const int InvalidIX = -2;
                 void getFiles(Files &, int &selectedIX) const;
-                bool gotoSelected();
+                Activation activateSelected(Action);
                 enum class Direction {Up, Down};
                 bool move(Direction);
 

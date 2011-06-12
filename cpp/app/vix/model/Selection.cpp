@@ -1,4 +1,5 @@
 #include "model/Selection.hpp"
+#include "settings/Settings.hpp"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <algorithm>
@@ -47,27 +48,44 @@ void Selection::getFiles(Files &files, int &selectedIX) const
     selectedIX = selectedIX_;
 }
 
-bool Selection::gotoSelected()
+Activation Selection::activateSelected(Action action)
 {
     if (files_.empty() || InvalidIX == selectedIX_ || selectedIX_ < 0)
-        return false;
+        return Activation::Error;
     auto selected = files_[selectedIX_];
     LOG_SM_(Debug, gotoSelected, "path_: " << path_ << ", selected: " << selected);
-    auto newPath = gubg::file::Directory::create(selected);
-    if (!newPath)
+    if (auto newPath = gubg::file::Directory::create(selected))
     {
-        LOG_M_(Warning, "This is not a directory");
-        return false;
+        LOG_M_(Debug, "This is a directory");
+        path_ = newPath;
+        updateFiles_();
+        LOG_M_(Debug, "path_ is now: " << path_);
+        updateSelection_();
+        updated_();
+        return Activation::Directory;
     }
-
-    path_ = newPath;
-    updateFiles_();
-    LOG_M_(Debug, "path_ is now: " << path_);
-
-    updateSelection_();
-
-    updated_();
-    return true;
+    if (auto file = gubg::file::Regular::create(selected))
+    {
+        LOG_M_(Debug, "This is a regular file");
+        switch (action)
+        {
+            case Action::View:
+                vix::Settings::instance().view(file->filepath());
+                break;
+            case Action::Edit:
+                vix::Settings::instance().edit(file->filepath());
+                break;
+            case Action::Open:
+                vix::Settings::instance().open(file->filepath());
+                break;
+            default:
+                LOG_M_(Error, "This action is not yet implemented");
+                return Activation::Error;
+                break;
+        }
+        return Activation::Regular;
+    }
+    return Activation::Error;
 }
 
 bool Selection::move(Direction direction)
