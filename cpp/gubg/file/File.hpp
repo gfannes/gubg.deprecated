@@ -21,6 +21,8 @@ namespace gubg
                 bool isAbsolute() const;
                 bool isRelative() const;
                 bool isHidden() const;
+                bool isDirectory() const;
+                bool isRegular() const;
 
                 virtual bool exists() const = 0;
 

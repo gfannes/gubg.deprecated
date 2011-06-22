@@ -3,6 +3,7 @@
 #include "boost/thread/tss.hpp"
 #include <mutex>
 #include <memory>
+#include "nullptr.hpp"
 using namespace gubg::testing;
 using namespace std;
 
@@ -117,8 +118,9 @@ void TestMaster::report(const TestTag::ThreadStats &threadStats)
 std::ostream &operator<<(std::ostream &os, const TestTag::ThreadStats::Tags &tags)
 {
     gubg::OnlyOnce skipDelimiter;
-    for (const auto &v: tags)
+    for (auto it = tags.begin(); it != tags.end(); ++it)
     {
+        const auto &v = *it;
         if (!skipDelimiter())
             os << "|";
         os << v;
@@ -137,10 +139,12 @@ std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
 {
     os << "I received results from " << testMaster.threadStatss_.size() << " thread(s)" << endl;
     Statistics stats;
-    for (const auto &threadStats: testMaster.threadStatss_)
+    for (auto it = testMaster.threadStatss_.begin(); it != testMaster.threadStatss_.end(); ++it)
     {
-        for (const auto &v: threadStats.statsPerTags_)
+        const auto &threadStats = *it;
+        for (auto it2 = threadStats.statsPerTags_.begin(); it2 != threadStats.statsPerTags_.end(); ++it2)
         {
+            const auto &v = *it2;
             const TestTag::ThreadStats::Tags &t =  v.first;
             const Statistics &s = v.second;
             if (s.nrTotal() > 0)

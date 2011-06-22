@@ -133,8 +133,14 @@ void VixApplication::updateSelection_()
     int selectedIX;
     selectionModel_.getFiles(files, selectedIX);
     QStringList stringList;
-    for (auto file = files.begin(); file != files.end(); ++file)
-        stringList << (*file)->name().c_str();
+    for (auto it = files.begin(); it != files.end(); ++it)
+    {
+        auto &file = *it;
+        if (file->isDirectory())
+            stringList << (file->name() + "/").c_str();
+        else
+            stringList << file->name().c_str();
+    }
     stringListModel_.setStringList(stringList);
     LOG_M_(Debug, "selectedIX: " << selectedIX);
     auto ix = stringListModel_.index(selectedIX);

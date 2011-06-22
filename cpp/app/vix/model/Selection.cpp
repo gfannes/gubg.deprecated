@@ -127,8 +127,13 @@ namespace
     {
         bool operator()(const gubg::file::File::Ptr &lhs, const gubg::file::File::Ptr &rhs) const
         {
+            if (lhs->isDirectory() && rhs->isRegular())
+                return true;
+            if (rhs->isDirectory() && lhs->isRegular())
+                return false;
             return lhs->name() < rhs->name();
         }
+        private:
     };
 }
 void Selection::updateFiles_()

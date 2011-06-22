@@ -9,6 +9,7 @@ namespace vix
 {
     namespace model
     {
+        //TODO::These are not thread-safe, use pointer::Locked instead, making sure there is a single mutex both for Directory and Regular
         typedef gubg::file::Directory::Ptr Path;
         typedef gubg::file::File::Ptr File;
         typedef std::vector<File> Files;

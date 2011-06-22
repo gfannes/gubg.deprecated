@@ -4,6 +4,7 @@
 #include "logging/Log.hpp"
 #include "boost/filesystem.hpp"
 #include <fstream>
+#include "nullptr.hpp"
 using namespace std;
 
 std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
@@ -41,6 +42,14 @@ namespace gubg
             if (name_.empty())
                 throw string("I did not expect an empty name_");
             return name_[0] == '.';
+        }
+        bool File::isDirectory() const
+        {
+            return nullptr != dynamic_cast<const Directory*>(this);
+        }
+        bool File::isRegular() const
+        {
+            return nullptr != dynamic_cast<const Regular*>(this);
         }
 
         //Directory methods
