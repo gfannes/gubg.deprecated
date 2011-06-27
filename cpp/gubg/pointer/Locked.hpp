@@ -12,13 +12,13 @@ namespace gubg
     {
         //Generic smart pointer that _only_ provides access to its pointer via an instance of Locked::Unlock
         //Depending on the specific Unlocker used, this can implement different unlocking strategies
-        template <typename Data, template <typename Data> class Unlocker>
+        template <typename Data, template <typename Data, typename ...Extra> class Unlocker, typename ...Extra>
             class Locked
             {
                 public:
-                    typedef Unlocker<Data> Unlock;
-                    friend class Unlocker<Data>;
-                    typedef typename Unlocker<Data>::DataPtr DataPtr;
+                    typedef Unlocker<Data, Extra...> Unlock;
+                    friend class Unlocker<Data, Extra...>;
+                    typedef typename Unlocker<Data, Extra...>::DataPtr DataPtr;
 
                     //Default constructor, operator() evaluates to false
                     Locked():
@@ -32,8 +32,8 @@ namespace gubg
                     bool operator()() const {return data_;}
 
                 private:
-                    typedef typename Unlocker<Data>::LockingData LockingData;
-                    typedef typename Unlocker<Data>::LockingDataPtr LockingDataPtr;
+                    typedef typename Unlocker<Data, Extra...>::LockingData LockingData;
+                    typedef typename Unlocker<Data, Extra...>::LockingDataPtr LockingDataPtr;
                     LockingDataPtr lockingData_;
                     DataPtr data_;
             };
@@ -89,7 +89,7 @@ namespace gubg
             };
 
         //An unlock strategy that makes each type Data thread safe. Multiple instances of Data _cannot_ be accessed concurrently
-        // => Keeps one mutex per type
+        // => Keeps one mutex per Base type
         template <typename Data>
             class ThreadSafeType
             {
@@ -139,6 +139,63 @@ namespace gubg
             boost::recursive_mutex ThreadSafeType<Data>::LockingData::mutex_;
         template <typename Data>
             boost::condition ThreadSafeType<Data>::LockingData::condition_;
+
+        //An unlock strategy that makes each type Base and its Derived types thread safe. Multiple instances of Base or Derived _cannot_ be accessed concurrently
+        // => Keeps one mutex per Base type
+        namespace base
+        {
+            typedef boost::recursive_mutex Mutex;
+            typedef boost::condition Condition;
+            template <typename Base>
+                struct LockingData
+                {
+                    static Mutex mutex_;
+                    static Condition condition_;
+                };
+            template <typename Base>
+                boost::recursive_mutex LockingData<Base>::mutex_;
+            template <typename Base>
+                boost::condition LockingData<Base>::condition_;
+        }
+        template <typename Data, typename Base>
+            class ThreadSafeBaseType
+            {
+                public:
+                    typedef base::LockingData<Base> LockingData;
+                    typedef boost::shared_ptr<LockingData> LockingDataPtr;
+                    typedef boost::shared_ptr<Data> DataPtr;
+
+                    template <typename Locked>
+                    ThreadSafeBaseType(Locked locked):
+                        data_(locked.data_),
+                        lock_(new base::Mutex::scoped_lock(LockingData::mutex_))
+                    {
+                    }
+                    virtual ~ThreadSafeBaseType()
+                    {
+                        lock_.reset();
+                        LockingData::condition_.notify_all();
+                    }
+
+                    Data &operator*() const {return *data_;}
+                    Data *operator->() const {return data_.operator->();}
+                    Data *get() const {return data_.get();}
+                    bool operator()() const {return data_;}
+
+                    void wait()
+                    {
+                        LockingData::condition_.wait(*lock_);
+                    }
+                    bool timed_wait(boost::system_time timedOut)
+                    {
+                        return LockingData::condition_.timed_wait(*lock_, timedOut);
+                    }
+
+                private:
+                    DataPtr data_;
+                    typedef boost::scoped_ptr<base::Mutex::scoped_lock> LockPtr;
+                    LockPtr lock_;
+            };
     }
 }
 

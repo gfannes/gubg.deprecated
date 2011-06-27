@@ -19,7 +19,7 @@ namespace
                 LOG_SM(Data, "constructor");
                 value_ = 0;
             }
-            ~Data()
+            virtual ~Data()
             {
                 LOG_SM(Data, "destructor, value_: " << value_);
             }
@@ -27,9 +27,24 @@ namespace
             static int value_;
     };
     int Data::value_ = 0;
+    class Derived: public Data
+    {
+        public:
+            Derived()
+            {
+                LOG_SM(Derived, "constructor");
+            }
+            virtual ~Derived()
+            {
+                LOG_SM(Derived, "destructor");
+            }
+    };
     typedef Locked<Data, ThreadSafeInstance> IDataPtr;
     typedef Locked<Data, ThreadSafeType> TDataPtr;
+    typedef Locked<Data, ThreadSafeBaseType, Data> TBDataPtr;
+    typedef Locked<Derived, ThreadSafeBaseType, Data> TDDataPtr;
 
+    //Increments value_ in a way that would fail if performed multi-threaded without proper locking
     template <typename IDataPtr>
     struct IncrementThread: gubg::InstanceCounter<IncrementThread<IDataPtr>>
     {
@@ -104,6 +119,17 @@ int main()
         new IncrementThread<TDataPtr>(data1);
         new IncrementThread<TDataPtr>(data2);
         while (IncrementThread<TDataPtr>::nrInstances() > 0)
+            gubg::nanosleep(0, 100000000);
+    }
+    {
+        LOG_SM(Singleton, "Mutex per base type");
+        TBDataPtr base(new Data);
+        TDDataPtr derived(new Derived);
+        new IncrementThread<TBDataPtr>(base);
+        new IncrementThread<TDDataPtr>(derived);
+        while (IncrementThread<TBDataPtr>::nrInstances() > 0)
+            gubg::nanosleep(0, 100000000);
+        while (IncrementThread<TDDataPtr>::nrInstances() > 0)
             gubg::nanosleep(0, 100000000);
     }
 
