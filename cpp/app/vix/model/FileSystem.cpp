@@ -5,6 +5,12 @@
 using namespace vix::model;
 using namespace std;
 
+ostream &operator<<(ostream &os, Path path)
+{
+    Path::Unlock unlockedPath(path);
+    return os << unlockedPath.ptr();
+}
+
 FileSystem::FileSystem():
     root_(gubg::file::Directory::create("/"))
 {
@@ -20,17 +26,39 @@ Path FileSystem::getPath(const string &path)
 bool FileSystem::getFiles(Files &files, Path path)
 {
     LOG_SM_(Debug, FileSystem::getFiles, "path: " << path);
+    Path::Unlock unlockedPath(path);
     try
     {
-        gubg::file::Directory::expand(path, gubg::file::ExpandStrategy::Shallow);
+        gubg::file::Directory::expand(unlockedPath.ptr(), gubg::file::ExpandStrategy::Shallow);
     }
     catch (boost::system::system_error &exc)
     {
         LOG_M_(Warning, "I cannot get the files: " << exc.what());
         return false;
     }
-    files = path->childs();
+    files.clear();
+    auto childs = unlockedPath->childs();
+    for (auto ch = childs.begin(); ch != childs.end(); ++ch)
+        files.push_back(File(*ch));
     return true;
+}
+
+Path FileSystem::toPath(File &file)
+{
+    File::Unlock unlocked(file);
+    auto path = boost::dynamic_pointer_cast<Path::Data>(unlocked.ptr());
+    if (path)
+        return Path(path);
+    return Path();
+}
+
+Regular FileSystem::toRegular(File &file)
+{
+    File::Unlock unlocked(file);
+    auto regular = boost::dynamic_pointer_cast<Regular::Data>(unlocked.ptr());
+    if (regular)
+        return Regular(regular);
+    return Regular();
 }
 
 //Private methods
@@ -38,8 +66,9 @@ bool FileSystem::getFiles(Files &files, Path path)
 Path FileSystem::getPath_(Path dir)
 {
     LOG_SM_(Debug, FileSystem::getPath_, "dir: " << dir);
+    Path::Unlock unlockedDir(dir);
     //We basically go down to the root recursively and change all the locations and childs we find on our way down
-    if (dir->isRoot())
+    if (unlockedDir->isRoot())
     {
         //Roots always match, we return back our own root_ to ensure we are inside our own filesystem tree
         LOG_M_(Debug, "Return root_ " << root_);
@@ -47,23 +76,24 @@ Path FileSystem::getPath_(Path dir)
     }
 
     //parent is guaranteed to be in our own filesystem tree, or an empty Path
-    auto parent = getPath_(dir->location());
-    if (!parent)
+    auto parent = getPath_(unlockedDir->location());
+    Path::Unlock unlockedParent(parent);
+    if (!unlockedParent())
     {
         LOG_M_(Warning, "The parent doesn't even exist");
         return Path();
     }
 
     //Expand if it has no childs
-    if (parent->empty())
-        gubg::file::Directory::expand(parent, gubg::file::ExpandStrategy::Shallow);
+    if (unlockedParent->empty())
+        gubg::file::Directory::expand(unlockedParent.ptr(), gubg::file::ExpandStrategy::Shallow);
 
     //If dir actually exists, dir->name() should match a child of parent; we will return that matching child, or and empty Path
-    auto childs = parent->childs();
+    auto childs = unlockedParent->childs();
     for (auto it = childs.begin(); it != childs.end(); ++it)
     {
         auto &child = *it;
-        if (child->name() == dir->name())
+        if (child->name() == unlockedDir->name())
         {
             //Convert child (which is a gubg::file::File) into a gubg::file::Directory::Ptr (which is Path)
             auto ret = gubg::file::Directory::create(child);

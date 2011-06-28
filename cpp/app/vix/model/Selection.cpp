@@ -13,6 +13,7 @@ Selection::Selection(const string &path):
 {
     FileSystem &filesystem = FileSystem::instance();
     path_ = filesystem.getPath(path);
+
     if (!path_)
         path_ = filesystem.getPath("/");
     updateFiles_();
@@ -23,7 +24,7 @@ void Selection::setPath(Path path)
 {
     path_ = path;
     updateFiles_();
-    updated_();
+    updated_(this);
 }
 void Selection::setFilter(const string &filter)
 {
@@ -34,12 +35,12 @@ void Selection::setFilter(const string &filter)
         filter_.reset(new regex(filter, regex_constants::icase));
     updateFiles_();
     updateSelection_(selected_);
-    updated_();
+    updated_(this);
 }
 void Selection::setSelected(const string &selected)
 {
     updateSelection_(selected);
-    updated_();
+    updated_(this);
 }
 
 void Selection::getFiles(Files &files, int &selectedIX) const
@@ -54,29 +55,30 @@ Activation Selection::activateSelected(Action action)
         return Activation::Error;
     auto selected = files_[selectedIX_];
     LOG_SM_(Debug, gotoSelected, "path_: " << path_ << ", selected: " << selected);
-    if (auto newPath = gubg::file::Directory::create(selected))
+    if (auto newPath = FileSystem::instance().toPath(selected))
     {
         LOG_M_(Debug, "This is a directory");
         path_ = newPath;
         updateFiles_();
         LOG_M_(Debug, "path_ is now: " << path_);
         updateSelection_();
-        updated_();
+        updated_(this);
         return Activation::Directory;
     }
-    if (auto file = gubg::file::Regular::create(selected))
+    if (auto file = FileSystem::instance().toRegular(selected))
     {
         LOG_M_(Debug, "This is a regular file");
+        Regular::Unlock unlockedRegular(file);
         switch (action)
         {
             case Action::View:
-                vix::Settings::instance().view(file->filepath());
+                vix::Settings::instance().view(unlockedRegular->filepath());
                 break;
             case Action::Edit:
-                vix::Settings::instance().edit(file->filepath());
+                vix::Settings::instance().edit(unlockedRegular->filepath());
                 break;
             case Action::Open:
-                vix::Settings::instance().open(file->filepath());
+                vix::Settings::instance().open(unlockedRegular->filepath());
                 break;
             default:
                 LOG_M_(Error, "This action is not yet implemented");
@@ -91,8 +93,11 @@ Activation Selection::activateSelected(Action action)
 bool Selection::move(Direction direction)
 {
     LOG_S_(Debug, move);
-    if (path_->empty())
-        return false;
+    {
+        Path::Unlock unlockedPath(path_);
+        if (unlockedPath->empty())
+            return false;
+    }
     if (InvalidIX == selectedIX_)
         return false;
     switch (direction)
@@ -109,7 +114,7 @@ bool Selection::move(Direction direction)
             break;
     }
     updateSelection_();
-    updated_();
+    updated_(this);
     return true;
 }
 
@@ -125,8 +130,12 @@ namespace
 {
     struct CmpLess
     {
-        bool operator()(const gubg::file::File::Ptr &lhs, const gubg::file::File::Ptr &rhs) const
+        bool operator()(const File &l, const File &r) const
         {
+            File::Unlock unlockedLhs(l);
+            auto lhs = unlockedLhs.ptr();
+            File::Unlock unlockedRhs(r);
+            auto rhs = unlockedRhs.ptr();
             if (lhs->isDirectory() && rhs->isRegular())
                 return true;
             if (rhs->isDirectory() && lhs->isRegular())
@@ -150,10 +159,11 @@ void Selection::updateFiles_()
     for (auto it = allFiles.begin(); it != allFiles.end(); ++it)
     {
         auto &file = *it;
-        if (!file->isHidden())
+        File::Unlock unlockedFile(file);
+        if (!unlockedFile->isHidden())
         {
             smatch match;
-            if (!filter_ || regex_search(file->name(), match, *filter_))
+            if (!filter_ || regex_search(unlockedFile->name(), match, *filter_))
                 files_.push_back(file);
         }
     }
@@ -172,7 +182,8 @@ void Selection::updateSelection_(const std::string &selected)
         for (auto it = files_.begin(); it != files_.end(); ++it)
         {
             auto &file = *it;
-            if (selected_ == file->name())
+            File::Unlock unlockedFile(file);
+            if (selected_ == unlockedFile->name())
             {
                 six = it - files_.begin();
                 LOG_M_(Debug, "I found " << selected_ << " at ix " << six);
@@ -196,7 +207,8 @@ void Selection::updateSelection_(const std::string &selected)
                 six = files_.size()-1;
             else
                 six = selectedIX_;
-            selected_ = files_[six]->name();
+            File::Unlock unlockedFile(files_[six]);
+            selected_ = unlockedFile->name();
         }
     }
     selectedIX_ = six;

@@ -11,7 +11,7 @@ import std.array;
 
 import std.stdio;
 
-bool verbose__ = true;
+bool verbose__ = false;
 
 //A collection of filesystem trees containing D files
 class Collection

@@ -12,10 +12,11 @@ namespace gubg
     {
         //Generic smart pointer that _only_ provides access to its pointer via an instance of Locked::Unlock
         //Depending on the specific Unlocker used, this can implement different unlocking strategies
-        template <typename Data, template <typename Data, typename ...Extra> class Unlocker, typename ...Extra>
+        template <typename DataT, template <typename DataT, typename ...Extra> class Unlocker, typename ...Extra>
             class Locked
             {
                 public:
+                    typedef DataT Data;
                     typedef Unlocker<Data, Extra...> Unlock;
                     friend class Unlocker<Data, Extra...>;
                     typedef typename Unlocker<Data, Extra...>::DataPtr DataPtr;
@@ -24,12 +25,13 @@ namespace gubg
                     Locked():
                         lockingData_(new LockingData){}
                     //Constructor from any type that can be converted to DataPtr
-                    template <typename DataT>
-                    Locked(DataT data):
+                    template <typename T>
+                    Locked(T data):
                         lockingData_(new LockingData),
                         data_(data){}
 
                     bool operator()() const {return data_;}
+                    operator bool () const {return data_;}
 
                 private:
                     typedef typename Unlocker<Data, Extra...>::LockingData LockingData;
@@ -71,6 +73,7 @@ namespace gubg
                     Data *operator->() const {return data_.operator->();}
                     Data *get() const {return data_.get();}
                     bool operator()() const {return data_;}
+                    DataPtr ptr() const {return data_;}
 
                     void wait()
                     {
@@ -120,6 +123,7 @@ namespace gubg
                     Data *operator->() const {return data_.operator->();}
                     Data *get() const {return data_.get();}
                     bool operator()() const {return data_;}
+                    DataPtr ptr() const {return data_;}
 
                     void wait()
                     {
@@ -181,6 +185,7 @@ namespace gubg
                     Data *operator->() const {return data_.operator->();}
                     Data *get() const {return data_.get();}
                     bool operator()() const {return data_;}
+                    DataPtr ptr() const {return data_;}
 
                     void wait()
                     {

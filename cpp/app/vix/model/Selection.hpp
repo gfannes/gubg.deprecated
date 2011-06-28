@@ -17,7 +17,7 @@ namespace vix
         class Selection
         {
             public:
-                typedef boost::signals2::signal<void ()> UpdateSignal;
+                typedef boost::signals2::signal<void (Selection *)> UpdateSignal;
 
                 Selection(const std::string &path);
 

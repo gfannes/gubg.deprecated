@@ -26,7 +26,7 @@ namespace vix
             void setSelected(const QModelIndex &, const QModelIndex &);
 
         private:
-            void updateSelection_();
+            void updateSelection_(vix::model::Selection *);
 
             bool gotoSelection_();
 
