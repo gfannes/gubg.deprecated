@@ -12,6 +12,8 @@
 
 #include <sstream>
 
+#include "nullptr.hpp"
+
 namespace gubg
 {
     namespace testing
@@ -31,8 +33,8 @@ namespace gubg
             {
                 std::ostringstream res;
                 res << std::hex;
-                for (auto byte: binary)
-                    res << "0x" << std::setw(2) << std::setfill('0') << (int)(0xff & byte) << ", ";
+                for (auto byte = binary.begin(); byte != binary.end(); ++byte)
+                    res << "0x" << std::setw(2) << std::setfill('0') << (int)(0xff & (*byte)) << ", ";
                 return res.str();
             }
         template <typename T1, typename T2>

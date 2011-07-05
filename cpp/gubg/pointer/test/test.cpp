@@ -19,7 +19,7 @@ namespace
                 LOG_SM(Data, "constructor");
                 value_ = 0;
             }
-            ~Data()
+            virtual ~Data()
             {
                 LOG_SM(Data, "destructor, value_: " << value_);
             }
@@ -27,24 +27,39 @@ namespace
             static int value_;
     };
     int Data::value_ = 0;
-    typedef Locked<Data, ThreadSafeInstance> DataPtrI;
-    typedef Locked<Data, ThreadSafeType> DataPtrT;
-
-    template <typename DataPtrI>
-    struct IncrementThread: gubg::InstanceCounter<IncrementThread<DataPtrI>>
+    class Derived: public Data
     {
-        IncrementThread(DataPtrI data):
+        public:
+            Derived()
+            {
+                LOG_SM(Derived, "constructor");
+            }
+            virtual ~Derived()
+            {
+                LOG_SM(Derived, "destructor");
+            }
+    };
+    typedef Locked<Data, ThreadSafeInstance> IDataPtr;
+    typedef Locked<Data, ThreadSafeType> TDataPtr;
+    typedef Locked<Data, ThreadSafeBaseType, Data> TBDataPtr;
+    typedef Locked<Derived, ThreadSafeBaseType, Data> TDDataPtr;
+
+    //Increments value_ in a way that would fail if performed multi-threaded without proper locking
+    template <typename IDataPtr>
+    struct IncrementThread: gubg::InstanceCounter<IncrementThread<IDataPtr>>
+    {
+        IncrementThread(IDataPtr data):
             data_(data),
             thread_(boost::ref(*this)){}
         void operator()()
         {
-            typename DataPtrI::Unlock unlock(data_);
+            typename IDataPtr::Unlock unlock(data_);
             int v = unlock->value_;
             gubg::nanosleep(0, 100000000);
             unlock->value_ = v+1;
             delete this;
         }
-        DataPtrI data_;
+        IDataPtr data_;
         boost::thread thread_;
     };
 }
@@ -57,53 +72,64 @@ int main()
         LOG_SM(constructor, "Constructor");
         {
             LOG_SM(RawPointer, "RawPointer");
-            DataPtrI data(new Data);
+            IDataPtr data(new Data);
             TEST_TRUE(data());
         }
         {
             LOG_SM(SharedPointer, "SharedPointer");
             Data::Ptr dataPtr(new Data);
-            DataPtrI data(dataPtr);
+            IDataPtr data(dataPtr);
             TEST_TRUE(data());
         }
     }
     {
         LOG_SM(Unlock, "Unlock");
-        DataPtrI data(new Data);
-        DataPtrI::Unlock unlock(data);
+        IDataPtr data(new Data);
+        IDataPtr::Unlock unlock(data);
         ++unlock->value_;
         {
-            DataPtrI::Unlock unlock2(data);
+            IDataPtr::Unlock unlock2(data);
             ++unlock2->value_;
         }
     }
     {
         LOG_SM(MultiThreaded, "MultiThreaded");
         const int NrThreads = 10;
-        DataPtrI data(new Data);
+        IDataPtr data(new Data);
         for (int i = 0; i < NrThreads; ++i)
-            new IncrementThread<DataPtrI>(data);
-        while (IncrementThread<DataPtrI>::nrInstances() > 0)
+            new IncrementThread<IDataPtr>(data);
+        while (IncrementThread<IDataPtr>::nrInstances() > 0)
             gubg::nanosleep(0, 100000000);
-        DataPtrI::Unlock unlock(data);
+        IDataPtr::Unlock unlock(data);
         TEST_EQ(NrThreads, unlock->value_);
     }
     {
         LOG_SM(Singleton, "Mutex per instance");
-        DataPtrI data1(new Data);
-        DataPtrI data2(new Data);
-        new IncrementThread<DataPtrI>(data1);
-        new IncrementThread<DataPtrI>(data2);
-        while (IncrementThread<DataPtrI>::nrInstances() > 0)
+        IDataPtr data1(new Data);
+        IDataPtr data2(new Data);
+        new IncrementThread<IDataPtr>(data1);
+        new IncrementThread<IDataPtr>(data2);
+        while (IncrementThread<IDataPtr>::nrInstances() > 0)
             gubg::nanosleep(0, 100000000);
     }
     {
         LOG_SM(Singleton, "Mutex per type");
-        DataPtrT data1(new Data);
-        DataPtrT data2(new Data);
-        new IncrementThread<DataPtrT>(data1);
-        new IncrementThread<DataPtrT>(data2);
-        while (IncrementThread<DataPtrT>::nrInstances() > 0)
+        TDataPtr data1(new Data);
+        TDataPtr data2(new Data);
+        new IncrementThread<TDataPtr>(data1);
+        new IncrementThread<TDataPtr>(data2);
+        while (IncrementThread<TDataPtr>::nrInstances() > 0)
+            gubg::nanosleep(0, 100000000);
+    }
+    {
+        LOG_SM(Singleton, "Mutex per base type");
+        TBDataPtr base(new Data);
+        TDDataPtr derived(new Derived);
+        new IncrementThread<TBDataPtr>(base);
+        new IncrementThread<TDDataPtr>(derived);
+        while (IncrementThread<TBDataPtr>::nrInstances() > 0)
+            gubg::nanosleep(0, 100000000);
+        while (IncrementThread<TDDataPtr>::nrInstances() > 0)
             gubg::nanosleep(0, 100000000);
     }
 

@@ -4,7 +4,7 @@ require("gubg/utils")
 localSources = %w[gb Collection Configuration MetaInfo Commands Exit Runtime]
 gubgSources = %w[Tree FSTree JSON Build Format FileCache OnlyOnce OptionParser parsing/D parsing/Cpp]
 
-objectExtension = ("Linux" == operatingSystem ? "o" : "obj")
+objectExtension = (%w[Linux Linux64].include?(operatingSystem) ? "o" : "obj")
 
 objectFiles = []
 [localSources, gubgSources].zip(["", "../../gubg/"]).each do |sources, dir|

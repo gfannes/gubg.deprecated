@@ -1,4 +1,5 @@
 #include "controller/VixApplication.hpp"
+#include "controller/Commander.hpp"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <QVBoxLayout>
@@ -29,9 +30,9 @@ VixApplication::VixApplication(int argc, char **argv):
 
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
-    selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this));
+    selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
 
-    updateSelection_();
+    updateSelection_(&selectionModel_);
 }
 
 void VixApplication::process4Commandline(QChar ch)
@@ -39,6 +40,7 @@ void VixApplication::process4Commandline(QChar ch)
     LOG_S_(Debug, process4Commandline_QChar);
     int i = (int)ch.toAscii();
     LOG_M_(Debug, "Process key " << i);
+    auto &commander = Commander::instance();
     switch (i)
     {
         case 27:
@@ -86,7 +88,7 @@ void VixApplication::process4Commandline(int keycode)
             break;
         case (int)KeyCode::Left:
             {
-                auto parent = selectionModel_.path()->location();
+                auto parent = vix::model::Path::Unlock(selectionModel_.path())->location();
                 if (parent)
                 {
                     commandLine_.setText("");
@@ -125,16 +127,23 @@ void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &
     selectionModel_.setSelected(selected);
 }
 
-void VixApplication::updateSelection_()
+void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 {
     LOG_S_(Debug, VixApplication::updateSelection_);
-    pathLabel_.setText(selectionModel_.path()->path().c_str());
+    pathLabel_.setText(vix::model::Path::Unlock(selectionModel->path())->path().c_str());
     vix::model::Files files;
     int selectedIX;
-    selectionModel_.getFiles(files, selectedIX);
+    selectionModel->getFiles(files, selectedIX);
     QStringList stringList;
-    for (auto file = files.begin(); file != files.end(); ++file)
-        stringList << (*file)->name().c_str();
+    for (auto it = files.begin(); it != files.end(); ++it)
+    {
+        auto &file = *it;
+        vix::model::File::Unlock unlockedFile(file);
+        if (unlockedFile->isDirectory())
+            stringList << (unlockedFile->name() + "/").c_str();
+        else
+            stringList << unlockedFile->name().c_str();
+    }
     stringListModel_.setStringList(stringList);
     LOG_M_(Debug, "selectedIX: " << selectedIX);
     auto ix = stringListModel_.index(selectedIX);
