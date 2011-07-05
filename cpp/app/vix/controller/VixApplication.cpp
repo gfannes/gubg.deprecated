@@ -1,4 +1,5 @@
 #include "controller/VixApplication.hpp"
+#include "controller/Commander.hpp"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <QVBoxLayout>
@@ -39,6 +40,7 @@ void VixApplication::process4Commandline(QChar ch)
     LOG_S_(Debug, process4Commandline_QChar);
     int i = (int)ch.toAscii();
     LOG_M_(Debug, "Process key " << i);
+    auto &commander = Commander::instance();
     switch (i)
     {
         case 27:
