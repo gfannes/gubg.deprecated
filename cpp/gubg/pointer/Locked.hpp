@@ -41,7 +41,7 @@ namespace gubg
         //An unlock strategy that makes each instance of Data thread safe. Multiple instances can be access concurrently
         // => Keeps one mutex per instance
         template <typename Data>
-            class ThreadSafeUnlocker
+            class ThreadSafeInstance
             {
                 public:
                     typedef boost::recursive_mutex Mutex;
@@ -55,13 +55,13 @@ namespace gubg
                     typedef boost::shared_ptr<Data> DataPtr;
 
                     template <typename Locked>
-                    ThreadSafeUnlocker(Locked locked):
+                    ThreadSafeInstance(Locked locked):
                         lockingData_(locked.lockingData_),
                         data_(locked.data_),
                         lock_(new Mutex::scoped_lock(lockingData_->mutex_))
                     {
                     }
-                    virtual ~ThreadSafeUnlocker()
+                    virtual ~ThreadSafeInstance()
                     {
                         lock_.reset();
                         lockingData_->condition_.notify_all();
@@ -91,7 +91,7 @@ namespace gubg
         //An unlock strategy that makes each type Data thread safe. Multiple instances of Data _cannot_ be accessed concurrently
         // => Keeps one mutex per type
         template <typename Data>
-            class SingletonThreadSafeUnlocker
+            class ThreadSafeType
             {
                 public:
                     typedef boost::recursive_mutex Mutex;
@@ -105,12 +105,12 @@ namespace gubg
                     typedef boost::shared_ptr<Data> DataPtr;
 
                     template <typename Locked>
-                    SingletonThreadSafeUnlocker(Locked locked):
+                    ThreadSafeType(Locked locked):
                         data_(locked.data_),
                         lock_(new Mutex::scoped_lock(LockingData::mutex_))
                     {
                     }
-                    virtual ~SingletonThreadSafeUnlocker()
+                    virtual ~ThreadSafeType()
                     {
                         lock_.reset();
                         LockingData::condition_.notify_all();
@@ -136,9 +136,9 @@ namespace gubg
                     LockPtr lock_;
             };
         template <typename Data>
-            boost::recursive_mutex SingletonThreadSafeUnlocker<Data>::LockingData::mutex_;
+            boost::recursive_mutex ThreadSafeType<Data>::LockingData::mutex_;
         template <typename Data>
-            boost::condition SingletonThreadSafeUnlocker<Data>::LockingData::condition_;
+            boost::condition ThreadSafeType<Data>::LockingData::condition_;
     }
 }
 

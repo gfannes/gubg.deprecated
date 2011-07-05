@@ -2,6 +2,7 @@
 #define vix_model_FileSystem_hpp
 
 #include "Singleton.hpp"
+#include "pointer/Locked.hpp"
 #include "file/File.hpp"
 #include <string>
 
@@ -9,6 +10,8 @@ namespace vix
 {
     namespace model
     {
+        typedef gubg::pointer::Locked<gubg::file::Directory, gubg::pointer::ThreadSafeType> Path
+        typedef gubg::pointer::Locked<gubg::file::Directory, gubg::pointer::ThreadSafeType> Path
         typedef gubg::file::Directory::Ptr Path;
         typedef gubg::file::File::Ptr File;
         typedef std::vector<File> Files;
