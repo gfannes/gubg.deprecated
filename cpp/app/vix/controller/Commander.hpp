@@ -1,19 +1,17 @@
 #ifndef vix_controller_Commander_hpp
 #define vix_controller_Commander_hpp
 
+#include "controller/Command.hpp"
 #include "Singleton.hpp"
 
 namespace vix
 {
     class Commander
     {
-        private:
-            friend class gubg::Singleton<Commander>;
-            Commander();
-            Commander &Commander(const Commander &);
+        GUBG_SINGLETON(Commander);
 
         public:
-            add(ICommand)
+        void add(ICommand::Ptr);
     };
 }
 

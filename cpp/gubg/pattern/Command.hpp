@@ -9,27 +9,29 @@ namespace gubg
     namespace pattern
     {
         //Abstract command interface, to be used by the invoker
+        template <typename ReturnV>
         class ICommand
         {
             public:
                 typedef boost::shared_ptr<ICommand> Ptr;
+                typedef ReturnV ReturnValue;
 
                 virtual ~ICommand(){}
 
                 //This needs to be implemented
-                virtual bool execute() = 0;
+                virtual ReturnValue execute() = 0;
 
                 //Undo is optional
-                virtual bool undo()
+                virtual ReturnValue undo()
                 {
                     gubg::Exception::raise(gubg::NotImplemented("The undo()-method is not implemented for gubg::pattern::ICommand"));
-                    return false;
+                    return ReturnValue();
                 }
         };
 
         //Slightly more concrete base class which clearly states the receiver
-        template <typename Receiver>
-            class Command: public ICommand
+        template <typename Interface, typename Receiver>
+            class Command: public Interface
         {
             public:
                 Command(Receiver &receiver):

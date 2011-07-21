@@ -7,8 +7,8 @@
 #include <vector>
 using namespace std;
 
-typedef gubg::pattern::ICommand ICommand;
-typedef gubg::pattern::Command<int> Command;
+typedef gubg::pattern::ICommand<bool> ICommand;
+typedef gubg::pattern::Command<ICommand, int> Command;
 class Increment: public Command
 {
     public:

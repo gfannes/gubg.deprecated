@@ -3,6 +3,20 @@
 
 #include "boost/thread/mutex.hpp"
 
+//Insert this into the class definition to
+// * make its constructors private
+// * provide a static instance()-method
+//The default constructor still needs an implementation
+#define GUBG_SINGLETON(Type) \
+        private: \
+            friend class gubg::Singleton<Type>; \
+            Type(); \
+            Type(const Type &); \
+            Type &operator=(const Type &); \
+        public: \
+            static Type &instance(){return gubg::Singleton<Type>::instance();} \
+        private:
+
 namespace gubg
 {
     template <typename T>
