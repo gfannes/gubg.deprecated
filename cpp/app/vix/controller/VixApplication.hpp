@@ -1,6 +1,7 @@
 #ifndef controller_VixApplication_hpp
 #define controller_VixApplication_hpp
 
+#include "controller/Commander.hpp"
 #include "model/Selection.hpp"
 #include "view/Selection.hpp"
 #include <QApplication>
@@ -38,6 +39,7 @@ namespace vix
 
             QStringListModel stringListModel_;
             vix::model::Selection selectionModel_;
+            vix::Commander commander_;
             boost::signals2::connection selectionModelUpdatedConnection_;
     };
 }

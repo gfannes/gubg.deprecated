@@ -11,10 +11,11 @@ using namespace std;
 VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
 #ifdef __linux
-    selectionModel_("/home/gfannes")
+    selectionModel_("/home/gfannes"),
 #else
-    selectionModel_("h:/")
+    selectionModel_("h:/"),
 #endif
+    commander_(selectionModel_)
 {
     QWidget *centralWidget = new QWidget(&mainWindow_); 
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
@@ -40,31 +41,23 @@ void VixApplication::process4Commandline(QChar ch)
     LOG_S_(Debug, process4Commandline_QChar);
     int i = (int)ch.toAscii();
     LOG_M_(Debug, "Process key " << i);
-    auto &commander = Commander::instance();
-    switch (i)
     {
-        case 27:
-            commandLine_.setText("");
-            break;
-        case 13:
-            {
-                boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                switch (selectionModel_.activateSelected(model::Action::Open))
-                {
-                    case model::Activation::Directory:
-                        commandLine_.setText("");
-                        break;
-                    case model::Activation::Regular: break;
-                    default: break;
-                }
-            }
-            break;
-        default:
-            QString text = commandLine_.text() + ch;
-            commandLine_.setText(text);
-            break;
+        switch (i)
+        {
+            case 27://Escape
+                commander_.clear();
+                break;
+            case 13://Enter
+                commander_.activate(Commander::Key::Enter);
+                break;
+            default:
+                commander_.add(ch.toAscii());
+                break;
+        }
     }
-    selectionModel_.setFilter(commandLine_.text().toStdString());
+    auto text = commander_.text();
+    commandLine_.setText(QString(text.c_str()));
+    selectionModel_.setFilter(text);
 }
 enum class KeyCode: int
 {
@@ -76,47 +69,41 @@ enum class KeyCode: int
 void VixApplication::process4Commandline(int keycode)
 {
     LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << dec);
-    switch (keycode)
     {
-        case (int)KeyCode::Up:
-            selectionModel_.move(model::Selection::Direction::Up);
-            return;
-            break;
-        case (int)KeyCode::Down:
-            selectionModel_.move(model::Selection::Direction::Down);
-            return;
-            break;
-        case (int)KeyCode::Left:
-            {
-                auto parent = vix::model::Path::Unlock(selectionModel_.path())->location();
-                if (parent)
+        switch (keycode)
+        {
+            case (int)KeyCode::Up:
+                selectionModel_.move(model::Selection::Direction::Up);
+                return;
+                break;
+            case (int)KeyCode::Down:
+                selectionModel_.move(model::Selection::Direction::Down);
+                return;
+                break;
+            case (int)KeyCode::Left:
                 {
-                    commandLine_.setText("");
+                    auto parent = vix::model::Path::Unlock(selectionModel_.path())->location();
+                    if (parent)
+                    {
+                        commander_.clear();
+                        boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
+                        selectionModel_.setPath(parent);
+                    }
+                }
+                break;
+            case (int)KeyCode::Right:
+                {
                     boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                    selectionModel_.setPath(parent);
+                    commander_.activate(Commander::Key::Arrow);
                 }
-            }
-            break;
-        case (int)KeyCode::Right:
-            {
-                boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                switch (selectionModel_.activateSelected(model::Action::Edit))
-                {
-                    case model::Activation::Directory:
-                        commandLine_.setText("");
-                        break;
-                    case model::Activation::Regular:
-                        break;
-                    default: break;
-                }
-            }
-            break;
-        default:
-            LOG_M_(Debug, "Doing nothing");
-            return;
-            break;
+                break;
+            default:
+                LOG_M_(Debug, "Doing nothing");
+                return;
+                break;
+        }
     }
-    selectionModel_.setFilter(commandLine_.text().toStdString());
+    selectionModel_.setFilter(commander_.text());
 }
 
 void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &prev)
