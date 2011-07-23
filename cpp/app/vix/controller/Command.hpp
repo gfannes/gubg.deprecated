@@ -41,6 +41,7 @@ namespace vix
         {
             public:
                 virtual bool execute();
+                virtual std::string description() const {return "New tab";}
         };
         class CloseTab: public ICommand
         {
@@ -57,7 +58,6 @@ namespace vix
         class Quit: public ICommand
         {
             public:
-                Quit(){}
                 virtual bool execute();
                 virtual std::string description() const {return "Quit";}
         };

@@ -11,6 +11,9 @@ namespace vix
             auto str = getCommand();
             if (str == "qa")
                 command.reset(new command::Quit());
+            else if (str == "t")
+                command.reset(new command::NewTab());
+            clear();
         }
         else
         {
@@ -24,7 +27,8 @@ namespace vix
                     break;
             }
         }
-        pendingCommands_.push_back(command);
+        if (command)
+            pendingCommands_.push_back(command);
         executeCommands_();
     }
 

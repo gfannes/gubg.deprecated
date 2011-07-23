@@ -15,6 +15,11 @@ bool Open::execute()
     return true;
 }
 
+bool NewTab::execute()
+{
+    return true;
+}
+
 bool Quit::execute()
 {
     exit(0);
