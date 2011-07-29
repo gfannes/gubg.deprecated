@@ -2,6 +2,7 @@
 #define vix_controller_Commander_hpp
 
 #include "controller/Command.hpp"
+#include "controller/Instruction.hpp"
 #include "model/Selection.hpp"
 #include <deque>
 
@@ -10,17 +11,19 @@ namespace vix
     namespace command
     {
         class Open;
+        class NewTab;
     }
     class Commander
     {
         public:
-            Commander(model::Selection &selection):
-                selection_(selection){}
+            Commander(model::Selections &selections):
+                selections_(selections){}
 
         void add(ICommand::Ptr);
         void add(char ch){text_.push_back(ch);}
         void clear(){text_.clear();}
         std::string text() const {return text_;}
+        bool isFilter() const;
 
         enum class Key {Enter, Arrow};
         void activate(Key);
@@ -29,9 +32,9 @@ namespace vix
         void executeCommands_();
 
         friend class vix::command::Open;
-        model::Selection &selection_;
-        bool isCommand() const {return !text_.empty() && text_[0] == ':';}
-        std::string getCommand() const {return text_.empty() ? "" : text_.substr(1);}
+        friend class vix::command::NewTab;
+        model::Selections &selections_;
+        Instruction getInstruction() const {return Instruction(text_);}
         std::string text_;
 
         typedef std::deque<ICommand::Ptr> Commands;

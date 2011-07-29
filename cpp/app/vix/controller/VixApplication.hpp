@@ -24,6 +24,7 @@ namespace vix
         public slots:
             void process4Commandline(QChar);
             void process4Commandline(int);
+            void changeCurrent(int);
             void setSelected(const QModelIndex &, const QModelIndex &);
 
         private:
@@ -38,9 +39,9 @@ namespace vix
             QLineEdit commandLine_;
 
             QStringListModel stringListModel_;
-            vix::model::Selection selectionModel_;
+            vix::model::Selections selectionModels_;
             vix::Commander commander_;
-            boost::signals2::connection selectionModelUpdatedConnection_;
+            boost::signals2::connection selectionModelsUpdatedConnection_;
     };
 }
 

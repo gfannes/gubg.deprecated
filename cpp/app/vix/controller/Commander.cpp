@@ -1,18 +1,29 @@
 #include "controller/Commander.hpp"
 #include "controller/Command.hpp"
+using namespace std;
 
 namespace vix
 {
+    bool Commander::isFilter() const
+    {
+        return text_.empty() || text_[0] != ':';
+    }
+
     void Commander::activate(Key key)
     {
         ICommand::Ptr command;
-        if (isCommand())
+        auto instruction = getInstruction();
+        if (instruction.isValid())
         {
-            auto str = getCommand();
-            if (str == "qa")
+            if (instruction.command() == "q")
                 command.reset(new command::Quit());
-            else if (str == "t")
-                command.reset(new command::NewTab());
+            else if (instruction.command() == "t")
+            {
+                string path = instruction.options();
+                if (path.empty() && !selections_.empty())
+                    path = vix::model::Path::Unlock(selections_.current()->path())->path();
+                command.reset(new command::NewTab(*this, path));
+            }
             clear();
         }
         else

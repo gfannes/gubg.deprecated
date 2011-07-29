@@ -8,7 +8,43 @@ using namespace std;
 using namespace boost;
 using namespace boost::filesystem;
 
-Selection::Selection(const string &path):
+//Selections
+Selections::Selections():
+    current_(-1){}
+Selections::~Selections()
+{
+    for (auto selection = selections_.begin(); selection != selections_.end(); ++selection)
+        delete *selection;
+}
+bool Selections::empty() const
+{
+    return selections_.empty();
+}
+Selection *Selections::current() const
+{
+    return selections_[current_];
+}
+void Selections::setCurrent(int ix)
+{
+    if (ix < 0 || ix >= selections_.size())
+        return;
+    current_ = ix;
+    updated_(current());
+}
+void Selections::addSelection(const string &path)
+{
+    selections_.push_back(new Selection(*this, path));
+    current_ = selections_.size()-1;
+    updated_(current());
+}
+boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &subscriber)
+{
+    return updated_.connect(subscriber);
+}
+
+//Selection
+Selection::Selection(Selections &selections, const string &path):
+    selections_(selections),
     selectedIX_(InvalidIX)
 {
     FileSystem &filesystem = FileSystem::instance();
@@ -20,11 +56,16 @@ Selection::Selection(const string &path):
     updateSelection_();
 }
 
+std::vector<Selection*> Selection::selections()
+{
+    return selections_.selections_;
+}
+
 void Selection::setPath(Path path)
 {
     path_ = path;
     updateFiles_();
-    updated_(this);
+    selections_.updated_(this);
 }
 void Selection::setFilter(const string &filter)
 {
@@ -35,12 +76,16 @@ void Selection::setFilter(const string &filter)
         filter_.reset(new regex(filter, regex_constants::icase));
     updateFiles_();
     updateSelection_(selected_);
-    updated_(this);
+    selections_.updated_(this);
 }
 void Selection::setSelected(const string &selected)
 {
     updateSelection_(selected);
-    updated_(this);
+    selections_.updated_(this);
+}
+string Selection::getSelection() const
+{
+    return selected_;
 }
 
 void Selection::getFiles(Files &files, int &selectedIX) const
@@ -62,7 +107,7 @@ Activation Selection::activateSelected(Action action)
         updateFiles_();
         LOG_M_(Debug, "path_ is now: " << path_);
         updateSelection_();
-        updated_(this);
+        selections_.updated_(this);
         return Activation::Directory;
     }
     if (auto file = FileSystem::instance().toRegular(selected))
@@ -114,13 +159,8 @@ bool Selection::move(Direction direction)
             break;
     }
     updateSelection_();
-    updated_(this);
+    selections_.updated_(this);
     return true;
-}
-
-boost::signals2::connection Selection::connect(const UpdateSignal::slot_type &subscriber)
-{
-    return updated_.connect(subscriber);
 }
 
 //Private methods

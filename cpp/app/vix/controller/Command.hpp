@@ -40,8 +40,12 @@ namespace vix
         class NewTab: public ICommand
         {
             public:
+                NewTab(Commander &, const std::string &name);
                 virtual bool execute();
                 virtual std::string description() const {return "New tab";}
+            private:
+                Commander &commander_;
+                const std::string name_;
         };
         class CloseTab: public ICommand
         {

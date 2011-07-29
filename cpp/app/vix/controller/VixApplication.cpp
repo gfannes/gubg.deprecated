@@ -10,18 +10,13 @@ using namespace std;
 
 VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
-#ifdef __linux
-    selectionModel_("/home/gfannes"),
-#else
-    selectionModel_("h:/"),
-#endif
-    commander_(selectionModel_)
+    commander_(selectionModels_)
 {
+    LOG_S_(Debug, VixApplication::VixApplication);
     QWidget *centralWidget = new QWidget(&mainWindow_); 
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
     mainWindow_.setCentralWidget(centralWidget);
     selectionView_.setModel(&stringListModel_);
-    tabBar_.addTab("Initializing");
     tabBar_.setFocusPolicy(Qt::NoFocus);
     vbox->addWidget(&tabBar_);
     vbox->addWidget(&pathLabel_);
@@ -31,9 +26,15 @@ VixApplication::VixApplication(int argc, char **argv):
 
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
-    selectionModelUpdatedConnection_ = selectionModel_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
+    connect(&tabBar_, SIGNAL(currentChanged(int)), this, SLOT(changeCurrent(int)));
+    selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
 
-    updateSelection_(&selectionModel_);
+#ifdef __linux
+    const string path("/home/gfannes");
+#else
+    const string path("h:/");
+#endif
+    selectionModels_.addSelection(path);
 }
 
 void VixApplication::process4Commandline(QChar ch)
@@ -57,7 +58,8 @@ void VixApplication::process4Commandline(QChar ch)
     }
     auto text = commander_.text();
     commandLine_.setText(QString(text.c_str()));
-    selectionModel_.setFilter(text);
+    if (commander_.isFilter())
+        selectionModels_.current()->setFilter(text);
 }
 enum class KeyCode: int
 {
@@ -69,31 +71,35 @@ enum class KeyCode: int
 void VixApplication::process4Commandline(int keycode)
 {
     LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << dec);
+    if (selectionModels_.empty())
+        return;
+
+    model::Selection &selection = *selectionModels_.current();
     {
         switch (keycode)
         {
             case (int)KeyCode::Up:
-                selectionModel_.move(model::Selection::Direction::Up);
+                selection.move(model::Selection::Direction::Up);
                 return;
                 break;
             case (int)KeyCode::Down:
-                selectionModel_.move(model::Selection::Direction::Down);
+                selection.move(model::Selection::Direction::Down);
                 return;
                 break;
             case (int)KeyCode::Left:
                 {
-                    auto parent = vix::model::Path::Unlock(selectionModel_.path())->location();
+                    auto parent = vix::model::Path::Unlock(selection.path())->location();
                     if (parent)
                     {
                         commander_.clear();
-                        boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
-                        selectionModel_.setPath(parent);
+                        boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
+                        selection.setPath(parent);
                     }
                 }
                 break;
             case (int)KeyCode::Right:
                 {
-                    boost::signals2::shared_connection_block block(selectionModelUpdatedConnection_);
+                    boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
                     commander_.activate(Commander::Key::Arrow);
                 }
                 break;
@@ -103,7 +109,12 @@ void VixApplication::process4Commandline(int keycode)
                 break;
         }
     }
-    selectionModel_.setFilter(commander_.text());
+    selection.setFilter(commander_.text());
+}
+
+void VixApplication::changeCurrent(int ix)
+{
+    selectionModels_.setCurrent(ix);
 }
 
 void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &prev)
@@ -111,13 +122,34 @@ void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &
     LOG_S_(Debug, setSelected);
     auto selected = stringListModel_.data(current, Qt::DisplayRole).toString().toStdString();
     LOG_M_(Debug, "setSelected to " << selected);
-    selectionModel_.setSelected(selected);
+    if (selectionModels_.empty())
+        return;
+    selectionModels_.current()->setSelected(selected);
 }
 
 void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 {
-    LOG_S_(Debug, VixApplication::updateSelection_);
+    LOG_SM_(Debug, VixApplication::updateSelection_, "selectionModel: " << selectionModel);
     pathLabel_.setText(vix::model::Path::Unlock(selectionModel->path())->path().c_str());
+
+    //Expand or shrink the tab bar if necessary and populate it
+    {
+        auto selections = selectionModel->selections();
+        while (tabBar_.count() != selections.size())
+        {
+            if (tabBar_.count() < selections.size())
+                tabBar_.addTab("");
+            else
+                tabBar_.removeTab(0);
+        }
+        for (auto selection = selections.begin(); selection != selections.end(); ++selection)
+        {
+            auto ix = selection-selections.begin();
+            tabBar_.setTabText(ix, vix::model::Path::Unlock((*selection)->path())->name().c_str());
+            if (selectionModel == *selection)
+                tabBar_.setCurrentIndex(ix);
+        }
+    }
     vix::model::Files files;
     int selectedIX;
     selectionModel->getFiles(files, selectedIX);

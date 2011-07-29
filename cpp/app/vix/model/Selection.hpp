@@ -14,16 +14,44 @@ namespace vix
         enum class Action {View, Edit, Open, Delete, Copy, Move};
         enum class Activation {Error, Directory, Regular, SomethingElse};
 
-        class Selection
+        class Selection;
+
+        class Selections
         {
             public:
                 typedef boost::signals2::signal<void (Selection *)> UpdateSignal;
 
-                Selection(const std::string &path);
+                Selections();
+                virtual ~Selections();
 
+                boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
+
+                bool empty() const;
+                Selection *current() const;
+                void setCurrent(int ix);
+                void addSelection(const std::string &path);
+
+            private:
+                friend class Selection;
+                UpdateSignal updated_;
+                typedef std::vector<Selection*> Selections_;
+                Selections_ selections_;
+                int current_;
+        };
+
+        class Selection
+        {
+            private:
+                friend class Selections;
+                Selection(Selections &selections, const std::string &path);
+
+            public:
                 Path path() const {return path_;}
                 void setPath(Path);
                 void setSelected(const std::string &selected);
+                std::string getSelected() const;
+
+                std::vector<Selection*> selections();
 
                 static const int InvalidIX = -2;
                 void getFiles(Files &, int &selectedIX) const;
@@ -33,10 +61,8 @@ namespace vix
 
                 void setFilter(const std::string &);
 
-                boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
-
             private:
-                UpdateSignal updated_;
+                Selections &selections_;
 
                 //This is the primary data for the set of files_
                 Path path_;
