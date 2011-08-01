@@ -25,7 +25,7 @@ VixApplication::VixApplication(int argc, char **argv):
     mainWindow_.setVisible(true);
 
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
-    connect(&selectionView_, SIGNAL(keycodePressed(int)), this, SLOT(process4Commandline(int)));
+    connect(&selectionView_, SIGNAL(keycodePressed(int, int)), this, SLOT(process4Commandline(int, int)));
     connect(&tabBar_, SIGNAL(currentChanged(int)), this, SLOT(changeCurrent(int)));
     selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
 
@@ -56,51 +56,75 @@ void VixApplication::process4Commandline(QChar ch)
                 break;
         }
     }
-    auto text = commander_.text();
-    commandLine_.setText(QString(text.c_str()));
-    if (commander_.isFilter())
-        selectionModels_.current()->setFilter(text);
+    commandLine_.setText(QString(commander_.getText().c_str()));
 }
 enum class KeyCode: int
 {
     Left = 0x1000012,
     Right = 0x1000014,
     Up = 0x1000013,
-    Down = 0x1000015
+    Down = 0x1000015,
+    PgUp = 0x1000016,
+    PgDown = 0x1000017
 };
-void VixApplication::process4Commandline(int keycode)
+enum class Modifiers: int
 {
-    LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << dec);
+    None = 0x00000000,
+    Shift = 0x02000000,
+    Control = 0x04000000,
+    Alt = 0x08000000
+};
+void VixApplication::process4Commandline(int keycode, int modifiers)
+{
+    LOG_SM_(Debug, process4Commandline_keycode, "Process keycode " << hex << keycode << ", modifiers " << modifiers << dec);
     if (selectionModels_.empty())
         return;
 
-    model::Selection &selection = *selectionModels_.current();
+    model::Selection *selection = selectionModels_.current();
     {
         switch (keycode)
         {
             case (int)KeyCode::Up:
-                selection.move(model::Selection::Direction::Up);
+                selection->move(model::Selection::Direction::Up);
                 return;
                 break;
             case (int)KeyCode::Down:
-                selection.move(model::Selection::Direction::Down);
+                selection->move(model::Selection::Direction::Down);
                 return;
                 break;
             case (int)KeyCode::Left:
                 {
-                    auto parent = vix::model::Path::Unlock(selection.path())->location();
+                    auto parent = vix::model::Path::Unlock(selection->path())->location();
                     if (parent)
                     {
                         commander_.clear();
-                        boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
-                        selection.setPath(parent);
+                        //boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
+                        selection->setPath(parent);
                     }
                 }
                 break;
             case (int)KeyCode::Right:
                 {
-                    boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
+                    //boost::signals2::shared_connection_block block(selectionModelsUpdatedConnection_);
                     commander_.activate(Commander::Key::Arrow);
+                }
+                break;
+            case (int)KeyCode::PgUp:
+                {
+                    if ((int)Modifiers::Control == modifiers)
+                        commander_.changeTab(selectionModels_.currentIX()-1);
+                    else
+                    {
+                    }
+                }
+                break;
+            case (int)KeyCode::PgDown:
+                {
+                    if ((int)Modifiers::Control == modifiers)
+                        commander_.changeTab(selectionModels_.currentIX()+1);
+                    else
+                    {
+                    }
                 }
                 break;
             default:
@@ -109,12 +133,13 @@ void VixApplication::process4Commandline(int keycode)
                 break;
         }
     }
-    selection.setFilter(commander_.text());
 }
 
 void VixApplication::changeCurrent(int ix)
 {
-    selectionModels_.setCurrent(ix);
+    LOG_S_(Debug, VixApplication::changeCurrent);
+    commander_.changeTab(ix);
+    commandLine_.setText(QString(commander_.getText().c_str()));
 }
 
 void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &prev)
@@ -145,27 +170,40 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
         for (auto selection = selections.begin(); selection != selections.end(); ++selection)
         {
             auto ix = selection-selections.begin();
-            tabBar_.setTabText(ix, vix::model::Path::Unlock((*selection)->path())->name().c_str());
-            if (selectionModel == *selection)
+            std::ostringstream oss;
+            oss << ix << " " << vix::model::Path::Unlock((*selection)->path())->name();
+            tabBar_.setTabText(ix, oss.str().c_str());
+            if (selectionModels_.current() == *selection)
+            {
+                auto prev = tabBar_.blockSignals(true);
                 tabBar_.setCurrentIndex(ix);
+                tabBar_.blockSignals(prev);
+            }
         }
     }
-    vix::model::Files files;
-    int selectedIX;
-    selectionModel->getFiles(files, selectedIX);
-    QStringList stringList;
-    for (auto it = files.begin(); it != files.end(); ++it)
+
+    //Show the files
     {
-        auto &file = *it;
-        vix::model::File::Unlock unlockedFile(file);
-        if (unlockedFile->isDirectory())
-            stringList << (unlockedFile->name() + "/").c_str();
-        else
-            stringList << unlockedFile->name().c_str();
+        vix::model::Files files;
+        int selectedIX;
+        selectionModel->getFiles(files, selectedIX);
+        QStringList stringList;
+        for (auto it = files.begin(); it != files.end(); ++it)
+        {
+            auto &file = *it;
+            vix::model::File::Unlock unlockedFile(file);
+            if (unlockedFile->isDirectory())
+                stringList << (unlockedFile->name() + "/").c_str();
+            else
+                stringList << unlockedFile->name().c_str();
+        }
+        stringListModel_.setStringList(stringList);
+        LOG_M_(Debug, "selectedIX: " << selectedIX);
+        auto ix = stringListModel_.index(selectedIX);
+        selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
+        selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
     }
-    stringListModel_.setStringList(stringList);
-    LOG_M_(Debug, "selectedIX: " << selectedIX);
-    auto ix = stringListModel_.index(selectedIX);
-    selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
-    selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
+
+    //Restore the commandline
+    commandLine_.setText(QString(commander_.getText().c_str()));
 }

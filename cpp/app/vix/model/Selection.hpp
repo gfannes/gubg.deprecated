@@ -28,6 +28,8 @@ namespace vix
 
                 bool empty() const;
                 Selection *current() const;
+                int currentIX() const;
+                int nrModels() const;
                 void setCurrent(int ix);
                 void addSelection(const std::string &path);
 
@@ -60,14 +62,16 @@ namespace vix
                 bool move(Direction);
 
                 void setFilter(const std::string &);
+                std::string getFilter() const {return filter_;}
 
             private:
                 Selections &selections_;
 
                 //This is the primary data for the set of files_
                 Path path_;
+                std::string filter_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
-                Regex filter_;
+                Regex reFilter_;
                 //
                 Files files_;
                 void updateFiles_();

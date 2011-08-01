@@ -20,15 +20,18 @@ namespace vix
                 selections_(selections){}
 
         void add(ICommand::Ptr);
-        void add(char ch){text_.push_back(ch);}
-        void clear(){text_.clear();}
-        std::string text() const {return text_;}
+        void add(char ch);
+        void clear();
+        std::string getText() const;
         bool isFilter() const;
 
         enum class Key {Enter, Arrow};
         void activate(Key);
 
+        void changeTab(int ix);
+
         private:
+        void updateText_();
         void executeCommands_();
 
         friend class vix::command::Open;

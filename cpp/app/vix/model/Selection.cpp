@@ -2,6 +2,7 @@
 #include "settings/Settings.hpp"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
+#include "nullptr.hpp"
 #include <algorithm>
 using namespace vix::model;
 using namespace std;
@@ -22,13 +23,25 @@ bool Selections::empty() const
 }
 Selection *Selections::current() const
 {
+    if (current_ < 0)
+        return nullptr;
     return selections_[current_];
+}
+int Selections::currentIX() const
+{
+    return current_;
+}
+int Selections::nrModels() const
+{
+    return selections_.size();
 }
 void Selections::setCurrent(int ix)
 {
     if (ix < 0 || ix >= selections_.size())
         return;
+    LOG_SM_(Debug, Selections::setCurrent, "ix: " << ix << ", current_: " << current_);
     current_ = ix;
+    LOG_M_(Debug, "current_: " << current_ << ", current(): " << current());
     updated_(current());
 }
 void Selections::addSelection(const string &path)
@@ -70,10 +83,11 @@ void Selection::setPath(Path path)
 void Selection::setFilter(const string &filter)
 {
     LOG_SM_(Debug, setFilter, "Setting filter to " << filter);
-    if (filter.empty())
-        filter_.reset();
+    filter_ = filter;
+    if (filter_.empty())
+        reFilter_.reset();
     else
-        filter_.reset(new regex(filter, regex_constants::icase));
+        reFilter_.reset(new regex(filter_, regex_constants::icase));
     updateFiles_();
     updateSelection_(selected_);
     selections_.updated_(this);
@@ -83,7 +97,7 @@ void Selection::setSelected(const string &selected)
     updateSelection_(selected);
     selections_.updated_(this);
 }
-string Selection::getSelection() const
+string Selection::getSelected() const
 {
     return selected_;
 }
@@ -203,7 +217,7 @@ void Selection::updateFiles_()
         if (!unlockedFile->isHidden())
         {
             smatch match;
-            if (!filter_ || regex_search(unlockedFile->name(), match, *filter_))
+            if (!reFilter_ || regex_search(unlockedFile->name(), match, *reFilter_))
                 files_.push_back(file);
         }
     }

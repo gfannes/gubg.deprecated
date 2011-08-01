@@ -43,7 +43,33 @@ namespace vix
         executeCommands_();
     }
 
+    void Commander::clear()
+    {
+        text_.clear();
+        updateText_();
+    }
+    void Commander::add(char ch)
+    {
+        text_.push_back(ch);
+        updateText_();
+    }
+    void Commander::changeTab(int ix)
+    {
+        selections_.setCurrent(ix);
+        text_ = selections_.current()->getFilter();
+        updateText_();
+    }
+    string Commander::getText() const
+    {
+        return text_;
+    }
+
     //Private methods
+    void Commander::updateText_()
+    {
+        if (isFilter())
+            selections_.current()->setFilter(text_);
+    }
     void Commander::executeCommands_()
     {
         while (!pendingCommands_.empty())

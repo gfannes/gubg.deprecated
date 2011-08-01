@@ -23,7 +23,7 @@ namespace vix
 
         public slots:
             void process4Commandline(QChar);
-            void process4Commandline(int);
+            void process4Commandline(int, int);
             void changeCurrent(int);
             void setSelected(const QModelIndex &, const QModelIndex &);
 

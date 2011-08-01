@@ -29,7 +29,9 @@ void Selection::keyPressEvent(QKeyEvent *ke)
 {
     LOG_S_(Debug, keyPressEvent);
     auto text = ke->text();
-    if (!text.isEmpty())
+    int modifiers = ke->modifiers();
+    LOG_M_(Debug, "Received the following modifiers: " << hex << modifiers << " " << (modifiers & (Qt::ControlModifier | Qt::AltModifier)) << dec);
+    if (!text.isEmpty() && (0 == (modifiers & (Qt::ControlModifier | Qt::AltModifier))))
     {
         LOG_M_(Debug, "Received the following readable key: " << text.toStdString());
         emit readableKeyPressed(text[0]);
@@ -37,6 +39,5 @@ void Selection::keyPressEvent(QKeyEvent *ke)
     }
     int keycode = ke->key();
     LOG_M_(Debug, "Received the following key: " << hex << keycode << dec);
-    emit keycodePressed(keycode);
-//    QListView::keyPressEvent(ke);
+    emit keycodePressed(keycode, modifiers);
 }
