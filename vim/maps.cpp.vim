@@ -5,7 +5,7 @@ map -y <Bslash>aa" <<  << "<Esc><Bslash>a4hi
 map -l o<Esc>:call ReadString("Line")<CR>$
 
 " include
-map -r <Bslash>aA#include "<Esc>:call ReadString("Header")<CR>A"<Esc>-o<Bslash>a
+map -r <Bslash>ajO#include "<Esc>:call ReadString("Header")<CR>A"<Esc><Bslash>a
 " guard
 map -g <Bslash>ai#ifndef <Esc>:call ReadString("Path to header")<CR>$by$o#define <Esc>p-o-oo#endif<Esc>kk<Bslash>a
 " block

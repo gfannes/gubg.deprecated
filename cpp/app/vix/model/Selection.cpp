@@ -83,7 +83,7 @@ void Selection::setSelected(const string &selected)
     updateSelection_(selected);
     selections_.updated_(this);
 }
-string Selection::getSelection() const
+string Selection::getSelected() const
 {
     return selected_;
 }
