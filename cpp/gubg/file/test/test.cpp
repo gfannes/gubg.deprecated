@@ -4,6 +4,8 @@
 #include "logging/Log.hpp"
 //#include "dir.hpp"
 
+#include <iostream>
+
 using namespace std;
 using namespace gubg;
 
@@ -11,9 +13,14 @@ namespace
 {
     const string thisFilepath(__FILE__);
     const string unexistingFilepath("/this/file/does/not/exist.txt");
+#ifdef __linux
+    const string homeDir("/home/gfannes");
+#else
+    const string homeDir("c:/home/gfa");
+#endif
 }
 
-int main()
+int main(int argc, char **argv)
 {
     TEST_TAG(main);
     {
@@ -52,7 +59,6 @@ int main()
     {
         TEST_TAG(Directory);
         LOG_S(DirectoryTests);
-        const string homeDir("/home/gfannes");
         auto dir = file::Directory::create(homeDir);
         auto nr = file::Directory::expand(dir, file::ExpandStrategy::Shallow);
         LOG_M("I found " << nr << " files in " << dir->path() << " using Shallow");
