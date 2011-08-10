@@ -70,29 +70,6 @@ namespace vix
             virtual bool processChar(char);
             virtual bool processControl(Event::Special);
     };
-
-    class MetaStateMachine: public gubg::MetaStateMachine<Event>
-    {
-        private:
-            typedef gubg::MetaStateMachine<Event> Base;
-        public:
-            MetaStateMachine();
-
-            std::string getFilter() const;
-            std::string getContent() const;
-            std::string getCommand() const;
-
-            void connect(Control, const vix::StateMachine::Slot &);
-
-        protected: 
-            virtual bool processEventLocally(Event);
-
-        private:
-            //The submachines
-            std::shared_ptr<FilterStateMachine> filter_;
-            std::shared_ptr<ContentStateMachine> content_;
-            std::shared_ptr<CommandStateMachine> command_;
-    };
 }
 
 #endif

@@ -11,6 +11,7 @@
 #include <QTabBar>
 #include <QLineEdit>
 #include "boost/signals2.hpp"
+#include <array>
 
 namespace vix
 {
@@ -29,6 +30,7 @@ namespace vix
 
         private:
             void updateSelection_(vix::model::Selection *);
+            void updateCommander_(int, std::string *);
 
             bool gotoSelection_();
 
@@ -36,12 +38,17 @@ namespace vix
             QTabBar tabBar_;
             QLabel pathLabel_;
             vix::view::Selection selectionView_;
-            QLineEdit commandLine_;
+            typedef std::array<QLabel, 1> Labels;
+            Labels labels_;
+            QLineEdit filter_;
+            QLineEdit content_;
+            QLineEdit command_;
 
             QStringListModel stringListModel_;
             vix::model::Selections selectionModels_;
             vix::Commander commander_;
             boost::signals2::connection selectionModelsUpdatedConnection_;
+            boost::signals2::connection commanderUpdatedConnection_;
     };
 }
 

@@ -1,22 +1,57 @@
-#ifndef gubg_statemachine_hpp
-#define gubg_statemachine_hpp
+#ifndef gubg_statemachine_Statemachine_hpp
+#define gubg_statemachine_Statemachine_hpp
 
 #include <memory>
 
 namespace gubg
 {
+    namespace statemachine
+    {
+        template <typename State>
+            class IState
+            {
+                public:
+                    virtual State state() const = 0;
+                    virtual void changeState(State) = 0;
+            };
+
+        //Policy should inherit from IState<State>
+        template <typename State, typename Policy>
+            class StateMachine: public Policy
+        {
+            public:
+                template <typename Event>
+                    bool processEvent(Event event)
+                    {
+                        if (Policy::dispatchEvent(event))
+                            return true;
+                        if (Policy::handleEvent(event))
+                            return true;
+                        return false;
+                    }
+
+            protected:
+                //The IState<State> API that comes via Policy
+                virtual State state() const {return state_;}
+                virtual void changeState(State state){state_ = state;}
+
+            protected:
+                State state_;
+        };
+    }
+#if 0
     //General interface that handles an event
     //True indicates that the event could be handled
     template <typename Event>
-    struct IEventHandler
-    {
-        //Returns true if the event is handled
-        virtual bool processEvent(Event event) = 0;
-    };
+        struct IEventHandler
+        {
+            //Returns true if the event is handled
+            virtual bool processEvent(Event event) = 0;
+        };
 
     //Normal state machine base class with support for hooking into state changes via enterState()
     template <typename Event, typename State>
-    struct StateMachine: IEventHandler<Event>
+        struct StateMachine: IEventHandler<Event>
     {
         StateMachine(State state):
             //You don't see when the first state is entered, just to make sure you don't accidently
@@ -26,7 +61,7 @@ namespace gubg
         State &state() {return state_;}
 
         //Implement this to define how events should affect the state
-        virtual bool processEvent(Event event) = 0;
+        virtual bool processEvent(Event) = 0;
 
         protected:
         //Override if you need specific functionality when a state is entered
@@ -45,7 +80,7 @@ namespace gubg
 
     //Meta state machine; a state machine for which the states themselves are state machines (std::shared_ptr of something that has IEventHandler as its base)
     template <typename Event, typename Submachine = IEventHandler<Event> >
-    struct MetaStateMachine: StateMachine<Event, std::shared_ptr<Submachine> >
+        struct MetaStateMachine: StateMachine<Event, std::shared_ptr<Submachine> >
     {
         typedef StateMachine<Event, std::shared_ptr<Submachine> > BaseT;
 
@@ -68,6 +103,7 @@ namespace gubg
         //Should return true if it could handle the event
         virtual bool processEventLocally(Event event) = 0;
     };
+#endif
 }
 
 #endif

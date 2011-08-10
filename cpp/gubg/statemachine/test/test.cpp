@@ -1,4 +1,4 @@
-#include "statemachine.hpp"
+#include "statemachine/StateMachine.hpp"
 #include <iostream>
 #include <array>
 using namespace gubg;

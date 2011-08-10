@@ -21,13 +21,16 @@ VixApplication::VixApplication(int argc, char **argv):
     vbox->addWidget(&tabBar_);
     vbox->addWidget(&pathLabel_);
     vbox->addWidget(&selectionView_);
-    vbox->addWidget(&commandLine_);
+    vbox->addWidget(&filter_);
+    vbox->addWidget(&content_);
+    vbox->addWidget(&command_);
     mainWindow_.setVisible(true);
 
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int, int)), this, SLOT(process4Commandline(int, int)));
     connect(&tabBar_, SIGNAL(currentChanged(int)), this, SLOT(changeCurrent(int)));
     selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
+    commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommander_, this, _1, _2));
 
 #ifdef __linux
     const string path("/home/gfannes");
@@ -56,7 +59,6 @@ void VixApplication::process4Commandline(QChar ch)
                 break;
         }
     }
-    commandLine_.setText(QString(commander_.getText().c_str()));
 }
 enum class KeyCode: int
 {
@@ -139,7 +141,6 @@ void VixApplication::changeCurrent(int ix)
 {
     LOG_S_(Debug, VixApplication::changeCurrent);
     commander_.changeTab(ix);
-    commandLine_.setText(QString(commander_.getText().c_str()));
 }
 
 void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &prev)
@@ -203,7 +204,21 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
         selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
         selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
     }
+}
 
-    //Restore the commandline
-    commandLine_.setText(QString(commander_.getText().c_str()));
+void VixApplication::updateCommander_(int which, string *str)
+{
+    QString qstr(str->c_str());
+    switch (which)
+    {
+        case 0:
+            filter_.setText(qstr);
+            break;
+        case 1:
+            content_.setText(qstr);
+            break;
+        case 2:
+            command_.setText(qstr);
+            break;
+    }
 }
