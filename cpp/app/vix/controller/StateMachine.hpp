@@ -14,44 +14,42 @@ namespace vix
         Command = 2,
         NrValues = 3
     };
-    struct Event
+
+    //Events:
+    // * char
+    // * Special
+    enum Special {Backspace, Enter, Escape};
+
+    struct EditableStringPolicy
     {
-        enum Type {CharT, SpecialT};
-        enum Special {Backspace, Enter, Escape};
-        union Value
+        template <typename SM>
+        bool dispatchEvent(char ch, SM &sm)
         {
-            char ch;
-            Special special;
-        };
-
-        Event(Special);
-        Event(char);
-
-        Type type;
-        Value value;
+            auto str = sm.state();
+            str.append(ch);
+            sm.changeState(str);
+            return true;
+        }
+        template <typename SM>
+        bool dispatchEvent(Special event, SM &sm)
+        {
+            if (Backspace != event)
+                return false;
+            auto str = sm.state();
+            sm.changeState(str.substr(0, (str.empty() ? 0 : str.size()-1)));
+            return true;
+        }
     };
-
-    class StateMachine: public gubg::StateMachine<Event, std::string>
+    struct EditableString: gubg::statemachine::StateMachine<std::string, EditableStringPolicy>
     {
-        private:
-            typedef gubg::StateMachine<Event, std::string> Base;
-
-        public:
-            StateMachine();
-
-            virtual bool processEvent(Event);
-            virtual void enterState(std::string);
-
-            typedef boost::signals2::signal<void (std::string *)> Signal;
-            typedef Signal::slot_type Slot;
-            void connect(const Slot &);
-
-        protected:
-            virtual bool processChar(char);
-            virtual bool processControl(Event::Special);
-
-            Signal signal_;
+        typedef boost::shared_ptr<EditableString> Ptr;
     };
+
+    struct MetaPolicy: gubg::statemachine::DispatchToState
+    {
+    };
+    typedef gubg::statemachine::StateMachine<EditableString::Ptr, MetaPolicy> MetaMachine;
+
     class FilterStateMachine: public StateMachine
     {
         protected:

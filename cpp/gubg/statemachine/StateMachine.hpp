@@ -3,107 +3,78 @@
 
 #include <memory>
 
+//This module provides state machine functionality:
+// * Dispatching and processing of difference _types_ of events
+// * Hierarchical setup
+//
+//In general, an event arrives at the StateMachine via dispatchEvent(), which dispatches the event to its state for processing
+//You give the StateMachine template a Policy class that handles storage and changing states
+//
+//This state, which derives from EventProcessor<Policy, Events> can either handle the event itself (e.g., if it is a leaf state)
+//or dispatch the event to a more low-level state. In the latter case, the state derives also from StateMachine<Policy2, Events>
+
 namespace gubg
 {
     namespace statemachine
     {
-        template <typename State>
-            class IState
+        //Interfaces:
+        // * EventDispatcher<Events>
+        template <typename ...Events>
+            struct EventDispatcher;
+        template <typename Event>
+            struct EventDispatcher<Event>
             {
-                public:
-                    virtual State state() const = 0;
-                    virtual void changeState(State) = 0;
+                virtual bool dispatchEvent(Event) = 0;
+            };
+        template <typename Event, typename ...OtherEvents>
+            struct EventDispatcher<Event, OtherEvents...>: EventDispatcher<OtherEvents...>
+            {
+                EventDispatcher<OtherEvents...>::dispatchEvent;
+                virtual bool dispatchEvent(Event) = 0;
+            };
+        // * EventProcessor<Parent, Events>
+        template <typename Parent, typename ...Events>
+            struct EventProcessor;
+        template <typename Parent, typename Event>
+            struct EventProcessor<Parent, Event>
+            {
+                virtual bool processEvent(Event, Parent &) = 0;
+            };
+        template <typename Parent, typename Event, typename ...OtherEvents>
+            struct EventProcessor<Parent, Event, OtherEvents...>: EventProcessor<Parent, OtherEvents...>
+            {
+                EventProcessor<Parent, OtherEvents...>::processEvent;
+                virtual bool processEvent(Event, Parent &) = 0;
             };
 
-        //Policy should inherit from IState<State>
-        template <typename State, typename Policy>
-            class StateMachine: public Policy
-        {
-            public:
-                template <typename Event>
-                    bool processEvent(Event event)
-                    {
-                        if (Policy::dispatchEvent(event))
-                            return true;
-                        if (Policy::handleEvent(event))
-                            return true;
-                        return false;
-                    }
+        //StateMachine
+        template <typename StatePolicy, typename ...Events>
+            struct StateMachine;
+        template <typename StatePolicy, typename Event>
+            struct StateMachine<StatePolicy, Event>: StatePolicy, EventDispatcher<Event>
+            {
+                typedef EventProcessor<StatePolicy, Event> State;
 
-            protected:
-                //The IState<State> API that comes via Policy
-                virtual State state() const {return state_;}
-                virtual void changeState(State state){state_ = state;}
+                virtual bool dispatchEvent(Event event)
+                {
+                    return StatePolicy::state->processEvent(event, *this);
+                }
+            };
+        template <typename StatePolicy, typename Event1, typename Event2>
+            struct StateMachine<StatePolicy, Event1, Event2>: StatePolicy, EventDispatcher<Event1, Event2>
+            {
+                typedef EventProcessor<StatePolicy, Event1, Event2> State;
 
-            protected:
-                State state_;
-        };
+                virtual bool dispatchEvent(Event1 event)
+                {
+                    return StatePolicy::state->processEvent(event, *this);
+                }
+                virtual bool dispatchEvent(Event2 event)
+                {
+                    return StatePolicy::state->processEvent(event, *this);
+                }
+            };
     }
-#if 0
-    //General interface that handles an event
-    //True indicates that the event could be handled
-    template <typename Event>
-        struct IEventHandler
-        {
-            //Returns true if the event is handled
-            virtual bool processEvent(Event event) = 0;
-        };
-
-    //Normal state machine base class with support for hooking into state changes via enterState()
-    template <typename Event, typename State>
-        struct StateMachine: IEventHandler<Event>
-    {
-        StateMachine(State state):
-            //You don't see when the first state is entered, just to make sure you don't accidently
-            //access state_ before it is initialized
-            state_(state){}
-
-        State &state() {return state_;}
-
-        //Implement this to define how events should affect the state
-        virtual bool processEvent(Event) = 0;
-
-        protected:
-        //Override if you need specific functionality when a state is entered
-        virtual void enterState(State newState){}
-        //Call this helper method to actually change the state. It will give enterState()
-        //the opportunity to handle the newly entered state
-        void changeState(State newState)
-        {
-            enterState(newState);
-            state_ = newState;
-        }
-
-        private:
-        State state_;
-    };
-
-    //Meta state machine; a state machine for which the states themselves are state machines (std::shared_ptr of something that has IEventHandler as its base)
-    template <typename Event, typename Submachine = IEventHandler<Event> >
-        struct MetaStateMachine: StateMachine<Event, std::shared_ptr<Submachine> >
-    {
-        typedef StateMachine<Event, std::shared_ptr<Submachine> > BaseT;
-
-        MetaStateMachine(std::shared_ptr<Submachine> startSubmachine):
-            BaseT(startSubmachine){}
-
-        bool processEvent(Event event)
-        {
-            //First, we give the event to the submachine, which is the state
-            if (submachine() && submachine()->processEvent(event))
-                return true;
-
-            //The submachine could not handle the event, lets try to handle it ourselves
-            return processEventLocally(event);
-        }
-        //The state _is_ the submachine
-        std::shared_ptr<Submachine> &submachine(){return BaseT::state();}
-
-        protected:
-        //Should return true if it could handle the event
-        virtual bool processEventLocally(Event event) = 0;
-    };
-#endif
 }
 
 #endif

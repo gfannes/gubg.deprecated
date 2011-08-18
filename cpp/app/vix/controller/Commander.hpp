@@ -17,10 +17,10 @@ namespace vix
         class NewTab;
     }
 
-    class Commander: public gubg::MetaStateMachine<Event>
+    class Commander: public MetaMachine
     {
         public:
-            typedef gubg::MetaStateMachine<Event> Base;
+            typedef MetaMachine Base;
             typedef boost::signals2::signal<void (int, std::string *)> UpdateSignal;
             Commander(model::Selections &);
 
@@ -36,9 +36,6 @@ namespace vix
             void activate(Key);
 
             void changeTab(int ix);
-
-        protected: 
-            virtual bool processEventLocally(Event);
 
         private:
             void filterChanged_(std::string *);
