@@ -241,7 +241,7 @@ class Collection
         }
         ICreator createCreator(string basepath)
         {
-            switch (sourceType_)
+            final switch (sourceType_)
             {
                 case SourceType.D: return new DCreator(basepath); break;
                 case SourceType.Cpp: return new CppCreator(basepath); break;
@@ -252,7 +252,7 @@ class Collection
         }
         IPruner createPruner()
         {
-            switch (sourceType_)
+            final switch (sourceType_)
             {
                 case SourceType.D: return new DPruner; break;
                 case SourceType.Cpp: return new CppPruner; break;

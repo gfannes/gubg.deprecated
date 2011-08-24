@@ -12,14 +12,16 @@ string objectExtension()
     version (Win32) return "obj";
 }
 
-enum SourceType {D, Cpp};
+enum SourceType {D, Cpp, Unknown};
 SourceType guessSourceType(string filepath)
 {
     switch (getExt(filepath))
     {
         case "d": return SourceType.D; break;
         case "cpp": return SourceType.Cpp; break;
+        default:
     }
+    return SourceType.Unknown;
 }
 
 abstract class Options
@@ -47,7 +49,7 @@ class Compile: Options
     bool execute(bool verbose = true)
     {
         Format format;
-        switch (sourceType_)
+        final switch (sourceType_)
         {
             case SourceType.D:
                 format("dmd -c -version=phobos -of\"%s\" \"%s\"", objectFilepath(), sourceFilepath_);
@@ -69,6 +71,7 @@ class Compile: Options
                 foreach (option; options_)
                     format(option);
                 break;
+            case SourceType.Unknown: return false;
         }
 
         //Execute the command
@@ -115,7 +118,7 @@ class Link: Options
     {
         Format format;
         format.delimiter = " ";
-        switch (sourceType_)
+        final switch (sourceType_)
         {
             case SourceType.D:
                 version (Posix)
@@ -146,6 +149,7 @@ class Link: Options
                 foreach (objectFilepath; objectFilepaths_)
                     format("\"" ~ objectFilepath ~ "\"");
                 break;
+            case SourceType.Unknown: return false;
         }
         foreach (option; options_)
             format(option);
@@ -210,6 +214,7 @@ class LinkExecutable: Link
                 foreach (libName; libraries)
                     format("-l%s", libName);
                 break;
+            default:
         }
 
         return format.toString();

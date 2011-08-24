@@ -83,7 +83,7 @@ class ArgsCommand: ICommand
     enum Amount {Zero, One, All}
     this(ref string[] args, Amount amount)
     {
-        switch (amount)
+        final switch (amount)
         {
             case Amount.Zero:
                 break;
@@ -241,7 +241,7 @@ class ExeCommand: ArgsCommand
                 c.setObjectFilepath(fileCache.filepath(fi));
                 return c.execute(true);
             }
-            switch (fileCache.create(fi, &compile))
+            final switch (fileCache.create(fi, &compile))
             {
                 case FileCache.Result.AlreadyPresent:
                 case FileCache.Result.CreationOK:
@@ -348,7 +348,7 @@ class MocCommand: ArgsCommand
                     std.file.write(fileCache.filepath(fi), "");
                     return true;
                 }
-                switch (fileCache.create(fi, &moc))
+                final switch (fileCache.create(fi, &moc))
                 {
                     case FileCache.Result.AlreadyPresent:
                     case FileCache.Result.CreationOK:
