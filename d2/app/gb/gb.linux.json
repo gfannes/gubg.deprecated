@@ -1,4 +1,3 @@
 {
-    "externalTrees": ["~/gubg/d2/gubg"],
-    "libraries": ["dl", "cairo"]
+    "externalTrees": ["~/gubg/d2/gubg"]
 }

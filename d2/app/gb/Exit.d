@@ -17,7 +17,7 @@ void exitApp(T...)(ExitCode exitCode, string formatString, T args)
         default: break;
     }
     writefln(formatString, args);
-    switch (exitCode)
+    final switch (exitCode)
     {
         case ExitCode.ok: c_process.exit(0); break;
         case ExitCode.error: c_process.exit(-1); break;
