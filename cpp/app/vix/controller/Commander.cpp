@@ -1,20 +1,21 @@
 #include "controller/Commander.hpp"
 #include "controller/Command.hpp"
+#define LOG_LEVEL Debug
+#include "logging/Log.hpp"
 using namespace std;
 
 namespace vix
 {
     Commander::Commander(model::Selections &selections):
-        Base(std::shared_ptr<StateMachine>()),
-        selections_(selections),
-        filter_(new FilterStateMachine),
-        content_(new ContentStateMachine),
-        command_(new CommandStateMachine)
+        selections_(selections)
     {
-        MetaStateMachine::connect(Control::Filter, boost::bind(&Commander::filterChanged_, this, _1));
-        MetaStateMachine::connect(Control::Content, boost::bind(&Commander::contentChanged_, this, _1));
-        MetaStateMachine::connect(Control::Command, boost::bind(&Commander::commandChanged_, this, _1));
-        changeState(filter_);
+        MetaState::filter = &filter_;
+        MetaState::content = &content_;
+        MetaState::command = &command_;
+        connect_(Control::Filter,  boost::bind(&Commander::filterChanged_, this, _1));
+        connect_(Control::Content, boost::bind(&Commander::contentChanged_, this, _1));
+        connect_(Control::Command, boost::bind(&Commander::commandChanged_, this, _1));
+        changeState(Control::Filter);
     }
 
     boost::signals2::connection Commander::connect(const UpdateSignal::slot_type &subscriber)
@@ -63,12 +64,12 @@ namespace vix
 
     void Commander::clear()
     {
-        processEvent(Event(Event::Escape));
+        dispatchEvent(Special::Escape);
         update_();
     }
     void Commander::add(char ch)
     {
-        processEvent(Event(ch));
+        dispatchEvent(ch);
         update_();
     }
     void Commander::changeTab(int ix)
@@ -84,23 +85,20 @@ namespace vix
     //Private methods
     void Commander::update_()
     {
-        string str(getFilter());
-        updated_(0, &str);
-        str = getContent();
-        updated_(1, &str);
-        str = getCommand();
-        updated_(2, &str);
+        updated_(0, &filter_.state);
+        updated_(1, &content_.state);
+        updated_(2, &command_.state);
     }
-    void Commander::filterChanged_(std::string *str)
+    void Commander::filterChanged_(const std::string *str)
     {
         selections_.current()->setFilter(*str);
         updated_(0, str);
     }
-    void Commander::contentChanged_(std::string *str)
+    void Commander::contentChanged_(const std::string *str)
     {
         updated_(1, str);
     }
-    void Commander::commandChanged_(std::string *str)
+    void Commander::commandChanged_(const std::string *str)
     {
         updated_(2, str);
     }
@@ -115,62 +113,13 @@ namespace vix
         }
     }
 
-    bool Commander::processEventLocally(Event event)
-    {
-        switch (event.type)
-        {
-            case Event::CharT:
-                {
-                    switch (event.value.ch)
-                    {
-                        case ':':
-                            changeState(command_);
-                            break;
-                        case '/':
-                            changeState(content_);
-                            break;
-                    }
-                }
-                break;
-            case Event::SpecialT:
-                {
-                    switch (event.value.special)
-                    {
-                        case Event::Escape:
-                            changeState(filter_);
-                            break;
-                    }
-                }
-                break;
-        }
-        return true;
-    }
-    string MetaStateMachine::getFilter() const
-    {
-        return filter_->state();
-    }
-    string MetaStateMachine::getContent() const
-    {
-        return content_->state();
-    }
-    string MetaStateMachine::getCommand() const
-    {
-        return command_->state();
-    }
-
-    void MetaStateMachine::connect(Control control, const vix::StateMachine::Slot &subscriber)
+    void Commander::connect_(Control control, const vix::EditableString::Slot &subscriber)
     {
         switch (control)
         {
-            case Control::Filter:
-                filter_->connect(subscriber);
-                break;
-            case Control::Content:
-                content_->connect(subscriber);
-                break;
-            case Control::Command:
-                command_->connect(subscriber);
-                break;
+            case Control::Filter:  filter_.connect(subscriber);  break;
+            case Control::Content: content_.connect(subscriber); break;
+            case Control::Command: command_.connect(subscriber); break;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace vix
     {
         public:
             typedef MetaMachine Base;
-            typedef boost::signals2::signal<void (int, std::string *)> UpdateSignal;
+            typedef boost::signals2::signal<void (int, const std::string *)> UpdateSignal;
             Commander(model::Selections &);
 
             boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
@@ -38,9 +38,9 @@ namespace vix
             void changeTab(int ix);
 
         private:
-            void filterChanged_(std::string *);
-            void contentChanged_(std::string *);
-            void commandChanged_(std::string *);
+            void filterChanged_(const std::string *);
+            void contentChanged_(const std::string *);
+            void commandChanged_(const std::string *);
             void update_();
             UpdateSignal updated_;
 
@@ -57,9 +57,10 @@ namespace vix
             Commands executedCommands_;
 
             //The submachines
-            std::shared_ptr<FilterStateMachine> filter_;
-            std::shared_ptr<ContentStateMachine> content_;
-            std::shared_ptr<CommandStateMachine> command_;
+            void connect_(Control, const vix::EditableString::Slot &);
+            FilterStateMachine filter_;
+            ContentStateMachine content_;
+            CommandStateMachine command_;
     };
 }
 

@@ -1,108 +1,56 @@
 #include "controller/StateMachine.hpp"
+#define LOG_LEVEL Debug
+#include "logging/Log.hpp"
 using namespace std;
 
 namespace vix
 {
-    //Event constructors
-    Event::Event(Special special):
-        type(SpecialT)
+    //MetaState
+    void MetaState::changeState(Control control)
     {
-        value.special = special;
-    }
-    Event::Event(char ch):
-        type(CharT)
-    {
-        value.ch = ch;
+        switch (control)
+        {
+            case Control::Filter: state = filter; break;
+            case Control::Content: state = content; break;
+            case Control::Command: state = command; break;
+        }
     }
 
-    //StateMachine public methods
-    StateMachine::StateMachine():
-        Base(""){}
-    bool StateMachine::processEvent(Event event)
+    //EditableString
+    bool EditableString::processEvent(char ch, MetaState &ms)
     {
-        switch (event.type)
-        {
-            case Event::CharT:
-                return processChar(event.value.ch);
-                break;
-            case Event::SpecialT:
-                return processControl(event.value.special);
-                break;
-        }
+        return dispatchEvent(ch);
+    }
+    bool EditableString::processEvent(Special event, MetaState &ms)
+    {
+        if (dispatchEvent(event))
+            return true;
         return false;
     }
-    void StateMachine::enterState(string str)
+    bool EditableString::dispatchEvent(char ch)
     {
-        signal_(&str);
+        LOG_SM(EditableString::dispatchEvent, "char " << ch);
+        state.append(1, ch);
+        signalStateUpdate_();
+        return true;
     }
-    void StateMachine::connect(const Slot &subscriber)
+    bool EditableString::dispatchEvent(Special event)
+    {
+        if (Backspace != event)
+            return false;
+        if (!state.empty())
+        {
+            state.resize(state.size()-1);
+            signalStateUpdate_();
+        }
+        return true;
+    }
+    void EditableString::connect(const Slot &subscriber)
     {
         signal_.connect(subscriber);
     }
-    //StateMachine private methods
-    bool StateMachine::processChar(char ch)
+    void EditableString::signalStateUpdate_() const
     {
-        changeState(state()+ch);
-        return true;
-    }
-    bool StateMachine::processControl(Event::Special special)
-    {
-        switch (special)
-        {
-            case Event::Backspace:
-                {
-                    auto s = state();
-                    if (!s.empty())
-                        changeState(s.substr(0, s.size()-1));
-                }
-                break;
-            case Event::Enter:
-                break;
-            case Event::Escape:
-                if (state().empty())
-                    return false;
-                changeState("");
-                break;
-            default:
-                return false;
-                break;
-        }
-        return true;
-    }
-
-    //FilterStateMachine methods
-    bool FilterStateMachine::processChar(char ch)
-    {
-        switch (ch)
-        {
-            case ':':
-            case '/':
-                return false;
-        }
-        return StateMachine::processChar(ch);
-    }
-    bool FilterStateMachine::processControl(Event::Special special)
-    {
-        return StateMachine::processControl(special);
-    }
-
-    //ContentStateMachine methods
-    bool ContentStateMachine::processChar(char ch)
-    {
-        return StateMachine::processChar(ch);
-    }
-    bool ContentStateMachine::processControl(Event::Special special)
-    {
-        return StateMachine::processControl(special);
-    }
-
-    //CommandStateMachine methods
-    bool CommandStateMachine::processChar(char ch)
-    {
-        return StateMachine::processChar(ch);
-    }
-    bool CommandStateMachine::processControl(Event::Special special)
-    {
-        return StateMachine::processControl(special);
+        signal_(&state);
     }
 }

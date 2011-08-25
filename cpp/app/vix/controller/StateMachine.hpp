@@ -20,53 +20,44 @@ namespace vix
     // * Special
     enum Special {Backspace, Enter, Escape};
 
-    struct EditableStringPolicy
+    //MetaMachine
+    struct MetaState
     {
-        template <typename SM>
-        bool dispatchEvent(char ch, SM &sm)
-        {
-            auto str = sm.state();
-            str.append(ch);
-            sm.changeState(str);
-            return true;
-        }
-        template <typename SM>
-        bool dispatchEvent(Special event, SM &sm)
-        {
-            if (Backspace != event)
-                return false;
-            auto str = sm.state();
-            sm.changeState(str.substr(0, (str.empty() ? 0 : str.size()-1)));
-            return true;
-        }
+        typedef gubg::statemachine::EventProcessor<MetaState, char, Special> State;
+
+        void changeState(Control control);
+        State *state;
+        State *filter;
+        State *content;
+        State *command;
     };
-    struct EditableString: gubg::statemachine::StateMachine<std::string, EditableStringPolicy>
+    typedef gubg::statemachine::StateMachine<MetaState, char, Special> MetaMachine;
+
+    //EditableString
+    struct EditableString: MetaState::State, gubg::statemachine::EventDispatcher<char, Special>
     {
-        typedef boost::shared_ptr<EditableString> Ptr;
+        virtual bool processEvent(char ch, MetaState &);
+        virtual bool processEvent(Special event, MetaState &ms);
+        virtual bool dispatchEvent(char ch);
+        virtual bool dispatchEvent(Special event);
+        std::string state;
+
+        typedef boost::signals2::signal<void (const std::string *)> Signal;
+        typedef Signal::slot_type Slot;
+        void connect(const Slot &subscriber);
+        void signalStateUpdate_() const;
+        Signal signal_;
     };
 
-    struct MetaPolicy: gubg::statemachine::DispatchToState
+    //The different filters
+    class FilterStateMachine: public EditableString
     {
     };
-    typedef gubg::statemachine::StateMachine<EditableString::Ptr, MetaPolicy> MetaMachine;
-
-    class FilterStateMachine: public StateMachine
+    class ContentStateMachine: public EditableString
     {
-        protected:
-            virtual bool processChar(char);
-            virtual bool processControl(Event::Special);
     };
-    class ContentStateMachine: public StateMachine
+    class CommandStateMachine: public EditableString
     {
-        protected:
-            virtual bool processChar(char);
-            virtual bool processControl(Event::Special);
-    };
-    class CommandStateMachine: public StateMachine
-    {
-        protected:
-            virtual bool processChar(char);
-            virtual bool processControl(Event::Special);
     };
 }
 
