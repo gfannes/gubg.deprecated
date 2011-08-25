@@ -206,7 +206,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
     }
 }
 
-void VixApplication::updateCommander_(int which, string *str)
+void VixApplication::updateCommander_(int which, const string *str)
 {
     QString qstr(str->c_str());
     switch (which)

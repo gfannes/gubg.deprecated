@@ -82,7 +82,7 @@ void Selection::setPath(Path path)
 }
 void Selection::setFilter(const string &filter)
 {
-    LOG_SM_(Debug, setFilter, "Setting filter to " << filter);
+    LOG_SM_(Debug, Selection::setFilter, "Setting filter to " << filter);
     filter_ = filter;
     if (filter_.empty())
         reFilter_.reset();
@@ -113,7 +113,7 @@ Activation Selection::activateSelected(Action action)
     if (files_.empty() || InvalidIX == selectedIX_ || selectedIX_ < 0)
         return Activation::Error;
     auto selected = files_[selectedIX_];
-    LOG_SM_(Debug, gotoSelected, "path_: " << path_ << ", selected: " << selected);
+    LOG_SM_(Debug, activateSelected, "path_: " << path_ << ", selected: " << selected);
     if (auto newPath = FileSystem::instance().toPath(selected))
     {
         LOG_M_(Debug, "This is a directory");

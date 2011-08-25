@@ -7,6 +7,7 @@ namespace vix
 {
     Instruction::Instruction(const string &instruction)
     {
+        LOG_SM_(Debug, Instruction::ctor, "instruction: " << instruction);
         parseInstruction_(instruction);
     }
 
@@ -15,6 +16,7 @@ namespace vix
         return !command_.empty();
     }
 
+    //Private methods
     void Instruction::parseInstruction_(const string &instruction)
     {
         if (parseCommand_("q", instruction)) return;
@@ -22,15 +24,13 @@ namespace vix
     }
     bool Instruction::parseCommand_(const string &command, const string &instruction)
     {
-        LOG_SM_(Debug, Instruction::parseCommand_, "command: " << command);
-        if (instruction.length() < command.length()+1)
+        LOG_SM_(Debug, parseCommand_, "command: " << command);
+        if (instruction.length() < command.length())
             return false;
-        if (instruction[0] != ':')
+        if (instruction.substr(0, command.length()) != command)
             return false;
-        if (instruction.substr(1, command.length()) != command)
-            return false;
-        command_ = instruction.substr(1, command.length());
-        options_ = instruction.substr(1+command.length());
+        command_ = instruction.substr(0, command.length());
+        options_ = instruction.substr(0+command.length());
         LOG_M_(Debug, "Successfully parsed command " << command);
         return true;
     }

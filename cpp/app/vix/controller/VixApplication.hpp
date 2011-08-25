@@ -30,7 +30,7 @@ namespace vix
 
         private:
             void updateSelection_(vix::model::Selection *);
-            void updateCommander_(int, std::string *);
+            void updateCommander_(int, const std::string *);
 
             bool gotoSelection_();
 

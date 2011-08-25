@@ -29,8 +29,6 @@ namespace vix
             void add(ICommand::Ptr);
             void add(char ch);
             void clear();
-            std::string getText() const;
-            bool isFilter() const;
 
             enum class Key {Enter, Arrow};
             void activate(Key);
@@ -49,8 +47,7 @@ namespace vix
             friend class vix::command::Open;
             friend class vix::command::NewTab;
             model::Selections &selections_;
-            Instruction getInstruction() const {return Instruction(text_);}
-            std::string text_;
+            Instruction getInstruction_() const;
 
             typedef std::deque<ICommand::Ptr> Commands;
             Commands pendingCommands_;

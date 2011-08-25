@@ -23,17 +23,14 @@ namespace vix
         return updated_.connect(subscriber);
     }
 
-    bool Commander::isFilter() const
-    {
-        return text_.empty() || text_[0] != ':';
-    }
-
     void Commander::activate(Key key)
     {
+        LOG_SM_(Debug, Commander::activate, "Key: " << (int)key);
         ICommand::Ptr command;
-        auto instruction = getInstruction();
+        auto instruction = getInstruction_();
         if (instruction.isValid())
         {
+            LOG_M_(Debug, "A valid instruction was found");
             if (instruction.command() == "q")
                 command.reset(new command::Quit());
             else if (instruction.command() == "t")
@@ -50,9 +47,11 @@ namespace vix
             switch (key)
             {
                 case Key::Enter:
+                    LOG_M_(Debug, "Opening with the enter key");
                     command.reset(new command::Open(*this, model::Action::Open));
                     break;
                 case Key::Arrow:
+                    LOG_M_(Debug, "Opening with the arrow key");
                     command.reset(new command::Open(*this, model::Action::Edit));
                     break;
             }
@@ -64,6 +63,7 @@ namespace vix
 
     void Commander::clear()
     {
+        LOG_SM_(Debug, Commander::clear, "");
         dispatchEvent(Special::Escape);
         update_();
     }
@@ -75,11 +75,6 @@ namespace vix
     void Commander::changeTab(int ix)
     {
         selections_.setCurrent(ix);
-        text_ = selections_.current()->getFilter();
-    }
-    string Commander::getText() const
-    {
-        return text_;
     }
 
     //Private methods
@@ -111,6 +106,11 @@ namespace vix
             command->execute();
             executedCommands_.push_back(command);
         }
+    }
+    Instruction Commander::getInstruction_() const
+    {
+        LOG_SM_(Debug, getInstruction, "command_.state: " << command_.state);
+        return Instruction(command_.state);
     }
 
     void Commander::connect_(Control control, const vix::EditableString::Slot &subscriber)

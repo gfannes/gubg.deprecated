@@ -37,7 +37,7 @@ namespace vix
     struct EditableString: MetaState::State, gubg::statemachine::EventDispatcher<char, Special>
     {
         virtual bool processEvent(char ch, MetaState &);
-        virtual bool processEvent(Special event, MetaState &ms);
+        virtual bool processEvent(Special event, MetaState &);
         virtual bool dispatchEvent(char ch);
         virtual bool dispatchEvent(Special event);
         std::string state;
@@ -52,12 +52,14 @@ namespace vix
     //The different filters
     class FilterStateMachine: public EditableString
     {
+        virtual bool processEvent(char ch, MetaState &);
     };
     class ContentStateMachine: public EditableString
     {
     };
     class CommandStateMachine: public EditableString
     {
+        virtual bool processEvent(char ch, MetaState &);
     };
 }
 

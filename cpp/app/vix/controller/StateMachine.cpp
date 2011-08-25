@@ -19,7 +19,8 @@ namespace vix
     //EditableString
     bool EditableString::processEvent(char ch, MetaState &ms)
     {
-        return dispatchEvent(ch);
+        LOG_SM_(Debug, EditableString::processEvent, "char: " << ch);
+        return this->dispatchEvent(ch);
     }
     bool EditableString::processEvent(Special event, MetaState &ms)
     {
@@ -36,12 +37,23 @@ namespace vix
     }
     bool EditableString::dispatchEvent(Special event)
     {
-        if (Backspace != event)
-            return false;
-        if (!state.empty())
+        switch (event)
         {
-            state.resize(state.size()-1);
-            signalStateUpdate_();
+            case Backspace:
+                if (!state.empty())
+                {
+                    state.resize(state.size()-1);
+                    signalStateUpdate_();
+                }
+                break;
+            case Escape:
+                if (!state.empty())
+                {
+                    state.clear();
+                    signalStateUpdate_();
+                }
+                break;
+            default: return false; break;
         }
         return true;
     }
@@ -52,5 +64,26 @@ namespace vix
     void EditableString::signalStateUpdate_() const
     {
         signal_(&state);
+    }
+
+    //FilterStateMachine
+    bool FilterStateMachine::processEvent(char ch, MetaState &ms)
+    {
+        LOG_SM_(Debug, FilterSM::processEvent, "char: " << ch);
+        if (':' == ch)
+        {
+            ms.changeState(Control::Command);
+            return true;
+        }
+        return EditableString::processEvent(ch, ms);
+    }
+
+    //CommandStateMachine
+    bool CommandStateMachine::processEvent(char ch, MetaState &ms)
+    {
+        LOG_SM_(Debug, CommandSM::processEvent, "char: " << ch);
+        if (':' == ch)
+            return true;
+        return EditableString::processEvent(ch, ms);
     }
 }
