@@ -32,6 +32,7 @@ namespace vix
                 int nrModels() const;
                 void setCurrent(int ix);
                 void addSelection(const std::string &path);
+                void deleteSelection(int ix);
 
             private:
                 friend class Selection;

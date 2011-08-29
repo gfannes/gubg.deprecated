@@ -50,6 +50,19 @@ void Selections::addSelection(const string &path)
     current_ = selections_.size()-1;
     updated_(current());
 }
+void Selections::deleteSelection(int ix)
+{
+    if (ix < 0 || ix >= selections_.size() || selections_.size() <= 1)
+        return;
+    LOG_SM_(Debug, Selections::deleteSelection, "ix: " << ix << ", current_: " << current_ << " current() " << current());
+    if (ix < current_)
+        --current_;
+    else if (ix == current_ && ix == selections_.size()-1)
+        --current_;
+    selections_.erase(selections_.begin()+ix);
+    LOG_M_(Debug, "current_: " << current_ << ", current(): " << current());
+    updated_(current());
+}
 boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &subscriber)
 {
     return updated_.connect(subscriber);

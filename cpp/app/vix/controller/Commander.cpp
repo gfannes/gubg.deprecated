@@ -32,7 +32,12 @@ namespace vix
         {
             LOG_M_(Debug, "A valid instruction was found");
             if (instruction.command() == "q")
-                command.reset(new command::Quit());
+            {
+                if (instruction.options() == "")
+                    command.reset(new command::CloseTab(*this, selections_.currentIX()));
+                else if (instruction.options() == "a")
+                    command.reset(new command::Quit());
+            }
             else if (instruction.command() == "t")
             {
                 string path = instruction.options();
@@ -75,6 +80,17 @@ namespace vix
     void Commander::changeTab(int ix)
     {
         selections_.setCurrent(ix);
+    }
+
+    int Commander::currentMode() const
+    {
+        if (state == filter)
+            return 0;
+        if (state == content)
+            return 1;
+        if (state == command)
+            return 2;
+        return -1;
     }
 
     //Private methods

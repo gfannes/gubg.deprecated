@@ -50,7 +50,12 @@ namespace vix
         class CloseTab: public ICommand
         {
             public:
+                CloseTab(Commander &, int ix);
                 virtual bool execute();
+                virtual std::string description() const {return "Close tab";}
+            private:
+                Commander &commander_;
+                const int ix_;
         };
         class FocusTab: public ICommand
         {

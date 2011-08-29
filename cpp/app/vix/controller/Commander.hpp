@@ -15,6 +15,7 @@ namespace vix
     {
         class Open;
         class NewTab;
+        class CloseTab;
     }
 
     class Commander: public MetaMachine
@@ -35,6 +36,8 @@ namespace vix
 
             void changeTab(int ix);
 
+            int currentMode() const;
+
         private:
             void filterChanged_(const std::string *);
             void contentChanged_(const std::string *);
@@ -46,6 +49,7 @@ namespace vix
 
             friend class vix::command::Open;
             friend class vix::command::NewTab;
+            friend class vix::command::CloseTab;
             model::Selections &selections_;
             Instruction getInstruction_() const;
 

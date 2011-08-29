@@ -28,6 +28,18 @@ bool NewTab::execute()
     return true;
 }
 
+CloseTab::CloseTab(Commander &commander, int ix):
+    commander_(commander),
+    ix_(ix){}
+bool CloseTab::execute()
+{
+    if (commander_.selections_.nrModels() <= 1)
+        exit(0);
+    else
+        commander_.selections_.deleteSelection(ix_);
+    return true;
+}
+
 bool Quit::execute()
 {
     exit(0);

@@ -161,6 +161,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
     //Expand or shrink the tab bar if necessary and populate it
     {
         auto selections = selectionModel->selections();
+        auto prev = tabBar_.blockSignals(true);
         while (tabBar_.count() != selections.size())
         {
             if (tabBar_.count() < selections.size())
@@ -175,12 +176,9 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
             oss << ix << " " << vix::model::Path::Unlock((*selection)->path())->name();
             tabBar_.setTabText(ix, oss.str().c_str());
             if (selectionModels_.current() == *selection)
-            {
-                auto prev = tabBar_.blockSignals(true);
                 tabBar_.setCurrentIndex(ix);
-                tabBar_.blockSignals(prev);
-            }
         }
+        tabBar_.blockSignals(prev);
     }
 
     //Show the files
@@ -208,6 +206,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 
 void VixApplication::updateCommander_(int which, const string *str)
 {
+    LOG_SM_(Debug, VixApplication::updateCommander_, "which: " << which);
     QString qstr(str->c_str());
     switch (which)
     {
@@ -221,4 +220,8 @@ void VixApplication::updateCommander_(int which, const string *str)
             command_.setText(qstr);
             break;
     }
+    auto cm = commander_.currentMode();
+    filter_.setEnabled(0 == cm);
+    content_.setEnabled(1 == cm);
+    command_.setEnabled(2 == cm);
 }

@@ -26,6 +26,17 @@ namespace vix
     {
         if (dispatchEvent(event))
             return true;
+        switch (event)
+        {
+            case Escape:
+                if (state.empty())
+                {
+                    ms.changeState(Control::Filter);
+                    return true;
+                }
+                break;
+            default: return false; break;
+        }
         return false;
     }
     bool EditableString::dispatchEvent(char ch)
@@ -44,6 +55,7 @@ namespace vix
                 {
                     state.resize(state.size()-1);
                     signalStateUpdate_();
+                    return true;
                 }
                 break;
             case Escape:
@@ -51,11 +63,12 @@ namespace vix
                 {
                     state.clear();
                     signalStateUpdate_();
+                    return true;
                 }
                 break;
             default: return false; break;
         }
-        return true;
+        return false;
     }
     void EditableString::connect(const Slot &subscriber)
     {
