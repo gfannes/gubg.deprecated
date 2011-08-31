@@ -1,10 +1,11 @@
-#ifndef gubg_threading_ProducerConsumer_hpp
-#define gubg_threading_ProducerConsumer_hpp
+#ifndef gubg_threading_Queue_hpp
+#define gubg_threading_Queue_hpp
 
+#include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/condition_variable.hpp"
 #include <memory>
-#include <string>
+#include <deque>
 
 namespace gubg
 {

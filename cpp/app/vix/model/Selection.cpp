@@ -72,7 +72,8 @@ boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &s
 Selection::Selection(Selections &selections, const string &path):
     selections_(selections),
     selectedIX_(InvalidIX),
-    recursiveMode_(false)
+    recursiveMode_(false),
+    consumer_(*this)
 {
     FileSystem &filesystem = FileSystem::instance();
     path_ = filesystem.getPath(path);
@@ -95,17 +96,13 @@ void Selection::setPath(Path path)
     selections_.updated_(this);
 }
 
-void Selection::setNameFilter(const string &filter)
+void Selection::setNameFilter(const string &nameFilter)
 {
-    LOG_SM_(Debug, Selection::setNameFilter, "Setting filter to " << filter);
-    nameFilter_ = filter;
-    if (nameFilter_.empty())
-        reNameFilter_.reset();
-    else
-        reNameFilter_.reset(new regex(nameFilter_, regex_constants::icase));
-    updateFiles_();
-    updateSelection_(selected_);
-    selections_.updated_(this);
+    LOG_SM_(Debug, Selection::setNameFilter, "Setting nameFilter to " << nameFilter);
+    Message::Ptr message(new Message);
+    message->nameFilter = nameFilter;
+    message->selected = selected_;
+    queue_.push(std::move(message));
 }
 string Selection::getNameFilter() const
 {
@@ -215,7 +212,7 @@ bool Selection::move(Direction direction)
 
 //Private methods
 
-//Collect all entries in path_ that match our current filter and store them into files_
+//Collect all entries in path_ that match our current nameFilter and store them into files_
 namespace
 {
     struct CmpLess
@@ -309,4 +306,50 @@ void Selection::updateSelection_(const std::string &selected)
     }
     selectedIX_ = six;
     LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_);
+}
+
+Selection::Consumer::~Consumer()
+{
+    outer_.queue_.close();
+    thread_.join();
+}
+void Selection::Consumer::operator()()
+{
+    LOG_SM_(Debug, Consumer, "Thread is starting");
+    try
+    {
+        while (true)
+        {
+            auto ptr = outer_.queue_.pop();
+            Message &message(*ptr);
+
+            bool filesChanged = false;
+            if (message.nameFilter != outer_.nameFilter_)
+            {
+                outer_.nameFilter_ = message.nameFilter;
+                if (outer_.nameFilter_.empty())
+                    outer_.reNameFilter_.reset();
+                else
+                    outer_.reNameFilter_.reset(new regex(outer_.nameFilter_, regex_constants::icase));
+                outer_.updateFiles_();
+                filesChanged = true;
+            }
+
+            bool selectionChanged = false;
+            if (filesChanged || message.selected != outer_.selected_)
+            {
+                outer_.selected_ = message.selected;
+                outer_.updateSelection_(outer_.selected_);
+                selectionChanged = true;
+            }
+
+            if (filesChanged || selectionChanged)
+                outer_.selections_.updated_(&outer_);
+        }
+    }
+    catch (Selection::QueueT::Closed&)
+    {
+        LOG_M_(Debug, "The queue is closed");
+    }
+    LOG_M_(Debug, "Thread is stopping");
 }

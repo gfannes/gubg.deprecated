@@ -2,6 +2,7 @@
 #define vix_model_Selection_hpp
 
 #include "model/FileSystem.hpp"
+#include "threading/Queue.hpp"
 #include "boost/regex.hpp"
 #include "boost/signals2.hpp"
 #include <vector>
@@ -85,6 +86,27 @@ namespace vix
                 void updateSelection_(const std::string &selected = "");
 
                 bool recursiveMode_;
+
+                //All updating of internal data goes via a message queue
+                struct Message
+                {
+                    typedef std::unique_ptr<Message> Ptr;
+                    std::string nameFilter;
+                    std::string selected;
+                };
+                typedef gubg::threading::Queue<Message> QueueT;
+                QueueT queue_;
+                struct Consumer
+                {
+                    Consumer(Selection &outer):
+                        outer_(outer),
+                        thread_(boost::ref(*this)){}
+                    ~Consumer();
+                    void operator()();
+                    Selection &outer_;
+                    boost::thread thread_;
+                };
+                Consumer consumer_;
         };
     }
 }

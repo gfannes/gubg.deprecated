@@ -1,5 +1,5 @@
 #include "threading/InstanceCounter.hpp"
-#include "threading/ProducerConsumer.hpp"
+#include "threading/Queue.hpp"
 #include "testing/Testing.hpp"
 #define GUBG_LOG
 #include "logging/Log.hpp"
