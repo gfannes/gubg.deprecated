@@ -23,13 +23,13 @@ Path FileSystem::getPath(const string &path)
     return getPath_(dir);
 }
 
-bool FileSystem::getFiles(Files &files, Path path)
+bool FileSystem::getFiles(Files &files, Path path, bool recursive)
 {
-    LOG_SM_(Debug, FileSystem::getFiles, "path: " << path);
+    LOG_SM_(Debug, FileSystem::getFiles, "path: " << path << " recursive: " << recursive);
     Path::Unlock unlockedPath(path);
     try
     {
-        gubg::file::Directory::expand(unlockedPath.ptr(), gubg::file::ExpandStrategy::Shallow);
+        gubg::file::Directory::expand(unlockedPath.ptr(), (recursive ? gubg::file::ExpandStrategy::Recursive : gubg::file::ExpandStrategy::Shallow));
     }
     catch (boost::system::system_error &exc)
     {

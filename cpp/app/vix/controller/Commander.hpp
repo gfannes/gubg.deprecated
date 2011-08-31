@@ -25,6 +25,10 @@ namespace vix
             typedef boost::signals2::signal<void (int, const std::string *)> UpdateSignal;
             Commander(model::Selections &);
 
+            //Each subscriber receives updates of the different fields:
+            // * 0: Filter
+            // * 1: Content
+            // * 2: Command
             boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
 
             void add(ICommand::Ptr);
@@ -39,8 +43,8 @@ namespace vix
             int currentMode() const;
 
         private:
-            void filterChanged_(const std::string *);
-            void contentChanged_(const std::string *);
+            void nameFilterChanged_(const std::string *);
+            void contentFilterChanged_(const std::string *);
             void commandChanged_(const std::string *);
             void update_();
             UpdateSignal updated_;
@@ -50,6 +54,7 @@ namespace vix
             friend class vix::command::Open;
             friend class vix::command::NewTab;
             friend class vix::command::CloseTab;
+            friend class vix::command::ToggleRecursiveMode;
             model::Selections &selections_;
             Instruction getInstruction_() const;
 
@@ -59,8 +64,8 @@ namespace vix
 
             //The submachines
             void connect_(Control, const vix::EditableString::Slot &);
-            FilterStateMachine filter_;
-            ContentStateMachine content_;
+            NameFilterStateMachine nameFilter_;
+            ContentFilterStateMachine contentFilter_;
             CommandStateMachine command_;
     };
 }

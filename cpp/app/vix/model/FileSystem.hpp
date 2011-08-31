@@ -35,7 +35,7 @@ namespace vix
                 Path getPath(const std::string &path);
                 //It is assumed that Path was handed-out by FileSystem _directly_
                 //Returns false if the files could not be retrieved, e.g., due to permission problems
-                bool getFiles(Files &, Path);
+                bool getFiles(Files &, Path, bool recursive);
 
                 Path toPath(File &);
                 Regular toRegular(File &);

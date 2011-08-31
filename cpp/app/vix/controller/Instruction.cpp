@@ -21,6 +21,7 @@ namespace vix
     {
         if (parseCommand_("q", instruction)) return;
         if (parseCommand_("t", instruction)) return;
+        if (parseCommand_("r", instruction)) return;
     }
     bool Instruction::parseCommand_(const string &command, const string &instruction)
     {

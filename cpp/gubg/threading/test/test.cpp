@@ -1,86 +1,119 @@
+#include "threading/InstanceCounter.hpp"
+#include "threading/ProducerConsumer.hpp"
+#include "testing/Testing.hpp"
+#define GUBG_LOG
+#include "logging/Log.hpp"
 #include <iostream>
 #include <string>
-
-#include "thread.hpp"
-#include "sleep.hpp"
-
 using namespace std;
 
-class Printer: public Thread
-  {
-  public:
-    Printer(string str):
-        _toPrint(str) {};
-  protected:
-    virtual bool execute()
+struct Thread: gubg::InstanceCounter<Thread>
+{
+    Thread():
+        thread_(boost::ref(*this)){}
+    void operator()()
     {
-      int i;
-      for (i=0;i<3;i++)
         {
-          nanosleep(0, 1000);
-          cout << i << " " << _toPrint << endl;
+            boost::mutex::scoped_lock lock(countMutex);
+            ++count;
         }
+        delete this;
     }
-  public:
-    string _toPrint;
-  };
+    boost::thread thread_;
+    static int count;
+    static boost::mutex countMutex;
+};
+int Thread::count = 0;
+boost::mutex Thread::countMutex;
 
-class Grabber: public Thread
-  {
-  public:
-    Grabber(string id,Mutex<int> *token):
-        _id(id),
-        _token(token) {};
-    bool execute4Mutex(int *token)
+struct Message
+{
+    Message(bool c):
+        continue_(c){}
+    int continue_;
+};
+typedef gubg::threading::Queue<Message> QueueT;
+struct Producer: gubg::InstanceCounter<Producer>
+{
+    Producer(int nrMessages, QueueT &queue):
+        nrMessages_(nrMessages),
+        queue_(queue),
+        thread_(boost::ref(*this)){}
+    void operator()()
     {
-      (*token)++;
-      cout << "Too late, the token is taken by " << _id << " and has value " << *token << endl;
-      sleep(1);
+        LOG_SM(Producer, "Starting up");
+        for (int i = 0; i < nrMessages_; ++i)
+            queue_.push(unique_ptr<Message>(new Message(true)));
+        LOG_M("Time the go");
+        delete this;
     }
-  protected:
-    virtual bool execute()
+    int nrMessages_;
+    QueueT &queue_;
+    boost::thread thread_;
+};
+struct Consumer: gubg::InstanceCounter<Consumer>
+{
+    Consumer(QueueT &queue):
+        queue_(queue),
+        thread_(boost::ref(*this)){}
+    void operator()()
     {
-      int i;
-      for (i=0;i<3;i++)
+        LOG_SM(Consumer, "Starting up");
+        try
         {
-          nanosleep(0, 1000);
-          _token->access(*this);
+            while (true)
+            {
+                auto message = queue_.pop();
+                if (!message->continue_)
+                    break;
+                ++messageCount;
+            }
         }
+        catch (QueueT::Closed &)
+        {
+            LOG_M("The queue is closed");
+        }
+        LOG_M("Time the go");
+        delete this;
     }
-  private:
-    string _id;
-    Mutex<int> *_token;
-  };
+    QueueT &queue_;
+    boost::thread thread_;
+    static int messageCount;
+};
+int Consumer::messageCount = 0;
 
 int main()
 {
-  Printer p1("aaa");
-  Printer p2("bbb");
-  Printer p3("ccc");
-  Printer p4("ddd");
-  Printer p5("eee");
-  p1.start();
-  p2.start();
-  p3.start();
-  p4.start();
-  p5.start();
-  p1.finish();
-  p2.finish();
-  p3.finish();
-  p4.finish();
-  p5.finish();
-
-  int i=0;
-  Mutex<int> token(&i);
-  Grabber g1("aaa",&token);
-  Grabber g2("bbb",&token);
-  Grabber g3("ccc",&token);
-  g1.start();
-  g2.start();
-  g3.start();
-  g1.finish();
-  g2.finish();
-  g3.finish();
-
-  return 0;
+    TEST_TAG(main);
+    {
+        TEST_TAG(InstanceCounter);
+        //Create and start the threads
+        const int NrThreads = 1000;
+        for (int i = 0; i < NrThreads; ++i)
+            new Thread;
+        //Wait until the threads are all done
+        while (Thread::nrInstances() > 0){}
+        TEST_EQ(NrThreads, Thread::count);
+    }
+    {
+        TEST_TAG(ProducerConsumer);
+        QueueT queue;
+        //Start the producers
+        const int NrMessagesPerProducer = 10000;
+        const int NrProducers = 100;
+        for (int i = 0; i < NrProducers; ++i)
+            new Producer(NrMessagesPerProducer, queue);
+        //Start the consumer
+        new Consumer(queue);
+        //Wait until all producers are gone
+        while (Producer::nrInstances() > 0){}
+        //Indicate to the consumer to quit
+        queue.push(unique_ptr<Message>(new Message(false)));
+        //Wait until the consumer is gone
+        while (Consumer::nrInstances() > 0){}
+        //Indicate that the queue is closed, this should not be a problem, the consumer is already gone by now
+        queue.close();
+        TEST_EQ(NrMessagesPerProducer*NrProducers, Consumer::messageCount);
+    }
+    return 0;
 }

@@ -71,7 +71,8 @@ boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &s
 //Selection
 Selection::Selection(Selections &selections, const string &path):
     selections_(selections),
-    selectedIX_(InvalidIX)
+    selectedIX_(InvalidIX),
+    recursiveMode_(false)
 {
     FileSystem &filesystem = FileSystem::instance();
     path_ = filesystem.getPath(path);
@@ -93,18 +94,40 @@ void Selection::setPath(Path path)
     updateFiles_();
     selections_.updated_(this);
 }
-void Selection::setFilter(const string &filter)
+
+void Selection::setNameFilter(const string &filter)
 {
-    LOG_SM_(Debug, Selection::setFilter, "Setting filter to " << filter);
-    filter_ = filter;
-    if (filter_.empty())
-        reFilter_.reset();
+    LOG_SM_(Debug, Selection::setNameFilter, "Setting filter to " << filter);
+    nameFilter_ = filter;
+    if (nameFilter_.empty())
+        reNameFilter_.reset();
     else
-        reFilter_.reset(new regex(filter_, regex_constants::icase));
+        reNameFilter_.reset(new regex(nameFilter_, regex_constants::icase));
     updateFiles_();
     updateSelection_(selected_);
     selections_.updated_(this);
 }
+string Selection::getNameFilter() const
+{
+    return nameFilter_;
+}
+
+void Selection::setRecursiveMode(bool recursive)
+{
+    if (recursive == recursiveMode_)
+        //Nothing to do
+        return;
+    LOG_SM_(Debug, Selection::setRecursive, "Setting recursive mode " << (recursive ? "ON" : "OFF"));
+    recursiveMode_ = recursive;
+    updateFiles_();
+    updateSelection_(selected_);
+    selections_.updated_(this);
+}
+bool Selection::getRecursiveMode() const
+{
+    return recursiveMode_;
+}
+
 void Selection::setSelected(const string &selected)
 {
     updateSelection_(selected);
@@ -216,22 +239,28 @@ void Selection::updateFiles_()
 {
     LOG_SM_(Debug, updateFiles_, "path_: " << path_);
     Files allFiles;
-    if (!FileSystem::instance().getFiles(allFiles, path_))
+    if (!FileSystem::instance().getFiles(allFiles, path_, recursiveMode_))
     {
         LOG_M_(Warning, "Could not get the files");
         return;
     }
     
-    files_.clear();
-    for (auto it = allFiles.begin(); it != allFiles.end(); ++it)
+    if (recursiveMode_)
     {
-        auto &file = *it;
-        File::Unlock unlockedFile(file);
-        if (!unlockedFile->isHidden())
+    }
+    else
+    {
+        files_.clear();
+        for (auto it = allFiles.begin(); it != allFiles.end(); ++it)
         {
-            smatch match;
-            if (!reFilter_ || regex_search(unlockedFile->name(), match, *reFilter_))
-                files_.push_back(file);
+            auto &file = *it;
+            File::Unlock unlockedFile(file);
+            if (!unlockedFile->isHidden())
+            {
+                smatch match;
+                if (!reNameFilter_ || regex_search(unlockedFile->name(), match, *reNameFilter_))
+                    files_.push_back(file);
+            }
         }
     }
     std::sort(files_.begin(), files_.end(), CmpLess());

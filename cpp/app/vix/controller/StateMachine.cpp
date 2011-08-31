@@ -10,8 +10,8 @@ namespace vix
     {
         switch (control)
         {
-            case Control::Filter: state = filter; break;
-            case Control::Content: state = content; break;
+            case Control::NameFilter: state = nameFilter; break;
+            case Control::ContentFilter: state = contentFilter; break;
             case Control::Command: state = command; break;
         }
     }
@@ -31,7 +31,7 @@ namespace vix
             case Escape:
                 if (state.empty())
                 {
-                    ms.changeState(Control::Filter);
+                    ms.changeState(Control::NameFilter);
                     return true;
                 }
                 break;
@@ -79,15 +79,25 @@ namespace vix
         signal_(&state);
     }
 
-    //FilterStateMachine
-    bool FilterStateMachine::processEvent(char ch, MetaState &ms)
+    //NameFilterStateMachine
+    bool NameFilterStateMachine::processEvent(char ch, MetaState &ms)
     {
-        LOG_SM_(Debug, FilterSM::processEvent, "char: " << ch);
+        LOG_SM_(Debug, NameFilterSM::processEvent, "char: " << ch);
         if (':' == ch)
-        {
             ms.changeState(Control::Command);
+        else if ('/' == ch)
+            ms.changeState(Control::ContentFilter);
+        else
+            return EditableString::processEvent(ch, ms);
+        return true;
+    }
+
+    //ContentFilterStateMachine
+    bool ContentFilterStateMachine::processEvent(char ch, MetaState &ms)
+    {
+        LOG_SM_(Debug, ContentFilterSM::processEvent, "char: " << ch);
+        if ('/' == ch)
             return true;
-        }
         return EditableString::processEvent(ch, ms);
     }
 

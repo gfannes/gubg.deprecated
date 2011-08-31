@@ -122,6 +122,7 @@ namespace gubg
             {
                 case ExpandStrategy::Shallow:
                     {
+                        LOG_M_(Debug, "Shallow expansion");
                         self.childs_.clear();
                         auto path = self.toPath();
                         for (auto it = boost::filesystem::directory_iterator(path); it != boost::filesystem::directory_iterator(); ++it)
@@ -160,6 +161,7 @@ namespace gubg
                     break;
                 case ExpandStrategy::Recursive:
                     {
+                        LOG_M_(Debug, "Recursive expansion");
                         nrExpanded = expand(selfPtr, ExpandStrategy::Shallow);
                         for (auto child = self.childs_.begin(); child != self.childs_.end(); ++child)
                         {

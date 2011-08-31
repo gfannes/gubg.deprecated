@@ -35,6 +35,16 @@ namespace vix
             public:
                 virtual bool execute();
         };
+        class ToggleRecursiveMode: public ICommand
+        {
+            public:
+                ToggleRecursiveMode(Commander &commander):
+                    commander_(commander){}
+                virtual bool execute();
+                virtual std::string description() const {return "Toggle recursive mode.";}
+            private:
+                Commander &commander_;
+        };
 
         //Tab-related commands
         class NewTab: public ICommand

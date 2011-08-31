@@ -9,8 +9,8 @@ namespace vix
 {
     enum class Control
     {
-        Filter = 0,
-        Content = 1,
+        NameFilter = 0,
+        ContentFilter = 1,
         Command = 2,
         NrValues = 3
     };
@@ -27,8 +27,8 @@ namespace vix
 
         void changeState(Control control);
         State *state;
-        State *filter;
-        State *content;
+        State *nameFilter;
+        State *contentFilter;
         State *command;
     };
     typedef gubg::statemachine::StateMachine<MetaState, char, Special> MetaMachine;
@@ -44,18 +44,22 @@ namespace vix
 
         typedef boost::signals2::signal<void (const std::string *)> Signal;
         typedef Signal::slot_type Slot;
+        //The subscriber receives all updates of the state, which is a std::string
         void connect(const Slot &subscriber);
+
+        private:
         void signalStateUpdate_() const;
         Signal signal_;
     };
 
     //The different filters
-    class FilterStateMachine: public EditableString
+    class NameFilterStateMachine: public EditableString
     {
         virtual bool processEvent(char ch, MetaState &);
     };
-    class ContentStateMachine: public EditableString
+    class ContentFilterStateMachine: public EditableString
     {
+        virtual bool processEvent(char ch, MetaState &);
     };
     class CommandStateMachine: public EditableString
     {

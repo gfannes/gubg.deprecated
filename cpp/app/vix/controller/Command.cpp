@@ -18,6 +18,12 @@ bool Open::execute()
     return true;
 }
 
+bool ToggleRecursiveMode::execute()
+{
+    commander_.selections_.current()->setRecursiveMode(!commander_.selections_.current()->getRecursiveMode());
+    return true;
+}
+
 NewTab::NewTab(Commander &commander, const string &name):
     commander_(commander),
     name_(name){}

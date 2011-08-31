@@ -19,11 +19,10 @@ namespace vix
         class Selections
         {
             public:
-                typedef boost::signals2::signal<void (Selection *)> UpdateSignal;
-
                 Selections();
                 virtual ~Selections();
 
+                typedef boost::signals2::signal<void (Selection *)> UpdateSignal;
                 boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
 
                 bool empty() const;
@@ -62,17 +61,20 @@ namespace vix
                 enum class Direction {Up, Down};
                 bool move(Direction);
 
-                void setFilter(const std::string &);
-                std::string getFilter() const {return filter_;}
+                void setNameFilter(const std::string &);
+                std::string getNameFilter() const;
+
+                void setRecursiveMode(bool);
+                bool getRecursiveMode() const;
 
             private:
                 Selections &selections_;
 
                 //This is the primary data for the set of files_
                 Path path_;
-                std::string filter_;
+                std::string nameFilter_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
-                Regex reFilter_;
+                Regex reNameFilter_;
                 //
                 Files files_;
                 void updateFiles_();
@@ -81,6 +83,8 @@ namespace vix
                 std::string selected_;
                 int selectedIX_;
                 void updateSelection_(const std::string &selected = "");
+
+                bool recursiveMode_;
         };
     }
 }
