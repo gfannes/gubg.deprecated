@@ -300,7 +300,8 @@ void Selection::updateSelected_()
         }
     }
     selectedIX_ = six;
-    LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_);
+    selectedPerPath_[Path::Unlock(path_)->path()] = selected_;
+    LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_ << " selectedPerPath_.size(): " << selectedPerPath_.size());
 }
 
 void Selection::consumer_()
@@ -319,8 +320,10 @@ void Selection::consumer_()
             boost::mutex::scoped_lock lock1(filesMutex_);
             boost::mutex::scoped_lock lock2(selectedMutex_);
 
-            //Check if we have to update the current Files list
             bool doUpdateFiles = false;
+            bool doUpdateSelected = false;
+
+            //Check if we have to update the current Files list
             if (message.nameFilter.get() && *message.nameFilter != nameFilter_)
             {
                 nameFilter_ = *message.nameFilter;
@@ -333,6 +336,13 @@ void Selection::consumer_()
             if (message.path())
             {
                 path_ = message.path;
+                auto it = selectedPerPath_.find(Path::Unlock(path_)->path());
+                if (it != selectedPerPath_.end())
+                {
+                    selected_ = it->second;
+                    doUpdateSelected = true;
+                    LOG_M_(Debug, "I found a preferred selected_ for this path: " << selected_);
+                }
                 doUpdateFiles = true;
             }
             if (message.recursive.get() && *message.recursive != recursive_)
@@ -344,7 +354,6 @@ void Selection::consumer_()
                 updateFiles_();
 
             //Check if we have to update the currently selected File
-            bool doUpdateSelected = false;
             //Move
             if (message.direction.get())
             {

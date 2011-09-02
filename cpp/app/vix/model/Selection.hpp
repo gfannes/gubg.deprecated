@@ -90,6 +90,8 @@ namespace vix
                 //We first try to match selected_. If that fails, we take something as close as possible to selectedIX_
                 std::string selected_;
                 int selectedIX_;
+                //Keeps track the last selected per path, when the same path is revisited later, the same selected is preferred
+                std::map<std::string, std::string> selectedPerPath_;
                 mutable boost::mutex selectedMutex_;
                 void updateSelected_();
 
