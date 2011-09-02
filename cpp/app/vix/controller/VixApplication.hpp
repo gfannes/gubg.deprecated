@@ -22,11 +22,15 @@ namespace vix
         public:
             VixApplication(int argc, char **argv);
 
+        signals:
+            void updateSelectionSignal(vix::model::Selection *);
+
         public slots:
             void process4Commandline(QChar);
             void process4Commandline(int, int);
             void changeCurrent(int);
             void setSelected(const QModelIndex &, const QModelIndex &);
+            void updateSelectionSlot(vix::model::Selection *);
 
         private:
             void updateSelection_(vix::model::Selection *);

@@ -73,7 +73,7 @@ Selection::Selection(Selections &selections, const string &path):
     selections_(selections),
     selectedIX_(InvalidIX),
     recursiveMode_(false),
-    consumer_(*this)
+    consumerThread_(&Selection::consumer_, this)
 {
     FileSystem &filesystem = FileSystem::instance();
     path_ = filesystem.getPath(path);
@@ -82,6 +82,11 @@ Selection::Selection(Selections &selections, const string &path):
         path_ = filesystem.getPath("/");
     updateFiles_();
     updateSelection_();
+}
+Selection::~Selection()
+{
+    queue_.close();
+    consumerThread_.join();
 }
 
 std::vector<Selection*> Selection::selections()
@@ -308,43 +313,38 @@ void Selection::updateSelection_(const std::string &selected)
     LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_);
 }
 
-Selection::Consumer::~Consumer()
+void Selection::consumer_()
 {
-    outer_.queue_.close();
-    thread_.join();
-}
-void Selection::Consumer::operator()()
-{
-    LOG_SM_(Debug, Consumer, "Thread is starting");
+    LOG_SM_(Debug, Selection::consumer_, "Thread is starting");
     try
     {
         while (true)
         {
-            auto ptr = outer_.queue_.pop();
+            auto ptr = queue_.pop();
             Message &message(*ptr);
 
             bool filesChanged = false;
-            if (message.nameFilter != outer_.nameFilter_)
+            if (message.nameFilter != nameFilter_)
             {
-                outer_.nameFilter_ = message.nameFilter;
-                if (outer_.nameFilter_.empty())
-                    outer_.reNameFilter_.reset();
+                nameFilter_ = message.nameFilter;
+                if (nameFilter_.empty())
+                    reNameFilter_.reset();
                 else
-                    outer_.reNameFilter_.reset(new regex(outer_.nameFilter_, regex_constants::icase));
-                outer_.updateFiles_();
+                    reNameFilter_.reset(new regex(nameFilter_, regex_constants::icase));
+                updateFiles_();
                 filesChanged = true;
             }
 
             bool selectionChanged = false;
-            if (filesChanged || message.selected != outer_.selected_)
+            if (filesChanged || message.selected != selected_)
             {
-                outer_.selected_ = message.selected;
-                outer_.updateSelection_(outer_.selected_);
+                selected_ = message.selected;
+                updateSelection_(selected_);
                 selectionChanged = true;
             }
 
             if (filesChanged || selectionChanged)
-                outer_.selections_.updated_(&outer_);
+                selections_.updated_(this);
         }
     }
     catch (Selection::QueueT::Closed&)

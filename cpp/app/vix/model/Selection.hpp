@@ -49,6 +49,7 @@ namespace vix
                 Selection(Selections &selections, const std::string &path);
 
             public:
+                ~Selection();
                 Path path() const {return path_;}
                 void setPath(Path);
                 void setSelected(const std::string &selected);
@@ -96,17 +97,8 @@ namespace vix
                 };
                 typedef gubg::threading::Queue<Message> QueueT;
                 QueueT queue_;
-                struct Consumer
-                {
-                    Consumer(Selection &outer):
-                        outer_(outer),
-                        thread_(boost::ref(*this)){}
-                    ~Consumer();
-                    void operator()();
-                    Selection &outer_;
-                    boost::thread thread_;
-                };
-                Consumer consumer_;
+                void consumer_();
+                boost::thread consumerThread_;
         };
     }
 }

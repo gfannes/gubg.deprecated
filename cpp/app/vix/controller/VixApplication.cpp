@@ -29,6 +29,7 @@ VixApplication::VixApplication(int argc, char **argv):
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int, int)), this, SLOT(process4Commandline(int, int)));
     connect(&tabBar_, SIGNAL(currentChanged(int)), this, SLOT(changeCurrent(int)));
+    connect(this, SIGNAL(updateSelectionSignal(vix::model::Selection*)), this, SLOT(updateSelectionSlot(vix::model::Selection*)));
     selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
     commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommander_, this, _1, _2));
 
@@ -156,10 +157,16 @@ void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &
 void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 {
     LOG_SM_(Debug, VixApplication::updateSelection_, "selectionModel: " << selectionModel);
+    emit updateSelectionSignal(selectionModel);
+}
+void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
+{
+    LOG_SM_(Debug, VixApplication::updateSelectionSlot, "selectionModel: " << selectionModel);
     pathLabel_.setText(vix::model::Path::Unlock(selectionModel->path())->path().c_str());
 
     //Expand or shrink the tab bar if necessary and populate it
     {
+        LOG_SM_(Debug, tabbar, "Populating the tab bar");
         auto selections = selectionModel->selections();
         auto prev = tabBar_.blockSignals(true);
         while (tabBar_.count() != selections.size())
@@ -183,6 +190,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 
     //Show the files
     {
+        LOG_SM_(Debug, files, "Showing the files");
         vix::model::Files files;
         int selectedIX;
         selectionModel->getFiles(files, selectedIX);
@@ -199,8 +207,11 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
         stringListModel_.setStringList(stringList);
         LOG_M_(Debug, "selectedIX: " << selectedIX);
         auto ix = stringListModel_.index(selectedIX);
+        LOG_M_(Debug, "a");
         selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
+        LOG_M_(Debug, "b");
         selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
+        LOG_M_(Debug, "c");
     }
 }
 
