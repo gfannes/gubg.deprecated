@@ -111,6 +111,7 @@ namespace vix
     }
     void Commander::contentFilterChanged_(const std::string *str)
     {
+        selections_.current()->setContentFilter(*str);
         updated_(1, str);
     }
     void Commander::commandChanged_(const std::string *str)

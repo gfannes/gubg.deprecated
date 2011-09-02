@@ -71,6 +71,9 @@ namespace vix
                 void setNameFilter(const std::string &);
                 std::string getNameFilter() const;
 
+                void setContentFilter(const std::string &);
+                std::string getContentFilter() const;
+
                 void setRecursiveMode(bool);
                 bool getRecursiveMode() const;
 
@@ -82,6 +85,8 @@ namespace vix
                 std::string nameFilter_;
                 typedef boost::scoped_ptr<boost::regex> Regex;
                 Regex reNameFilter_;
+                std::string contentFilter_;
+                Regex reContentFilter_;
                 Files files_;
                 bool recursive_;
                 mutable boost::mutex filesMutex_;
@@ -102,6 +107,7 @@ namespace vix
                     //Only the fields that have a value set are of course valid
                     Path path;
                     std::unique_ptr<std::string> nameFilter;
+                    std::unique_ptr<std::string> contentFilter;
                     std::unique_ptr<std::string> selected;
                     std::unique_ptr<bool> recursive;
                     std::unique_ptr<Direction> direction;

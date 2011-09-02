@@ -124,6 +124,19 @@ string Selection::getNameFilter() const
     return nameFilter_;
 }
 
+void Selection::setContentFilter(const string &contentFilter)
+{
+    LOG_SM_(Debug, Selection::setContentFilter, "Setting contentFilter to " << contentFilter);
+    Message::Ptr message(new Message);
+    message->contentFilter.reset(new string(contentFilter));
+    queue_.push(std::move(message));
+}
+string Selection::getContentFilter() const
+{
+    boost::mutex::scoped_lock lock(filesMutex_);
+    return contentFilter_;
+}
+
 void Selection::setRecursiveMode(bool recursive)
 {
     LOG_SM_(Debug, Selection::setRecursive, "Setting recursive mode " << (recursive ? "ON" : "OFF"));
@@ -331,6 +344,15 @@ void Selection::consumer_()
                     reNameFilter_.reset();
                 else
                     reNameFilter_.reset(new regex(nameFilter_, regex_constants::icase));
+                doUpdateFiles = true;
+            }
+            if (message.contentFilter.get() && *message.contentFilter != contentFilter_)
+            {
+                contentFilter_ = *message.contentFilter;
+                if (contentFilter_.empty())
+                    reContentFilter_.reset();
+                else
+                    reContentFilter_.reset(new regex(contentFilter_, regex_constants::icase));
                 doUpdateFiles = true;
             }
             if (message.path())
