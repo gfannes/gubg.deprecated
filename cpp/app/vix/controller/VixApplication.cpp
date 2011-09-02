@@ -26,6 +26,7 @@ VixApplication::VixApplication(int argc, char **argv):
     vbox->addWidget(&command_);
     mainWindow_.setVisible(true);
 
+    LOG_M_(Debug, "Connecting signals");
     connect(&selectionView_, SIGNAL(readableKeyPressed(QChar)), this, SLOT(process4Commandline(QChar)));
     connect(&selectionView_, SIGNAL(keycodePressed(int, int)), this, SLOT(process4Commandline(int, int)));
     connect(&tabBar_, SIGNAL(currentChanged(int)), this, SLOT(changeCurrent(int)));
@@ -38,6 +39,7 @@ VixApplication::VixApplication(int argc, char **argv):
 #else
     const string path("h:/");
 #endif
+    LOG_M_(Debug, "Adding the first selection (" << path << ")");
     selectionModels_.addSelection(path);
 }
 
