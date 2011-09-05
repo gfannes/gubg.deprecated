@@ -12,6 +12,7 @@ namespace gubg
     {
         //Generic smart pointer that _only_ provides access to its pointer via an instance of Locked::Unlock
         //Depending on the specific Unlocker used, this can implement different unlocking strategies
+        //A somewhat unusual naming convention -- to unlock before using it -- but it seems more natural to me
         template <typename DataT, template <typename DataT, typename ...Extra> class Unlocker, typename ...Extra>
             class Locked
             {
@@ -20,6 +21,7 @@ namespace gubg
                     typedef Unlocker<Data, Extra...> Unlock;
                     friend class Unlocker<Data, Extra...>;
                     typedef typename Unlocker<Data, Extra...>::DataPtr DataPtr;
+                    typedef typename Unlocker<Data, Extra...>::LockPtr LockPtr;
 
                     //Default constructor, operator() evaluates to false
                     Locked():
@@ -30,6 +32,15 @@ namespace gubg
                         lockingData_(new LockingData),
                         data_(data){}
 
+                    Locked(const Locked &rhs)
+                    {
+                        LockPtr lock(Unlock::createLock_(rhs.lockingData_));
+                        lockingData_ = rhs.lockingData_;
+                        data_ = rhs.data_;
+                    }
+
+                    //This will cause a call to Unlock.operator->() , but wrapped in the ctor/dtor on Unlock, which is what we want
+                    Unlock &&operator->() {return std::move(Unlock(*this));}
                     bool operator()() const {return data_;}
                     operator bool () const {return data_;}
 
@@ -39,6 +50,7 @@ namespace gubg
                     LockingDataPtr lockingData_;
                     DataPtr data_;
             };
+
 
         //An unlock strategy that makes each instance of Data thread safe. Multiple instances can be access concurrently
         // => Keeps one mutex per instance
@@ -55,19 +67,22 @@ namespace gubg
                     };
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
+                    typedef Mutex::scoped_lock ScopedLock;
+                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
-                    ThreadSafeInstance(Locked locked):
+                    ThreadSafeInstance(const Locked &locked):
+                        lock_(new ScopedLock(locked.lockingData_->mutex_)),
                         lockingData_(locked.lockingData_),
-                        data_(locked.data_),
-                        lock_(new Mutex::scoped_lock(lockingData_->mutex_))
+                        data_(locked.data_)
                     {
                     }
                     virtual ~ThreadSafeInstance()
                     {
-                        lock_.reset();
                         lockingData_->condition_.notify_all();
+                        lock_.reset();
                     }
+
 
                     Data &operator*() const {return *data_;}
                     Data *operator->() const {return data_.operator->();}
@@ -85,10 +100,13 @@ namespace gubg
                     }
 
                 private:
+                    friend class Locked<Data, ThreadSafeInstance>;
+                    static ScopedLock *createLock_(const LockingDataPtr &ld){return new ScopedLock(ld->mutex_);}
+
+                    //Make sure we lock before we copy the data and the lockingData
+                    LockPtr lock_;
                     LockingDataPtr lockingData_;
                     DataPtr data_;
-                    typedef boost::scoped_ptr<Mutex::scoped_lock> LockPtr;
-                    LockPtr lock_;
             };
 
         //An unlock strategy that makes each type Data thread safe. Multiple instances of Data _cannot_ be accessed concurrently
@@ -106,17 +124,19 @@ namespace gubg
                     };
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
+                    typedef Mutex::scoped_lock ScopedLock;
+                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
-                    ThreadSafeType(Locked locked):
-                        data_(locked.data_),
-                        lock_(new Mutex::scoped_lock(LockingData::mutex_))
+                    ThreadSafeType(const Locked &locked):
+                        lock_(new ScopedLock(LockingData::mutex_)),
+                        data_(locked.data_)
                     {
                     }
                     virtual ~ThreadSafeType()
                     {
-                        lock_.reset();
                         LockingData::condition_.notify_all();
+                        lock_.reset();
                     }
 
                     Data &operator*() const {return *data_;}
@@ -135,9 +155,12 @@ namespace gubg
                     }
 
                 private:
-                    DataPtr data_;
-                    typedef boost::scoped_ptr<Mutex::scoped_lock> LockPtr;
+                    friend class Locked<Data, ThreadSafeType>;
+                    static ScopedLock *createLock_(const LockingDataPtr &ld){return new ScopedLock(LockingData::mutex_);}
+
+                    //Make sure we lock before we copy the data
                     LockPtr lock_;
+                    DataPtr data_;
             };
         template <typename Data>
             boost::recursive_mutex ThreadSafeType<Data>::LockingData::mutex_;
@@ -168,17 +191,19 @@ namespace gubg
                     typedef base::LockingData<Base> LockingData;
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
+                    typedef base::Mutex::scoped_lock ScopedLock;
+                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
-                    ThreadSafeBaseType(Locked locked):
-                        data_(locked.data_),
-                        lock_(new base::Mutex::scoped_lock(LockingData::mutex_))
+                    ThreadSafeBaseType(const Locked &locked):
+                        lock_(new ScopedLock(LockingData::mutex_)),
+                        data_(locked.data_)
                     {
                     }
                     virtual ~ThreadSafeBaseType()
                     {
-                        lock_.reset();
                         LockingData::condition_.notify_all();
+                        lock_.reset();
                     }
 
                     Data &operator*() const {return *data_;}
@@ -197,9 +222,12 @@ namespace gubg
                     }
 
                 private:
-                    DataPtr data_;
-                    typedef boost::scoped_ptr<base::Mutex::scoped_lock> LockPtr;
+                    friend class Locked<Data, ThreadSafeBaseType, Base>;
+                    static ScopedLock *createLock_(const LockingDataPtr &ld){return new ScopedLock(LockingData::mutex_);}
+
+                    //Make sure we lock before we copy the data
                     LockPtr lock_;
+                    DataPtr data_;
             };
     }
 }

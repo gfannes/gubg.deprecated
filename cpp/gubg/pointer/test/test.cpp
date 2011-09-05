@@ -24,6 +24,8 @@ namespace
                 LOG_SM(Data, "destructor, value_: " << value_);
             }
 
+            void increase(){++value_;}
+
             static int value_;
     };
     int Data::value_ = 0;
@@ -85,6 +87,7 @@ int main()
     {
         LOG_SM(Unlock, "Unlock");
         IDataPtr data(new Data);
+        data->increase();
         IDataPtr::Unlock unlock(data);
         ++unlock->value_;
         {
