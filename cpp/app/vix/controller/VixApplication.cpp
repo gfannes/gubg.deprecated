@@ -12,7 +12,7 @@ VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
     commander_(selectionModels_)
 {
-    LOG_S_(Debug, VixApplication::VixApplication);
+    LOG_S_(Debug, VixApplication::ctor);
     QWidget *centralWidget = new QWidget(&mainWindow_); 
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
     mainWindow_.setCentralWidget(centralWidget);
@@ -99,7 +99,7 @@ void VixApplication::process4Commandline(int keycode, int modifiers)
                 break;
             case (int)KeyCode::Left:
                 {
-                    auto parent = vix::model::Path::Unlock(selection->path())->location();
+                    auto parent = selection->path()->location();
                     if (parent)
                     {
                         commander_.clear();
@@ -164,7 +164,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
 {
     LOG_SM_(Debug, VixApplication::updateSelectionSlot, "selectionModel: " << selectionModel);
-    pathLabel_.setText(vix::model::Path::Unlock(selectionModel->path())->path().c_str());
+    pathLabel_.setText(selectionModel->path()->path().c_str());
 
     //Expand or shrink the tab bar if necessary and populate it
     {
@@ -182,7 +182,7 @@ void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
         {
             auto ix = selection-selections.begin();
             std::ostringstream oss;
-            oss << ix << " " << vix::model::Path::Unlock((*selection)->path())->name();
+            oss << ix << " " << (*selection)->path()->name();
             tabBar_.setTabText(ix, oss.str().c_str());
             if (selectionModels_.current() == *selection)
                 tabBar_.setCurrentIndex(ix);

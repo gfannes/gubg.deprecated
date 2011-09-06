@@ -40,6 +40,20 @@ namespace gubg
         oss << command << " " << firstOption;
         return spawn(oss.str(), optionsRest...);
     }
+
+    //Basic command-line escaping
+    enum class Quotes {Add};
+    std::string escapeForCLI(const std::string &str, Quotes quotes)
+    {
+        std::string res;
+        switch (quotes)
+        {
+            case Quotes::Add:
+                res = "\"" + str + "\"";
+                break;
+        }
+        return res;
+    }
 }
 
 #endif

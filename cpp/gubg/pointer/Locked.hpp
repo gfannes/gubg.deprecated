@@ -5,6 +5,7 @@
 #include "boost/thread/condition.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/scoped_ptr.hpp"
+#include <memory>
 
 namespace gubg
 {
@@ -40,7 +41,7 @@ namespace gubg
                     }
 
                     //This will cause a call to Unlock.operator->() , but wrapped in the ctor/dtor on Unlock, which is what we want
-                    Unlock &&operator->() {return std::move(Unlock(*this));}
+                    Unlock operator->() {return Unlock(*this);}
                     bool operator()() const {return data_;}
                     operator bool () const {return data_;}
 
@@ -68,7 +69,7 @@ namespace gubg
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
                     typedef Mutex::scoped_lock ScopedLock;
-                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
+                    typedef boost::shared_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
                     ThreadSafeInstance(const Locked &locked):
@@ -80,9 +81,7 @@ namespace gubg
                     virtual ~ThreadSafeInstance()
                     {
                         lockingData_->condition_.notify_all();
-                        lock_.reset();
                     }
-
 
                     Data &operator*() const {return *data_;}
                     Data *operator->() const {return data_.operator->();}
@@ -125,7 +124,7 @@ namespace gubg
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
                     typedef Mutex::scoped_lock ScopedLock;
-                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
+                    typedef boost::shared_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
                     ThreadSafeType(const Locked &locked):
@@ -136,7 +135,6 @@ namespace gubg
                     virtual ~ThreadSafeType()
                     {
                         LockingData::condition_.notify_all();
-                        lock_.reset();
                     }
 
                     Data &operator*() const {return *data_;}
@@ -192,7 +190,7 @@ namespace gubg
                     typedef boost::shared_ptr<LockingData> LockingDataPtr;
                     typedef boost::shared_ptr<Data> DataPtr;
                     typedef base::Mutex::scoped_lock ScopedLock;
-                    typedef boost::scoped_ptr<ScopedLock> LockPtr;
+                    typedef boost::shared_ptr<ScopedLock> LockPtr;
 
                     template <typename Locked>
                     ThreadSafeBaseType(const Locked &locked):
@@ -203,7 +201,6 @@ namespace gubg
                     virtual ~ThreadSafeBaseType()
                     {
                         LockingData::condition_.notify_all();
-                        lock_.reset();
                     }
 
                     Data &operator*() const {return *data_;}

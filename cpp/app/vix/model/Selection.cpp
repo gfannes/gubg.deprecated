@@ -52,6 +52,7 @@ void Selections::setCurrent(int ix)
 }
 void Selections::addSelection(const string &path)
 {
+    LOG_SM_(Debug, Selection::addSelection, "path: " << path);
     L_LOCK();
     current_ = selections_.size();
     selections_.push_back(new Selection(*this, path));
@@ -189,17 +190,16 @@ Activation Selection::activateSelected(Action action)
     if (auto file = FileSystem::instance().toRegular(selected))
     {
         LOG_M_(Debug, "This is a regular file");
-        Regular::Unlock unlockedRegular(file);
         switch (action)
         {
             case Action::View:
-                vix::Settings::instance().view(unlockedRegular->filepath());
+                vix::Settings::instance().view(file->filepath());
                 break;
             case Action::Edit:
-                vix::Settings::instance().edit(unlockedRegular->filepath());
+                vix::Settings::instance().edit(file->filepath());
                 break;
             case Action::Open:
-                vix::Settings::instance().open(unlockedRegular->filepath());
+                vix::Settings::instance().open(file->filepath());
                 break;
             default:
                 LOG_M_(Error, "This action is not yet implemented");
@@ -283,8 +283,7 @@ void Selection::updateSelected_()
         for (auto it = files_.begin(); it != files_.end(); ++it)
         {
             auto &file = *it;
-            File::Unlock unlockedFile(file);
-            if (selected_ == unlockedFile->name())
+            if (selected_ == file->name())
             {
                 six = it - files_.begin();
                 LOG_M_(Debug, "I found " << selected_ << " at ix " << six);
@@ -308,12 +307,11 @@ void Selection::updateSelected_()
                 six = files_.size()-1;
             else
                 six = selectedIX_;
-            File::Unlock unlockedFile(files_[six]);
-            selected_ = unlockedFile->name();
+            selected_ = files_[six]->name();
         }
     }
     selectedIX_ = six;
-    selectedPerPath_[Path::Unlock(path_)->path()] = selected_;
+    selectedPerPath_[path_->path()] = selected_;
     LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_ << " selectedPerPath_.size(): " << selectedPerPath_.size());
 }
 
@@ -339,6 +337,7 @@ void Selection::consumer_()
             //Check if we have to update the current Files list
             if (message.nameFilter.get() && *message.nameFilter != nameFilter_)
             {
+                LOG_SM_(Debug, nameFilter, "");
                 nameFilter_ = *message.nameFilter;
                 if (nameFilter_.empty())
                     reNameFilter_.reset();
@@ -348,6 +347,7 @@ void Selection::consumer_()
             }
             if (message.contentFilter.get() && *message.contentFilter != contentFilter_)
             {
+                LOG_SM_(Debug, contentFilter, "");
                 contentFilter_ = *message.contentFilter;
                 if (contentFilter_.empty())
                     reContentFilter_.reset();
@@ -357,8 +357,10 @@ void Selection::consumer_()
             }
             if (message.path())
             {
+                LOG_SM_(Debug, path, "");
                 path_ = message.path;
-                auto it = selectedPerPath_.find(Path::Unlock(path_)->path());
+                auto p = path_->path();
+                auto it = selectedPerPath_.find(path_->path());
                 if (it != selectedPerPath_.end())
                 {
                     selected_ = it->second;
@@ -369,19 +371,22 @@ void Selection::consumer_()
             }
             if (message.recursive.get() && *message.recursive != recursive_)
             {
+                LOG_SM_(Debug, recursive, "");
                 recursive_ = *message.recursive;
                 doUpdateFiles = true;
             }
             if (doUpdateFiles)
+            {
+                LOG_SM_(Debug, updateFiles, "");
                 updateFiles_();
+            }
 
             //Check if we have to update the currently selected File
             //Move
             if (message.direction.get())
             {
-                LOG_M_(Debug, "This is a move message");
-                Path::Unlock unlockedPath(path_);
-                if (!unlockedPath->empty() && InvalidIX != selectedIX_)
+                LOG_SM_(Debug, move, "");
+                if (!path_->empty() && InvalidIX != selectedIX_)
                 {
                     switch (*message.direction)
                     {
@@ -407,21 +412,33 @@ void Selection::consumer_()
             //New selected value
             if (message.selected.get())
             {
+                LOG_SM_(Debug, selected, "");
                 selected_ = *message.selected;
                 doUpdateSelected = true;
             }
             //If the files themselves change, we have to update the selected File too
             if (doUpdateSelected || doUpdateFiles)
+            {
+                LOG_SM_(Debug, updateSelected, "");
                 updateSelected_();
+            }
 
             //If either the files or the selected file got updated, we have to report this to our subscribers
             if (doUpdateFiles || doUpdateSelected)
+            {
+                LOG_SM_(Debug, signalSubscribers, "");
                 selections_.updated_(this);
+            }
         }
     }
     catch (Selection::QueueT::Closed&)
     {
         LOG_M_(Debug, "The queue is closed");
+    }
+    catch (...)
+    {
+        LOG_M_(Debug, "Received an unknown error");
+        throw;
     }
     LOG_M_(Debug, "Thread is stopping");
 }

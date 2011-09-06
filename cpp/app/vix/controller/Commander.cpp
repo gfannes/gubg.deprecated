@@ -42,7 +42,7 @@ namespace vix
             {
                 string path = instruction.options();
                 if (path.empty() && !selections_.empty())
-                    path = vix::model::Path::Unlock(selections_.current()->path())->path();
+                    path = selections_.current()->path()->path();
                 command.reset(new command::NewTab(*this, path));
             }
             else if (instruction.command() == "r")
@@ -78,7 +78,15 @@ namespace vix
     }
     void Commander::add(char ch)
     {
-        dispatchEvent(ch);
+        switch (ch)
+        {
+            case 8:
+                dispatchEvent(Backspace);
+                break;
+            default:
+                dispatchEvent(ch);
+                break;
+        }
         update_();
     }
     void Commander::changeTab(int ix)

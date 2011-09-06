@@ -1,6 +1,6 @@
 {
     "externalTrees": ["~/gubg/cpp/gubg"],
     "libraries": ["boost_system", "boost_filesystem", "boost_regex", "boost_thread", "QtGui", "QtCore"],
-    "compilation": ["-D_REENTRANT -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED", "-I/usr/share/qt/mkspecs/linux-g++ -I. -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui", "-I/home/gfannes/sdks/boost/include"],
+    "compilation": ["-g", "-D_REENTRANT -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED", "-I/usr/share/qt/mkspecs/linux-g++ -I. -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui", "-I/home/gfannes/sdks/boost/include"],
     "linking": ["-L/home/gfannes/sdks/boost/lib"]
 }
