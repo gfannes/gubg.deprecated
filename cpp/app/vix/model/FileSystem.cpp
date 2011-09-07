@@ -1,3 +1,4 @@
+#define GUBG_MODULE "FileSystem"
 #include "model/FileSystem.hpp"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
@@ -18,14 +19,14 @@ FileSystem::FileSystem():
 
 Path FileSystem::getPath(const string &path)
 {
-    LOG_SM_(Debug, FileSystem::getPath, "path " << path);
+    LOG_SM_(Debug, getPath, "path " << path);
     auto dir = gubg::file::Directory::create(path);
     return getPath_(dir);
 }
 
 bool FileSystem::getFiles(Files &files, Path path, bool recursive)
 {
-    LOG_SM_(Debug, FileSystem::getFiles, "path: " << path << " recursive: " << recursive);
+    LOG_SM_(Debug, getFiles, "path: " << path << " recursive: " << recursive);
     Path::Unlock unlockedPath(path);
     try
     {
@@ -65,7 +66,7 @@ Regular FileSystem::toRegular(File &file)
 //Guarantee: getPath_ _always_ returns a Path inside our own filesystem tree, or an empty Path
 Path FileSystem::getPath_(Path dir)
 {
-    LOG_SM_(Debug, FileSystem::getPath_, "dir: " << dir);
+    LOG_SM_(Debug, getPath_, "dir: " << dir);
     Path::Unlock unlockedDir(dir);
     //We basically go down to the root recursively and change all the locations and childs we find on our way down
     if (unlockedDir->isRoot())

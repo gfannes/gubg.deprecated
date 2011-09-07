@@ -1,4 +1,5 @@
 #include "view/Selection.hpp"
+#define GUBG_MODULE "view_Selection"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <QKeyEvent>

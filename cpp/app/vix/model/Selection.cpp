@@ -1,5 +1,6 @@
 #include "model/Selection.hpp"
 #include "settings/Settings.hpp"
+#define GUBG_MODULE "Selection"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include "nullptr.hpp"
@@ -45,14 +46,14 @@ void Selections::setCurrent(int ix)
     L_LOCK();
     if (ix < 0 || ix >= selections_.size())
         return;
-    LOG_SM_(Debug, Selections::setCurrent, "ix: " << ix << ", current_: " << current_);
+    LOG_SM_(Debug, setCurrent, "ix: " << ix << ", current_: " << current_);
     current_ = ix;
     LOG_M_(Debug, "current_: " << current_ << ", current(): " << current());
     updated_(current());
 }
 void Selections::addSelection(const string &path)
 {
-    LOG_SM_(Debug, Selection::addSelection, "path: " << path);
+    LOG_SM_(Debug, addSelection, "path: " << path);
     L_LOCK();
     current_ = selections_.size();
     selections_.push_back(new Selection(*this, path));
@@ -62,7 +63,7 @@ void Selections::deleteSelection(int ix)
     L_LOCK();
     if (ix < 0 || ix >= selections_.size() || selections_.size() <= 1)
         return;
-    LOG_SM_(Debug, Selections::deleteSelection, "ix: " << ix << ", current_: " << current_ << " current() " << current());
+    LOG_SM_(Debug, deleteSelection, "ix: " << ix << ", current_: " << current_ << " current() " << current());
     if (ix < current_)
         --current_;
     else if (ix == current_ && ix == selections_.size()-1)
@@ -114,7 +115,7 @@ void Selection::setPath(Path path)
 
 void Selection::setNameFilter(const string &nameFilter)
 {
-    LOG_SM_(Debug, Selection::setNameFilter, "Setting nameFilter to " << nameFilter);
+    LOG_SM_(Debug, setNameFilter, "Setting nameFilter to " << nameFilter);
     Message::Ptr message(new Message);
     message->nameFilter.reset(new string(nameFilter));
     queue_.push(std::move(message));
@@ -127,7 +128,7 @@ string Selection::getNameFilter() const
 
 void Selection::setContentFilter(const string &contentFilter)
 {
-    LOG_SM_(Debug, Selection::setContentFilter, "Setting contentFilter to " << contentFilter);
+    LOG_SM_(Debug, setContentFilter, "Setting contentFilter to " << contentFilter);
     Message::Ptr message(new Message);
     message->contentFilter.reset(new string(contentFilter));
     queue_.push(std::move(message));
@@ -140,7 +141,7 @@ string Selection::getContentFilter() const
 
 void Selection::setRecursiveMode(bool recursive)
 {
-    LOG_SM_(Debug, Selection::setRecursive, "Setting recursive mode " << (recursive ? "ON" : "OFF"));
+    LOG_SM_(Debug, setRecursive, "Setting recursive mode " << (recursive ? "ON" : "OFF"));
     Message::Ptr message(new Message);
     message->recursive.reset(new bool(recursive));
     queue_.push(std::move(message));
@@ -213,7 +214,7 @@ Activation Selection::activateSelected(Action action)
 
 void Selection::move(Direction direction)
 {
-    LOG_S_(Debug, Selection::move);
+    LOG_S_(Debug, move);
     Message::Ptr message(new Message);
     message->direction.reset(new Direction(direction));
     queue_.push(std::move(message));
@@ -275,7 +276,7 @@ void Selection::updateFiles_()
 
 void Selection::updateSelected_()
 {
-    LOG_SM_(Debug, Selection::updateSelected_, "selected_: " << selected_);
+    LOG_SM_(Debug, updateSelected_, "selected_: " << selected_);
     //First, we try to match based on selected_
     auto six = InvalidIX;
     if (!selected_.empty())
@@ -317,7 +318,7 @@ void Selection::updateSelected_()
 
 void Selection::consumer_()
 {
-    LOG_SM_(Debug, Selection::consumer_, "Thread is starting");
+    LOG_SM_(Debug, consumer_, "Thread is starting");
     try
     {
         while (true)

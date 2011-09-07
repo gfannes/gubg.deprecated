@@ -1,5 +1,6 @@
 #define GUBG_LOG
 #define LOG_LEVEL Info
+#define GUBG_MODULE "Logging unit test"
 #include "logging/Log.hpp"
 #include "threading/InstanceCounter.hpp"
 #include "boost/thread/mutex.hpp"

@@ -35,19 +35,27 @@
 #define LOG_SM_(level, tag, msg) LOG_SM_ ## level(tag, msg)
 #define LOG_M_(level, msg) LOG_M_ ## level(msg)
 
+#ifndef GUBG_MODULE
+#define GUBG_MODULE "?"
+#endif
+namespace
+{
+    const std::string l_gubg_logging_module__(GUBG_MODULE);
+}
+
 #ifdef GUBG_LOG
 #define LOG_S(tag) \
-    gubg::logging::Scope l_gubg_logging_scope_(#tag, true); \
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, true); \
     std::ostringstream l_gubg_logging_scope_oss_; \
     l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << std::endl; \
     gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
 #define LOG_SM(tag, msg) \
-    gubg::logging::Scope l_gubg_logging_scope_(#tag, true); \
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, true); \
     std::ostringstream l_gubg_logging_scope_oss_; \
     l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << msg << std::endl; \
     gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
 #define LOG_S_SILENT(tag) \
-    gubg::logging::Scope l_gubg_logging_scope_(#tag, false);
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false);
 #define LOG_M(msg) \
     { \
         std::ostringstream l_gubg_logging_message_oss_; \
@@ -163,10 +171,17 @@ namespace gubg
                 std::cout << str;
             }
         };
+        struct Name
+        {
+            Name(const std::string &m, const std::string &n):
+                module(m), name(n){}
+            std::string module;
+            std::string name;
+        };
         struct Scope
         {
-            typedef std::vector<std::string> NameStack;
-            Scope(const std::string &name, bool verboseDtor):
+            typedef std::vector<Name> NameStack;
+            Scope(const std::string &module, const std::string &name, bool verboseDtor):
                 threadId_(boost::this_thread::get_id()),
                 verboseDtor_(verboseDtor)
             {
@@ -178,7 +193,7 @@ namespace gubg
                     Output::write(oss.str());
                     nameStack.reset(nameStack_ = new NameStack);
                 }
-                nameStack_->push_back(name);
+                nameStack_->push_back(Name(module, name));
             }
             ~Scope()
             {
@@ -191,13 +206,24 @@ namespace gubg
                 nameStack_->pop_back();
             }
 
-            std::string name() const {return nameStack_->back();}
+            std::string name() const {return nameStack_->back().name;}
+            std::string module() const {return nameStack_->back().module;}
             std::string indent()
             {
                 if (!indent_)
                 {
                     std::ostringstream oss;
-                    oss << threadId_ << "::" << boost::algorithm::join(*nameStack_, "::");
+                    oss << threadId_;
+                    std::string currentModule;
+                    for (NameStack::const_iterator name = nameStack_->begin(); name != nameStack_->end(); ++name)
+                    {
+                        if (currentModule != name->module)
+                        {
+                            currentModule = name->module;
+                            oss << "->(" << name->module << ")";
+                        }
+                        oss << "->" << name->name;
+                    }
                     indent_.reset(new std::string(oss.str()));
                 }
                 return *indent_;

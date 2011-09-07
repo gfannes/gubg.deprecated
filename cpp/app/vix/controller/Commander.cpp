@@ -1,5 +1,6 @@
 #include "controller/Commander.hpp"
 #include "controller/Command.hpp"
+#define GUBG_MODULE "Commander"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 using namespace std;
@@ -25,7 +26,7 @@ namespace vix
 
     void Commander::activate(Key key)
     {
-        LOG_SM_(Debug, Commander::activate, "Key: " << (int)key);
+        LOG_SM_(Debug, activate, "Key: " << (int)key);
         ICommand::Ptr command;
         auto instruction = getInstruction_();
         if (instruction.isValid())
@@ -72,7 +73,7 @@ namespace vix
 
     void Commander::clear()
     {
-        LOG_SM_(Debug, Commander::clear, "");
+        LOG_SM_(Debug, clear, "");
         dispatchEvent(Special::Escape);
         update_();
     }

@@ -1,4 +1,5 @@
 #include "controller/Instruction.hpp"
+#define GUBG_MODULE "Instruction"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 using namespace std;
@@ -7,7 +8,7 @@ namespace vix
 {
     Instruction::Instruction(const string &instruction)
     {
-        LOG_SM_(Debug, Instruction::ctor, "instruction: " << instruction);
+        LOG_SM_(Debug, ctor, "instruction: " << instruction);
         parseInstruction_(instruction);
     }
 

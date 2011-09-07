@@ -1,5 +1,6 @@
 #include "controller/VixApplication.hpp"
 #include "controller/Commander.hpp"
+#define GUBG_MODULE "VixApplication"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <QVBoxLayout>
@@ -12,7 +13,7 @@ VixApplication::VixApplication(int argc, char **argv):
     QApplication(argc, argv),
     commander_(selectionModels_)
 {
-    LOG_S_(Debug, VixApplication::ctor);
+    LOG_S_(Debug, ctor);
     QWidget *centralWidget = new QWidget(&mainWindow_); 
     QVBoxLayout *vbox = new QVBoxLayout(centralWidget);
     mainWindow_.setCentralWidget(centralWidget);
@@ -142,7 +143,7 @@ void VixApplication::process4Commandline(int keycode, int modifiers)
 
 void VixApplication::changeCurrent(int ix)
 {
-    LOG_S_(Debug, VixApplication::changeCurrent);
+    LOG_S_(Debug, changeCurrent);
     commander_.changeTab(ix);
 }
 
@@ -158,12 +159,12 @@ void VixApplication::setSelected(const QModelIndex &current, const QModelIndex &
 
 void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 {
-    LOG_SM_(Debug, VixApplication::updateSelection_, "selectionModel: " << selectionModel);
+    LOG_SM_(Debug, updateSelection_, "selectionModel: " << selectionModel);
     emit updateSelectionSignal(selectionModel);
 }
 void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
 {
-    LOG_SM_(Debug, VixApplication::updateSelectionSlot, "selectionModel: " << selectionModel);
+    LOG_SM_(Debug, updateSelectionSlot, "selectionModel: " << selectionModel);
     pathLabel_.setText(selectionModel->path()->path().c_str());
 
     //Expand or shrink the tab bar if necessary and populate it
@@ -219,7 +220,7 @@ void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
 
 void VixApplication::updateCommander_(int which, const string *str)
 {
-    LOG_SM_(Debug, VixApplication::updateCommander_, "which: " << which);
+    LOG_SM_(Debug, updateCommander_, "which: " << which);
     QString qstr(str->c_str());
     switch (which)
     {

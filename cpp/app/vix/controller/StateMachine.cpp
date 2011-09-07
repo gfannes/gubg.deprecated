@@ -1,4 +1,5 @@
 #include "controller/StateMachine.hpp"
+#define GUBG_MODULE "StateMachine"
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 using namespace std;

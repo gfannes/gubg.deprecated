@@ -1,4 +1,5 @@
 #include "file/File.hpp"
+#define GUBG_MODULE "gubg::file"
 #define GUBG_LOG
 #define LOG_LEVEL Warning
 #include "logging/Log.hpp"
