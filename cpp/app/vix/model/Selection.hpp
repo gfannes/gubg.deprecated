@@ -47,6 +47,7 @@ namespace vix
                 mutable boost::mutex mutex_;
         };
 
+        enum Format {Html};
         class Selection
         {
             private:
@@ -76,6 +77,8 @@ namespace vix
 
                 void setRecursiveMode(bool);
                 bool getRecursiveMode() const;
+
+                bool getContent(std::string &content, Format);
 
             private:
                 Selections &selections_;

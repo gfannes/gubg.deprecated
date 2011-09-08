@@ -4,6 +4,7 @@
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include "nullptr.hpp"
+#include "boost/algorithm/string/replace.hpp"
 #include <algorithm>
 using namespace vix::model;
 using namespace std;
@@ -150,6 +151,52 @@ bool Selection::getRecursiveMode() const
 {
     boost::mutex::scoped_lock lock(filesMutex_);
     return recursive_;
+}
+
+bool Selection::getContent(string &content, Format format)
+{
+    LOG_SM_(Debug, getContent, "");
+    gubg::file::Regular *regular = 0;
+    {
+        boost::mutex::scoped_lock lock1(filesMutex_);
+        boost::mutex::scoped_lock lock2(selectedMutex_);
+        if (files_.empty() || selectedIX_ < 0 || selectedIX_ >= files_.size())
+        {
+            LOG_M_(Debug, "No current file present");
+            return false;
+        }
+        regular = dynamic_cast<gubg::file::Regular*>(files_[selectedIX_].operator->().get());
+    }
+    if (!regular)
+    {
+        LOG_M_(Debug, "This is not a regular file");
+        return false;
+    }
+
+    //Load the content of the file
+    if (!regular->load(content))
+    {
+        LOG_M_(Error, "Could not load the content");
+        return false;
+    }
+
+    //Check the size of the file
+    if (content.size() > 500000)
+    {
+        LOG_M_(Warning, "File is too large to show");
+        return false;
+    }
+
+    switch (format)
+    {
+        case Format::Html:
+            boost::replace_all(content, "\n", "<br/>");
+            break;
+        default:
+            return false;
+            break;
+    }
+    return true;
 }
 
 void Selection::setSelected(const string &selected)

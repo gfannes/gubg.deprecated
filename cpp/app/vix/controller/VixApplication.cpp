@@ -4,6 +4,7 @@
 #define LOG_LEVEL Debug
 #include "logging/Log.hpp"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <iostream>
 #include "boost/filesystem.hpp"
 using namespace vix;
@@ -21,10 +22,19 @@ VixApplication::VixApplication(int argc, char **argv):
     tabBar_.setFocusPolicy(Qt::NoFocus);
     vbox->addWidget(&tabBar_);
     vbox->addWidget(&pathLabel_);
-    vbox->addWidget(&selectionView_);
+    {
+        QHBoxLayout *hbox = new QHBoxLayout(centralWidget);
+        hbox->addWidget(&selectionView_);
+        textEdit_.setReadOnly(true);
+        textDocument_.setHtml(QString("<br/><br/><center><font color=\"#ff0000\">ViX</font></center><br/><center>The vi-inspired file explorer</center><br/>Geert Fannes"));
+        textEdit_.setDocument(&textDocument_);
+        hbox->addWidget(&textEdit_);
+        vbox->addLayout(hbox);
+    }
     vbox->addWidget(&filter_);
     vbox->addWidget(&content_);
     vbox->addWidget(&command_);
+    mainWindow_.resize(1024, 640);
     mainWindow_.setVisible(true);
 
     LOG_M_(Debug, "Connecting signals");
@@ -210,11 +220,16 @@ void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
         stringListModel_.setStringList(stringList);
         LOG_M_(Debug, "selectedIX: " << selectedIX);
         auto ix = stringListModel_.index(selectedIX);
-        LOG_M_(Debug, "a");
         selectionView_.selectionModel()->select(ix, QItemSelectionModel::Select);
-        LOG_M_(Debug, "b");
         selectionView_.scrollTo(ix, QAbstractItemView::EnsureVisible);
-        LOG_M_(Debug, "c");
+    }
+
+    //Show the content
+    {
+        LOG_SM_(Debug, files, "Showing the content");
+        string contentAsHtml;
+        if (selectionModel->getContent(contentAsHtml, model::Format::Html))
+            textDocument_.setHtml(QString::fromStdString(contentAsHtml));
     }
 }
 

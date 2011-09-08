@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QTabBar>
 #include <QLineEdit>
+#include <QTextEdit>
 #include "boost/signals2.hpp"
 #include <array>
 
@@ -42,8 +43,8 @@ namespace vix
             QTabBar tabBar_;
             QLabel pathLabel_;
             vix::view::Selection selectionView_;
-            typedef std::array<QLabel, 1> Labels;
-            Labels labels_;
+            QTextEdit textEdit_;
+            QTextDocument textDocument_;
             QLineEdit filter_;
             QLineEdit content_;
             QLineEdit command_;
