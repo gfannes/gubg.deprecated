@@ -1,6 +1,9 @@
 #ifndef gubg_Platform_hpp
 #define gubg_Platform_hpp
 
+#include <string>
+#include <sstream>
+
 #ifdef __linux
 #define GUBG_LINUX
 #include <stdlib.h>
@@ -12,27 +15,8 @@
 
 namespace gubg
 {
-    bool spawn(const std::string &command)
-    {
-#ifdef GUBG_LINUX
-        switch (fork())
-        {
-            case -1:
-                //Something went wrong
-                return false;
-                break;
-            case 0:
-                //Child process
-                execl("/bin/sh", "sh", "-c", command.c_str(), (char *)0);
-                break;
-            default:
-                //Parent process, continue without waiting
-                return true;
-                break;
-        }
-#endif
-        return false;
-    }
+    bool spawn(const std::string &command);
+
     template <typename FirstOption, typename ...OptionsRest>
     bool spawn(const std::string &command, FirstOption firstOption, OptionsRest... optionsRest)
     {
@@ -43,17 +27,7 @@ namespace gubg
 
     //Basic command-line escaping
     enum class Quotes {Add};
-    std::string escapeForCLI(const std::string &str, Quotes quotes)
-    {
-        std::string res;
-        switch (quotes)
-        {
-            case Quotes::Add:
-                res = "\"" + str + "\"";
-                break;
-        }
-        return res;
-    }
+    std::string escapeForCLI(const std::string &str, Quotes quotes);
 }
 
 #endif

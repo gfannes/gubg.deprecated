@@ -66,24 +66,29 @@ Regular FileSystem::toRegular(File &file)
 //Guarantee: getPath_ _always_ returns a Path inside our own filesystem tree, or an empty Path
 Path FileSystem::getPath_(Path dir)
 {
-    LOG_SM_(Debug, getPath_, "dir: " << dir);
+    LOG_SM_(Debug, getPath_, "dir: (" << dir << ")");
     Path::Unlock unlockedDir(dir);
+    LOG_M_(Debug, "dir is unlocked");
     //We basically go down to the root recursively and change all the locations and childs we find on our way down
     if (unlockedDir->isRoot())
     {
+	    LOG_M_(Debug, "before logging");
         //Roots always match, we return back our own root_ to ensure we are inside our own filesystem tree
         LOG_M_(Debug, "Return root_ " << root_);
         return root_;
     }
+    LOG_M_(Debug, "This is not a root");
 
     //parent is guaranteed to be in our own filesystem tree, or an empty Path
     auto parent = getPath_(unlockedDir->location());
+    LOG_M_(Debug, "parent");
     Path::Unlock unlockedParent(parent);
     if (!unlockedParent())
     {
         LOG_M_(Warning, "The parent doesn't even exist");
         return Path();
     }
+    LOG_M_(Debug, "We have the parent");
 
     //Expand if it has no childs
     if (unlockedParent->empty())

@@ -3,21 +3,43 @@
 #define GUBG_LOG
 #define LOG_LEVEL Warning
 #include "logging/Log.hpp"
+#include "Platform.hpp"
 #include "boost/filesystem.hpp"
 #include <fstream>
 #include "nullptr.hpp"
+#ifdef GUBG_WIN32
+#include "windows.h"
+#endif
 using namespace std;
+
+namespace
+{
+	bool isAbsolute_(const boost::filesystem::path &path)
+	{
+#ifdef GUBG_WIN32
+		string str = path.string();
+		if (str.size() >= 2 && ':' == str[1])
+			return true;
+		return false;
+#else
+		return path.is_absolute();
+#endif
+	}
+}
 
 std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
 {
+	LOG_SM_(Warning, stream, "File");
     return os << file->name();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Directory::Ptr &dir)
 {
+	LOG_SM_(Warning, stream, "Directory: " << dir.get());
     return os << dir->path();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Regular::Ptr &regular)
 {
+	LOG_SM_(Warning, stream, "Regular");
     return os << regular->filepath();
 }
 
@@ -54,31 +76,72 @@ namespace gubg
         }
 
         //Directory methods
-        Directory::Ptr Directory::create(boost::filesystem::path path)
+        Directory::Ptr Directory::create(const std::string &p)
         {
-            LOG_SM(Directory::create, "path: " << path.string());
+            LOG_SM(Directory::create, "path: " << p);
+
+	    if (p == "/")
+	    {
+		    //The root of the filesystem is requested
+		    Ptr root(new Directory);
+#ifdef GUBG_WIN32
+		    root->name_ = "";
+#else
+		    root->name_ = "/";
+#endif
+		    root->location_ = root;
+		    return root;
+	    }
+
+	    boost::filesystem::path path(p);
             Ptr dir, ret;
             while (!path.empty())
             {
+#ifdef GUBG_WIN32
+		if (path.filename().string() == "\\" || path.filename().string() == "/")
+			goto SkipSpecialName;
+#endif
                 LOG_M("path: " << path.string() << ", path.filename(): " << path.filename().string());
 
-                Ptr tmp(new Directory);
-                tmp->name_ = path.filename().string();
+		{
+			Ptr tmp(new Directory);
+			tmp->name_ = path.filename().string();
 
-                if (!ret)
-                    dir = ret = tmp;
-                else
-                {
-                    dir->location_ = tmp;
-                    dir = tmp;
-                }
+			if (!ret)
+				dir = ret = tmp;
+			else
+			{
+				dir->location_ = tmp;
+				dir = tmp;
+			}
 
-                if (!path.has_parent_path())
-                {
-                    if (path.is_absolute())
-                        dir->location_ = dir;
-                }
+			if (!path.has_parent_path())
+			{
+				LOG_M_(Warning, "There is no parent anymore");
+				if (isAbsolute_(path))
+				{
+					LOG_M_(Warning, "This is an absolute path");
+#ifdef GUBG_WIN32
+					Ptr root(new Directory);
+					LOG_M_(Warning, "Root is " << root.get());
+					root->name_ = "";
+					root->location_ = root;
+					dir->location_ = root;
+#else
+					dir->location_ = dir;
+#endif
+				}
+			}
+			else
+			{
+				LOG_M_(Warning, "There is a parent path");
+			}
+			LOG_M_(Warning, "dir is " << dir.get());
+		}
 
+#ifdef GUBG_WIN32
+SkipSpecialName:
+#endif
                 path.remove_filename();
             }
             return ret;
@@ -97,19 +160,39 @@ namespace gubg
 
         bool Directory::exists() const
         {
-            return boost::filesystem::exists(toPath());
+            return boost::filesystem::exists(path());
         }
 
         bool Directory::isRoot() const
         {
+		LOG_SM_(Warning, isRoot, this);
+		//The root has itself as its location
             return this == location_.get(); 
         }
-        string Directory::path() const {return toPath().string();}
-        boost::filesystem::path Directory::toPath() const
-        {
+        string Directory::path() const
+	{
+		LOG_SM_(Warning, path, "");
             if (!location_)
-                return boost::filesystem::path(name_);
-            return (isRoot() ? boost::filesystem::path("/") : location_->toPath() /= name_);
+                return name_;
+#ifdef GUBG_WIN32
+	    if (isRoot())
+	    {
+		    LOG_M_(Warning, "is root");
+		    return "";
+	    }
+	    else if (location_->isRoot())
+	    {
+		    LOG_M_(Warning, "parent is root");
+		    return name_;
+	    }
+	    else
+	    {
+		    LOG_M_(Warning, "something else");
+		    return location_->path() + "/" + name_;
+	    }
+#else
+            return (isRoot() ? "/" : location_->path() + "/" + name_);
+#endif
         }
 
         size_t Directory::expand(Ptr selfPtr, ExpandStrategy strategy)
@@ -118,14 +201,32 @@ namespace gubg
             if (!selfPtr)
                 return nrExpanded;
             Directory &self = *selfPtr;
-            LOG_SM_(Debug, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
+            LOG_SM_(Warning, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
             switch (strategy)
             {
                 case ExpandStrategy::Shallow:
                     {
                         LOG_M_(Debug, "Shallow expansion");
                         self.childs_.clear();
-                        auto path = self.toPath();
+#ifdef GUBG_WIN32
+			if (self.isRoot())
+			{
+				LOG_M_(Warning, "Getting the logical drives for windows");
+				//For windows, we cannot use boost to iterate over the drives
+				DWORD logicalDrives = ::GetLogicalDrives();
+				string drive("?:");
+				for (int i = 0; i < 26; ++i)
+				{
+					if (logicalDrives & (1 << i))
+					{
+						drive[0] = 'a'+i;
+						self.childs_.push_back(Directory::create(drive, selfPtr));
+					}
+				}
+				return self.childs_.size();
+			}
+#endif
+			boost::filesystem::path path = self.path();
                         for (auto it = boost::filesystem::directory_iterator(path); it != boost::filesystem::directory_iterator(); ++it)
                         {
                             auto p = it->path();
@@ -189,11 +290,11 @@ namespace gubg
                 return ret;
             boost::filesystem::path path(filename);
             ret.reset(new Regular);
-            LOG_M("Setting name_");
+            LOG_M("Setting name_ to " << path.filename().string());
             ret->name_ = path.filename().string();
             path.remove_filename();
             LOG_M("Setting location_");
-            ret->location_ = Directory::create(path);
+            ret->location_ = Directory::create(path.string());
             return ret;
         }
         Regular::Ptr Regular::create(const string &name, Directory::Ptr location)
@@ -210,27 +311,20 @@ namespace gubg
 
         bool Regular::exists() const
         {
-            return boost::filesystem::exists(toPath());
+            return boost::filesystem::exists(boost::filesystem::path(filepath()));
         }
 
         string Regular::filepath() const
         {
             if (!location_)
                 return name_;
-            auto path = location_->toPath();
-            path /= name();
-            return path.string();
+            auto path = location_->path() + "/" + name();
+            return path;
         }
         string Regular::extension() const
         {
             boost::filesystem::path path(name_);
             return path.extension().string();
-        }
-        boost::filesystem::path Regular::toPath() const
-        {
-            if (!location_)
-                return boost::filesystem::path(name_);
-            return location_->toPath() /= name_;
         }
 
         bool Regular::load(string &content)

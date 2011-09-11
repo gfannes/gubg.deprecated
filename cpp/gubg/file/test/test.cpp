@@ -29,6 +29,10 @@ int main(int argc, char **argv)
         {
             TEST_TAG(absolute);
             auto file = file::Regular::create(thisFilepath);
+	    LOG_M(file->filepath());
+	    auto dir = file::Directory::create("h:/");
+	    LOG_M(dir->path());
+	    return 0;
             TEST_TRUE(file);
             TEST_EQ("test.cpp", file->name());
             TEST_EQ(thisFilepath, file->filepath());

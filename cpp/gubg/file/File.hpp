@@ -2,7 +2,6 @@
 #define gubg_file_File_hpp
 
 #include "boost/shared_ptr.hpp"
-#include "boost/filesystem/path.hpp"
 #include <string>
 #include <vector>
 #include <ostream>
@@ -50,7 +49,7 @@ namespace gubg
             public:
                 typedef boost::shared_ptr<Directory> Ptr;
                 //Creation from a std::string
-                static Ptr create(boost::filesystem::path path);
+                static Ptr create(const std::string &path);
                 static Ptr create(const std::string &name, Directory::Ptr location);
                 //Downcast from a File::Ptr
                 static Ptr create(File::Ptr &);
@@ -60,7 +59,6 @@ namespace gubg
 
                 bool isRoot() const;
                 std::string path() const;
-                boost::filesystem::path toPath() const;
                 static size_t expand(Ptr self, ExpandStrategy);
                 bool empty() const {return childs_.empty();}
                 typedef std::vector<File::Ptr> Childs;
@@ -88,7 +86,6 @@ namespace gubg
 
                 std::string filepath() const;
                 std::string extension() const;
-                boost::filesystem::path toPath() const;
                 bool load(std::string &content);
         };
     }

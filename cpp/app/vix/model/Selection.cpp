@@ -9,7 +9,6 @@
 using namespace vix::model;
 using namespace std;
 using namespace boost;
-using namespace boost::filesystem;
 
 #define L_LOCK() Lock l(lock())
 
