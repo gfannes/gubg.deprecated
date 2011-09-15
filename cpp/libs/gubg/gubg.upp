@@ -1,0 +1,25 @@
+description "Generic utilities by gubg\37728,127,0";
+
+options
+	-std=c++0x;
+
+file
+	statemachine/StateMachine.hpp,
+	pointer/Locked.hpp,
+	OptionParser.cpp,
+	OnlyOnce.hpp,
+	Singleton.hpp,
+	OptionParser.hpp,
+	Exception.hpp,
+	nullptr.hpp,
+	Exception.cpp,
+	Platform.cpp,
+	Platform.hpp,
+	logging/Log.hpp,
+	file/File.cpp,
+	file/File.hpp,
+	pattern/Command.hpp;
+
+mainconfig
+	"" = "DLL MT";
+
