@@ -1,0 +1,37 @@
+description "The vi-inspired file explorer\377";
+
+uses
+	CtrlCore,
+	CtrlLib,
+	gubg;
+
+library
+	"boost_system boost_thread boost_filesystem boost_regex";
+
+options
+	"-std=c++0x -fPIC",
+	-DVIX_WITH_UPP;
+
+file
+	vix.lay,
+	settings/Settings.cpp,
+	settings/Settings.hpp,
+	model/Selection.cpp,
+	model/Selection.hpp,
+	model/FileSystem.cpp,
+	model/FileSystem.hpp,
+	controller/VixApplication.cpp,
+	controller/VixApplication.hpp,
+	vix.cpp,
+	controller/Commander.cpp,
+	controller/Commander.hpp,
+	controller/Command.cpp,
+	controller/Command.hpp,
+	controller/Instruction.cpp,
+	controller/Instruction.hpp,
+	controller/StateMachine.cpp,
+	controller/StateMachine.hpp;
+
+mainconfig
+	"DEBUG" = "GUI MT VIX_WITH_UPP";
+
