@@ -1,0 +1,13 @@
+description "The vi-inspired file explorer\377";
+
+uses
+	CtrlCore,
+	CtrlLib;
+
+file
+	vix.lay,
+	test2.cpp;
+
+mainconfig
+	"DEBUG" = "GUI MT";
+

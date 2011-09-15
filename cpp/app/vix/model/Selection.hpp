@@ -47,7 +47,7 @@ namespace vix
                 mutable boost::mutex mutex_;
         };
 
-        enum Format {Html};
+        enum Format {Unknown, Html};
         class Selection
         {
             private:
@@ -102,6 +102,11 @@ namespace vix
                 std::map<std::string, std::string> selectedPerPath_;
                 mutable boost::mutex selectedMutex_;
                 void updateSelected_();
+
+                boost::shared_ptr<std::string> content_;
+                Format format_;
+                mutable boost::mutex contentMutex_;
+                void prepareContent_(gubg::file::Regular, Format, boost::weak_ptr<std::string> wp);
 
                 //All updating of internal data goes via a message queue
                 struct Message

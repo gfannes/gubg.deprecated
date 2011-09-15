@@ -34,7 +34,8 @@ VixApplication::VixApplication(int argc, char **argv):
     vbox->addWidget(&filter_);
     vbox->addWidget(&content_);
     vbox->addWidget(&command_);
-    mainWindow_.resize(1024, 640);
+    //mainWindow_.resize(1024, 640);
+    mainWindow_.showMaximized();
     mainWindow_.setVisible(true);
 
     LOG_M_(Debug, "Connecting signals");
@@ -226,10 +227,14 @@ void VixApplication::updateSelectionSlot(vix::model::Selection *selectionModel)
 
     //Show the content
     {
-        LOG_SM_(Debug, files, "Showing the content");
+        LOG_SM_(Debug, content, "Showing the content");
         string contentAsHtml;
         if (selectionModel->getContent(contentAsHtml, model::Format::Html))
             textDocument_.setHtml(QString::fromStdString(contentAsHtml));
+        else
+        {
+            LOG_M_(Debug, "Could not get the content");
+        }
     }
 }
 

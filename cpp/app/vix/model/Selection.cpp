@@ -83,6 +83,7 @@ Selection::Selection(Selections &selections, const string &path):
     selections_(selections),
     selectedIX_(InvalidIX),
     recursive_(false),
+    format_(Unknown),
     consumerThread_(&Selection::consumer_, this)
 {
     FileSystem &filesystem = FileSystem::instance();
@@ -155,6 +156,15 @@ bool Selection::getRecursiveMode() const
 bool Selection::getContent(string &content, Format format)
 {
     LOG_SM_(Debug, getContent, "");
+    mutex::scoped_lock lock(contentMutex_);
+    if (format != format_)
+        return false;
+    if (!content_)
+        return false;
+    content = *content_;
+    return true;
+
+#if 0
     gubg::file::Regular *regular = 0;
     {
         boost::mutex::scoped_lock lock1(filesMutex_);
@@ -196,6 +206,7 @@ bool Selection::getContent(string &content, Format format)
             break;
     }
     return true;
+#endif
 }
 
 void Selection::setSelected(const string &selected)
@@ -359,7 +370,70 @@ void Selection::updateSelected_()
     }
     selectedIX_ = six;
     selectedPerPath_[path_->path()] = selected_;
+
+    //Start a thread preparing the content
+    if (0 <= selectedIX_ && selectedIX_ < files_.size())
+    {
+        if (auto *regular = dynamic_cast<gubg::file::Regular*>(files_[selectedIX_].operator->().get()))
+        {
+            //We set a new string in content_, which will be the unique target for prepareContent_
+            //When it is ready, it will check if this is still present, and if so, copy the prepared content into it
+            content_.reset(new string);
+            boost::thread(&Selection::prepareContent_, this, *regular, Html, boost::weak_ptr<string>(content_));
+        }
+    }
+
     LOG_M_(Debug, "selectedIX_: " << selectedIX_ << ", selected_: " << selected_ << " selectedPerPath_.size(): " << selectedPerPath_.size());
+}
+
+void Selection::prepareContent_(gubg::file::Regular regular, Format format, boost::weak_ptr<string> wp)
+{
+    LOG_SM_(Debug, prepareContent_, "Preparing content for " << regular.filepath());
+
+    std::string content;
+    //Load the content of the file
+    if (!regular.load(content))
+    {
+        LOG_M_(Error, "Could not load the content");
+        return;
+    }
+    LOG_M_(Debug, "Content is loaded");
+
+    //Check that we are still in the running to provide the content
+    {
+        mutex::scoped_lock lock(contentMutex_);
+        if (!wp.lock())
+        {
+            LOG_M_(Debug, "I'm too late...");
+            return;
+        }
+    }
+
+    //Check the size of the file
+    if (content.size() > 500000)
+    {
+        LOG_M_(Warning, "File is too large to show");
+        return;
+    }
+
+    switch (format)
+    {
+        case Format::Html:
+            boost::replace_all(content, "\n", "<br/>");
+            break;
+        default: return; break;
+    }
+
+    mutex::scoped_lock lock(contentMutex_);
+    if (auto sp = wp.lock())
+    {
+        sp->swap(content);
+        format_ = format;
+    }
+
+    //Indicate we are ready
+    LOG_M_(Warning, "OK, we are ready to show the content");
+    selections_.updated_(this);
 }
 
 void Selection::consumer_()
@@ -386,10 +460,24 @@ void Selection::consumer_()
             {
                 LOG_SM_(Debug, nameFilter, "");
                 nameFilter_ = *message.nameFilter;
-                if (nameFilter_.empty())
-                    reNameFilter_.reset();
-                else
-                    reNameFilter_.reset(new regex(nameFilter_, regex_constants::icase));
+                reNameFilter_.reset();
+                {
+                    auto nameFilter = nameFilter_;
+                    while (!reNameFilter_)
+                    {
+                        if (nameFilter.empty())
+                            break;
+                        try
+                        {
+                            reNameFilter_.reset(new regex(nameFilter, regex_constants::icase));
+                        }
+                        catch (boost::regex_error &exc)
+                        {
+                            LOG_M("Could not set reNameFilter_ to " << nameFilter << ", I will try a shorter version");
+                            nameFilter.resize(nameFilter.size()-1);
+                        }
+                    }
+                }
                 doUpdateFiles = true;
             }
             if (message.contentFilter.get() && *message.contentFilter != contentFilter_)
