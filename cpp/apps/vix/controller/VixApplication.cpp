@@ -16,6 +16,10 @@ VixApplication::VixApplication():
 	LOG_SM_(Debug, ctor, "");
     CtrlLayout(*this, "The vi-inspired file explorer");
     Sizeable();
+    files.AddColumn("filename");
+    
+    selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
+    commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommander_, this, _1, _2));
     
 #ifdef GUBG_LINUX
     const string path("/home/gfannes");
@@ -49,6 +53,53 @@ bool VixApplication::Key(dword key, int count)
         LOG_M_(Debug, "This is a special key");        
     }
     return true;
+}
+
+void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
+{
+	LOG_SM_(Debug, updateSelection_, "selectionModel: " << selectionModel);
+	if (!selectionModel)
+		return;
+	
+	LOG_M_(Debug, "Before clearing");
+	files.Clear();
+	LOG_M_(Debug, "After clearing");
+	vix::model::Files fs;
+	int selectedIX;
+	LOG_M_(Debug, "Before getting files");
+	selectionModel->getFiles(fs, selectedIX);
+	LOG_M_(Debug, "I received " << fs.size() << " files");
+	for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+	{
+    	vix::model::File::Unlock unlockedFile(*f);
+    	string str(unlockedFile->name());
+        if (unlockedFile->isDirectory())
+            str += "/";
+		files.Add(str.c_str());
+	}
+}
+
+void VixApplication::updateCommander_(int which, const string *str)
+{
+    LOG_SM_(Debug, updateCommander_, "which: " << which);
+    switch (which)
+    {
+        case 0:
+            nameString.SetText(str->c_str());
+            break;
+        case 1:
+            contentString.SetText(str->c_str());
+            break;
+        case 2:
+            commandString.SetText(str->c_str());
+            break;
+    }
+    #if 0
+    auto cm = commander_.currentMode();
+    filter_.setEnabled(0 == cm);
+    content_.setEnabled(1 == cm);
+    command_.setEnabled(2 == cm);
+    #endif
 }
 
 #endif
