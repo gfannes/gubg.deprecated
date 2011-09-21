@@ -17,8 +17,13 @@ class VixApplication: public Upp::WithMainLayout<Upp::TopWindow>
         VixApplication();
         virtual bool Key(Upp::dword key, int count);
     private:
+        void updateSelection_(vix::model::Selection *);
+        void updateCommander_(int, const std::string *);
+                
     	vix::controller::Commander commander_;
     	vix::model::Selections selectionModels_;
+        boost::signals2::connection selectionModelsUpdatedConnection_;    	
+        boost::signals2::connection commanderUpdatedConnection_;
 };
 #endif
 
