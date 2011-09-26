@@ -6,8 +6,6 @@
 
 #ifdef __linux
 #define GUBG_LINUX
-#include <stdlib.h>
-#include <unistd.h>
 #endif
 #ifdef _WIN32
 #define GUBG_WIN32

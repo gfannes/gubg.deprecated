@@ -2,8 +2,8 @@ description "The vi-inspired file explorer\377";
 
 uses
 	CtrlCore,
-	CtrlLib,
-	gubg;
+	gubg,
+	GridCtrl;
 
 library
 	"boost_system boost_thread boost_filesystem boost_regex";

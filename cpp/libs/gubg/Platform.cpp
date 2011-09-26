@@ -1,4 +1,12 @@
 #include "gubg/Platform.hpp"
+
+#ifdef GUBG_LINUX
+#include <stdlib.h>
+#include <unistd.h>
+#endif
+#ifdef GUBG_WIN32
+#endif
+
 using namespace std;
 
 namespace gubg

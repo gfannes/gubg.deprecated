@@ -17,7 +17,9 @@ class VixApplication: public Upp::WithMainLayout<Upp::TopWindow>
         VixApplication();
         virtual bool Key(Upp::dword key, int count);
     private:
+        void updateSelectionSlot_(vix::model::Selection *);
         void updateSelection_(vix::model::Selection *);
+        void updateCommanderSlot_(int, const std::string *);
         void updateCommander_(int, const std::string *);
                 
     	vix::controller::Commander commander_;
