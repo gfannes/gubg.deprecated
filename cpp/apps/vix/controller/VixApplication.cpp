@@ -18,8 +18,8 @@ VixApplication::VixApplication():
     Sizeable();
     files.AddColumn("filename");
     
-    selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelection_, this, _1));
-    commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommander_, this, _1, _2));
+    selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelectionSlot_, this, _1));
+    commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommanderSlot_, this, _1, _2));
     
 #ifdef GUBG_LINUX
     const string path("/home/gfannes");
@@ -27,7 +27,8 @@ VixApplication::VixApplication():
     const string path("h:/");
 #endif
     LOG_M_(Debug, "Adding the first selection (" << path << ")");
-    selectionModels_.addSelection(path);}
+    selectionModels_.addSelection(path);
+}
 
 bool VixApplication::Key(dword key, int count)
 {
@@ -37,48 +38,66 @@ bool VixApplication::Key(dword key, int count)
         LOG_M_(Debug, "This is a readable key");
         switch (key)
         {
-            case K_ESCAPE:
-                commander_.clear();
-                break;
-            case K_ENTER:
-                commander_.activate(controller::Commander::Key::Enter);
-                break;
+            case K_ESCAPE: commander_.add(Special::Escape); break;
+            case K_ENTER: commander_.add(Special::Enter); break;
+            case K_BACKSPACE: commander_.add(Special::Backspace); break;
             default:
-                commander_.add(key);
+                commander_.add((char)key);
                 break;
         }
     }
     else
     {
-        LOG_M_(Debug, "This is a special key");        
+        LOG_M_(Debug, "This is a special key " << K_DOWN);        
+        switch (key)
+        {
+            case K_RIGHT: commander_.add(Special::Right); break;
+            case K_LEFT: commander_.add(Special::Left); break;
+            case K_UP: commander_.add(Special::Up); break;
+            case K_DOWN: commander_.add(Special::Down); break;
+        }
     }
     return true;
 }
 
+void VixApplication::updateSelectionSlot_(vix::model::Selection *selectionModel)
+{
+    PostCallback(callback1(this, &VixApplication::updateSelection_, selectionModel));
+}
 void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
 {
 	LOG_SM_(Debug, updateSelection_, "selectionModel: " << selectionModel);
 	if (!selectionModel)
 		return;
 	
-	LOG_M_(Debug, "Before clearing");
+    path.SetText(selectionModel->path()->path().c_str());
+
 	files.Clear();
-	LOG_M_(Debug, "After clearing");
 	vix::model::Files fs;
 	int selectedIX;
-	LOG_M_(Debug, "Before getting files");
 	selectionModel->getFiles(fs, selectedIX);
-	LOG_M_(Debug, "I received " << fs.size() << " files");
-	for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
-	{
-    	vix::model::File::Unlock unlockedFile(*f);
-    	string str(unlockedFile->name());
-        if (unlockedFile->isDirectory())
-            str += "/";
-		files.Add(str.c_str());
-	}
+    if (!fs.empty())
+    {
+        LOG_M_(Debug, "I received " << fs.size() << " files");
+        for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+        {
+            vix::model::File::Unlock unlockedFile(*f);
+            string str(unlockedFile->name());
+            if (unlockedFile->isDirectory())
+                str += "/";
+            files.Add(str.c_str());
+        }
+        files.ClearSelection();
+        files.Select(selectedIX);
+        files.SetCursor(selectedIX);
+        files.CenterCursor();
+    }
 }
 
+void VixApplication::updateCommanderSlot_(int which, const string *str)
+{
+    PostCallback(callback2(this, &VixApplication::updateCommander_, which, str));
+}
 void VixApplication::updateCommander_(int which, const string *str)
 {
     LOG_SM_(Debug, updateCommander_, "which: " << which);
