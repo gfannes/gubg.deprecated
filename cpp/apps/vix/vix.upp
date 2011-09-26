@@ -9,8 +9,9 @@ library
 	"boost_system boost_thread boost_filesystem boost_regex";
 
 options
-	"-std=c++0x -fPIC",
 	-DVIX_WITH_UPP;
+
+options(GCC) "-std=c++0x -fPIC";
 
 file
 	vix.lay,

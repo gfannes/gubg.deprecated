@@ -1,7 +1,6 @@
 description "Generic utilities by gubg\37728,127,0";
 
-options
-	-std=c++0x;
+options(GCC) -std=c++0x;
 
 file
 	statemachine/StateMachine.hpp,
