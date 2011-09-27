@@ -28,6 +28,9 @@ VixApplication::VixApplication():
 #endif
     LOG_M_(Debug, "Adding the first selection (" << path << ")");
     selectionModels_.addSelection(path);
+
+    files.WhenSel = THISBACK(sel);
+    files.WhenLeftDouble = THISBACK(doubleClick);
 }
 
 bool VixApplication::Key(dword key, int count)
@@ -90,7 +93,7 @@ void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
         files.ClearSelection();
         files.Select(selectedIX);
         files.SetCursor(selectedIX);
-        files.CenterCursor();
+//      files.CenterCursor();
     }
 }
 
@@ -119,6 +122,34 @@ void VixApplication::updateCommander_(int which, const string *str)
     content_.setEnabled(1 == cm);
     command_.setEnabled(2 == cm);
     #endif
+}
+
+void VixApplication::sel()
+{
+    LOG_SM_(Debug, sel, "");
+    vix::model::Selection *selection = selectionModels_.current();
+    if (!selection)
+        return;
+    if (!files.IsSelection())
+        return;
+	vix::model::Files fs;
+	int selectedIX;
+	selection->getFiles(fs, selectedIX);
+    for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+    {
+        int ix = f-fs.begin();
+        if (files.IsSel(ix))
+        {
+            if (ix == selectedIX)
+                return;
+            selection->setSelected((*f)->name());
+        }
+    }
+}
+void VixApplication::doubleClick()
+{
+    LOG_SM_(Debug, doubleClick, "");
+    commander_.activate(Special::Enter);
 }
 
 #endif

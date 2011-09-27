@@ -14,8 +14,12 @@ namespace Upp
 class VixApplication: public Upp::WithMainLayout<Upp::TopWindow>
 {
     public:
+        typedef VixApplication CLASSNAME;
         VixApplication();
         virtual bool Key(Upp::dword key, int count);
+        
+        void sel();
+        void doubleClick();
     private:
         void updateSelectionSlot_(vix::model::Selection *);
         void updateSelection_(vix::model::Selection *);
