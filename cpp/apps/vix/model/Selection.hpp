@@ -15,6 +15,13 @@ namespace vix
     {
         enum class Action {View, Edit, Open, Delete, Copy, Move};
         enum class Activation {Error, Directory, Regular, SomethingElse};
+        enum class ChangedItem
+        {
+            Nothing = 0x00,
+            Selections = 0x01,
+            Files = 0x02,
+            Preview = 0x04,
+        };
 
         class Selection;
 
@@ -27,7 +34,7 @@ namespace vix
                 Selections();
                 virtual ~Selections();
 
-                typedef boost::signals2::signal<void (Selection *)> UpdateSignal;
+                typedef boost::signals2::signal<void (ChangedItem)> UpdateSignal;
                 boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
 
                 bool empty() const;
@@ -126,6 +133,23 @@ namespace vix
                 boost::thread consumerThread_;
         };
     }
+}
+inline vix::model::ChangedItem operator|(vix::model::ChangedItem lhs, vix::model::ChangedItem rhs)
+{
+    return static_cast<vix::model::ChangedItem>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+}
+inline vix::model::ChangedItem operator&(vix::model::ChangedItem lhs, vix::model::ChangedItem rhs)
+{
+    return static_cast<vix::model::ChangedItem>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
+}
+inline vix::model::ChangedItem &operator|=(vix::model::ChangedItem &lhs, vix::model::ChangedItem rhs)
+{
+    lhs = static_cast<vix::model::ChangedItem>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+    return lhs;
+}
+inline std::ostream &operator<<(std::ostream &os, vix::model::ChangedItem ci)
+{
+    return os << std::hex << static_cast<unsigned int>(ci);
 }
 
 #endif

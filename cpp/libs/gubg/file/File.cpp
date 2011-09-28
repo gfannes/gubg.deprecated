@@ -14,32 +14,32 @@ using namespace std;
 
 namespace
 {
-	bool isAbsolute_(const boost::filesystem::path &path)
-	{
+    bool isAbsolute_(const boost::filesystem::path &path)
+    {
 #ifdef GUBG_WIN32
-		string str = path.string();
-		if (str.size() >= 2 && ':' == str[1])
-			return true;
-		return false;
+        string str = path.string();
+        if (str.size() >= 2 && ':' == str[1])
+            return true;
+        return false;
 #else
-		return path.is_absolute();
+        return path.is_absolute();
 #endif
-	}
+    }
 }
 
 std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
 {
-	LOG_SM_(Warning, stream, "File");
+    LOG_SM_(Warning, stream, "File");
     return os << file->name();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Directory::Ptr &dir)
 {
-	LOG_SM_(Warning, stream, "Directory: " << dir.get());
+    LOG_SM_(Warning, stream, "Directory: " << dir.get());
     return os << dir->path();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Regular::Ptr &regular)
 {
-	LOG_SM_(Warning, stream, "Regular");
+    LOG_SM_(Warning, stream, "Regular");
     return os << regular->filepath();
 }
 
@@ -80,64 +80,64 @@ namespace gubg
         {
             LOG_SM(Directory::create, "path: " << p);
 
-	    if (p == "/")
-	    {
-		    //The root of the filesystem is requested
-		    Ptr root(new Directory);
+            if (p == "/")
+            {
+                //The root of the filesystem is requested
+                Ptr root(new Directory);
 #ifdef GUBG_WIN32
-		    root->name_ = "";
+                root->name_ = "";
 #else
-		    root->name_ = "/";
+                root->name_ = "/";
 #endif
-		    root->location_ = root;
-		    return root;
-	    }
+                root->location_ = root;
+                return root;
+            }
 
-	    boost::filesystem::path path(p);
+            boost::filesystem::path path(p);
             Ptr dir, ret;
             while (!path.empty())
             {
 #ifdef GUBG_WIN32
-		if (path.filename().string() == "\\" || path.filename().string() == "/")
-			goto SkipSpecialName;
+                if (path.filename().string() == "\\" || path.filename().string() == "/")
+                    goto SkipSpecialName;
 #endif
                 LOG_M("path: " << path.string() << ", path.filename(): " << path.filename().string());
 
-		{
-			Ptr tmp(new Directory);
-			tmp->name_ = path.filename().string();
+                {
+                    Ptr tmp(new Directory);
+                    tmp->name_ = path.filename().string();
 
-			if (!ret)
-				dir = ret = tmp;
-			else
-			{
-				dir->location_ = tmp;
-				dir = tmp;
-			}
+                    if (!ret)
+                        dir = ret = tmp;
+                    else
+                    {
+                        dir->location_ = tmp;
+                        dir = tmp;
+                    }
 
-			if (!path.has_parent_path())
-			{
-				LOG_M_(Warning, "There is no parent anymore");
-				if (isAbsolute_(path))
-				{
-					LOG_M_(Warning, "This is an absolute path");
+                    if (!path.has_parent_path())
+                    {
+                        LOG_M_(Warning, "There is no parent anymore");
+                        if (isAbsolute_(path))
+                        {
+                            LOG_M_(Warning, "This is an absolute path");
 #ifdef GUBG_WIN32
-					Ptr root(new Directory);
-					LOG_M_(Warning, "Root is " << root.get());
-					root->name_ = "";
-					root->location_ = root;
-					dir->location_ = root;
+                            Ptr root(new Directory);
+                            LOG_M_(Warning, "Root is " << root.get());
+                            root->name_ = "";
+                            root->location_ = root;
+                            dir->location_ = root;
 #else
-					dir->location_ = dir;
+                            dir->location_ = dir;
 #endif
-				}
-			}
-			else
-			{
-				LOG_M_(Warning, "There is a parent path");
-			}
-			LOG_M_(Warning, "dir is " << dir.get());
-		}
+                        }
+                    }
+                    else
+                    {
+                        LOG_M_(Warning, "There is a parent path");
+                    }
+                    LOG_M_(Warning, "dir is " << dir.get());
+                }
 
 #ifdef GUBG_WIN32
 SkipSpecialName:
@@ -165,33 +165,35 @@ SkipSpecialName:
 
         bool Directory::isRoot() const
         {
-		LOG_SM_(Warning, isRoot, this);
-		//The root has itself as its location
+            LOG_SM_(Warning, isRoot, this);
+            //The root has itself as its location
             return this == location_.get(); 
         }
         string Directory::path() const
-	{
-		LOG_SM_(Warning, path, "");
+        {
+            LOG_SM_(Warning, path, "");
             if (!location_)
                 return name_;
 #ifdef GUBG_WIN32
-	    if (isRoot())
-	    {
-		    LOG_M_(Warning, "is root");
-		    return "";
-	    }
-	    else if (location_->isRoot())
-	    {
-		    LOG_M_(Warning, "parent is root");
-		    return name_;
-	    }
-	    else
-	    {
-		    LOG_M_(Warning, "something else");
-		    return location_->path() + "/" + name_;
-	    }
+            if (isRoot())
+            {
+                LOG_M_(Warning, "is root");
+                return "";
+            }
+            else if (location_->isRoot())
+            {
+                LOG_M_(Warning, "parent is root");
+                return name_;
+            }
+            else
+            {
+                LOG_M_(Warning, "something else");
+                return location_->path() + "/" + name_;
+            }
 #else
-            return (isRoot() ? "/" : location_->path() + "/" + name_);
+            string str = (isRoot() ? "/" : location_->path() + name_ + "/");
+            LOG_M_(Warning, "Directory::path: " << str);
+            return str;
 #endif
         }
 
@@ -209,24 +211,24 @@ SkipSpecialName:
                         LOG_M_(Debug, "Shallow expansion");
                         self.childs_.clear();
 #ifdef GUBG_WIN32
-			if (self.isRoot())
-			{
-				LOG_M_(Warning, "Getting the logical drives for windows");
-				//For windows, we cannot use boost to iterate over the drives
-				DWORD logicalDrives = ::GetLogicalDrives();
-				string drive("?:");
-				for (int i = 0; i < 26; ++i)
-				{
-					if (logicalDrives & (1 << i))
-					{
-						drive[0] = 'a'+i;
-						self.childs_.push_back(Directory::create(drive, selfPtr));
-					}
-				}
-				return self.childs_.size();
-			}
+                        if (self.isRoot())
+                        {
+                            LOG_M_(Warning, "Getting the logical drives for windows");
+                            //For windows, we cannot use boost to iterate over the drives
+                            DWORD logicalDrives = ::GetLogicalDrives();
+                            string drive("?:");
+                            for (int i = 0; i < 26; ++i)
+                            {
+                                if (logicalDrives & (1 << i))
+                                {
+                                    drive[0] = 'a'+i;
+                                    self.childs_.push_back(Directory::create(drive, selfPtr));
+                                }
+                            }
+                            return self.childs_.size();
+                        }
 #endif
-			boost::filesystem::path path = self.path();
+                        boost::filesystem::path path = self.path();
                         for (auto it = boost::filesystem::directory_iterator(path); it != boost::filesystem::directory_iterator(); ++it)
                         {
                             auto p = it->path();
@@ -240,8 +242,8 @@ SkipSpecialName:
                             {
                                 if (!boost::filesystem::is_symlink(p))
                                 {
-                                LOG_M_(Debug, "Creating directory " << p.filename().string());
-                                file = Directory::create(p.filename().string(), selfPtr);
+                                    LOG_M_(Debug, "Creating directory " << p.filename().string());
+                                    file = Directory::create(p.filename().string(), selfPtr);
                                 }
                             }
                             else
@@ -267,12 +269,12 @@ SkipSpecialName:
                         nrExpanded = expand(selfPtr, ExpandStrategy::Shallow);
                         for (auto child = self.childs_.begin(); child != self.childs_.end(); ++child)
                         {
-                           auto dir = Directory::create(*child); 
-                           if (dir)
-                           {
-                               LOG_M_(Debug, dir->path());
-                               nrExpanded += expand(dir, ExpandStrategy::Recursive);
-                           }
+                            auto dir = Directory::create(*child); 
+                            if (dir)
+                            {
+                                LOG_M_(Debug, dir->path());
+                                nrExpanded += expand(dir, ExpandStrategy::Recursive);
+                            }
                         }
                     }
                     break;
