@@ -21,8 +21,8 @@ class VixApplication: public Upp::WithMainLayout<Upp::TopWindow>
         void sel();
         void doubleClick();
     private:
-        void updateSelectionSlot_(vix::model::Selection *);
-        void updateSelection_(vix::model::Selection *);
+        void updateSelectionSlot_(vix::model::ChangedItem);
+        void updateSelection_(vix::model::ChangedItem);
         void updateCommanderSlot_(int, const std::string *);
         void updateCommander_(int, const std::string *);
                 

@@ -49,7 +49,7 @@ void Selections::setCurrent(int ix)
     LOG_SM_(Debug, setCurrent, "ix: " << ix << ", current_: " << current_);
     current_ = ix;
     LOG_M_(Debug, "current_: " << current_ << ", current(): " << current());
-    updated_(current());
+    updated_(ChangedItem::Selections | ChangedItem::Files | ChangedItem::Preview);
 }
 void Selections::addSelection(const string &path)
 {
@@ -70,7 +70,7 @@ void Selections::deleteSelection(int ix)
         --current_;
     selections_.erase(selections_.begin()+ix);
     LOG_M_(Debug, "current_: " << current_ << ", current(): " << current());
-    updated_(current());
+    updated_(ChangedItem::Selections | ChangedItem::Files | ChangedItem::Preview);
 }
 boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &subscriber)
 {
@@ -433,7 +433,7 @@ void Selection::prepareContent_(gubg::file::Regular regular, Format format, boos
 
     //Indicate we are ready
     LOG_M_(Warning, "OK, we are ready to show the content");
-    selections_.updated_(this);
+    selections_.updated_(ChangedItem::Preview);
 }
 
 void Selection::consumer_()
@@ -559,10 +559,15 @@ void Selection::consumer_()
             }
 
             //If either the files or the selected file got updated, we have to report this to our subscribers
-            if (doUpdateFiles || doUpdateSelected)
+            auto ci = ChangedItem::Nothing;
+            if (doUpdateFiles)
+                ci |= ChangedItem::Files;
+            if (doUpdateSelected)
+                ci |= ChangedItem::Preview;
+            if (ChangedItem::Nothing != ci)
             {
-                LOG_SM_(Debug, signalSubscribers, "");
-                selections_.updated_(this);
+                LOG_SM_(Debug, signalSubscribers, "ci: " << ci);
+                selections_.updated_(ci);
             }
         }
     }

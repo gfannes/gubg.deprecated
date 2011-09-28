@@ -63,37 +63,44 @@ bool VixApplication::Key(dword key, int count)
     return true;
 }
 
-void VixApplication::updateSelectionSlot_(vix::model::Selection *selectionModel)
+void VixApplication::updateSelectionSlot_(vix::model::ChangedItem ci)
 {
-    PostCallback(callback1(this, &VixApplication::updateSelection_, selectionModel));
+    PostCallback(callback1(this, &VixApplication::updateSelection_, ci));
 }
-void VixApplication::updateSelection_(vix::model::Selection *selectionModel)
+void VixApplication::updateSelection_(vix::model::ChangedItem ci)
 {
-	LOG_SM_(Debug, updateSelection_, "selectionModel: " << selectionModel);
-	if (!selectionModel)
+	LOG_SM_(Debug, updateSelection_, "ci: " << ci);
+	if (vix::model::ChangedItem::Nothing == ci)
 		return;
 	
+    vix::model::Selection *selectionModel = selectionModels_.current();
+    if (!selectionModel)
+        return;
+
     path.SetText(selectionModel->path()->path().c_str());
 
-	files.Clear();
-	vix::model::Files fs;
-	int selectedIX;
-	selectionModel->getFiles(fs, selectedIX);
-    if (!fs.empty())
+    if (vix::model::ChangedItem::Nothing != (ci & vix::model::ChangedItem::Files))
     {
-        LOG_M_(Debug, "I received " << fs.size() << " files");
-        for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+        files.Clear();
+        vix::model::Files fs;
+        int selectedIX;
+        selectionModel->getFiles(fs, selectedIX);
+        if (!fs.empty())
         {
-            vix::model::File::Unlock unlockedFile(*f);
-            string str(unlockedFile->name());
-            if (unlockedFile->isDirectory())
-                str += "/";
-            files.Add(str.c_str());
+            LOG_M_(Debug, "I received " << fs.size() << " files");
+            for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+            {
+                vix::model::File::Unlock unlockedFile(*f);
+                string str(unlockedFile->name());
+                if (unlockedFile->isDirectory())
+                    str += "/";
+                files.Add(str.c_str());
+            }
+            files.ClearSelection();
+            files.Select(selectedIX);
+            files.SetCursor(selectedIX);
+            //      files.CenterCursor();
         }
-        files.ClearSelection();
-        files.Select(selectedIX);
-        files.SetCursor(selectedIX);
-//      files.CenterCursor();
     }
 }
 
