@@ -10,6 +10,26 @@ using namespace vix;
 using namespace Upp;
 using namespace std;
 
+namespace
+{
+    controller::Commander *commander;
+    model::Selections *selectionModels;
+    bool keyboardHook(Ctrl *ctrl, dword key, int count)
+    {
+        switch (key)
+        {
+            case K_CTRL_PAGEUP:
+                         commander->changeTab(selectionModels->currentIX()-1);
+                         break;
+            case K_CTRL_PAGEDOWN:
+                         commander->changeTab(selectionModels->currentIX()+1);
+                         break;
+            default: return false;
+        }
+        return true;
+    }
+}
+
 VixApplication::VixApplication():
 	commander_(selectionModels_)
 {
@@ -20,6 +40,8 @@ VixApplication::VixApplication():
     
     selectionModelsUpdatedConnection_ = selectionModels_.connect(boost::bind(&VixApplication::updateSelectionSlot_, this, _1));
     commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommanderSlot_, this, _1, _2));
+    files.WhenSel = THISBACK(sel);
+    files.WhenLeftDouble = THISBACK(doubleClick);
     
 #ifdef GUBG_LINUX
     const string path("/home/gfannes");
@@ -29,8 +51,9 @@ VixApplication::VixApplication():
     LOG_M_(Debug, "Adding the first selection (" << path << ")");
     selectionModels_.addSelection(path);
 
-    files.WhenSel = THISBACK(sel);
-    files.WhenLeftDouble = THISBACK(doubleClick);
+    commander = &commander_;
+    selectionModels = &selectionModels_;
+    InstallKeyHook(keyboardHook);
 }
 
 bool VixApplication::Key(dword key, int count)
@@ -51,13 +74,19 @@ bool VixApplication::Key(dword key, int count)
     }
     else
     {
-        LOG_M_(Debug, "This is a special key " << K_DOWN);        
+        LOG_M_(Debug, "This is a special key " << hex << K_CTRL_PAGEUP);
         switch (key)
         {
             case K_RIGHT: commander_.add(Special::Right); break;
             case K_LEFT: commander_.add(Special::Left); break;
             case K_UP: commander_.add(Special::Up); break;
             case K_DOWN: commander_.add(Special::Down); break;
+            case K_CTRL_PAGEUP:
+                         commander_.changeTab(selectionModels_.currentIX()-1);
+                         break;
+            case K_CTRL_PAGEDOWN:
+                         commander_.changeTab(selectionModels_.currentIX()+1);
+                         break;
         }
     }
     return true;
@@ -79,8 +108,28 @@ void VixApplication::updateSelection_(vix::model::ChangedItem ci)
 
     path.SetText(selectionModel->path()->path().c_str());
 
+    if (vix::model::ChangedItem::Nothing != (ci & vix::model::ChangedItem::Selections))
+    {
+        LOG_M_(Debug, "Selections are changed");
+        auto selections = selectionModel->selections();
+        for (auto s = selections.begin(); s != selections.end(); ++s)
+        {
+            int ix = s - selections.begin();
+            LOG_M_(Debug, "ix: " << ix << ", tabBar.GetCount(): " << tabBar.GetCount());
+            if (tabBar.GetCount() <= ix)
+                tabBar.Insert(ix);
+            tabBar.GetItem(ix).Text((*s)->path()->name());
+            if (*s == selectionModels_.current())
+                tabBar.Set(ix);
+        }
+        while (tabBar.GetCount() > selections.size())
+            tabBar.Remove(tabBar.GetCount()-1);
+    }
+
     if (vix::model::ChangedItem::Nothing != (ci & vix::model::ChangedItem::Files))
     {
+        tabBar.GetItem(selectionModels_.currentIX()).Text(selectionModels_.current()->path()->name());
+
         files.Clear();
         vix::model::Files fs;
         int selectedIX;

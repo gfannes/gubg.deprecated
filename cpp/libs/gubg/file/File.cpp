@@ -29,17 +29,17 @@ namespace
 
 std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
 {
-    LOG_SM_(Warning, stream, "File");
+    LOG_SM_(Debug, stream, "File");
     return os << file->name();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Directory::Ptr &dir)
 {
-    LOG_SM_(Warning, stream, "Directory: " << dir.get());
+    LOG_SM_(Debug, stream, "Directory: " << dir.get());
     return os << dir->path();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Regular::Ptr &regular)
 {
-    LOG_SM_(Warning, stream, "Regular");
+    LOG_SM_(Debug, stream, "Regular");
     return os << regular->filepath();
 }
 
@@ -117,13 +117,13 @@ namespace gubg
 
                     if (!path.has_parent_path())
                     {
-                        LOG_M_(Warning, "There is no parent anymore");
+                        LOG_M_(Debug, "There is no parent anymore");
                         if (isAbsolute_(path))
                         {
-                            LOG_M_(Warning, "This is an absolute path");
+                            LOG_M_(Debug, "This is an absolute path");
 #ifdef GUBG_WIN32
                             Ptr root(new Directory);
-                            LOG_M_(Warning, "Root is " << root.get());
+                            LOG_M_(Debug, "Root is " << root.get());
                             root->name_ = "";
                             root->location_ = root;
                             dir->location_ = root;
@@ -134,9 +134,9 @@ namespace gubg
                     }
                     else
                     {
-                        LOG_M_(Warning, "There is a parent path");
+                        LOG_M_(Debug, "There is a parent path");
                     }
-                    LOG_M_(Warning, "dir is " << dir.get());
+                    LOG_M_(Debug, "dir is " << dir.get());
                 }
 
 #ifdef GUBG_WIN32
@@ -165,34 +165,34 @@ SkipSpecialName:
 
         bool Directory::isRoot() const
         {
-            LOG_SM_(Warning, isRoot, this);
+            LOG_SM_(Debug, isRoot, this);
             //The root has itself as its location
             return this == location_.get(); 
         }
         string Directory::path() const
         {
-            LOG_SM_(Warning, path, "");
+            LOG_SM_(Debug, path, "");
             if (!location_)
                 return name_;
 #ifdef GUBG_WIN32
             if (isRoot())
             {
-                LOG_M_(Warning, "is root");
+                LOG_M_(Debug, "is root");
                 return "";
             }
             else if (location_->isRoot())
             {
-                LOG_M_(Warning, "parent is root");
+                LOG_M_(Debug, "parent is root");
                 return name_;
             }
             else
             {
-                LOG_M_(Warning, "something else");
+                LOG_M_(Debug, "something else");
                 return location_->path() + "/" + name_;
             }
 #else
             string str = (isRoot() ? "/" : location_->path() + name_ + "/");
-            LOG_M_(Warning, "Directory::path: " << str);
+            LOG_M_(Debug, "Directory::path: " << str);
             return str;
 #endif
         }
@@ -203,7 +203,7 @@ SkipSpecialName:
             if (!selfPtr)
                 return nrExpanded;
             Directory &self = *selfPtr;
-            LOG_SM_(Warning, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
+            LOG_SM_(Debug, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
             switch (strategy)
             {
                 case ExpandStrategy::Shallow:
@@ -213,7 +213,7 @@ SkipSpecialName:
 #ifdef GUBG_WIN32
                         if (self.isRoot())
                         {
-                            LOG_M_(Warning, "Getting the logical drives for windows");
+                            LOG_M_(Debug, "Getting the logical drives for windows");
                             //For windows, we cannot use boost to iterate over the drives
                             DWORD logicalDrives = ::GetLogicalDrives();
                             string drive("?:");
