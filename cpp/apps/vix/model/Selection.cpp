@@ -57,6 +57,7 @@ void Selections::addSelection(const string &path)
     L_LOCK();
     current_ = selections_.size();
     selections_.push_back(new Selection(*this, path));
+    updated_(ChangedItem::Selections | ChangedItem::Files | ChangedItem::Preview);
 }
 void Selections::deleteSelection(int ix)
 {
