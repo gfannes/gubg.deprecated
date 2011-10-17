@@ -11,6 +11,8 @@
 #define GUBG_WIN32
 #endif
 
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+
 namespace gubg
 {
     bool spawn(const std::string &command);
@@ -26,6 +28,9 @@ namespace gubg
     //Basic command-line escaping
     enum class Quotes {Add};
     std::string escapeForCLI(const std::string &str, Quotes quotes);
+
+    bool createDirectory(const std::string &name);
+    bool createRegular(const std::string &name);
 }
 
 #endif

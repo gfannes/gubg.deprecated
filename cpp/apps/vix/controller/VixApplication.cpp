@@ -2,7 +2,7 @@
 
 #include "vix/controller/VixApplication.hpp"
 #define GUBG_MODULE "VixApplication"
-#define LOG_LEVEL Debug
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 #include "gubg/Platform.hpp"
 #include <iostream>
@@ -58,7 +58,7 @@ VixApplication::VixApplication():
 
 bool VixApplication::Key(dword key, int count)
 {
-	LOG_SM_(Debug, Key, "Key " << key << " - 0x" << hex << key << dec << " (" << ( char ) key << ") was pressed " << count << " times");
+	LOG_SM_(Warning, Key, "Key " << key << " - 0x" << hex << key << dec << " (" << ( char ) key << ") was pressed " << count << " times");
     if (key < K_DELTA)
     {
         LOG_M_(Debug, "This is a readable key");
@@ -126,29 +126,35 @@ void VixApplication::updateSelection_(vix::model::ChangedItem ci)
             tabBar.Remove(tabBar.GetCount()-1);
     }
 
-    if (vix::model::ChangedItem::Nothing != (ci & vix::model::ChangedItem::Files))
+    vix::model::Files fs;
+    int selectedIX;
+    selectionModel->getFiles(fs, selectedIX);
     {
-        tabBar.GetItem(selectionModels_.currentIX()).Text(selectionModels_.current()->path()->name());
+        if (vix::model::ChangedItem::Nothing != (ci & vix::model::ChangedItem::Files))
+        {
+            tabBar.GetItem(selectionModels_.currentIX()).Text(selectionModels_.current()->path()->name());
 
-        files.Clear();
-        vix::model::Files fs;
-        int selectedIX;
-        selectionModel->getFiles(fs, selectedIX);
+            files.Clear();
+            if (!fs.empty())
+            {
+                LOG_M_(Debug, "I received " << fs.size() << " files");
+                for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+                {
+                    vix::model::File::Unlock unlockedFile(*f);
+                    string str(unlockedFile->name());
+                    if (unlockedFile->isDirectory())
+                        str += "/";
+                    files.Add(str.c_str());
+                }
+            }
+        }
         if (!fs.empty())
         {
-            LOG_M_(Debug, "I received " << fs.size() << " files");
-            for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
-            {
-                vix::model::File::Unlock unlockedFile(*f);
-                string str(unlockedFile->name());
-                if (unlockedFile->isDirectory())
-                    str += "/";
-                files.Add(str.c_str());
-            }
+            files.WhenSel = THISBACK(nothing);
             files.ClearSelection();
             files.Select(selectedIX);
             files.SetCursor(selectedIX);
-            //      files.CenterCursor();
+            files.WhenSel = THISBACK(sel);
         }
     }
 }
@@ -186,21 +192,30 @@ void VixApplication::sel()
     vix::model::Selection *selection = selectionModels_.current();
     if (!selection)
         return;
-    if (!files.IsSelection())
-        return;
-	vix::model::Files fs;
-	int selectedIX;
-	selection->getFiles(fs, selectedIX);
-    for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+    vix::model::Files fs;
+    int selectedIX;
+    selection->getFiles(fs, selectedIX);
+    //Find the newly selected entry, as a string
+    string newSelected;
     {
-        int ix = f-fs.begin();
-        if (files.IsSel(ix))
+        if (!files.IsSelection())
         {
-            if (ix == selectedIX)
-                return;
-            selection->setSelected((*f)->name());
+            LOG_M_(Debug, "Nothing is selected");
+            return;
+        }
+        LOG_M_(Debug, "nr files: " << fs.size() << "selectedIX: " << selectedIX);
+        for (vix::model::Files::iterator f = fs.begin(); f != fs.end(); ++f)
+        {
+            int ix = f-fs.begin();
+            LOG_SM_(Debug, ix, "ix: " << ix);
+            if (files.IsSel(ix))
+            {
+                newSelected = (*f)->name();
+                files.SetCursor(ix);
+            }
         }
     }
+    selection->setSelected(newSelected);
 }
 void VixApplication::doubleClick()
 {

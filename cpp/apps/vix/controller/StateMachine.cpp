@@ -1,6 +1,6 @@
 #include "vix/controller/StateMachine.hpp"
 #define GUBG_MODULE "StateMachine"
-#define LOG_LEVEL Debug
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 using namespace std;
 
@@ -42,7 +42,7 @@ namespace vix
     }
     bool EditableString::dispatchEvent(char ch)
     {
-        LOG_SM(EditableString::dispatchEvent, "char " << ch);
+        LOG_SM_(Debug, EditableString::dispatchEvent, "char " << ch);
         state.append(1, ch);
         signalStateUpdate_();
         return true;

@@ -53,7 +53,7 @@ namespace gubg
             };
 
 
-        //An unlock strategy that makes each instance of Data thread safe. Multiple instances can be access concurrently
+        //An unlock strategy that makes each instance of Data thread safe. Multiple instances can be accessed concurrently
         // => Keeps one mutex per instance
         template <typename Data>
             class ThreadSafeInstance

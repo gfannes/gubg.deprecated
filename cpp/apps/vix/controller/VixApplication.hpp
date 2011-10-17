@@ -20,6 +20,7 @@ class VixApplication: public Upp::WithMainLayout<Upp::TopWindow>
         
         void sel();
         void doubleClick();
+        void nothing(){}
     private:
         void updateSelectionSlot_(vix::model::ChangedItem);
         void updateSelection_(vix::model::ChangedItem);

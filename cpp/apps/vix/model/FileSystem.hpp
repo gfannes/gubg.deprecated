@@ -4,6 +4,7 @@
 #include "gubg/Singleton.hpp"
 #include "gubg/pointer/Locked.hpp"
 #include "gubg/file/File.hpp"
+#include "boost/signals2.hpp"
 #include <string>
 
 namespace vix
@@ -39,10 +40,18 @@ namespace vix
                 Path toPath(File &);
                 Regular toRegular(File &);
 
+                typedef boost::signals2::signal<void ()> UpdateSignal;
+                boost::signals2::connection connect(const UpdateSignal::slot_type &subscriber);
+
+                bool createSubDirectory(Path, const std::string &dirname);
+                bool createSubRegular(Path, const std::string &filename);
+
             private:
                 Path getPath_(Path);
 
                 Path root_;
+
+                UpdateSignal updated_;
         };
     }
 }
