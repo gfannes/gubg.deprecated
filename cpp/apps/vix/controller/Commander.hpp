@@ -58,6 +58,7 @@ namespace vix
                 friend class vix::controller::command::NewTab;
                 friend class vix::controller::command::CloseTab;
                 friend class vix::controller::command::ToggleRecursiveMode;
+                friend class vix::controller::command::CreateFile;
                 model::Selections &selections_;
                 Instruction getInstruction_() const;
 

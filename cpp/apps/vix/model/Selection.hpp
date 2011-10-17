@@ -45,6 +45,8 @@ namespace vix
                 void addSelection(const std::string &path);
                 void deleteSelection(int ix);
 
+                void fileSystemChanged();
+
             private:
                 friend class Selection;
                 UpdateSignal updated_;
@@ -75,6 +77,7 @@ namespace vix
                 Activation activateSelected(Action);
                 enum class Direction {Up, Down};
                 void move(Direction);
+                void refresh();
 
                 void setNameFilter(const std::string &);
                 std::string getNameFilter() const;
@@ -126,6 +129,7 @@ namespace vix
                     std::unique_ptr<std::string> selected;
                     std::unique_ptr<bool> recursive;
                     std::unique_ptr<Direction> direction;
+                    std::unique_ptr<bool> refresh;
                 };
                 typedef gubg::threading::Queue<Message> QueueT;
                 QueueT queue_;

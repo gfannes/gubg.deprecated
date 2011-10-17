@@ -1,6 +1,7 @@
 #define GUBG_MODULE "FileSystem"
 #include "vix/model/FileSystem.hpp"
-#define LOG_LEVEL Debug
+#include "gubg/Platform.hpp"
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 #include "boost/system/system_error.hpp"
 using namespace vix::model;
@@ -60,6 +61,34 @@ Regular FileSystem::toRegular(File &file)
     if (regular)
         return Regular(regular);
     return Regular();
+}
+
+boost::signals2::connection FileSystem::connect(const UpdateSignal::slot_type &subscriber)
+{
+    return updated_.connect(subscriber);
+}
+
+bool FileSystem::createSubDirectory(Path path, const string &dirname)
+{
+    {
+        Path::Unlock unlockedPath(path);
+        auto newDir = gubg::file::Directory::create(dirname, unlockedPath.ptr());
+        if (!gubg::createDirectory(newDir->path()))
+            return false;
+    }
+    updated_();
+    return true;
+}
+bool FileSystem::createSubRegular(Path path, const string &filename)
+{
+    {
+        Path::Unlock unlockedPath(path);
+        auto newRegular = gubg::file::Regular::create(filename, unlockedPath.ptr());
+        if (!gubg::createRegular(newRegular->filepath()))
+            return false;
+    }
+    updated_();
+    return true;
 }
 
 //Private methods

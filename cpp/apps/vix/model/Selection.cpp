@@ -1,7 +1,7 @@
 #include "vix/model/Selection.hpp"
 #include "vix/settings/Settings.hpp"
 #define GUBG_MODULE "Selection"
-#define LOG_LEVEL Debug
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 #include "gubg/nullptr.hpp"
 #include "boost/algorithm/string/replace.hpp"
@@ -14,7 +14,10 @@ using namespace boost;
 
 //Selections
 Selections::Selections():
-    current_(-1){}
+    current_(-1)
+{
+    FileSystem::instance().connect(boost::bind(&Selections::fileSystemChanged, this));
+}
 Selections::~Selections()
 {
     for (auto selection = selections_.begin(); selection != selections_.end(); ++selection)
@@ -77,6 +80,14 @@ boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &s
 {
     L_LOCK();
     return updated_.connect(subscriber);
+}
+
+void Selections::fileSystemChanged()
+{
+    LOG_SM_(Warning, fileSystemChanged, "");
+    L_LOCK();
+    for (auto selection = selections_.begin(); selection != selections_.end(); ++selection)
+        (*selection)->refresh();
 }
 
 //Selection
@@ -278,6 +289,14 @@ void Selection::move(Direction direction)
     queue_.push(std::move(message));
 }
 
+void Selection::refresh()
+{
+    LOG_SM_(Warning, refresh, "");
+    Message::Ptr message(new Message);
+    message->refresh.reset(new bool(true));
+    queue_.push(std::move(message));
+}
+
 //Private methods
 
 //Collect all entries in path_ that match our current nameFilter and store them into files_
@@ -433,7 +452,7 @@ void Selection::prepareContent_(gubg::file::Regular regular, Format format, boos
     }
 
     //Indicate we are ready
-    LOG_M_(Warning, "OK, we are ready to show the content");
+    LOG_M_(Info, "OK, we are ready to show the content");
     selections_.updated_(ChangedItem::Preview);
 }
 
@@ -455,6 +474,12 @@ void Selection::consumer_()
 
             bool doUpdateFiles = false;
             bool doUpdateSelected = false;
+
+            if (message.refresh.get() && *message.refresh)
+            {
+                doUpdateFiles = true;
+                doUpdateSelected = true;
+            }
 
             //Check if we have to update the current Files list
             if (message.nameFilter.get() && *message.nameFilter != nameFilter_)

@@ -1,4 +1,6 @@
 #include "gubg/Platform.hpp"
+#include "boost/filesystem.hpp"
+#include <fstream>
 
 #ifdef GUBG_LINUX
 #include <stdlib.h>
@@ -44,4 +46,16 @@ namespace gubg
 		}
 		return res;
 	}
+
+    bool createDirectory(const string &p)
+    {
+        return boost::filesystem::create_directory(p);
+    }
+    bool createRegular(const string &p)
+    {
+        std::ofstream of(p.c_str());
+        bool ret = of.is_open();
+        of.close();
+        return ret;
+    }
 }

@@ -1,7 +1,7 @@
 #include "vix/controller/Commander.hpp"
 #include "vix/controller/Command.hpp"
 #define GUBG_MODULE "Commander"
-#define LOG_LEVEL Debug
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 using namespace std;
 
@@ -51,6 +51,11 @@ namespace vix
                 else if (instruction.command() == "r")
                 {
                     command.reset(new command::ToggleRecursiveMode(*this));
+                }
+                else if (instruction.command() == "n")
+                {
+                    string name = instruction.options();
+                    command.reset(new command::CreateFile(*this, name));
                 }
                 clear();
             }

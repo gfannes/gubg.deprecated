@@ -78,7 +78,7 @@ namespace gubg
         //Directory methods
         Directory::Ptr Directory::create(const std::string &p)
         {
-            LOG_SM(Directory::create, "path: " << p);
+            LOG_SM_(Info, Directory::create, "path: " << p);
 
             if (p == "/")
             {
@@ -101,7 +101,7 @@ namespace gubg
                 if (path.filename().string() == "\\" || path.filename().string() == "/")
                     goto SkipSpecialName;
 #endif
-                LOG_M("path: " << path.string() << ", path.filename(): " << path.filename().string());
+                LOG_M_(Info, "path: " << path.string() << ", path.filename(): " << path.filename().string());
 
                 {
                     Ptr tmp(new Directory);
@@ -254,7 +254,7 @@ SkipSpecialName:
                                 }
                                 else
                                 {
-                                    LOG_M_(Warning, "Unknown file type " << p.string());
+                                    LOG_M_(Error, "Unknown file type " << p.string());
                                 }
                             }
                             if (file)
@@ -320,7 +320,11 @@ SkipSpecialName:
         {
             if (!location_)
                 return name_;
+#ifdef GUBG_WIN32
             auto path = location_->path() + "/" + name();
+#else
+            auto path = location_->path() + name();
+#endif
             return path;
         }
         string Regular::extension() const
@@ -331,12 +335,12 @@ SkipSpecialName:
 
         bool Regular::load(string &content)
         {
-            LOG_SM(Regular::load, "Loading " << filepath());
+            LOG_SM_(Warning, Regular::load, "Loading " << filepath());
 
             //Check that the file exists
             if (!exists())
             {
-                LOG_M("File does not exist");
+                LOG_M_(Error, "File does not exist");
                 return false;
             }
 
@@ -344,7 +348,7 @@ SkipSpecialName:
             ifstream fi(filepath(), ifstream::binary);
             if (!fi.is_open())
             {
-                LOG_M("Could not open the file");
+                LOG_M_(Error, "Could not open the file");
                 return false;
             }
 
@@ -353,7 +357,7 @@ SkipSpecialName:
             fi.seekg(0, ios::end);
             auto end = fi.tellg();
             auto size = end - begin;
-            LOG_M("File size: " << size);
+            LOG_M_(Info, "File size: " << size);
 
             //Allocate enough space to fit the file
             content.resize(size);

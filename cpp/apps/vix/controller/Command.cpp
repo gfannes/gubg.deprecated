@@ -1,5 +1,10 @@
 #include "vix/controller/Command.hpp"
 #include "vix/controller/Commander.hpp"
+#include "vix/model/FileSystem.hpp"
+#include "gubg/Platform.hpp"
+#define GUBG_MODULE "Command"
+#define LOG_LEVEL Warning
+#include "gubg/logging/Log.hpp"
 using namespace vix::controller::command;
 using namespace std;
 
@@ -43,6 +48,29 @@ bool CloseTab::execute()
         exit(0);
     else
         commander_.selections_.deleteSelection(ix_);
+    return true;
+}
+
+CreateFile::CreateFile(Commander &commander, const string &name):
+    commander_(commander),
+    name_(name){}
+bool CreateFile::execute()
+{
+    if (name_.empty())
+        return false;
+    std::string newSelected = name_;
+    if (name_[name_.size()-1] == '/')
+    {
+        //Create a directory
+        newSelected.resize(newSelected.size()-1);
+        vix::model::FileSystem::instance().createSubDirectory(commander_.selections_.current()->path(), newSelected);
+    }
+    else
+    {
+        //Create an empty file
+        vix::model::FileSystem::instance().createSubRegular(commander_.selections_.current()->path(), newSelected);
+    }
+    commander_.selections_.current()->setSelected(newSelected);
     return true;
 }
 

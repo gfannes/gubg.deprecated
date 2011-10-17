@@ -75,6 +75,18 @@ namespace vix
                 virtual bool execute();
         };
 
+        //File-related commands
+        class CreateFile: public ICommand
+        {
+            public:
+                CreateFile(Commander &, const std::string &name);
+                virtual bool execute();
+                virtual std::string description() const {return "Create file or directory";}
+            private:
+                Commander &commander_;
+                const std::string name_;
+        };
+
         //Application control
         class Quit: public ICommand
         {

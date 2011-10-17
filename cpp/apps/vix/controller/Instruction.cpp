@@ -1,6 +1,6 @@
 #include "vix/controller/Instruction.hpp"
 #define GUBG_MODULE "Instruction"
-#define LOG_LEVEL Debug
+#define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
 using namespace std;
 
@@ -23,6 +23,7 @@ namespace vix
         if (parseCommand_("q", instruction)) return;
         if (parseCommand_("t", instruction)) return;
         if (parseCommand_("r", instruction)) return;
+        if (parseCommand_("n", instruction)) return;
     }
     bool Instruction::parseCommand_(const string &command, const string &instruction)
     {
