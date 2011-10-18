@@ -5,6 +5,7 @@
 #define GUBG_MODULE "Command"
 #define LOG_LEVEL Warning
 #include "gubg/logging/Log.hpp"
+using namespace vix;
 using namespace vix::controller::command;
 using namespace std;
 
@@ -72,6 +73,16 @@ bool CreateFile::execute()
     }
     commander_.selections_.current()->setSelected(newSelected);
     return true;
+}
+Delete::Delete(Commander &commander, const model::File &file, model::DeleteStrategy ds):
+    commander_(commander),
+    file_(file),
+    deleteStrategy_(ds){}
+bool Delete::execute()
+{
+    LOG_SM_(Warning, Delete::execute, "");
+    auto &fs = vix::model::FileSystem::instance();
+    return fs.remove(file_, deleteStrategy_);
 }
 
 bool Quit::execute()

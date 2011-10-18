@@ -31,6 +31,8 @@ namespace gubg
 
     bool createDirectory(const std::string &name);
     bool createRegular(const std::string &name);
+    //Can delete both directories and files
+    bool deleteFile(const std::string &name, bool recursive = false);
 }
 
 #endif

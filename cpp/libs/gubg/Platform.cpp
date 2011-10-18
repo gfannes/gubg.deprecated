@@ -1,5 +1,8 @@
 #include "gubg/Platform.hpp"
 #include "boost/filesystem.hpp"
+#define GUBG_MODULE "Platform"
+#define LOG_LEVEL Debug
+#include "gubg/logging/Log.hpp"
 #include <fstream>
 
 #ifdef GUBG_LINUX
@@ -57,5 +60,22 @@ namespace gubg
         bool ret = of.is_open();
         of.close();
         return ret;
+    }
+    bool deleteFile(const std::string &name, bool recursive)
+    {
+        LOG_SM_(Debug, deleteFile, "Deleting " << name << " recursive: " << recursive);
+        try
+        {
+            if (recursive)
+                boost::filesystem::remove_all(name);
+            else
+                boost::filesystem::remove(name);
+        }
+        catch (boost::filesystem3::filesystem_error &exc)
+        {
+            LOG_M_(Warning, "Failed to delete " << name << ": " << exc.what());
+            return false;
+        }
+        return true;
     }
 }

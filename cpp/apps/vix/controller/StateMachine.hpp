@@ -18,7 +18,7 @@ namespace vix
     //Events:
     // * char
     // * Special
-    enum Special {Backspace, Enter, Escape, Left, Right, Up, Down};
+    enum Special {Backspace, Enter, Escape, Delete, CtrlDelete, Left, Right, Up, Down};
 
     //MetaMachine
     struct MetaState

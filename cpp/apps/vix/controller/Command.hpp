@@ -2,6 +2,7 @@
 #define vix_controller_Command_hpp
 
 #include "vix/model/Selection.hpp"
+#include "vix/model/FileSystem.hpp"
 #include "gubg/pattern/Command.hpp"
 #include <string>
 
@@ -85,6 +86,17 @@ namespace vix
             private:
                 Commander &commander_;
                 const std::string name_;
+        };
+        class Delete: public ICommand
+        {
+            public:
+                Delete(Commander &, const model::File &file, model::DeleteStrategy);
+                virtual bool execute();
+                virtual std::string description() const {return "Delete file or directory";}
+            private:
+                Commander &commander_;
+                model::File file_;
+                const model::DeleteStrategy deleteStrategy_;
         };
 
         //Application control

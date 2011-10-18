@@ -40,6 +40,7 @@ namespace vix
 
                 void activate(Special);
                 void move(Special);
+                void removeSelected(Special);
 
                 void changeTab(int ix);
 
