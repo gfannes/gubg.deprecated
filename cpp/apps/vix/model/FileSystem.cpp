@@ -90,6 +90,35 @@ bool FileSystem::createSubRegular(Path path, const string &filename)
     updated_();
     return true;
 }
+bool FileSystem::remove(File file, DeleteStrategy ds)
+{
+    File::Unlock unlockedFile(file);
+    auto f = unlockedFile.ptr();
+    if (auto dir = gubg::file::Directory::create(f))
+    {
+        switch (ds)
+        {
+            case DeleteStrategy::Single:
+                if (!gubg::deleteFile(dir->path()))
+                    return false;
+                break;
+            case DeleteStrategy::Recursive:
+                if (gubg::deleteFile(dir->path(), true))
+                    return false;
+                break;
+            default: return false; break;
+        }
+    }
+    else if (auto regular = gubg::file::Regular::create(f))
+    {
+        if (!gubg::deleteFile(regular->filepath()))
+            return false;
+    }
+    else
+        return false;
+    updated_();
+    return true;
+}
 
 //Private methods
 //Guarantee: getPath_ _always_ returns a Path inside our own filesystem tree, or an empty Path

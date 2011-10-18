@@ -58,4 +58,10 @@ namespace gubg
         of.close();
         return ret;
     }
+    bool deleteFile(const std::string &name, bool recursive)
+    {
+        if (recursive)
+            return boost::filesystem::remove_all(name);
+        return boost::filesystem::remove(name);
+    }
 }

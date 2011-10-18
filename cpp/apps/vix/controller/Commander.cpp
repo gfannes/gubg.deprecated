@@ -100,6 +100,25 @@ namespace vix
                 case Special::Down: selection->move(vix::model::Selection::Direction::Down); break;
             }
         }
+        void Commander::removeSelected(Special key)
+        {
+            auto file = selections_.current()->selectedFile();
+            if (!file())
+                return;
+            ICommand::Ptr command;
+            switch (key)
+            {
+                case Special::Delete:
+                        command.reset(new command::Delete(*this, file, model::DeleteStrategy::Single));
+                    break;
+                case Special::CtrlDelete:
+                        command.reset(new command::Delete(*this, file, model::DeleteStrategy::Recursive));
+                    break;
+            }
+            if (command)
+                pendingCommands_.push_back(command);
+            executeCommands_();
+        }
 
         void Commander::clear()
         {
@@ -117,6 +136,8 @@ namespace vix
                 case Special::Left:
                 case Special::Up:
                 case Special::Down: move(key); break;
+                case Special::CtrlDelete:
+                case Special::Delete: removeSelected(key); break;
                 default: dispatchEvent(key); break;
             }
             update_();

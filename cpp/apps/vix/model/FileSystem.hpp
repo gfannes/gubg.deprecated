@@ -21,6 +21,8 @@ namespace vix
 #endif
         typedef std::vector<File> Files;
 
+        enum class DeleteStrategy {Single, Recursive};
+
         //This singleton holds the filesystem tree
         //All filesystem operation should go via here, and not directly on the handed-out objects
         class FileSystem
@@ -45,6 +47,7 @@ namespace vix
 
                 bool createSubDirectory(Path, const std::string &dirname);
                 bool createSubRegular(Path, const std::string &filename);
+                bool remove(File, DeleteStrategy);
 
             private:
                 Path getPath_(Path);

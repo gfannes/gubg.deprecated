@@ -66,6 +66,7 @@ namespace vix
             public:
                 ~Selection();
                 Path path() const {return path_;}
+                File selectedFile() const;
                 void setPath(Path);
                 void setSelected(const std::string &selected);
                 std::string getSelected() const;

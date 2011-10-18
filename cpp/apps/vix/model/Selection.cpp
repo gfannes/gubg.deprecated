@@ -119,6 +119,14 @@ std::vector<Selection*> Selection::selections()
     return selections_.selections_;
 }
 
+File Selection::selectedFile() const
+{
+    boost::mutex::scoped_lock lock1(filesMutex_);
+    boost::mutex::scoped_lock lock2(selectedMutex_);
+    if (selectedIX_ < 0 || selectedIX_ >= files_.size())
+        return File();
+    return files_[selectedIX_];
+}
 void Selection::setPath(Path path)
 {
     Message::Ptr message(new Message);
