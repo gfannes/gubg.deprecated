@@ -84,7 +84,7 @@ boost::signals2::connection Selections::connect(const UpdateSignal::slot_type &s
 
 void Selections::fileSystemChanged()
 {
-    LOG_SM_(Warning, fileSystemChanged, "");
+    LOG_SM_(Debug, fileSystemChanged, "");
     L_LOCK();
     for (auto selection = selections_.begin(); selection != selections_.end(); ++selection)
         (*selection)->refresh();
@@ -98,10 +98,14 @@ Selection::Selection(Selections &selections, const string &path):
     format_(Unknown),
     consumerThread_(&Selection::consumer_, this)
 {
+    LOG_SM_(Debug, Selection::ctor, "path: " << path);
     FileSystem &filesystem = FileSystem::instance();
     auto p = filesystem.getPath(path);
     if (!p)
+    {
+        LOG_M_(Warning, "Could not get the path " << path << ", I will resort to /");
         p = filesystem.getPath("/");
+    }
 
     Message::Ptr message(new Message);
     message->path = p;
@@ -299,7 +303,7 @@ void Selection::move(Direction direction)
 
 void Selection::refresh()
 {
-    LOG_SM_(Warning, refresh, "");
+    LOG_SM_(Debug, refresh, "");
     Message::Ptr message(new Message);
     message->refresh.reset(new bool(true));
     queue_.push(std::move(message));
@@ -400,7 +404,7 @@ void Selection::updateSelected_()
     selectedPerPath_[path_->path()] = selected_;
 
     //Start a thread preparing the content
-    if (0 <= selectedIX_ && selectedIX_ < files_.size())
+    if (false && 0 <= selectedIX_ && selectedIX_ < files_.size())
     {
         if (auto *regular = dynamic_cast<gubg::file::Regular*>(files_[selectedIX_].operator->().get()))
         {
@@ -440,7 +444,7 @@ void Selection::prepareContent_(gubg::file::Regular regular, Format format, boos
     //Check the size of the file
     if (content.size() > 500000)
     {
-        LOG_M_(Warning, "File is too large to show");
+        LOG_M_(Warning, "File is too large to show (" << content.size() << " bytes)");
         return;
     }
 

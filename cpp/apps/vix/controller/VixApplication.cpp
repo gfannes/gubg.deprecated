@@ -24,6 +24,8 @@ namespace
             case K_CTRL_PAGEDOWN:
                          commander->changeTab(selectionModels->currentIX()+1);
                          break;
+            case K_DELETE: commander->add(Special::Delete); break;
+            case K_CTRL_DELETE: commander->add(Special::CtrlDelete); break;
             default: return false;
         }
         return true;
@@ -42,6 +44,7 @@ VixApplication::VixApplication():
     commanderUpdatedConnection_ = commander_.connect(boost::bind(&VixApplication::updateCommanderSlot_, this, _1, _2));
     files.WhenSel = THISBACK(sel);
     files.WhenLeftDouble = THISBACK(doubleClick);
+    tabBar.WhenSet = THISBACK(tabSelect);
     
 #ifdef GUBG_LINUX
     const string path("/home/gfannes");
@@ -223,6 +226,10 @@ void VixApplication::doubleClick()
 {
     LOG_SM_(Debug, doubleClick, "");
     commander_.activate(Special::Enter);
+}
+void VixApplication::tabSelect()
+{
+    commander_.changeTab(tabBar.Get());
 }
 
 #endif

@@ -78,9 +78,10 @@ namespace gubg
         //Directory methods
         Directory::Ptr Directory::create(const std::string &p)
         {
-            LOG_SM_(Info, Directory::create, "path: " << p);
+            string tmpPath = p;
+            LOG_SM_(Info, Directory::create, "path: " << tmpPath);
 
-            if (p == "/")
+            if (tmpPath == "/")
             {
                 //The root of the filesystem is requested
                 Ptr root(new Directory);
@@ -93,7 +94,13 @@ namespace gubg
                 return root;
             }
 
-            boost::filesystem::path path(p);
+#ifdef GUBG_LINUX
+            //If we don't remove any trailing '/', boost::filesystem::path will return "/asd/asdf/./"
+            if (tmpPath[tmpPath.size()-1] == '/')
+                tmpPath.resize(tmpPath.size()-1);
+#endif
+
+            boost::filesystem::path path(tmpPath);
             Ptr dir, ret;
             while (!path.empty())
             {

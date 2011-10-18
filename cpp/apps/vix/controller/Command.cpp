@@ -80,6 +80,7 @@ Delete::Delete(Commander &commander, const model::File &file, model::DeleteStrat
     deleteStrategy_(ds){}
 bool Delete::execute()
 {
+    LOG_SM_(Warning, Delete::execute, "");
     auto &fs = vix::model::FileSystem::instance();
     return fs.remove(file_, deleteStrategy_);
 }

@@ -92,10 +92,12 @@ bool FileSystem::createSubRegular(Path path, const string &filename)
 }
 bool FileSystem::remove(File file, DeleteStrategy ds)
 {
+    LOG_SM_(Warning, remove, "Removing " << file->name());
     File::Unlock unlockedFile(file);
     auto f = unlockedFile.ptr();
     if (auto dir = gubg::file::Directory::create(f))
     {
+        LOG_M_(Warning, "This is a directory: " << dir->path());
         switch (ds)
         {
             case DeleteStrategy::Single:
@@ -103,7 +105,7 @@ bool FileSystem::remove(File file, DeleteStrategy ds)
                     return false;
                 break;
             case DeleteStrategy::Recursive:
-                if (gubg::deleteFile(dir->path(), true))
+                if (!gubg::deleteFile(dir->path(), true))
                     return false;
                 break;
             default: return false; break;
@@ -111,6 +113,7 @@ bool FileSystem::remove(File file, DeleteStrategy ds)
     }
     else if (auto regular = gubg::file::Regular::create(f))
     {
+        LOG_M_(Warning, "This is a regular file: " << regular->filepath());
         if (!gubg::deleteFile(regular->filepath()))
             return false;
     }
@@ -154,6 +157,7 @@ Path FileSystem::getPath_(Path dir)
 
     //If dir actually exists, dir->name() should match a child of parent; we will return that matching child, or and empty Path
     auto childs = unlockedParent->childs();
+    LOG_M_(Debug, "Looking for child " << unlockedDir->name());
     for (auto it = childs.begin(); it != childs.end(); ++it)
     {
         auto &child = *it;
