@@ -27,22 +27,29 @@ namespace gubg
             inline bool isOK(const T &t) {return T::OK == t;}
         template <>
             inline bool isOK<bool>(const bool &b) {return b;}
+        template <typename T>
+            inline bool isOK(T *p) {return 0 != p;}
     }
 }
 
-#define MSS_BEGIN(type) typedef type gubg_return_code_type; \
-                        gubg_return_code_type rc = gubg_return_code_type::OK
+#define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
+                             gubg_return_code_type rc = gubg_return_code_type::OK
 
-#define MSS_FAIL()      goto gubg_mss_end_label; \
-                        gubg_mss_fail_label:
+#define MSS_FAIL()           goto gubg_mss_end_label; \
+                             gubg_mss_fail_label:
 
-#define MSS_END()       gubg_mss_end_label:
+#define MSS_END()            gubg_mss_end_label:
 
-#define MSS_RETURN()    gubg_mss_end_label: \
-                        return rc
+#define MSS_RETURN()         gubg_mss_end_label: \
+                             return rc
 
-#define MSS(v)       do { if (!gubg::mss::isOK(rc = (v))) {                                goto gubg_mss_fail_label;} } while (false)
-#define MSS_T(v, nv) do { if (!gubg::mss::isOK(v))        {rc = gubg_return_code_type::nv; goto gubg_mss_fail_label;} } while (false)
+#define MSS_FAIL_OR_RETURN() gubg_mss_fail_label: \
+                             gubg_mss_end_label: \
+                             return rc
+
+#define MSS(v)       do { if (!gubg::mss::isOK(rc = (v)))                      {                                goto gubg_mss_fail_label;} } while (false)
+#define MSS_L(c)     do { if (!gubg::mss::isOK(rc = gubg_return_code_type::c)) {                                goto gubg_mss_fail_label;} } while (false)
+#define MSS_T(v, nv) do { if (!gubg::mss::isOK(v))                             {rc = gubg_return_code_type::nv; goto gubg_mss_fail_label;} } while (false)
 
 
 //#define L_GUBG_MSS_USE_EXCEPTIONS

@@ -1,5 +1,5 @@
 #include "gubg/mss.hpp"
-#include "gubg/testing/Testing.hpp"
+#include <iostream>
 
 enum class Compare {OK, Smaller, Larger};
 Compare compare(int lhs, int rhs)
@@ -11,6 +11,8 @@ Compare compare(int lhs, int rhs)
     MSS_RETURN();
 }
 
+#define TEST_TAG(tag)
+#define TEST_EQ_TYPE(t, e, a) if ((e) != (a)) std::cout << "Problem " << __LINE__ << std::endl
 int main()
 {
     TEST_TAG(mss_main);
@@ -19,4 +21,5 @@ int main()
     TEST_EQ_TYPE(int, Compare::OK, compare(-2, -2));
     TEST_EQ_TYPE(int, Compare::Smaller, compare(0, 1));
     TEST_EQ_TYPE(int, Compare::Larger, compare(1, 0));
+    return 0;
 }

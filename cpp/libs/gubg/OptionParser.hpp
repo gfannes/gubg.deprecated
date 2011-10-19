@@ -6,18 +6,23 @@
 #include <map>
 #include <list>
 #include <sstream>
+#include <memory>
 
 namespace gubg
 {
     class OptionParser
     {
         public:
+            enum class ReturnCode {OK, IllegalArgument,
+                CouldNotFindExecutable, ExpectedMandatoryArgument,
+            };
+
             OptionParser(const std::string &caption);
 
             typedef std::list<std::string> Args;
-            static Args convertArgs(int argc, char **argv);
+            static ReturnCode createArgs(Args &, int argc, char **argv);
 
-            bool parse(Args &args, bool stripExe = true);
+            ReturnCode parse(Args &args, bool stripExe = true);
 
             template <typename Lambda>
                 void addSwitch(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
