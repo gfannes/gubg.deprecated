@@ -1,30 +1,34 @@
 #include "gubg/OptionParser.hpp"
+#include "gubg/mss.hpp"
 using namespace gubg;
+using namespace std;
 
-OptionParser::OptionParser(const std::string &caption):
+OptionParser::OptionParser(const string &caption):
     caption_(caption){}
 
-OptionParser::Args OptionParser::convertArgs(int argc, char **argv)
+OptionParser::ReturnCode OptionParser::createArgs(Args &args, int argc, char **argv)
 {
-    Args args;
+    MSS_BEGIN(ReturnCode);
+    MSS_T(argc >= 0, IllegalArgument);
+    MSS_T(argv, IllegalArgument);
     for (int i = 0; i < argc; ++i)
         args.push_back(argv[i]);
-    return args;
+    MSS_FAIL_OR_RETURN();
 }
 
-bool OptionParser::parse(Args &args, bool stripExe)
+OptionParser::ReturnCode OptionParser::parse(Args &args, bool stripExe)
 {
+    MSS_BEGIN(ReturnCode);
     if (stripExe)
     {
-        if (args.empty())
-            return false;
+        MSS_T(!args.empty(), CouldNotFindExecutable);
         args.pop_front();
     }
 
-    //When args is empty, we are certainly done
+    //Pop arguments one by one and look for corresponding callbacks
     while (!args.empty())
     {
-        std::string arg = args.front();
+        auto arg = args.front();
         args.pop_front();
 
         VoidCallbacks::const_iterator itVoid;
@@ -36,7 +40,7 @@ bool OptionParser::parse(Args &args, bool stripExe)
             if (args.empty())
             {
                 args.push_front(arg);
-                return false;
+                MSS_L(ExpectedMandatoryArgument);
             }
             (itString->second)(args.front());
             args.pop_front();
@@ -57,14 +61,15 @@ bool OptionParser::parse(Args &args, bool stripExe)
             break;
         }
     }
-    return true;
+    MSS_FAIL();
+    MSS_RETURN();
 }
 
-void OptionParser::addHelpLine_(const std::string &shortHand, const std::string &longHand, const std::string &description)
+void OptionParser::addHelpLine_(const string &shortHand, const string &longHand, const string &description)
 {
-    help_ << shortHand << "\t" << longHand << "\t" << description << std::endl;
+    help_ << shortHand << "\t" << longHand << "\t" << description << endl;
 }
-std::string OptionParser::help() const
+string OptionParser::help() const
 {
     return caption_ + "\n" + help_.str();
 }
@@ -72,10 +77,10 @@ std::string OptionParser::help() const
 #ifdef UnitTest
 #include <iostream>
 using namespace std;
-//std::ostream &operator<<(std::ostream &os, const pair<string, bool> &t){return os << "(" << t.first << ", " << t.second << ")";}
-//std::ostream &operator<<(std::ostream &os, const pair<string, string> &t){return os << "(" << t.first << ", " << t.second << ")";}
+//ostream &operator<<(ostream &os, const pair<string, bool> &t){return os << "(" << t.first << ", " << t.second << ")";}
+//ostream &operator<<(ostream &os, const pair<string, string> &t){return os << "(" << t.first << ", " << t.second << ")";}
 template <typename T>
-std::ostream &insertToStream(std::ostream &os, const T &t)
+ostream &insertToStream(ostream &os, const T &t)
 {
     for (auto it = t.begin(); it != t.end(); ++it)
     {
@@ -84,7 +89,7 @@ std::ostream &insertToStream(std::ostream &os, const T &t)
     return os;
 }
 template <typename T>
-std::ostream &insertToStream2(std::ostream &os, const T &t)
+ostream &insertToStream2(ostream &os, const T &t)
 {
     for (auto it = t.begin(); it != t.end(); ++it)
     {
@@ -92,9 +97,9 @@ std::ostream &insertToStream2(std::ostream &os, const T &t)
     }
     return os;
 }
-std::ostream &operator<<(std::ostream &os, const OptionParser::Args &t){return insertToStream(os, t);}
-std::ostream &operator<<(std::ostream &os, const map<string, bool> &t){return insertToStream2(os, t);}
-std::ostream &operator<<(std::ostream &os, const map<string, string> &t){return insertToStream2(os, t);}
+ostream &operator<<(ostream &os, const OptionParser::Args &t){return insertToStream(os, t);}
+ostream &operator<<(ostream &os, const map<string, bool> &t){return insertToStream2(os, t);}
+ostream &operator<<(ostream &os, const map<string, string> &t){return insertToStream2(os, t);}
 int main(int argc, char **argv)
 {
     const string version("1.2.3");
