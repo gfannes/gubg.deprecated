@@ -104,6 +104,7 @@ namespace gubg
                     std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
             }
 #define TEST_EQ(expected, actual) gubg::testing::test_eq((expected), (actual), HERE(),l_gubg_testing_test_tag_)
+#define TEST_EQ_TYPE(type, expected, actual) gubg::testing::test_eq((type)(expected), (type)(actual), HERE(),l_gubg_testing_test_tag_)
 #define TEST_NULL(actual) gubg::testing::test_eq(nullptr, (actual), HERE(), l_gubg_testing_test_tag_)
 
         template<typename NotExpectedT, typename ActualT>
