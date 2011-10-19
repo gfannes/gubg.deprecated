@@ -145,9 +145,9 @@ class Link: Options
                 break;
             case SourceType.Cpp:
                 format("g++ -std=c++0x");
-                format(extraSettings());
                 foreach (objectFilepath; objectFilepaths_)
                     format("\"" ~ objectFilepath ~ "\"");
+                format(extraSettings());
                 break;
             case SourceType.Unknown: return false;
         }
