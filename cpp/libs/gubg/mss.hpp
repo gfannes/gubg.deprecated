@@ -19,6 +19,8 @@
 //MSS_END(); or MSS_RETURN();
 // => You can return or continue here
 
+#include "gubg/mss/info.hpp"
+
 namespace gubg
 {
     namespace mss
@@ -47,10 +49,17 @@ namespace gubg
                              gubg_mss_end_label: \
                              return rc
 
-#define MSS(v)       do { if (!gubg::mss::isOK(rc = (v)))                      {                                goto gubg_mss_fail_label;} } while (false)
-#define MSS_L(c)     do { if (!gubg::mss::isOK(rc = gubg_return_code_type::c)) {                                goto gubg_mss_fail_label;} } while (false)
-#define MSS_T(v, nv) do { if (!gubg::mss::isOK(v))                             {rc = gubg_return_code_type::nv; goto gubg_mss_fail_label;} } while (false)
+#define L_MSS_LOG(level, c) \
+{ \
+    auto info = gubg::mss::getInfo(c); \
+    std::cout << info.type << "::" << info.code << std::endl; \
+}
 
+#define MSS(v)       do { if (!gubg::mss::isOK(rc = (v)))                      {                                L_MSS_LOG(Error, rc); goto gubg_mss_fail_label;} } while (false)
+#define MSS_L(c)     do { if (!gubg::mss::isOK(rc = gubg_return_code_type::c)) {                                L_MSS_LOG(Error, rc); goto gubg_mss_fail_label;} } while (false)
+#define MSS_T(v, nv) do { if (!gubg::mss::isOK(v))                             {rc = gubg_return_code_type::nv; L_MSS_LOG(Error, rc); goto gubg_mss_fail_label;} } while (false)
+
+#define MSS_CODE(type, code) namespace {gubg::mss::InfoSetter<type> l_gubg_mss_InfoSetter_ ## type ## _ ## code(type::code, gubg::mss::Level::Error, #type, #code);}
 
 //#define L_GUBG_MSS_USE_EXCEPTIONS
 #ifdef L_GUBG_MSS_USE_EXCEPTIONS
