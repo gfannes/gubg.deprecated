@@ -13,7 +13,7 @@ Compare compare(int lhs, int rhs)
     MSS_T(lhs >= 0, IllegalArgument);
     MSS_T(rhs >= 0, IllegalArgument);
     MSS_T(lhs >= rhs, Smaller);
-    MSS_T_(Info, lhs <= rhs, Larger, "");
+    MSS_T_(Info, lhs <= rhs, Larger, lhs << " is larger than " << rhs);
     MSS_FAIL();
     MSS_RETURN();
 }

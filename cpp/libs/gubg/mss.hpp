@@ -53,7 +53,7 @@ namespace gubg
 { \
     auto info = gubg::mss::getInfo(c); \
     auto l_level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? info.level : gubg::mss::Level::l); \
-    std::cout << l_level << "::" << info.type << "::" << info.code << " " << msg << std::endl; \
+    std::cout << GUBG_HERE() << " " << l_level << " " << info.type << "::" << info.code << " " << msg << std::endl; \
     if (gubg::mss::Level::Fatal == l_level) \
     { \
         std::cout << "\tFATAL ERROR ENCOUNTERED, GAME OVER..." << std::endl; \
@@ -61,6 +61,7 @@ namespace gubg
     } \
 }
 
+//Direct handling, v should be of the same type as specified in MSS_BEGIN(type)
 #define MSS_(level, v, msg) \
     do { \
         if (!gubg::mss::isOK(rc = (v))) \
@@ -70,18 +71,22 @@ namespace gubg
         } \
     } while (false)
 #define MSS(v) MSS_(Unknown, v, "")
+
+//Direct return of a hardcoded value, c should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_L_(level, c, msg) MSS_(level, return_code_type::c, msg)
 #define MSS_L(c) MSS_L_(Unknown, return_code_type::c, "")
-#define MSS_T_(level, v, nv, msg) \
+
+//Transformation of _any_ type v in a hardcoded value nc. nc should be a value of the enum type specified in MSS_BEGIN(type)
+#define MSS_T_(level, v, nc, msg) \
     do { \
         if (!gubg::mss::isOK(v)) \
         { \
-            rc = gubg_return_code_type::nv; \
+            rc = gubg_return_code_type::nc; \
             L_MSS_LOG(level, rc, msg); \
             goto gubg_mss_fail_label; \
         } \
     } while (false)
-#define MSS_T(v, nv) MSS_T_(Unknown, v, nv, "")
+#define MSS_T(v, nc) MSS_T_(Unknown, v, nc, "")
 
 #define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented
 #define MSS_CODE_BEGIN(type) \
