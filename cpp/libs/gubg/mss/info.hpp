@@ -5,13 +5,14 @@
 #include "gubg/Location.hpp"
 #include <string>
 #include <map>
+#include <iostream>
 
 namespace gubg
 {
     namespace mss
     {
         //The logging level of a certain ReturnCode
-        enum class Level {Debug, Info, Warning, Error};
+        enum class Level {Unknown, OK, Debug, Info, Warning, Error, Critical, Fatal};
 
         //Information about a certain ReturnCode: its logging level and a human readable representation
         struct Info
@@ -69,6 +70,21 @@ namespace gubg
                 return InfoMgr<ReturnCode>::instance().get(code);
             }
     }
+}
+std::ostream &operator<<(std::ostream &os, gubg::mss::Level level)
+{
+    switch (level)
+    {
+        case gubg::mss::Level::OK:       return os << "<OK>";
+        case gubg::mss::Level::Debug:    return os << "<Debug>";
+        case gubg::mss::Level::Info:     return os << "<Info>";
+        case gubg::mss::Level::Warning:  return os << "<Warning>";
+        case gubg::mss::Level::Error:    return os << "<Error>";
+        case gubg::mss::Level::Critical: return os << "<Critical>";
+        case gubg::mss::Level::Fatal:    return os << "<Fatal>";
+        default: os << "<Unknown level>";
+    }
+    return os;
 }
 
 #endif
