@@ -71,7 +71,7 @@ namespace gubg
             }
     }
 }
-std::ostream &operator<<(std::ostream &os, gubg::mss::Level level)
+inline std::ostream &operator<<(std::ostream &os, gubg::mss::Level level)
 {
     switch (level)
     {

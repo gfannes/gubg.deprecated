@@ -1,6 +1,10 @@
 #ifndef gubg_Location_hpp
 #define gubg_Location_hpp
 
+#include <ostream>
+
+#define GUBG_HERE() gubg::Location(__FILE__, __LINE__)
+
 namespace gubg
 {
     struct Location
@@ -12,7 +16,12 @@ namespace gubg
         const char *file;
         int nr;
     };
-#define GUBG_HERE() Location()
+}
+inline std::ostream &operator<<(std::ostream &os, const gubg::Location &location)
+{
+    if (!location.file)
+        return os << "Unknown location";
+    return os << location.file << ":" << location.nr;
 }
 
 #endif
