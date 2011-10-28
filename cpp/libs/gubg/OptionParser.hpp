@@ -1,6 +1,7 @@
 #ifndef gubg_OptionParser_h
 #define gubg_OptionParser_h
 
+#include "gubg/mss.hpp"
 #include <string>
 #include <functional>
 #include <map>
@@ -13,7 +14,7 @@ namespace gubg
     class OptionParser
     {
         public:
-            enum class ReturnCode {OK, IllegalArgument,
+            enum class ReturnCode {MSS_DEFAULT_CODES,
                 CouldNotFindExecutable, ExpectedMandatoryArgument,
             };
 

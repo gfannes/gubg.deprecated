@@ -3,6 +3,11 @@
 using namespace gubg;
 using namespace std;
 
+MSS_CODE_BEGIN(OptionParser::ReturnCode);
+MSS_CODE(CouldNotFindExecutable);
+MSS_CODE(ExpectedMandatoryArgument);
+MSS_CODE_END();
+
 OptionParser::OptionParser(const string &caption):
     caption_(caption){}
 

@@ -73,8 +73,8 @@ namespace gubg
 #define MSS(v) MSS_(Unknown, v, "")
 
 //Direct return of a hardcoded value, c should be a value of the enum type specified in MSS_BEGIN(type)
-#define MSS_L_(level, c, msg) MSS_(level, return_code_type::c, msg)
-#define MSS_L(c) MSS_L_(Unknown, return_code_type::c, "")
+#define MSS_L_(level, c, msg) MSS_(level, gubg_return_code_type::c, msg)
+#define MSS_L(c) MSS_L_(Unknown, c, "")
 
 //Transformation of _any_ type v in a hardcoded value nc. nc should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_T_(level, v, nc, msg) \
