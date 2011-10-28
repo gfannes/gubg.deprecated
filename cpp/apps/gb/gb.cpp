@@ -6,7 +6,7 @@ using namespace std;
 
 namespace
 {
-    enum class ReturnCode {OK, ArgumentError};
+    enum class ReturnCode {MSS_DEFAULT_CODES};
     const string version("0.1");
 }
 int main(int argc, char **argv)
@@ -15,11 +15,12 @@ int main(int argc, char **argv)
 
     OptionParser parser("Generic build utility");
     parser.addSwitch("-V", "--version", "Print version", [version](){cout << "Version: " << version << endl;});
+    parser.addSwitch("-h", "--help", "Print this help", [&parser](){cout << parser.help() << endl;});
 
     OptionParser::Args args;
-    MSS_T(OptionParser::createArgs(args, argc, argv), ArgumentError);
+    MSS_T(OptionParser::createArgs(args, argc, argv), IllegalArgument);
 
-    MSS_T(parser.parse(args), ArgumentError);
+    MSS_T(parser.parse(args), IllegalArgument);
 
     MSS_FAIL();
     return -1;
