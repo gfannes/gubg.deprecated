@@ -4,6 +4,7 @@
 #define LOG_LEVEL Debug
 #include "gubg/logging/Log.hpp"
 #include <fstream>
+#include <mutex>
 
 #ifdef GUBG_LINUX
 #include <stdlib.h>
@@ -13,6 +14,14 @@
 #endif
 
 using namespace std;
+
+namespace
+{
+    //4k is the intel page size
+    const size_t MaxPath = 4096;
+    char page[MaxPath];
+    mutex pageMutex;
+}
 
 namespace gubg
 {
@@ -77,5 +86,18 @@ namespace gubg
             return false;
         }
         return true;
+    }
+
+    string getCurrentWorkingDirectory()
+    {
+        lock_guard<mutex> lock(pageMutex);
+        page[0] = '\0';
+        ::getcwd(page, MaxPath);
+        return page;
+    }
+    string getHomeDirectory()
+    {
+        auto home = ::getenv("HOME");
+        return (home ? home : "");
     }
 }
