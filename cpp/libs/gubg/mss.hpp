@@ -5,19 +5,17 @@
 //A general scope (e.g., a function body) looks like this:
 //
 //MSS_BEGIN(ReturnCodeT);
+// => Initializes a return value "rc" of type ReturnCodeT to OK
 // => Linear sequence of statements that are checked for being part of the main success scenario
-//    As soon as one fails, we jump to MSS_FAIL()
-//    If nothing fails, we jump to MSS_END() => when the complete mss is ok, we don't execute whatever is between MSS_FAIL() and MSS_END()
+//    As soon as one fails, we return from the function with the failing code
+//    If nothing fails, MSS_END() will return from the function with a "OK" value
 //MSS(some_function_that_returns_ReturnCodeT());
 //MSS_T(some_function_that_returns_WhateverT(), code_upon_failure); => rc is set to code_upon_failure when some_function_that_returns_WhateverT() fails
 //...
 // => You can return or continue here
 //
-//MSS_FAIL();
-// => rc holds the specific failure (or translated failure)
-//
-//MSS_END(); or MSS_RETURN();
-// => You can return or continue here
+//MSS_END();
+// => Ends the MSS block and returns from the function
 
 #include "gubg/mss/info.hpp"
 
@@ -26,48 +24,70 @@ namespace gubg
     namespace mss
     {
         template <typename T>
-            inline bool isOK(const T &t) {return T::OK == t;}
+            struct ReturnCodeWrapper
+            {
+                ReturnCodeWrapper():v_(T::OK){}
+                T get(){return v_;}
+                bool set(T v)
+                {
+                    return T::OK == (v_ = v);
+                }
+                bool set(bool b, T v = T::Error)
+                {
+                    return T::OK == (v_ = (b ? T::OK : v));
+                }
+                Level level() const {return getInfo<T>(v_).level;}
+                std::string toString() const
+                {
+                    std::ostringstream oss;
+                    auto info = getInfo(v_);
+                    oss << info.type << ":" << info.code;
+                    return oss.str();
+                }
+                T v_;
+            };
         template <>
-            inline bool isOK<bool>(const bool &b) {return b;}
-        template <typename T>
-            inline bool isOK(T *p) {return 0 != p;}
+            struct ReturnCodeWrapper<void>
+            {
+                ReturnCodeWrapper():l_(Level::OK){}
+                void get(){}
+                template <typename OT>
+                    bool set(OT v)
+                    {
+                        l_ = getInfo<OT>(v).level;
+                        return OT::OK == v;
+                    }
+                bool set(bool b)
+                {
+                    v_ = (b ? "true" : "false");
+                    return b;
+                }
+                Level level() const {return l_;}
+                std::string toString() const {return v_;}
+                std::string v_;
+                Level l_;
+            };
     }
 }
 
 #define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
-                             gubg_return_code_type rc = gubg_return_code_type::OK
+                             gubg::mss::ReturnCodeWrapper<gubg_return_code_type> rc
 
-#define MSS_FAIL()           goto gubg_mss_end_label; \
-                             gubg_mss_fail_label:
+#define MSS_END()            return rc.get()
 
-#define MSS_END()            gubg_mss_end_label:
-
-#define MSS_RETURN()         gubg_mss_end_label: \
-                             return rc
-
-#define MSS_FAIL_OR_RETURN() gubg_mss_fail_label: \
-                             gubg_mss_end_label: \
-                             return rc
-
-#define L_MSS_LOG(l, c, msg) \
+#define L_MSS_LOG(l, rc, msg) \
 { \
-    auto info = gubg::mss::getInfo(c); \
-    auto l_level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? info.level : gubg::mss::Level::l); \
-    std::cout << GUBG_HERE() << " " << l_level << " " << info.type << "::" << info.code << " " << msg << std::endl; \
-    if (gubg::mss::Level::Fatal == l_level) \
-    { \
-        std::cout << "\tFATAL ERROR ENCOUNTERED, GAME OVER..." << std::endl; \
-        exit(-1); \
-    } \
+    auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \
+    std::cout << GUBG_HERE() << " " << level << "::" << rc.toString() << msg << std::endl; \
 }
 
 //Direct handling, v should be of the same type as specified in MSS_BEGIN(type)
 #define MSS_(level, v, msg) \
     do { \
-        if (!gubg::mss::isOK(rc = (v))) \
+        if (!rc.set(v)) \
         { \
             L_MSS_LOG(level, rc, msg); \
-            goto gubg_mss_fail_label; \
+            MSS_END(); \
         } \
     } while (false)
 #define MSS(v) MSS_(Unknown, v, "")
@@ -79,11 +99,10 @@ namespace gubg
 //Transformation of _any_ type v in a hardcoded value nc. nc should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_T_(level, v, nc, msg) \
     do { \
-        if (!gubg::mss::isOK(v)) \
+        if (!rc.set(v, gubg_return_code_type::nc)) \
         { \
-            rc = gubg_return_code_type::nc; \
             L_MSS_LOG(level, rc, msg); \
-            goto gubg_mss_fail_label; \
+            MSS_END(); \
         } \
     } while (false)
 #define MSS_T(v, nc) MSS_T_(Unknown, v, nc, "")
@@ -100,17 +119,5 @@ namespace gubg
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)
 #define MSS_CODE(code) MSS_CODE_(Error, code)
 #define MSS_CODE_END() }
-
-//#define L_GUBG_MSS_USE_EXCEPTIONS
-#ifdef L_GUBG_MSS_USE_EXCEPTIONS
-//This achieves more or less the same as the goto-based macros above, but performance is much much worse
-#define MSS_BEGIN(type) typedef type gubg_return_code_type; type rc = type::OK; try {
-#define MSS_FAIL() } catch (gubg_return_code_type &) { }
-#define MSS_END()
-#define MSS_RETURN() return rc
-
-#define MSS(v) do { if (!gubg::mss::isOK(rc = (v))) {throw rc;} } while (false)
-#define MSS_T(v, nv) do { if (!gubg::mss::isOK(v)) {rc = gubg_return_code_type::nv; throw rc;} } while (false)
-#endif
 
 #endif

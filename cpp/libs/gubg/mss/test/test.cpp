@@ -14,8 +14,7 @@ Compare compare(int lhs, int rhs)
     MSS_T(rhs >= 0, IllegalArgument);
     MSS_T(lhs >= rhs, Smaller);
     MSS_T_(Info, lhs <= rhs, Larger, lhs << " is larger than " << rhs);
-    MSS_FAIL();
-    MSS_RETURN();
+    MSS_END();
 }
 Compare fasterThanLight()
 {
@@ -25,8 +24,7 @@ Compare superCompare(int lhs, int rhs)
 {
     MSS_BEGIN(Compare);
     MSS(fasterThanLight());
-    MSS_FAIL();
-    MSS_RETURN();
+    MSS_END();
 }
 
 #define TEST_TAG(tag)

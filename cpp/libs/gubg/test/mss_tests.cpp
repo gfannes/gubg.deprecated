@@ -1,14 +1,44 @@
 #include "gubg/mss.hpp"
 #include <iostream>
 
-enum class Compare {OK, Smaller, Larger};
+enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
+MSS_CODE_BEGIN(Compare);
+MSS_CODE_(Debug, Smaller);
+MSS_CODE_(Debug, Larger);
+MSS_CODE_END();
 Compare compare(int lhs, int rhs)
 {
     MSS_BEGIN(Compare);
     MSS_T(lhs <= rhs, Larger);
     MSS_T(lhs >= rhs, Smaller);
-    MSS_FAIL();
-    MSS_RETURN();
+    MSS_END();
+}
+
+enum class ReturnCode
+{
+    OK, Error, False,
+};
+
+ReturnCode frc()
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(ReturnCode::Error);
+    MSS_END();
+}
+
+void fv()
+{
+    MSS_BEGIN(void);
+    MSS(ReturnCode::OK);
+    MSS(frc());
+    MSS_END();
+}
+
+void f()
+{
+    MSS_BEGIN(void);
+    MSS(false);
+    MSS_END();
 }
 
 #define TEST_TAG(tag)
@@ -21,5 +51,8 @@ int main()
     TEST_EQ_TYPE(int, Compare::OK, compare(-2, -2));
     TEST_EQ_TYPE(int, Compare::Smaller, compare(0, 1));
     TEST_EQ_TYPE(int, Compare::Larger, compare(1, 0));
+    frc();
+    fv();
+    f();
     return 0;
 }

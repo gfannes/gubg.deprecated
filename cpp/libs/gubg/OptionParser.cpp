@@ -18,7 +18,7 @@ OptionParser::ReturnCode OptionParser::createArgs(Args &args, int argc, char **a
     MSS_T(argv, IllegalArgument);
     for (int i = 0; i < argc; ++i)
         args.push_back(argv[i]);
-    MSS_FAIL_OR_RETURN();
+    MSS_END();
 }
 
 OptionParser::ReturnCode OptionParser::parse(Args &args, bool stripExe)
@@ -66,8 +66,7 @@ OptionParser::ReturnCode OptionParser::parse(Args &args, bool stripExe)
             break;
         }
     }
-    MSS_FAIL();
-    MSS_RETURN();
+    MSS_END();
 }
 
 void OptionParser::addHelpLine_(const string &shortHand, const string &longHand, const string &description)
