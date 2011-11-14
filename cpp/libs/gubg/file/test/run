@@ -1,2 +1,0 @@
-#!/bin/sh
-g++ -std=c++0x basic_tests.cpp ../basic.cpp ../../parse/basic.cpp ../../Platform.cpp -I../../../ -o basic_tests -lboost_system -lboost_filesystem -lboost_thread -I/home/gfannes/sdks/boost/include -L/home/gfannes/sdks/boost/lib

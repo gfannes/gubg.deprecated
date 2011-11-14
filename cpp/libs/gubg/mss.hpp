@@ -72,8 +72,10 @@ namespace gubg
 
 #define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
                              gubg::mss::ReturnCodeWrapper<gubg_return_code_type> rc
+#define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> rc;
 
 #define MSS_END()            return rc.get()
+#define MSS_FAIL()           gubg_mss_fail_label:
 
 #define L_MSS_LOG(l, rc, msg) \
 { \
@@ -106,6 +108,17 @@ namespace gubg
         } \
     } while (false)
 #define MSS_T(v, nc) MSS_T_(Unknown, v, nc, "")
+
+//Allows integration with functions of incompatible return types, this is goto-based
+#define MSS_J_(level, v, msg) \
+    do { \
+        if (!rc.set(v)) \
+        { \
+            L_MSS_LOG(level, rc, msg); \
+            goto gubg_mss_fail_label; \
+        } \
+    } while (false)
+#define MSS_J(v) MSS_J_(Unknown, v, "")
 
 #define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented
 #define MSS_CODE_BEGIN(type) \

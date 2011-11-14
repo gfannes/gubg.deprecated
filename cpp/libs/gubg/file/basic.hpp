@@ -10,8 +10,12 @@ namespace gubg
     {
         namespace basic
         {
-            enum class ReturnCode {MSS_DEFAULT_CODES, InvalidPath, InvalidCurrentWorkingDirectory, InvalidHomeDirectory,
-            PathIsEmpty, PartsIsEmpty, PathIsNotAbsolute};
+            enum class ReturnCode
+            {
+                MSS_DEFAULT_CODES,
+                InvalidPath, InvalidCurrentWorkingDirectory, InvalidHomeDirectory,
+                PathIsEmpty, PartsIsEmpty, PathIsNotAbsolute,
+            };
             ReturnCode expandPath(std::string &pathE, const std::string &path);
         }
     }
