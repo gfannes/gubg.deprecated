@@ -12,3 +12,5 @@ map -g <Bslash>ai#ifndef <Esc>:call ReadString("Path to header")<CR>$by$o#define
 map -b -o<Bslash>aa{<Esc>-oa}<Esc><Bslash>ak$
 " class
 map -c <Bslash>aoclass <Esc>:call ReadString("Class name")<CR>-oa{<Esc>-oa};<Esc><Bslash>ak$
+" MSS
+map -m <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
