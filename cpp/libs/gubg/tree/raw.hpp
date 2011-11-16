@@ -26,6 +26,7 @@ namespace gubg
             template <typename DataPolicy>
                 class Leaf;
 
+            //These types are used later to overload the begin() and end() methods for iteration
             enum ByDataT {ByData};
             enum ByComponentT {ByComponent};
             enum CompositeOnlyT {CompositeOnly};
@@ -89,9 +90,14 @@ namespace gubg
 
                 public:
                     //Iterator functionality
+                    //During iteration, we keep track of where we are with a stack of <node, ix>
+                    // * node => The is where we are currently
+                    // * ix => Indicates what branch we took. The ix of the last value is always set to 0 and indicates where we have to go next (what child we have to take)
                     typedef std::pair<Node *, size_t> PathElement;
                     typedef std::vector<PathElement> Path;
+                    //We dispatch node-specific path modification to composite or leaf using this virtual function
                     virtual bool increment_(Path &) = 0;
+                    //Base iteration class that iterates node per node
                     class iterator_base
                     {
                         public:
@@ -115,12 +121,15 @@ namespace gubg
 //                        private:
                             Path path_;
                     };
+                    //We derive different iteration styles from the basic one
+                    // * The same as iterator_base
                     class iterator_by_component: public iterator_base
                     {
                         public:
                             iterator_by_component(){}
                             iterator_by_component(Node *start):iterator_base(start){}
                     };
+                    // * The same as iterator_base, except that we give only out DataPolicy
                     class iterator_by_data: public iterator_base
                     {
                         public:
@@ -129,6 +138,7 @@ namespace gubg
                             DataPolicy &operator*(){return *iterator_base::path_.back().first;}
                             DataPolicy *operator->(){return iterator_base::path_.back().first;}
                     };
+                    // * We only stop on composite nodes
                     class iterator_composite_only: public iterator_base
                     {
                         public:
@@ -148,6 +158,7 @@ namespace gubg
                             Parent &operator*(){return *dynamic_cast<Parent*>(iterator_base::path_.back().first);}
                             Parent *operator->(){return dynamic_cast<Parent*>(iterator_base::path_.back().first);}
                     };
+                    // * We only stop on leaf nodes
                     class iterator_leaf_only: public iterator_base
                     {
                         public:
@@ -167,6 +178,9 @@ namespace gubg
                             LeafT &operator*(){return *dynamic_cast<LeafT*>(iterator_base::path_.back().first);}
                             LeafT *operator->(){return dynamic_cast<LeafT*>(iterator_base::path_.back().first);}
                     };
+                    //A bunch of begin() and end() methods. I tried to use templates for this, but template specialization inside
+                    //a template is not fun and I couldn't get it to work
+                    //Anyway, by overloading on the argument, it works fine, just use e.g.: begin(CompositeOnly)
                     iterator_by_component begin(ByComponentT){return iterator_by_component(this);}
                     iterator_by_component end(ByComponentT){return iterator_by_component();}
                     iterator_by_data begin(ByDataT){return iterator_by_data(this);}
