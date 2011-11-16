@@ -25,7 +25,11 @@ namespace raw
             ostringstream oss;
             Nodes nodes = pathFromRoot();
             for (auto node = nodes.begin(); node != nodes.end(); ++node)
-                oss << (*node)->name << "/";
+            {
+                if (node != nodes.begin())
+                    oss << "/";
+                oss << (*node)->name;
+            }
             return oss.str();
         }
     };
@@ -36,7 +40,11 @@ namespace raw
             ostringstream oss;
             Nodes nodes = pathFromRoot();
             for (auto node = nodes.begin(); node != nodes.end(); ++node)
-                oss << (*node)->name << "/";
+            {
+                if (node != nodes.begin())
+                    oss << "/";
+                oss << (*node)->name;
+            }
             return oss.str();
         }
     };

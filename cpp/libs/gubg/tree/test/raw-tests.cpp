@@ -17,10 +17,53 @@ struct RawDir: public shared_ptr<raw::Dir>
     string path() const {return get()->path();}
 };
 
+namespace
+{
+    template <typename Node>
+    void iterate(Node &node, bool log = true)
+    {
+        if (log)
+            LOG("\nStarting iteration from " << node.name);
+        size_t i = 0;
+        for (auto it = node.begin(); it != node.end(); ++it, ++i)
+        {
+            if (log)
+                LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name);
+        }
+    }
+}
+
 int main()
 {
     {
         LOG("Testing raw");
+        raw::Dir a, b, c;
+        raw::Reg d, e, f;
+#define CONNECT(p, c) p.add(&c)
+        CONNECT(a, b);
+        CONNECT(b, d);
+        CONNECT(b, e);
+        CONNECT(a, c);
+        CONNECT(c, f);
+        LOG(b.path());
+#define SET_NAME(n) n.name = #n
+        SET_NAME(a);
+        SET_NAME(b);
+        SET_NAME(c);
+        SET_NAME(d);
+        SET_NAME(e);
+        SET_NAME(f);
+        LOG(b.path());
+        LOG(e.filename());
+        iterate(a);
+        iterate(b);
+        iterate(e);
+        iterate(f);
+        for (auto i = 0; i < 100000; ++i)
+            iterate(a, false);
+    }
+    {
+        LOG("Testing RawDir");
         RawDir root, home, gfannes;
         root.setName("");
         home.setName("home");

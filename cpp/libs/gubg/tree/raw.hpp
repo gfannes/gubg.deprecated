@@ -10,6 +10,11 @@
 #include <vector>
 #include <deque>
 
+//Can go, only for debug
+#include <iostream>
+//#define LOG(msg) std::cout << msg << std::endl
+#define LOG(msg)
+
 namespace gubg
 {
     namespace tree
@@ -73,6 +78,43 @@ namespace gubg
                     virtual void addAllNodes_(Nodes &nodes) = 0;
 
                     Parent *parent_;
+
+                public:
+                    //Iterator functionality
+                    typedef std::pair<Node *, size_t> PathElement;
+                    typedef std::vector<PathElement> Path;
+                    virtual bool increment_(Path &) = 0;
+                    class iterator_base
+                    {
+                        public:
+                            iterator_base(){}
+                            iterator_base(Node *start):path_(1, std::make_pair(start, 0)){}
+                            void operator++()
+                            {
+                                LOG("operator++ begin");
+                                while (!path_.back().first->increment_(path_))
+                                {
+                                    path_.pop_back();
+                                    if (path_.empty())
+                                        return;
+                                    ++path_.back().second;
+                                }
+                                LOG("operator++ end");
+                            }
+                            bool operator!=(const iterator_base &rhs) const {return path_ != rhs.path_;}
+                            Node &operator*(){return *path_.back().first;}
+                            Node *operator->(){return path_.back().first;}
+//                        private:
+                            Path path_;
+                    };
+                    class iterator: public iterator_base
+                    {
+                        public:
+                            iterator(){}
+                            iterator(Node *start):iterator_base(start){}
+                    };
+                    iterator begin(){return iterator(this);}
+                    iterator end(){return iterator();}
             };
 
             //A node of the tree that contains children
@@ -110,6 +152,17 @@ namespace gubg
                         for (auto child = childs_.begin(); child != childs_.end(); ++child)
                             (*child)->addAllNodes_(nodes);
                     }
+                    virtual bool increment_(typename ComponentT::Path &path)
+                    {
+                        LOG("\tComposite::increment_ " << path.size());
+                        auto ix = path.back().second;
+                        if (ix < childs_.size())
+                        {
+                            path.push_back(std::make_pair(childs_[ix], 0));
+                            return true;
+                        }
+                        return false;
+                    }
 
                 private:
                     typedef std::vector<ComponentT*> Childs;
@@ -126,6 +179,11 @@ namespace gubg
                     virtual bool isLeaf() const {return true;}
                 protected:
                     virtual void addAllNodes_(Nodes &nodes) {nodes.push_back(this);}
+                    virtual bool increment_(typename ComponentT::Path &path)
+                    {
+                        LOG("\tLeaf::increment_ " << path.size());
+                        return false;
+                    }
             };
         }
     }

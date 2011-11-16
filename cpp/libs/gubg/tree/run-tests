@@ -1,9 +1,0 @@
-#!/bin/sh
-rm -f raw-tests
-echo "Compiling tests"
-export L_INC="-I../../ -I./"
-g++ -std=c++0x test/raw-tests.cpp ../file/basic.cpp ../parse/basic.cpp ../Platform.cpp -o raw-tests $L_INC -lboost_system -lboost_filesystem -lboost_thread -I/home/gfannes/sdks/boost/include -L/home/gfannes/sdks/boost/lib
-g++ -std=c++0x test/managed-tests.cpp ../file/basic.cpp ../parse/basic.cpp ../Platform.cpp -o managed-tests $L_INC -lboost_system -lboost_filesystem -lboost_thread -I/home/gfannes/sdks/boost/include -L/home/gfannes/sdks/boost/lib
-echo "Running tests"
-./raw-tests
-./managed-tests
