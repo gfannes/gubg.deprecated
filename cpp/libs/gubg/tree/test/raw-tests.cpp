@@ -19,16 +19,52 @@ struct RawDir: public shared_ptr<raw::Dir>
 
 namespace
 {
+    using namespace gubg::tree::raw;
     template <typename Node>
     void iterate(Node &node, bool log = true)
     {
         if (log)
-            LOG("\nStarting iteration from " << node.name);
-        size_t i = 0;
-        for (auto it = node.begin(); it != node.end(); ++it, ++i)
+            LOG("");
         {
             if (log)
-                LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name);
+                LOG("Starting iteration from " << node.name << " by component");
+            size_t i = 0;
+            for (auto it = node.begin(ByComponent); it != node.end(ByComponent); ++it, ++i)
+            {
+                if (log)
+                    LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name << " isLeaf():" << it->isLeaf());
+            }
+        }
+        {
+            if (log)
+                LOG("Starting iteration from " << node.name << " by data");
+            size_t i = 0;
+            for (auto it = node.begin(ByData); it != node.end(ByData); ++it, ++i)
+            {
+                //isLeaf is not accessible, *it is of type Data
+                if (log)
+                    LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name);
+            }
+        }
+        {
+            if (log)
+                LOG("Starting iteration from " << node.name << " composite only");
+            size_t i = 0;
+            for (auto it = node.begin(CompositeOnly); it != node.end(CompositeOnly); ++it, ++i)
+            {
+                if (log)
+                    LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name << " isLeaf():" << it->isLeaf());
+            }
+        }
+        {
+            if (log)
+                LOG("Starting iteration from " << node.name << " leaf only");
+            size_t i = 0;
+            for (auto it = node.begin(LeafOnly); it != node.end(LeafOnly); ++it, ++i)
+            {
+                if (log)
+                    LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name << " isLeaf():" << it->isLeaf());
+            }
         }
     }
 }
@@ -37,7 +73,7 @@ int main()
 {
     {
         LOG("Testing raw");
-        raw::Dir a, b, c;
+        raw::Dir a, b, c, singleRoot;
         raw::Reg d, e, f;
 #define CONNECT(p, c) p.add(&c)
         CONNECT(a, b);
@@ -53,12 +89,15 @@ int main()
         SET_NAME(d);
         SET_NAME(e);
         SET_NAME(f);
+        SET_NAME(singleRoot);
         LOG(b.path());
         LOG(e.filename());
+        LOG(singleRoot.path());
         iterate(a);
         iterate(b);
         iterate(e);
         iterate(f);
+        iterate(singleRoot);
         for (auto i = 0; i < 100000; ++i)
             iterate(a, false);
     }

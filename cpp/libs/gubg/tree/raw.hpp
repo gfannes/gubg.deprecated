@@ -23,6 +23,13 @@ namespace gubg
         {
             template <typename DataPolicy>
                 class Composite;
+            template <typename DataPolicy>
+                class Leaf;
+
+            enum ByDataT {ByData};
+            enum ByComponentT {ByComponent};
+            enum CompositeOnlyT {CompositeOnly};
+            enum LeafOnlyT {LeafOnly};
 
             //Abstract root class of the tree type hierarchy
             // * Contains a reference to its parent (pointer)
@@ -32,6 +39,7 @@ namespace gubg
             {
                 public:
                     typedef Composite<DataPolicy> Parent;
+                    typedef Leaf<DataPolicy> LeafT;
                     typedef Component Node;
                     typedef std::deque<Node*> Nodes;
 
@@ -107,14 +115,66 @@ namespace gubg
 //                        private:
                             Path path_;
                     };
-                    class iterator: public iterator_base
+                    class iterator_by_component: public iterator_base
                     {
                         public:
-                            iterator(){}
-                            iterator(Node *start):iterator_base(start){}
+                            iterator_by_component(){}
+                            iterator_by_component(Node *start):iterator_base(start){}
                     };
-                    iterator begin(){return iterator(this);}
-                    iterator end(){return iterator();}
+                    class iterator_by_data: public iterator_base
+                    {
+                        public:
+                            iterator_by_data(){}
+                            iterator_by_data(Node *start):iterator_base(start){}
+                            DataPolicy &operator*(){return *iterator_base::path_.back().first;}
+                            DataPolicy *operator->(){return iterator_base::path_.back().first;}
+                    };
+                    class iterator_composite_only: public iterator_base
+                    {
+                        public:
+                            iterator_composite_only(){}
+                            iterator_composite_only(Node *start):iterator_base(start)
+                            {
+                                //We proceed until we reach a composite node
+                                while (!iterator_base::path_.empty() && iterator_base::path_.back().first->isLeaf())
+                                    operator++();
+                            }
+                            void operator++()
+                            {
+                                iterator_base::operator++();
+                                while (!iterator_base::path_.empty() && iterator_base::path_.back().first->isLeaf())
+                                    iterator_base::operator++();
+                            }
+                            Parent &operator*(){return *dynamic_cast<Parent*>(iterator_base::path_.back().first);}
+                            Parent *operator->(){return dynamic_cast<Parent*>(iterator_base::path_.back().first);}
+                    };
+                    class iterator_leaf_only: public iterator_base
+                    {
+                        public:
+                            iterator_leaf_only(){}
+                            iterator_leaf_only(Node *start):iterator_base(start)
+                            {
+                                //We proceed until we reach a leaf node
+                                while (!iterator_base::path_.empty() && !iterator_base::path_.back().first->isLeaf())
+                                    operator++();
+                            }
+                            void operator++()
+                            {
+                                iterator_base::operator++();
+                                while (!iterator_base::path_.empty() && !iterator_base::path_.back().first->isLeaf())
+                                    iterator_base::operator++();
+                            }
+                            LeafT &operator*(){return *dynamic_cast<LeafT*>(iterator_base::path_.back().first);}
+                            LeafT *operator->(){return dynamic_cast<LeafT*>(iterator_base::path_.back().first);}
+                    };
+                    iterator_by_component begin(ByComponentT){return iterator_by_component(this);}
+                    iterator_by_component end(ByComponentT){return iterator_by_component();}
+                    iterator_by_data begin(ByDataT){return iterator_by_data(this);}
+                    iterator_by_data end(ByDataT){return iterator_by_data();}
+                    iterator_composite_only begin(CompositeOnlyT){return iterator_composite_only(this);}
+                    iterator_composite_only end(CompositeOnlyT){return iterator_composite_only();}
+                    iterator_leaf_only begin(LeafOnlyT){return iterator_leaf_only(this);}
+                    iterator_leaf_only end(LeafOnlyT){return iterator_leaf_only();}
             };
 
             //A node of the tree that contains children
