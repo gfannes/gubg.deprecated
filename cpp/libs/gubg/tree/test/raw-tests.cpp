@@ -29,7 +29,7 @@ namespace
             if (log)
                 LOG("Starting iteration from " << node.name << " by component");
             size_t i = 0;
-            for (auto it = node.begin(ByComponent); it != node.end(ByComponent); ++it, ++i)
+            for (auto it = node.begin(ByNode); it != node.end(ByNode); ++it, ++i)
             {
                 if (log)
                     LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name << " isLeaf():" << it->isLeaf());
@@ -50,7 +50,7 @@ namespace
             if (log)
                 LOG("Starting iteration from " << node.name << " composite only");
             size_t i = 0;
-            for (auto it = node.begin(CompositeOnly); it != node.end(CompositeOnly); ++it, ++i)
+            for (auto it = node.begin(NoLeaf); it != node.end(NoLeaf); ++it, ++i)
             {
                 if (log)
                     LOG("Iteration " << i << ": path_.size(): " << it.path_.size() << " name: " << it->name << " isLeaf():" << it->isLeaf());

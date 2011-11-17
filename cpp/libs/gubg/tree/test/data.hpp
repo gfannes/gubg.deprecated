@@ -18,7 +18,7 @@ struct Data
 namespace raw
 {
     using namespace std;
-    struct Dir: gubg::tree::raw::Composite<Data>
+    struct Dir: gubg::tree::raw::Node<Data>
     {
         string path()
         {
@@ -33,7 +33,7 @@ namespace raw
             return oss.str();
         }
     };
-    struct Reg: gubg::tree::raw::Leaf<Data>
+    struct Reg: gubg::tree::raw::Node<Data>
     {
         string filename()
         {
