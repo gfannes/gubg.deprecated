@@ -1,16 +1,16 @@
-#ifndef gubg_mss_hpp
-#define gubg_mss_hpp
+#ifndef gubg_mss_mss_hpp
+#define gubg_mss_mss_hpp
 
 //Main success scenario: enables easy working with return codes
 //A general scope (e.g., a function body) looks like this:
 //
 //MSS_BEGIN(ReturnCodeT);
-// => Initializes a return value "rc" of type ReturnCodeT to OK
+// => Initializes a return value "MSS_RC_VAR" of type ReturnCodeT to OK
 // => Linear sequence of statements that are checked for being part of the main success scenario
 //    As soon as one fails, we return from the function with the failing code
 //    If nothing fails, MSS_END() will return from the function with a "OK" value
 //MSS(some_function_that_returns_ReturnCodeT());
-//MSS_T(some_function_that_returns_WhateverT(), code_upon_failure); => rc is set to code_upon_failure when some_function_that_returns_WhateverT() fails
+//MSS_T(some_function_that_returns_WhateverT(), code_upon_failure); => MSS_RC_VAR is set to code_upon_failure when some_function_that_returns_WhateverT() fails
 //...
 // => You can return or continue here
 //
@@ -67,15 +67,54 @@ namespace gubg
                 std::string v_;
                 Level l_;
             };
+        template <typename ReturnCodeWrapper>
+        struct SuccessChecker
+        {
+            public:
+                SuccessChecker(const gubg::Location &location, ReturnCodeWrapper &rcw):
+                    success_(false),
+                    location_(location),
+                    returnCodeWrapper_(rcw){}
+                ~SuccessChecker()
+                {
+                    if (!success_)
+                        std::cout << "MSS UNSUCCESSFUL::" << location_ << "::" << msg_ << "::" << returnCodeWrapper_.toString() << std::endl;
+                }
+                void setMessage(const std::string &msg){msg_ = msg;}
+                void indicateSuccess(){success_ = true;}
+            private:
+                bool success_;
+                std::string msg_;
+                std::string returnCodeInfo_;
+                gubg::Location location_;
+                ReturnCodeWrapper &returnCodeWrapper_;
+        };
     }
 }
 
-#define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
-                             gubg::mss::ReturnCodeWrapper<gubg_return_code_type> rc
-#define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> rc;
+#define MSS_RC_VAR rc
 
-#define MSS_END()            return rc.get()
+#define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
+                             typedef gubg::mss::ReturnCodeWrapper<gubg_return_code_type> gubg_return_code_wrapper_type; \
+                             gubg_return_code_wrapper_type MSS_RC_VAR
+#define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
+
+#define MSS_END()            return MSS_RC_VAR.get()
 #define MSS_FAIL()           gubg_mss_fail_label:
+
+#define MSS_BEGIN_(type, msg) \
+    MSS_BEGIN(type); \
+    { \
+        gubg::mss::SuccessChecker<gubg_return_code_wrapper_type> l_gubg_success_checker(GUBG_HERE(), MSS_RC_VAR); \
+        { \
+            std::ostringstream l_gubg_success_checker_m; l_gubg_success_checker_m << msg; \
+            l_gubg_success_checker.setMessage(l_gubg_success_checker_m.str()); \
+        } \
+
+#define MSS_END_() \
+        l_gubg_success_checker.indicateSuccess(); \
+        MSS_END(); \
+    }
 
 #define L_MSS_LOG(l, rc, msg) \
 { \
@@ -86,9 +125,9 @@ namespace gubg
 //Direct handling, v should be of the same type as specified in MSS_BEGIN(type)
 #define MSS_(level, v, msg) \
     do { \
-        if (!rc.set(v)) \
+        if (!MSS_RC_VAR.set(v)) \
         { \
-            L_MSS_LOG(level, rc, msg); \
+            L_MSS_LOG(level, MSS_RC_VAR, msg); \
             MSS_END(); \
         } \
     } while (false)
@@ -101,9 +140,9 @@ namespace gubg
 //Transformation of _any_ type v in a hardcoded value nc. nc should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_T_(level, v, nc, msg) \
     do { \
-        if (!rc.set(v, gubg_return_code_type::nc)) \
+        if (!MSS_RC_VAR.set(v, gubg_return_code_type::nc)) \
         { \
-            L_MSS_LOG(level, rc, msg); \
+            L_MSS_LOG(level, MSS_RC_VAR, msg); \
             MSS_END(); \
         } \
     } while (false)
@@ -112,9 +151,9 @@ namespace gubg
 //Allows integration with functions of incompatible return types, this is goto-based
 #define MSS_J_(level, v, msg) \
     do { \
-        if (!rc.set(v)) \
+        if (!MSS_RC_VAR.set(v)) \
         { \
-            L_MSS_LOG(level, rc, msg); \
+            L_MSS_LOG(level, MSS_RC_VAR, msg); \
             goto gubg_mss_fail_label; \
         } \
     } while (false)

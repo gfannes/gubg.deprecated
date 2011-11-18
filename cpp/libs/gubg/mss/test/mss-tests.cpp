@@ -43,7 +43,30 @@ void f()
 
 void f_log()
 {
-    MSS_BEGIN_();
+    MSS_BEGIN_(void, "f_log");
+    return;
+    MSS_END_();
+}
+void f_log2()
+{
+    MSS_BEGIN_(void, "f_log");
+    MSS(false);
+    MSS_END_();
+}
+void f_log3()
+{
+    try
+    {
+        MSS_BEGIN_(void, "f_log");
+        throw "LetsJumpAway";
+        MSS_END_();
+    }
+    catch (...){}
+}
+Compare notImplemented()
+{
+    MSS_BEGIN_(Compare, "notImplemented");
+    MSS_L(NotImplemented);
     MSS_END_();
 }
 
@@ -60,5 +83,10 @@ int main()
     frc();
     fv();
     f();
+
+    f_log();
+    f_log2();
+    f_log3();
+    notImplemented();
     return 0;
 }
