@@ -16,7 +16,7 @@ Compare compare(int lhs, int rhs)
 
 enum class ReturnCode
 {
-    OK, Error, False,
+    OK, Error, False, NotSoSerious, Serious
 };
 
 ReturnCode frc()
@@ -70,6 +70,15 @@ Compare notImplemented()
     MSS_END_();
 }
 
+ReturnCode allowed()
+{
+    MSS_BEGIN(ReturnCode);
+    MSS_ALLOW(NotSoSerious);
+    MSS_L(NotSoSerious);
+    MSS_L(Serious);
+    MSS_END();
+}
+
 #define TEST_TAG(tag)
 #define TEST_EQ_TYPE(t, e, a) if ((e) != (a)) std::cout << "Problem " << __LINE__ << std::endl
 int main()
@@ -88,5 +97,7 @@ int main()
     f_log2();
     f_log3();
     notImplemented();
+
+    allowed();
     return 0;
 }

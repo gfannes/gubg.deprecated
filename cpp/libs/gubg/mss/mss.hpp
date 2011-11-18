@@ -18,6 +18,7 @@
 // => Ends the MSS block and returns from the function
 
 #include "gubg/mss/info.hpp"
+#include <set>
 
 namespace gubg
 {
@@ -30,12 +31,17 @@ namespace gubg
                 T get(){return v_;}
                 bool set(T v)
                 {
-                    return T::OK == (v_ = v);
+                    v_ = v;
+                    if (T::OK == v_ || allowedCodes_.count(v_))
+                        return true;
+                    return false;
                 }
-                bool set(bool b, T v = T::Error)
-                {
-                    return T::OK == (v_ = (b ? T::OK : v));
-                }
+                template <typename OT>
+                    bool set(OT ot, T v){return set(OT::OK == ot ? T::OK : v);}
+                template <typename P>
+                    bool set(P *p, T v){return set(0 == p ? T::OK : v);}
+                bool set(bool b, T v = T::Error){return set(b ? T::OK : v);}
+                void setAllowed(T v){allowedCodes_.insert(v);}
                 Level level() const {return getInfo<T>(v_).level;}
                 std::string toString() const
                 {
@@ -45,6 +51,7 @@ namespace gubg
                     return oss.str();
                 }
                 T v_;
+                std::set<T> allowedCodes_;
             };
         template <>
             struct ReturnCodeWrapper<void>
@@ -98,6 +105,7 @@ namespace gubg
                              typedef gubg::mss::ReturnCodeWrapper<gubg_return_code_type> gubg_return_code_wrapper_type; \
                              gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
+#define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(gubg_return_code_type::v)
 
 #define MSS_END()            return MSS_RC_VAR.get()
 #define MSS_FAIL()           gubg_mss_fail_label:
