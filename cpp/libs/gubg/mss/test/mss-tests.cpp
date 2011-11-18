@@ -41,6 +41,12 @@ void f()
     MSS_END();
 }
 
+void f_log()
+{
+    MSS_BEGIN_();
+    MSS_END_();
+}
+
 #define TEST_TAG(tag)
 #define TEST_EQ_TYPE(t, e, a) if ((e) != (a)) std::cout << "Problem " << __LINE__ << std::endl
 int main()
