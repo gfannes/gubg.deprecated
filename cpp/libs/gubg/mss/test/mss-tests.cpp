@@ -72,7 +72,7 @@ Compare notImplemented()
 
 ReturnCode allowed()
 {
-    MSS_BEGIN(ReturnCode);
+    MSS_BEGIN(ReturnCode, AllowOtherCodes);
     MSS_ALLOW(NotSoSerious);
     MSS_L(NotSoSerious);
     MSS_L(Serious);
@@ -98,6 +98,6 @@ int main()
     f_log3();
     notImplemented();
 
-    allowed();
+    TEST_EQ_TYPE(int, ReturnCode::Serious, allowed());
     return 0;
 }

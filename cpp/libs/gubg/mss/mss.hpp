@@ -20,19 +20,34 @@
 #include "gubg/mss/info.hpp"
 #include <set>
 
+template <typename T>
+struct AllowOtherCodes
+{
+    void setAllowed(T v){allowedCodes_.insert(v);}
+    bool isAllowed(T v) const {return allowedCodes_.count(v);}
+    std::set<T> allowedCodes_;
+};
+
 namespace gubg
 {
     namespace mss
     {
         template <typename T>
-            struct ReturnCodeWrapper
+            struct NoOtherCodesAllowed
             {
+                bool isAllowed(T) const {return false;}
+            };
+        template <typename T, template <typename TT> class AllowedCodesPolicy = NoOtherCodesAllowed>
+            struct ReturnCodeWrapper: AllowedCodesPolicy<T>
+            {
+                typedef T ReturnCodeT;
+                typedef AllowedCodesPolicy<T> AllowedCodesPolicyT;
                 ReturnCodeWrapper():v_(T::OK){}
                 T get(){return v_;}
                 bool set(T v)
                 {
                     v_ = v;
-                    if (T::OK == v_ || allowedCodes_.count(v_))
+                    if (T::OK == v_ || AllowedCodesPolicyT::isAllowed(v_))
                         return true;
                     return false;
                 }
@@ -41,7 +56,6 @@ namespace gubg
                 template <typename P>
                     bool set(P *p, T v){return set(0 == p ? T::OK : v);}
                 bool set(bool b, T v = T::Error){return set(b ? T::OK : v);}
-                void setAllowed(T v){allowedCodes_.insert(v);}
                 Level level() const {return getInfo<T>(v_).level;}
                 std::string toString() const
                 {
@@ -51,11 +65,11 @@ namespace gubg
                     return oss.str();
                 }
                 T v_;
-                std::set<T> allowedCodes_;
             };
         template <>
-            struct ReturnCodeWrapper<void>
+            struct ReturnCodeWrapper<void, NoOtherCodesAllowed >
             {
+                typedef void ReturnCodeT;
                 ReturnCodeWrapper():l_(Level::OK){}
                 void get(){}
                 template <typename OT>
@@ -101,8 +115,8 @@ namespace gubg
 
 #define MSS_RC_VAR rc
 
-#define MSS_BEGIN(type)      typedef type gubg_return_code_type; \
-                             typedef gubg::mss::ReturnCodeWrapper<gubg_return_code_type> gubg_return_code_wrapper_type; \
+#define MSS_BEGIN(...)       typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> gubg_return_code_wrapper_type; \
+                             typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
                              gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(gubg_return_code_type::v)
