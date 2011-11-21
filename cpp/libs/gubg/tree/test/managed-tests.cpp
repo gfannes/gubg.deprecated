@@ -10,7 +10,7 @@ using namespace std;
 //We create the composite and leaf node types that will store Data, _with_ memory management
 namespace managed
 {
-    struct Dir: gubg::tree::managed::Composite<Data>
+    struct Dir: gubg::tree::managed::Node<raw::Dir>
     {
         Dir(){}
         static Dir create(const string &path)
@@ -45,19 +45,31 @@ namespace managed
             MSS_FAIL();
             return dir;
         }
-        private:
-        typedef gubg::tree::managed::Composite<Data> Base;
-        template <typename Node, typename Root>
-        Dir(Node node, Root root):
-            Base(node, root){}
+        typedef gubg::tree::managed::Node<raw::Dir> Base;
+        Dir(RawPtr node, Base &parent):
+            Base(node, parent){}
     };
 }
 
 int main()
 {
+    managed::Dir root;
     {
         LOG("\nTesting managed");
         auto home = managed::Dir::create("./");
+        home.getRoot(root);
     }
+    LOG("After scope");
+
+    for (auto it = root->begin(gubg::tree::ByData); it != root->end(gubg::tree::ByData); ++it)
+    {
+        LOG("Data: " << it->name);
+    }
+#if 0
+    for (auto it = root.begin(gubg::tree::ByNode); it != root.end(gubg::tree::ByNode); ++it)
+    {
+        LOG("Data: " << it->name);
+    }
+#endif
     return 0;
 }

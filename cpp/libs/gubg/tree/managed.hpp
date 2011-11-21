@@ -15,11 +15,11 @@ namespace gubg
     {
         namespace managed
         {
-            template <typename Data>
+            template <typename RawNode>
                 struct DeleteAllNodes
                 {
-                    typedef gubg::tree::raw::Component<Data>* Ptr;
-                    void operator()(Ptr root)
+                    typedef RawNode* RawPtr;
+                    void operator()(RawPtr root)
                     {
                         auto allNodes = root->allNodes();
                         for (auto node = allNodes.begin(); node != allNodes.end(); ++node)
@@ -27,64 +27,67 @@ namespace gubg
                     }
                 };
 
-            template <typename Data>
-                class Composite;
-
-            template <typename Data>
-                class Component
+            template <typename RawNode>
+                class Node
                 {
                     public:
-                        typedef gubg::tree::raw::Component<Data>* Ptr;
-                        typedef boost::shared_ptr<gubg::tree::raw::Component<Data>> RootPtr;
+                        typedef Node<RawNode> Self;
+                        typedef RawNode* RawPtr;
+                        typedef boost::shared_ptr<RawNode> RootPtr;
 
-                        friend class Composite<Data>;
-
-                        Component():
+                        Node():
                             node_(0){}
 
-                        Ptr operator->(){return node_;}
+                        RawPtr operator->(){return node_;}
+
+                        template <typename DerivedNode>
+                            static DerivedNode down_cast(RawPtr ptr, Self &root){return DerivedNode(ptr, root);}
+
+                        template <typename DerivedNode>
+                        bool getRoot(DerivedNode &root)
+                        {
+                            root = down_cast<DerivedNode>(root_.get(), *this);
+                            return true;
+                        }
+
+#if 0
+                        class iterator_by_node
+                        {
+                            public:
+                                iterator_by_node(){}
+                                bool operator!=(const iterator_by_node &rhs) const {return it != rhs.it;}
+                                void operator++(){++it;}
+                                typename RawNode::iterator_by_node it;
+                        };
+                        iterator_by_node begin(ByNodeT){return iterator_by_node();}
+                        iterator_by_node end(ByNodeT){return iterator_by_node();}
+#endif
 
                     protected:
-                        Ptr node_;
-                        void setRoot_(Ptr root)
+                        void setRoot_(RawPtr root)
                         {
                             node_ = root;
-                            root_.reset(root, DeleteAllNodes<Data>());
+                            root_.reset(root, DeleteAllNodes<RawNode>());
                         }
-                        Component(Ptr node, Component root):
+                        Node(RawPtr node, Node root):
                             node_(node),
                             root_(root.root_){}
+
+                        ReturnCode add(Node &component)
+                        {
+                            MSS_BEGIN(ReturnCode);
+                            MSS_T(node_, InternalError);
+                            MSS(node_->add(component.node_));
+                            MSS_END();
+                        }
+
                     private:
+                        RawPtr node_;
+
                         //Each node keeps a counted reference to the root of the hierarchy
                         //If this falls to zero (all references to the root are gone), we delete
                         //all the nodes of the tree
                         RootPtr root_;
-                };
-            template <typename Data>
-                class Composite: public Component<Data>
-                {
-                    public:
-                        typedef Component<Data> Base;
-                        typedef gubg::tree::raw::Component<Data>* Ptr;
-                        typedef gubg::tree::raw::Composite<Data>* This;
-
-                        Composite(){}
-
-                        ReturnCode add(Base &component)
-                        {
-                            MSS_BEGIN(ReturnCode);
-                            auto t = this_();
-                            MSS_T(t, InternalError);
-                            MSS(t->add(component.node_));
-                            MSS_END();
-                        }
-                    protected:
-
-                        template <typename Node, typename Root>
-                            Composite(Node node, Root root):
-                                Base(node, root){}
-
-                        This this_(){return static_cast<This>(Base::node_);}
                 };
         }
     }

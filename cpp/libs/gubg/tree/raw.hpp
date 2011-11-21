@@ -19,14 +19,14 @@ namespace gubg
 {
     namespace tree
     {
+        //These types are used later to overload the begin() and end() methods for iteration
+        enum ByDataT {ByData};
+        enum ByNodeT {ByNode};
+        enum NoLeafT {NoLeaf};
+        enum LeafOnlyT {LeafOnly};
+
         namespace raw
         {
-            //These types are used later to overload the begin() and end() methods for iteration
-            enum ByDataT {ByData};
-            enum ByNodeT {ByNode};
-            enum NoLeafT {NoLeaf};
-            enum LeafOnlyT {LeafOnly};
-
             template <typename DataPolicy>
                 class Node: public DataPolicy
             {

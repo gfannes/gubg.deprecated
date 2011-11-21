@@ -9,9 +9,9 @@ export L_EXTRA_SRCS="../file/basic.cpp ../parse/basic.cpp ../Platform.cpp"
 export L_INC_DIR="-I../../ -I./ -I/home/gfannes/sdks/boost/include"
 export L_LIBS="-lboost_system -lboost_filesystem -lboost_thread"
 export L_LIB_DIR="-L/home/gfannes/sdks/boost/lib"
-$L_COMPILE test/raw-tests.cpp     -o raw-tests     $L_EXTRA_SRCS $L_INC_DIR $L_LIBS $L_LIB_DIR
-#$L_COMPILE test/managed-tests.cpp -o managed-tests $L_EXTRA_SRCS $L_INC_DIR $L_LIBS $L_LIB_DIR
+#$L_COMPILE test/raw-tests.cpp     -o raw-tests     $L_EXTRA_SRCS $L_INC_DIR $L_LIBS $L_LIB_DIR
+$L_COMPILE test/managed-tests.cpp -o managed-tests $L_EXTRA_SRCS $L_INC_DIR $L_LIBS $L_LIB_DIR
 
 echo "Running tests"
-./raw-tests
-#./managed-tests
+#./raw-tests
+./managed-tests
