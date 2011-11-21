@@ -46,9 +46,13 @@ namespace gubg
                 T get(){return v_;}
                 bool set(T v)
                 {
-                    v_ = v;
                     if (T::OK == v_ || AllowedCodesPolicyT::isAllowed(v_))
+                    {
+                        //Every allowed code becomes OK
+                        v_ = T::OK;
                         return true;
+                    }
+                    v_ = v;
                     return false;
                 }
                 template <typename OT>
