@@ -15,6 +15,14 @@ namespace gubg
     {
         namespace managed
         {
+            template <typename T>
+                T createRoot(typename T::RawPtr ptr)
+                {
+                    T t;
+                    t.createRoot_(ptr);
+                    return t;
+                }
+
             template <typename RawNode>
                 struct DeleteAllNodes
                 {
@@ -34,6 +42,9 @@ namespace gubg
                         typedef Node<RawNode> Self;
                         typedef RawNode* RawPtr;
                         typedef boost::shared_ptr<RawNode> RootPtr;
+
+                        //The create template function is our friend, it needs to call createRoot_()
+                        template <typename T> friend T createRoot(typename T::RawPtr);
 
                         Node():
                             node_(0){}
@@ -64,15 +75,21 @@ namespace gubg
 #endif
 
                     protected:
-                        void setRoot_(RawPtr root)
+                        void createRoot_(RawPtr root)
                         {
                             node_ = root;
                             root_.reset(root, DeleteAllNodes<RawNode>());
                         }
-                        Node(RawPtr node, Node root):
-                            node_(node),
-                            root_(root.root_){}
-
+                        template <typename T>
+                        ReturnCode add_(T &t, RawPtr node)
+                        {
+                            MSS_BEGIN(ReturnCode);
+                            MSS(node_);
+                            MSS(node_->add(node));
+                            t.node_ = node;
+                            t.root_ = root_;
+                            MSS_END();
+                        }
                         ReturnCode add(Node &component)
                         {
                             MSS_BEGIN(ReturnCode);

@@ -19,10 +19,10 @@ struct RawDir: public shared_ptr<raw::Dir>
 
 namespace
 {
-    using namespace gubg::tree::raw;
     template <typename Node>
     void iterate(Node &node, bool log = true)
     {
+        using namespace gubg::tree;
         if (log)
             LOG("");
         {
