@@ -94,7 +94,7 @@ Dir.each("./",recursor) do |dir, fn|
           when :print
             puts(path+":#{ix+1} #{line}")
           when :open
-            files2Open << path+":#{ix+1}"
+            files2Open << {path: path, lineNr: ix+1}
           when :replace
             print(path+":#{ix+1} (#{line}) -> ")
             line[lookFor] = newValue
@@ -112,6 +112,9 @@ end
 
 case action
 when :open
-  command = "e " + files2Open.join(" ")
-  system(command)
+	files2Open.each do |file|
+		puts "g +#{file[:lineNr]} #{file[:path]}"
+		Thread.new{system("g +#{file[:lineNr]} #{file[:path]}")}
+		sleep(0.1)
+	end
 end
