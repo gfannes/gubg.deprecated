@@ -1,7 +1,12 @@
 #include "gubg/file/basic.hpp"
 #include "gubg/parse/basic.hpp"
 #include "gubg/Platform.hpp"
+#ifdef GUBG_LINUX
+#include <dirent.h>
+#endif
 using namespace std;
+
+#define LOG(msg) cout << msg << endl
 
 namespace
 {
@@ -76,5 +81,41 @@ gubg::file::basic::ReturnCode gubg::file::basic::expandPath(string &pathE, const
         pathE = oss.str();
     }
 
+    MSS_END();
+}
+
+gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories &dirs, Files &files, const string &path)
+{
+    MSS_BEGIN(ReturnCode);
+#ifdef GUBG_LINUX
+    //Expand the provided path
+    string pathE;
+    MSS(expandPath(pathE, path));
+    //Open the directory
+    DIR *dirp = ::opendir(pathE.c_str());
+    MSS_T(dirp, CouldNotOpenDir);
+    //Create enough space for the dirent struct
+    string entrypBuffer(offsetof(struct dirent, d_name)+NAME_MAX+1, '0');
+    struct dirent *entryp = (struct dirent *)entrypBuffer.data();
+    //Iterate over the directory entries
+    struct dirent *tmp;
+    for (;;)
+    {
+        MSS_T(0 == ::readdir_r(dirp, entryp, &tmp), CouldNotReadEntry);
+        if (!tmp)
+            //If this is set to 0, we are done with iterating
+            break;
+        if (::strcmp(entryp->d_name, ".") == 0 || ::strcmp(entryp->d_name, "..") == 0)
+            //We skip "." and ".."
+            continue;
+        switch (entryp->d_type)
+        {
+            case DT_DIR: dirs.push_back(entryp->d_name); break;
+            case DT_REG: files.push_back(entryp->d_name); break;
+        }
+    }
+#else
+    MSS_L(NotImplemented);
+#endif
     MSS_END();
 }

@@ -10,66 +10,56 @@ using namespace std;
 //We create the composite and leaf node types that will store Data, _with_ memory management
 namespace managed
 {
-    struct Dir: gubg::tree::managed::Node<raw::Dir>
+    enum class ReturnCode {MSS_DEFAULT_CODES, CouldNotExpand, UnexpectedPath, CouldNotAddNode};
+    struct Reg: gubg::tree::managed::Node<raw::Reg, raw::Dir>
     {
-        Dir(){}
-        static Dir create(const string &path)
+    };
+    struct Dir: gubg::tree::managed::Node<raw::Dir, raw::Dir>
+    {
+        static ReturnCode create(Dir &dir, const string &path)
         {
-            //dir will hold our return value, a Dir all the way to the root
-            Dir dir;
-            MSS_BEGIN_J();
+            MSS_BEGIN(ReturnCode);
             //Expand path into pathE as an absolute path
             string pathE;
-            MSS_J(gubg::file::basic::expandPath(pathE, path));
+            MSS_T(gubg::file::basic::expandPath(pathE, path), CouldNotExpand);
             //We split pathE into tokens and use these to construct a single-path tree with a root
+            auto tokens = gubg::parse::tokenize(pathE, "/");
+            //Check that the first part is empty, which should be for an absolute path
+            MSS_T(!tokens.empty(), UnexpectedPath);
+            MSS_T(tokens[0] == "", UnexpectedPath);
+            //Create the root
+            dir = gubg::tree::managed::createRoot<Dir>(new raw::Dir);
+            dir->name = "";
+            tokens.pop_front();
+            //Gradually construct the tree from the tokens parts
+            //dir will serve as the parent, and gradually move along
+            for (; !tokens.empty(); tokens.pop_front())
             {
-                auto tokens = gubg::parse::tokenize(pathE, "/");
-                //Check that the first part is empty, which should be for an absolute path
-                MSS_J(!tokens.empty());
-                MSS_J(tokens[0] == "");
-                //Create the root
-                tokens.pop_front();
-                dir.setRoot_(new raw::Dir());
-                dir->name = "";
-                //Gradually construct the tree from the tokens parts
-                //dir will serve as the parent, and gradually move along
-                for (; !tokens.empty(); tokens.pop_front())
-                {
-                    auto &token = tokens.front();
-                    Dir node(new raw::Dir(), dir);
-                    node->name = token;
-                    dir.add(node);
-                    dir = node;
-                }
+                Dir node;
+                MSS_T(dir.add_(node, new raw::Dir), CouldNotAddNode);
+                node->name = tokens.front();
+                dir = node;
             }
-            MSS_FAIL();
-            return dir;
+            MSS_END();
         }
-        typedef gubg::tree::managed::Node<raw::Dir> Base;
-        Dir(RawPtr node, Base &parent):
-            Base(node, parent){}
+
+        ReturnCode add(Reg &reg, const string &name)
+        {
+            MSS_BEGIN(ReturnCode);
+            MSS_T(add_(reg, new raw::Reg), CouldNotAddNode);
+            reg->name = name;
+            MSS_END();
+        }
     };
 }
 
 int main()
 {
-    managed::Dir root;
-    {
-        LOG("\nTesting managed");
-        auto home = managed::Dir::create("./");
-        home.getRoot(root);
-    }
-    LOG("After scope");
-
-    for (auto it = root->begin(gubg::tree::ByData); it != root->end(gubg::tree::ByData); ++it)
-    {
-        LOG("Data: " << it->name);
-    }
-#if 0
-    for (auto it = root.begin(gubg::tree::ByNode); it != root.end(gubg::tree::ByNode); ++it)
-    {
-        LOG("Data: " << it->name);
-    }
-#endif
+    managed::Dir dir;
+    managed::Dir::create(dir, "./");
+    LOG(dir->path());
+    managed::Reg reg;
+    dir.add(reg, "blabla");
+    LOG(reg->filename());
     return 0;
 }

@@ -39,37 +39,38 @@ namespace gubg
             };
         template <typename T, template <typename TT> class AllowedCodesPolicy = NoOtherCodesAllowed>
             struct ReturnCodeWrapper: AllowedCodesPolicy<T>
+        {
+            typedef T ReturnCodeT;
+            typedef AllowedCodesPolicy<T> AllowedCodesPolicyT;
+            ReturnCodeWrapper():v_(T::OK){}
+            T get(){return v_;}
+            bool isOK(T v) const {return T::OK == v || AllowedCodesPolicyT::isAllowed(v);}
+            bool set(T v)
             {
-                typedef T ReturnCodeT;
-                typedef AllowedCodesPolicy<T> AllowedCodesPolicyT;
-                ReturnCodeWrapper():v_(T::OK){}
-                T get(){return v_;}
-                bool set(T v)
+                if (isOK(v))
                 {
-                    if (T::OK == v_ || AllowedCodesPolicyT::isAllowed(v_))
-                    {
-                        //Every allowed code becomes OK
-                        v_ = T::OK;
-                        return true;
-                    }
-                    v_ = v;
-                    return false;
+                    //Every allowed code becomes OK
+                    v_ = T::OK;
+                    return true;
                 }
-                template <typename OT>
-                    bool set(OT ot, T v){return set(OT::OK == ot ? T::OK : v);}
-                template <typename P>
-                    bool set(P *p, T v){return set(0 == p ? T::OK : v);}
-                bool set(bool b, T v = T::Error){return set(b ? T::OK : v);}
-                Level level() const {return getInfo<T>(v_).level;}
-                std::string toString() const
-                {
-                    std::ostringstream oss;
-                    auto info = getInfo(v_);
-                    oss << info.type << ":" << info.code;
-                    return oss.str();
-                }
-                T v_;
-            };
+                v_ = v;
+                return false;
+            }
+            template <typename OT>
+                bool set(OT ot, T v){return set(OT::OK == ot ? T::OK : v);}
+            template <typename P>
+                bool set(P *p, T v = T::NullPointer){return set(0 != p ? T::OK : v);}
+            bool set(bool b, T v = T::False){return set(b ? T::OK : v);}
+            Level level() const {return getInfo<T>(v_).level;}
+            std::string toString() const
+            {
+                std::ostringstream oss;
+                auto info = getInfo(v_);
+                oss << info.type << ":" << info.code;
+                return oss.str();
+            }
+            T v_;
+        };
         template <>
             struct ReturnCodeWrapper<void, NoOtherCodesAllowed >
             {
@@ -87,41 +88,54 @@ namespace gubg
                     v_ = (b ? "true" : "false");
                     return b;
                 }
+                template <typename P>
+                    bool set(P *p)
+                    {
+                        if (!p)
+                        {
+                            v_ = "null pointer";
+                            l_ = Level::Error;
+                            return false;
+                        }
+                        v_ = "non-null pointer";
+                        l_ = Level::OK;
+                        return true;
+                    }
                 Level level() const {return l_;}
                 std::string toString() const {return v_;}
                 std::string v_;
                 Level l_;
             };
         template <typename ReturnCodeWrapper>
-        struct SuccessChecker
-        {
-            public:
-                SuccessChecker(const gubg::Location &location, ReturnCodeWrapper &rcw):
-                    success_(false),
-                    location_(location),
-                    returnCodeWrapper_(rcw){}
-                ~SuccessChecker()
-                {
-                    if (!success_)
-                        std::cout << "MSS UNSUCCESSFUL::" << location_ << "::" << msg_ << "::" << returnCodeWrapper_.toString() << std::endl;
-                }
-                void setMessage(const std::string &msg){msg_ = msg;}
-                void indicateSuccess(){success_ = true;}
-            private:
-                bool success_;
-                std::string msg_;
-                std::string returnCodeInfo_;
-                gubg::Location location_;
-                ReturnCodeWrapper &returnCodeWrapper_;
-        };
+            struct SuccessChecker
+            {
+                public:
+                    SuccessChecker(const gubg::Location &location, ReturnCodeWrapper &rcw):
+                        success_(false),
+                        location_(location),
+                        returnCodeWrapper_(rcw){}
+                    ~SuccessChecker()
+                    {
+                        if (!success_)
+                            std::cout << "MSS UNSUCCESSFUL::" << location_ << "::" << msg_ << "::" << returnCodeWrapper_.toString() << std::endl;
+                    }
+                    void setMessage(const std::string &msg){msg_ = msg;}
+                    void indicateSuccess(){success_ = true;}
+                private:
+                    bool success_;
+                    std::string msg_;
+                    std::string returnCodeInfo_;
+                    gubg::Location location_;
+                    ReturnCodeWrapper &returnCodeWrapper_;
+            };
     }
 }
 
 #define MSS_RC_VAR rc
 
 #define MSS_BEGIN(...)       typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> gubg_return_code_wrapper_type; \
-                             typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
-                             gubg_return_code_wrapper_type MSS_RC_VAR
+    typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
+gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(gubg_return_code_type::v)
 
@@ -130,17 +144,17 @@ namespace gubg
 
 #define MSS_BEGIN_(type, msg) \
     MSS_BEGIN(type); \
+{ \
+    gubg::mss::SuccessChecker<gubg_return_code_wrapper_type> l_gubg_success_checker(GUBG_HERE(), MSS_RC_VAR); \
     { \
-        gubg::mss::SuccessChecker<gubg_return_code_wrapper_type> l_gubg_success_checker(GUBG_HERE(), MSS_RC_VAR); \
-        { \
-            std::ostringstream l_gubg_success_checker_m; l_gubg_success_checker_m << msg; \
-            l_gubg_success_checker.setMessage(l_gubg_success_checker_m.str()); \
-        } \
+        std::ostringstream l_gubg_success_checker_m; l_gubg_success_checker_m << msg; \
+        l_gubg_success_checker.setMessage(l_gubg_success_checker_m.str()); \
+    }
 
 #define MSS_END_() \
-        l_gubg_success_checker.indicateSuccess(); \
-        MSS_END(); \
-    }
+    l_gubg_success_checker.indicateSuccess(); \
+    MSS_END(); \
+}
 
 #define L_MSS_LOG(l, rc, msg) \
 { \
@@ -174,6 +188,10 @@ namespace gubg
     } while (false)
 #define MSS_T(v, nc) MSS_T_(Unknown, v, nc, "")
 
+//Allows you to handle a failure locally. If you need to know what went wrong, use a switch statement instead
+#define MSS_IF_FAIL(v) \
+    if (!MSS_RC_VAR.isOK(v))
+
 //Allows integration with functions of incompatible return types, this is goto-based
 #define MSS_J_(level, v, msg) \
     do { \
@@ -185,7 +203,7 @@ namespace gubg
     } while (false)
 #define MSS_J(v) MSS_J_(Unknown, v, "")
 
-#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented
+#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer
 #define MSS_CODE_BEGIN(type) \
     namespace { \
         typedef type l_gubg_mss_type; \
@@ -193,7 +211,9 @@ namespace gubg
         MSS_CODE_(OK, OK); \
         MSS_CODE_(Fatal, NotImplemented); \
         MSS_CODE_(Critical, InternalError); \
-        MSS_CODE_(Error, IllegalArgument);
+        MSS_CODE_(Error, IllegalArgument); \
+        MSS_CODE_(Error, False); \
+        MSS_CODE_(Error, NullPointer);
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)
 #define MSS_CODE(code) MSS_CODE_(Error, code)
 #define MSS_CODE_END() }

@@ -19,5 +19,13 @@ int main()
         gubg::file::basic::expandPath(pathE, *path);
         LOG("path: " << *path << ", pathE: " << pathE);
     }
+
+    gubg::file::basic::Directories dirs;
+    gubg::file::basic::Files files;
+    gubg::file::basic::getDirectoryContent(dirs, files, "./");
+    for (auto d = dirs.begin(); d != dirs.end(); ++d)
+        LOG("Dir: " << *d);
+    for (auto f = files.begin(); f != files.end(); ++f)
+        LOG("File: " << *f);
     return 0;
 }

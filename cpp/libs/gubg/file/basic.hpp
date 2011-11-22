@@ -10,13 +10,19 @@ namespace gubg
     {
         namespace basic
         {
+            using namespace std;
             enum class ReturnCode
             {
                 MSS_DEFAULT_CODES,
                 InvalidPath, InvalidCurrentWorkingDirectory, InvalidHomeDirectory,
                 PathIsEmpty, PartsIsEmpty, PathIsNotAbsolute,
+                CouldNotOpenDir, CouldNotReadEntry,
             };
-            ReturnCode expandPath(std::string &pathE, const std::string &path);
+            ReturnCode expandPath(string &pathE, const string &path);
+
+            typedef vector<string> Files;
+            typedef vector<string> Directories;
+            ReturnCode getDirectoryContent(Directories &, Files &, const string &path);
         }
     }
 }
