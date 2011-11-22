@@ -16,8 +16,13 @@ namespace gubg
                 MSS_DEFAULT_CODES,
                 InvalidPath, InvalidCurrentWorkingDirectory, InvalidHomeDirectory,
                 PathIsEmpty, PartsIsEmpty, PathIsNotAbsolute,
+                CouldNotOpenDir, CouldNotReadEntry,
             };
             ReturnCode expandPath(string &pathE, const string &path);
+
+            typedef vector<string> Files;
+            typedef vector<string> Directories;
+            ReturnCode getDirectoryContent(Directories &, Files &, const string &path);
         }
     }
 }
