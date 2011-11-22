@@ -9,9 +9,9 @@ This software package implements general functionality:
  * Configuration files for gvim, mucommander, emacs, bash etc.
 
 ## Languages ##
- * D is the future (http://www.digitalmars.com/d), currently, D1 is still used, but a merge to D2 is planned
+ * C++: Current development is mainly for C++. Some of the earlier code was also written in C++, after some experimentation with D and D2, all effort is back on C++.
+ * D is great (http://www.digitalmars.com/d), both branches for D1 and D2 exist. Currently, development for D is paused
  * Ruby: Great for doing various things
- * C++: Some of the earlier code was written in C++, but this is not maintained anymore
 
 ## Platforms ##
  * Linux/GNU: Arch linux, Kubuntu were tested

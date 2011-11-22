@@ -18,5 +18,11 @@ int main()
     gfannes.add(&test);
     LOG(gfannes.path());
     LOG(test.filename());
+
+    gfannes.expand(Shallow, NoHiddenFiles);
+    for (auto it = root.begin(gubg::tree::ByData); it != root.end(gubg::tree::ByData); ++it)
+    {
+        LOG("name: " << it->name);
+    }
     return 0;
 }
