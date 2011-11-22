@@ -35,44 +35,25 @@ namespace gubg
                     }
                 };
 
-            template <typename RawNode>
+            template <typename RawNodeT, typename RawRootT>
                 class Node
                 {
                     public:
-                        typedef Node<RawNode> Self;
+                        typedef RawNodeT RawNode;
+                        typedef RawRootT RawRoot;
+                        typedef Node<RawNode, RawRoot> Self;
                         typedef RawNode* RawPtr;
-                        typedef boost::shared_ptr<RawNode> RootPtr;
+                        typedef boost::shared_ptr<RawRoot> RootPtr;
 
                         //The create template function is our friend, it needs to call createRoot_()
                         template <typename T> friend T createRoot(typename T::RawPtr);
+                        //We are our own friend, we can set root_ and node_ for types based on this Node template
+                        template <typename A, typename B> friend class Node;
 
                         Node():
                             node_(0){}
 
                         RawPtr operator->(){return node_;}
-
-                        template <typename DerivedNode>
-                            static DerivedNode down_cast(RawPtr ptr, Self &root){return DerivedNode(ptr, root);}
-
-                        template <typename DerivedNode>
-                        bool getRoot(DerivedNode &root)
-                        {
-                            root = down_cast<DerivedNode>(root_.get(), *this);
-                            return true;
-                        }
-
-#if 0
-                        class iterator_by_node
-                        {
-                            public:
-                                iterator_by_node(){}
-                                bool operator!=(const iterator_by_node &rhs) const {return it != rhs.it;}
-                                void operator++(){++it;}
-                                typename RawNode::iterator_by_node it;
-                        };
-                        iterator_by_node begin(ByNodeT){return iterator_by_node();}
-                        iterator_by_node end(ByNodeT){return iterator_by_node();}
-#endif
 
                     protected:
                         void createRoot_(RawPtr root)
@@ -81,20 +62,13 @@ namespace gubg
                             root_.reset(root, DeleteAllNodes<RawNode>());
                         }
                         template <typename T>
-                        ReturnCode add_(T &t, RawPtr node)
+                        ReturnCode add_(T &t, typename T::RawPtr node)
                         {
                             MSS_BEGIN(ReturnCode);
                             MSS(node_);
                             MSS(node_->add(node));
                             t.node_ = node;
                             t.root_ = root_;
-                            MSS_END();
-                        }
-                        ReturnCode add(Node &component)
-                        {
-                            MSS_BEGIN(ReturnCode);
-                            MSS_T(node_, InternalError);
-                            MSS(node_->add(component.node_));
                             MSS_END();
                         }
 
