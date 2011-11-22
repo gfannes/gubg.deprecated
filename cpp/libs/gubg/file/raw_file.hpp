@@ -16,7 +16,11 @@ namespace gubg
             using namespace std;
             using namespace gubg::tree::raw;
 
-            enum class ReturnCode {MSS_DEFAULT_CODES};
+            enum class ReturnCode
+            {
+                MSS_DEFAULT_CODES,
+                CouldNotGetDirContent, CouldNotAddEntry, UnknownStrategy, EmptyEntry,
+            };
 
             //The data we keep for a file or directory node
             struct Data
@@ -26,11 +30,12 @@ namespace gubg
             };
 
             enum ExpandStrategy {Shallow, Recursive};
+            enum HiddenStrategy {NoHiddenFiles, IncludeHiddenFiles};
 
             struct Directory: Node<Data>
             {
                 string path() const;
-                ReturnCode expand(ExpandStrategy);
+                ReturnCode expand(ExpandStrategy, HiddenStrategy);
             };
             struct Regular: Node<Data>
             {
