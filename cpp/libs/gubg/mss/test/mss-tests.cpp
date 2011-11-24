@@ -1,5 +1,6 @@
 #include "gubg/mss.hpp"
 #include <iostream>
+#define LOG(msg) std::cout << msg << std::endl
 
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
 MSS_CODE_BEGIN(Compare);
@@ -16,7 +17,7 @@ Compare compare(int lhs, int rhs)
 
 enum class ReturnCode
 {
-    OK, Error, False, NotSoSerious, Serious
+    OK, Error, False, NotSoSerious, Serious, NotFound
 };
 
 ReturnCode frc()
@@ -79,6 +80,36 @@ ReturnCode allowed()
     MSS_END();
 }
 
+ReturnCode findSomething(){return ReturnCode::NotFound;}
+ReturnCode findSomething2(){return ReturnCode::Error;}
+ReturnCode skip_if()
+{
+    MSS_BEGIN(ReturnCode);
+    MSS_SKIP_IF(findSomething(), NotFound)
+    {
+        LOG("I found it");
+    }
+    //Check that we are still following the MSS
+    MSS(rc.v_);
+    LOG("Could not find it");
+    MSS_SKIP_IF(findSomething2(), NotFound)
+    {
+        LOG("Found it 2");
+    }
+    LOG("Could not find the second either");
+    MSS_END();
+}
+ReturnCode do_if()
+{
+    MSS_BEGIN(ReturnCode);
+    MSS_DO_IF(findSomething(), NotFound)
+    {
+        LOG("Keep looking");
+    }
+    LOG("MSS continues");
+    MSS_END();
+}
+
 #define TEST_TAG(tag)
 #define TEST_EQ_TYPE(t, e, a) if ((e) != (a)) std::cout << "Problem " << __LINE__ << std::endl
 int main()
@@ -99,5 +130,8 @@ int main()
     notImplemented();
 
     TEST_EQ_TYPE(int, ReturnCode::Serious, allowed());
+
+    skip_if();
+    do_if();
     return 0;
 }
