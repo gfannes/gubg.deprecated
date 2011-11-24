@@ -188,6 +188,24 @@ gubg_return_code_wrapper_type MSS_RC_VAR
     } while (false)
 #define MSS_T(v, nc) MSS_T_(Unknown, v, nc, "")
 
+//Allows you to test for one specific failure value, which is typically something like "NotFound"
+//If v == c, the block under this macro will be skipped
+#define MSS_SKIP_IF(v, c) \
+    for (gubg_return_code_type l_v = v, l_firstTime = gubg_return_code_type::OK; l_firstTime == gubg_return_code_type::OK; l_firstTime = gubg_return_code_type::False) \
+        if (l_v == gubg_return_code_type::c) {} \
+        else if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
+        else
+
+//Allows you to test for one specific failure value, which is typically an error value that can be rectified, allowing MSS to continue
+//If v == c, the block under this macro will be entered
+#define MSS_DO_IF(v, c) \
+    for (gubg_return_code_type l_v = v, l_firstTime = gubg_return_code_type::OK; l_firstTime == gubg_return_code_type::OK; l_firstTime = gubg_return_code_type::False) \
+        if (l_v != gubg_return_code_type::c) \
+        { \
+            if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
+        } \
+        else 
+
 //Allows you to handle a failure locally. If you need to know what went wrong, use a switch statement instead
 #define MSS_IF_FAIL(v) \
     if (!MSS_RC_VAR.isOK(v))
