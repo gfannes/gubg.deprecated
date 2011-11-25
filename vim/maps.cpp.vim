@@ -13,4 +13,6 @@ map -b -o<Bslash>aa{<Esc>-oa}<Esc><Bslash>ak$
 " class
 map -c <Bslash>aoclass <Esc>:call ReadString("Class name")<CR>-oa{<Esc>-oa};<Esc><Bslash>ak$
 " MSS
-map -m <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
+map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
+map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
+map -m <Bslash>ajOMSS<Esc>:call ReadString("Suffix")<CR>A();<Esc><Bslash>ahi
