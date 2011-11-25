@@ -17,7 +17,7 @@ Compare compare(int lhs, int rhs)
 
 enum class ReturnCode
 {
-    OK, Error, False, NotSoSerious, Serious, NotFound
+    MSS_DEFAULT_CODES, NotSoSerious, Serious, NotFound, Error
 };
 
 ReturnCode frc()
@@ -97,6 +97,9 @@ ReturnCode skip_if()
         LOG("Found it 2");
     }
     LOG("Could not find the second either");
+    MSS_SKIP_IF(compare(1, 2), Larger)
+    {
+    }
     MSS_END();
 }
 ReturnCode do_if()

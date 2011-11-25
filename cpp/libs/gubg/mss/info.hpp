@@ -6,11 +6,14 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <sstream>
 
 namespace gubg
 {
     namespace mss
     {
+        using namespace std;
+
         //The logging level of a certain ReturnCode
         enum class Level {Unknown, OK, Debug, Info, Warning, Error, Critical, Fatal};
 
@@ -18,13 +21,13 @@ namespace gubg
         struct Info
         {
             Info(){}
-            Info(Level l, const std::string &t, const std::string &c):
+            Info(Level l, const string &t, const string &c):
                 level(l),
                 type(t),
                 code(c){}
             Level level;
-            std::string type;
-            std::string code;
+            string type;
+            string code;
             gubg::Location location;
         };
 
@@ -35,7 +38,7 @@ namespace gubg
             private:
                 GUBG_SINGLETON(InfoMgr<ReturnCode>);
             public:
-                void set(ReturnCode code, Level level, const std::string &t, const std::string &c)
+                void set(ReturnCode code, Level level, const string &t, const string &c)
                 {
                     infoPerCode_[code] = Info(level, t, c);
                 }
@@ -43,11 +46,15 @@ namespace gubg
                 {
                     typename InfoPerCode::iterator it = infoPerCode_.find(code);
                     if (it == infoPerCode_.end())
-                        return Info(Level::Error, "?", "?");
+                    {
+                        ostringstream oss;
+                        oss << (int)code;
+                        return Info(Level::Error, "?", oss.str());
+                    }
                     return it->second;
                 }
             private:
-                typedef std::map<ReturnCode, Info> InfoPerCode;
+                typedef map<ReturnCode, Info> InfoPerCode;
                 InfoPerCode infoPerCode_;
         };
         template <typename ReturnCode>
@@ -57,7 +64,7 @@ namespace gubg
         template <typename ReturnCode>
             struct InfoSetter
             {
-                InfoSetter(ReturnCode code, Level level, const std::string &t, const std::string &c)
+                InfoSetter(ReturnCode code, Level level, const string &t, const string &c)
                 {
                     InfoMgr<ReturnCode>::instance().set(code, level, t, c);
                 }
