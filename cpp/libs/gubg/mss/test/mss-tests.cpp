@@ -1,5 +1,6 @@
 #include "gubg/mss.hpp"
 #include <iostream>
+#include "gubg/sleep/sleep.hpp"
 #define LOG(msg) std::cout << msg << std::endl
 
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
@@ -113,6 +114,13 @@ ReturnCode do_if()
     MSS_END();
 }
 
+ReturnCode time()
+{
+    MSS_BEGIN_PROFILE(ReturnCode, "blabla");
+    gubg::nanosleep(2, 5000000);
+    MSS_END();
+}
+
 #define TEST_TAG(tag)
 #define TEST_EQ_TYPE(t, e, a) if ((e) != (a)) std::cout << "Problem " << __LINE__ << std::endl
 int main()
@@ -136,5 +144,7 @@ int main()
 
     skip_if();
     do_if();
+
+    time();
     return 0;
 }

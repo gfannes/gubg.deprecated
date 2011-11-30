@@ -1,5 +1,6 @@
 #include "gubg/file/raw_file.hpp"
 #include "gubg/file/basic.hpp"
+#include "gubg/range.hpp"
 #include <sstream>
 using namespace gubg::file::raw;
 using namespace std;
@@ -20,35 +21,40 @@ string Directory::path() const
 ReturnCode Directory::expand(ExpandStrategy expandStrategy, HiddenStrategy hiddenStrategy)
 {
     MSS_BEGIN(ReturnCode);
-    if (Shallow == expandStrategy)
+    switch (expandStrategy)
     {
-        gubg::file::basic::Directories dirs;
-        gubg::file::basic::Files files;
-        MSS_T(gubg::file::basic::getDirectoryContent(dirs, files, path()), CouldNotGetDirContent);
-        for (auto d = dirs.begin(); d != dirs.end(); ++d)
-        {
-            auto &name = *d;
-            MSS_T(!name.empty(), EmptyEntry);
-            if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
-                continue;
-            auto dir = new Directory;
-            dir->name = name;
-            MSS_T(add(dir), CouldNotAddEntry);
-        }
-        for (auto f = files.begin(); f != files.end(); ++f)
-        {
-            auto &name = *f;
-            MSS_T(!name.empty(), EmptyEntry);
-            if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
-                continue;
-            auto reg = new Regular;
-            reg->name = name;
-            MSS_T(add(reg), CouldNotAddEntry);
-        }
-    }
-    else
-    {
-        MSS_L(UnknownStrategy);
+        case Shallow:
+        case Recursive:
+            {
+                gubg::file::basic::Directories dirs;
+                gubg::file::basic::Files files;
+                MSS_T(gubg::file::basic::getDirectoryContent(dirs, files, path()), CouldNotGetDirContent);
+                for (auto d = dirs.begin(); d != dirs.end(); ++d)
+                {
+                    auto &name = *d;
+                    MSS_T(!name.empty(), EmptyEntry);
+                    if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
+                        continue;
+                    auto dir = new Directory;
+                    dir->name = name;
+                    MSS_T(add(dir), CouldNotAddEntry);
+                }
+                for (auto f = files.begin(); f != files.end(); ++f)
+                {
+                    auto &name = *f;
+                    MSS_T(!name.empty(), EmptyEntry);
+                    if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
+                        continue;
+                    auto reg = new Regular;
+                    reg->name = name;
+                    MSS_T(add(reg), CouldNotAddEntry);
+                }
+                if (Recursive == expandStrategy)
+                    for (auto r = rangeOnly<Directory*>(childs_); !r.empty(); r.popFront())
+                        MSS(r->expand(expandStrategy, hiddenStrategy));
+                break;
+            }
+        default: MSS_L(UnknownStrategy); break;
     }
     MSS_END();
 }

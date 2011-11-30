@@ -18,6 +18,7 @@
 // => Ends the MSS block and returns from the function
 
 #include "gubg/mss/info.hpp"
+#include "gubg/clock/timer.hpp"
 #include <set>
 
 template <typename T>
@@ -133,6 +134,21 @@ namespace gubg
 
         //A helper template to fix a bug in decltype (decltype can currently not be comined with a scope operator)
         template <typename TT> struct l_declfix {typedef TT T;};
+
+        struct ElapseReporter
+        {
+            ElapseReporter(const gubg::Location &location, const string &msg):
+                location_(location), msg_(msg), timer_(ResetType::NoAuto){}
+            ~ElapseReporter()
+            {
+                double elapse = timer_.difference();
+                std::cout << location_ << "::" << msg_ << " => " << elapse << " sec" << endl;
+            }
+            private:
+            gubg::Location location_;
+            const string msg_;
+            gubg::Timer timer_;
+        };
     }
 }
 
@@ -142,6 +158,10 @@ namespace gubg
     typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
 gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
+#define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_gubg_mss_elapse_reporter_msg; \
+    l_gubg_mss_elapse_reporter_msg << msg; \
+    gubg::mss::ElapseReporter l_gubg_mss_elapse_reporter(GUBG_HERE(), l_gubg_mss_elapse_reporter_msg.str()); \
+    MSS_BEGIN(t)
 #define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(gubg_return_code_type::v)
 
 #define MSS_END()            return MSS_RC_VAR.get()

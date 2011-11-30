@@ -185,7 +185,7 @@ namespace gubg
                     iterator_leaf_only begin(LeafOnlyT){return iterator_leaf_only(this);}
                     iterator_leaf_only end(LeafOnlyT){return iterator_leaf_only();}
 
-                private:
+                protected:
                     bool increment_(Path &path)
                     {
                         LOG("\tComposite::increment_ " << path.size());

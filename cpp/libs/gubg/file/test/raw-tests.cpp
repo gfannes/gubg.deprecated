@@ -19,10 +19,12 @@ int main()
     LOG(gfannes.path());
     LOG(test.filename());
 
-    gfannes.expand(Shallow, NoHiddenFiles);
-    for (auto it = root.begin(gubg::tree::ByData); it != root.end(gubg::tree::ByData); ++it)
+    gfannes.expand(Recursive, NoHiddenFiles);
+    size_t nr = 0;
+    for (auto it = root.begin(gubg::tree::ByData); it != root.end(gubg::tree::ByData); ++it, ++nr)
     {
         LOG("name: " << it->name);
     }
+    LOG("I found " << nr << " entries");
     return 0;
 }
