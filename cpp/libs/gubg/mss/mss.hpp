@@ -74,6 +74,86 @@ namespace gubg
             }
             T v_;
         };
+        //We use this for return code storage for bools and ints
+        enum ReturnCode {OK = 0, False = -1, NullPointer = -2, InternalError = -3, IllegalArgument = -4, NotImplemented = -5, UnknownError = -6};
+#define L_CASE_CODE(code) case code: return #code
+        inline const char *l_MSSCode_AsString(ReturnCode code)
+        {
+            switch (code)
+            {
+                L_CASE_CODE(OK             );
+                L_CASE_CODE(InternalError  );
+                L_CASE_CODE(IllegalArgument);
+                L_CASE_CODE(NotImplemented );
+                L_CASE_CODE(False          );
+                L_CASE_CODE(NullPointer    );
+                L_CASE_CODE(UnknownError   );
+            }
+            return "Please extend l_MSSCode_AsString in gubg/mss/mss.hpp";
+        }
+        template <>
+            struct ReturnCodeWrapper<bool, NoOtherCodesAllowed>
+            {
+                typedef bool ReturnCodeT;
+                ReturnCodeWrapper():v_(ReturnCode::OK){}
+                bool get(){return ReturnCode::OK == v_;}
+                bool isOK(bool b) const {return b;}
+                bool isOK(ReturnCode v) const {return ReturnCode::OK == v;}
+                bool set(ReturnCode v)
+                {
+                    if (isOK(v))
+                    {
+                        //Every allowed code becomes OK
+                        v_ = ReturnCode::OK;
+                        return true;
+                    }
+                    v_ = v;
+                    return false;
+                }
+                template <typename OT>
+                    bool set(OT ot, ReturnCode v = ReturnCode::UnknownError) { return set(OT::OK == ot ? ReturnCode::OK : v); }
+                template <typename P>
+                    bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
+                bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
+                Level level() const {return getInfo<ReturnCode>(v_).level;}
+                std::string toString() const
+                {
+                    return l_MSSCode_AsString(v_);
+                }
+                ReturnCode v_;
+            };
+        //When using directly with int, 0 indicates OK
+        template <>
+            struct ReturnCodeWrapper<int, NoOtherCodesAllowed>
+            {
+                typedef ReturnCode ReturnCodeT;
+                ReturnCodeWrapper():v_(ReturnCode::OK){}
+                bool get(){return ReturnCode::OK == v_;}
+                bool isOK(bool b) const {return b;}
+                bool isOK(int v) const {return ReturnCode::OK == v;}
+                bool set(int v)
+                {
+                    if (isOK(v))
+                    {
+                        //Every allowed code becomes OK
+                        v_ = ReturnCode::OK;
+                        return true;
+                    }
+                    v_ = v;
+                    return false;
+                }
+                template <typename OT>
+                    bool set(OT ot, ReturnCode v = ReturnCode::UnknownError) { return set(OT::OK == ot ? ReturnCode::OK : v); }
+                template <typename P>
+                    bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
+                bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
+                Level level() const {return getInfo<ReturnCode>((ReturnCode)(v_)).level;}
+                std::string toString() const
+                {
+                    return l_MSSCode_AsString((ReturnCode)(v_));
+                }
+                int v_;
+            };
         template <>
             struct ReturnCodeWrapper<void, NoOtherCodesAllowed >
             {
@@ -225,11 +305,11 @@ gubg_return_code_wrapper_type MSS_RC_VAR
 //If v == c, the block under this macro will be entered
 #define MSS_DO_IF(v, c) \
     for (gubg_return_code_type l_v = v, l_firstTime = gubg_return_code_type::OK; l_firstTime == gubg_return_code_type::OK; l_firstTime = gubg_return_code_type::False) \
-        if (l_v != gubg_return_code_type::c) \
-        { \
-            if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
-        } \
-        else 
+if (l_v != gubg_return_code_type::c) \
+{ \
+    if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
+} \
+else 
 
 //Allows you to handle a failure locally. If you need to know what went wrong, use a switch statement instead
 #define MSS_IF_FAIL(v) \
