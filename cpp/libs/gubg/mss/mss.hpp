@@ -18,6 +18,7 @@
 // => Ends the MSS block and returns from the function
 
 #include "gubg/mss/info.hpp"
+#include "gubg/clock/timer.hpp"
 #include <set>
 
 template <typename T>
@@ -44,6 +45,8 @@ namespace gubg
             typedef AllowedCodesPolicy<T> AllowedCodesPolicyT;
             ReturnCodeWrapper():v_(T::OK){}
             T get(){return v_;}
+            template <typename OT>
+                bool isOK(OT ov) const {return OT::OK == ov;}
             bool isOK(T v) const {return T::OK == v || AllowedCodesPolicyT::isAllowed(v);}
             bool set(T v)
             {
@@ -57,7 +60,7 @@ namespace gubg
                 return false;
             }
             template <typename OT>
-                bool set(OT ot, T v){return set(OT::OK == ot ? T::OK : v);}
+                bool set(OT ot, T v = T::UnknownError){return set(OT::OK == ot ? T::OK : v);}
             template <typename P>
                 bool set(P *p, T v = T::NullPointer){return set(0 != p ? T::OK : v);}
             bool set(bool b, T v = T::False){return set(b ? T::OK : v);}
@@ -208,6 +211,24 @@ namespace gubg
                     gubg::Location location_;
                     ReturnCodeWrapper &returnCodeWrapper_;
             };
+
+        //A helper template to fix a bug in decltype (decltype can currently not be comined with a scope operator)
+        template <typename TT> struct l_declfix {typedef TT T;};
+
+        struct ElapseReporter
+        {
+            ElapseReporter(const gubg::Location &location, const string &msg):
+                location_(location), msg_(msg), timer_(ResetType::NoAuto){}
+            ~ElapseReporter()
+            {
+                double elapse = timer_.difference();
+                std::cout << location_ << "::" << msg_ << " => " << elapse << " sec" << endl;
+            }
+            private:
+            gubg::Location location_;
+            const string msg_;
+            gubg::Timer timer_;
+        };
     }
 }
 
@@ -217,6 +238,10 @@ namespace gubg
     typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
 gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
+#define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_gubg_mss_elapse_reporter_msg; \
+    l_gubg_mss_elapse_reporter_msg << msg; \
+    gubg::mss::ElapseReporter l_gubg_mss_elapse_reporter(GUBG_HERE(), l_gubg_mss_elapse_reporter_msg.str()); \
+    MSS_BEGIN(t)
 #define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(gubg_return_code_type::v)
 
 #define MSS_END()            return MSS_RC_VAR.get()
@@ -271,10 +296,10 @@ gubg_return_code_wrapper_type MSS_RC_VAR
 //Allows you to test for one specific failure value, which is typically something like "NotFound"
 //If v == c, the block under this macro will be skipped
 #define MSS_SKIP_IF(v, c) \
-    for (gubg_return_code_type l_v = v, l_firstTime = gubg_return_code_type::OK; l_firstTime == gubg_return_code_type::OK; l_firstTime = gubg_return_code_type::False) \
-if (l_v == gubg_return_code_type::c) {} \
-else if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
-else
+    for (auto l_v = v, l_firstTime = gubg::mss::l_declfix<decltype(l_v)>::T::OK; l_firstTime == gubg::mss::l_declfix<decltype(l_v)>::T::OK; l_firstTime = gubg::mss::l_declfix<decltype(l_v)>::T::False) \
+        if (l_v == gubg::mss::l_declfix<decltype(l_v)>::T::c) {} \
+        else if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
+        else
 
 //Allows you to test for one specific failure value, which is typically an error value that can be rectified, allowing MSS to continue
 //If v == c, the block under this macro will be entered
@@ -301,7 +326,7 @@ else
     } while (false)
 #define MSS_J(v) MSS_J_(Unknown, v, "")
 
-#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer
+#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, UnknownError, LastCode = 999
 #define MSS_CODE_BEGIN(type) \
     namespace { \
         typedef type l_gubg_mss_type; \
@@ -311,7 +336,8 @@ else
         MSS_CODE_(Critical, InternalError); \
         MSS_CODE_(Error, IllegalArgument); \
         MSS_CODE_(Error, False); \
-        MSS_CODE_(Error, NullPointer);
+        MSS_CODE_(Error, NullPointer); \
+        MSS_CODE_(Error, UnknownError);
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)
 #define MSS_CODE(code) MSS_CODE_(Error, code)
 #define MSS_CODE_END() }

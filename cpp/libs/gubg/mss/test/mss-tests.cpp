@@ -1,5 +1,6 @@
 #include "gubg/mss.hpp"
 #include <iostream>
+#include "gubg/sleep/sleep.hpp"
 #define LOG(msg) std::cout << msg << std::endl
 
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
@@ -17,7 +18,7 @@ Compare compare(int lhs, int rhs)
 
 enum class ReturnCode
 {
-    OK, Error, False, NotSoSerious, Serious, NotFound
+    MSS_DEFAULT_CODES, NotSoSerious, Serious, NotFound, Error
 };
 
 ReturnCode frc()
@@ -97,6 +98,9 @@ ReturnCode skip_if()
         LOG("Found it 2");
     }
     LOG("Could not find the second either");
+    MSS_SKIP_IF(compare(1, 2), Larger)
+    {
+    }
     MSS_END();
 }
 ReturnCode do_if()
@@ -107,6 +111,13 @@ ReturnCode do_if()
         LOG("Keep looking");
     }
     LOG("MSS continues");
+    MSS_END();
+}
+
+ReturnCode time()
+{
+    MSS_BEGIN_PROFILE(ReturnCode, "blabla");
+    gubg::nanosleep(2, 5000000);
     MSS_END();
 }
 
@@ -133,5 +144,7 @@ int main()
 
     skip_if();
     do_if();
+
+    time();
     return 0;
 }
