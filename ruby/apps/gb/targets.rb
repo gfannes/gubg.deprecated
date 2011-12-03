@@ -1,6 +1,6 @@
 require("gubg/utils")
 
-STATES = [:ungenerated, :inprogress, :generated, :depleated]
+STATES = [:ungenerated, :inprogress, :halted, :generated, :depleated]
 class Target
     attr_reader(:state)
     def initialize(na = {state: nil})
@@ -8,6 +8,9 @@ class Target
     end
     def progressible?(sources)
         false
+    end
+    def setState(wanted)
+        @state = wanted if wanted == :generated and @state == :halted
     end
     def to_s
         "#{self.class}(#{@state})"
@@ -51,27 +54,48 @@ class Trees < Target
     end
 end
 class CppFiles < Target
+    attr_reader(:files)
     def initialize
         super
+        @files = []
     end
     def progressible?(sources)
         sources.any?{|s|Trees === s && s.state == :generated}
     end
     def generate(sources)
-        hppFiles, trees = *[HppFiles, Trees].map{|klass|sources.find{|s|klass === s}}
-        @state = :generated
+        hppFiles, trees, configs = *[HppFiles, Trees, Configs].map{|klass|sources.find{|s|klass === s}}
+        if hppFiles.files.empty?
+            @files = configs.roots.map{|d|Dir[d+"/main.cpp"]}.flatten.slice!(0, 1)
+            @state = :inprogress
+        else
+            @state = :halted
+        end
     end
 end
 class HppFiles < Target
+    attr_reader(:files)
     def initialize
         super
+        @files = []
+        @includesPerSource = Hash.new{|h, k|h[k] = []}
     end
     def progressible?(sources)
         sources.any?{|s|Trees === s && s.state == :generated}
     end
     def generate(sources)
         cppFiles, trees = *[CppFiles, Trees].map{|klass|sources.find{|s|klass === s}}
-        @state = :generated
+        return if cppFiles.files.empty?
+        #Search for sources we did not check for headers yet
+        uncheckSources = cppFiles.files.reject{|f|@includesPerSource.has_key? f}
+        return @state = :halted if uncheckSources.empty?
+        uncheckSources.each{|cpp|@includesPerSource[cpp] = extractIncludes_ cpp}
+        @state = :inprogress
+    end
+    private
+    @@reInclude = /^\#include\s+["<](.+)[">]\s*/
+    def extractIncludes_(cpp)
+        puts("#{cpp}")
+        String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.uniq
     end
 end
 class CompileSettings < Target
