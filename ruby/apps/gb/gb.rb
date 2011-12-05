@@ -23,7 +23,6 @@ graph.addEdge(hppFiles, trees)
 graph.addEdge(hppFiles, cppFiles)
 graph.addEdge(cppFiles, configs)
 graph.addEdge(cppFiles, trees)
-graph.addEdge(cppFiles, trees)
 graph.addEdge(cppFiles, hppFiles)
 graph.addEdge(compileSettings, configs)
 graph.addEdge(compileSettings, trees)
@@ -52,7 +51,10 @@ loop do
     progressibleTargets = unfinishedTargets.select{|t|t.progressible?(graph.outVertices(t))}
     if !progressibleTargets.empty?
         if progressibleTargets.all?{|t|t.state == :halted}
-            progressibleTargets.each{|t|t.setState :generated}
+            progressibleTargets.each{|t|t.setState(:generated, "All progress is halted, the targets are generated")}
+        elsif progressibleTargets.any?{|t|t.state == :error}
+            progressibleTargets.each{|t|puts(t.explanation) if t.state == :error}
+            finalize("Processing progressible targets resulted in an error", :error)
         else
             puts("The following targets are generatable #{progressibleTargets}")
             progressibleTargets.each{|t|t.generate(graph.outVertices(t))}
