@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require("gubg/utils")
+
+def finalize(msg, code = :error)
+    puts msg
+    return code == :ok ? 0 : -1
+end
+
+#Manually crafted argument parsing, making sure we don't destroy any options for the target program
+args = ARGV.dup
+options = {}
+loop do
+    case args[0]
+    when "--list"
+        options[:list] = true
+    when "--local"
+        options[:local] = true
+    when "--verbose"
+        options[:verbose] = true
+    else
+        break
+    end
+    args.shift
+end
+$verbose = options[:verbose]
+
+searchDirs = [File.expand_path("ruby/apps", ENV["GUBG"])]
+searchDirs = [Dir.pwd] if options[:local]
+
+programs = []
+searchDirs.each do |searchDir|
+    Dir.each(searchDir) do |dir, fn|
+        if fn[/\.rb$/]
+            filename = File.expand_path(fn, dir)
+            programs << filename if String.loadLines(filename).any?{|line|line[/parseOptions/]}
+        end
+        :ok
+    end
+end
+
+if options[:list]
+    if programs.empty?
+        puts "No programs could be found"
+    else
+        puts("The following programs could be found (#{programs.length})")
+        puts programs
+    end
+else
+    abbrev = args.shift
+    finalize("I expect a program abbreviation") if abbrev.nil?
+    re = /#{abbrev}/
+    matches = programs.select{|fn|fn[re]}
+    finalize("I found #{matches.length} matches") if 1 != matches.length
+    program = matches.first
+    command = "ruby -I#{File.dirname(program)} #{program} #{args.join(' ')}"
+    puts("#{command}") if $verbose
+    system(command)
+end
