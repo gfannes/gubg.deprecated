@@ -74,7 +74,7 @@ class CppFiles < Target
     def initialize
         super
         @files = []
-        @sourcePerInclude = {}
+        @sourcePerIncludePerSource = Hash.new{|h, k|h[k] = {}}
     end
     def progressible?(sources)
         sources.any?{|s|Trees === s && s.state == :generated}
@@ -96,6 +96,8 @@ class CppFiles < Target
             if hppFiles.state == :halted
                 setState_(:halted, "The headers are not making any progress anymore, I will halt too")
             else
+                #Check for new includes
+                uncheckIncludesPerSource = 
                 setState_(:inprogress, "I have currently selected #{@files.length} files for compilation")
             end
         when :halted
