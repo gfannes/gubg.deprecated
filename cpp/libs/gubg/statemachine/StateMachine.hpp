@@ -4,7 +4,7 @@
 #include <memory>
 
 //This module provides state machine functionality:
-// * Dispatching and processing of difference _types_ of events
+// * Dispatching and processing of different _types_ of events
 // * Hierarchical setup
 //
 //In general, an event arrives at the StateMachine via dispatchEvent(), which dispatches the event to its state for processing
