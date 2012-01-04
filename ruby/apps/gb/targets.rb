@@ -1,88 +1,84 @@
 require("gubg/utils")
+require("gubg/target")
 require("tree.rb")
 
-STATES = [:ungenerated, :inprogress, :halted, :generated, :depleated, :error]
-class Target
-    attr_reader(:state, :explanation)
-    def initialize(na = {state: nil})
-        @state = na[:state] || :ungenerated
-        @explanation = ""
+class Targett
+    attr_reader(:state, :msg)
+    def setState(state, msg)
+        @state, @msg = state, msg
+        @state
     end
-    def progressible?(sources)
+    def state?(wantedState)
+        @state == wantedState
+    end
+    def progressible?
         false
     end
-    def setState(s, expl)
-        raise("State should be part of #{STATES}, but it is #{s}") if !STATES.include?(s)
-        setState_(s, expl) if s == :generated and @state == :halted
-    end
-    def to_s
-        "#{self.class}(#{@state})"
-    end
-    private
-    def setState_(s, expl)
-        @state, @explanation = s, expl
-    end
 end
 
-def extractTargets(sources, *klasses)
-        res = klasses.map{|klass|sources.find{|s|klass === s}}
-        return res.first if res.length == 1
-        return *res
-end
-
-class Location < Target
+class Location < Targett
     attr_reader(:location)
+    include Target
     def initialize
-        super
+        defineDependencies()
     end
     def set(loc)
         @location = loc
-        setState_(:generated, "Location is #{@location}")
+    end
+    def generate_
+        if @location.nil?
+            setState(:error, "You have to set the location")
+        else
+            setState(:generated, "Location is #{@location}")
+        end
     end
 end
-class Configs < Target
+class Configs < Targett
     attr_reader(:compiler, :linker, :roots)
+    include Target
     def initialize
-        super
+        defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
     end
-    def generate(sources)
-        location = extractTargets(sources, Location)
+    def generate_
+        location = getTarget(:location)
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
         @roots = [location.location.dup, gubgRoot]
         str = @roots.join("\n")
-        setState_(:generated, "The config contains the following roots (#{@roots.length}):\n#{str}")
+        setState(:generated, "The config contains the following roots (#{@roots.length}):\n#{str}")
     end
 end
-class Trees < Target
+class Trees < Targett
     attr_reader(:trees)
+    include Target
     def initialize
-        super
+        defineDependencies(configs: Configs)
     end
-    def generate(sources)
-        configs = extractTargets(sources, Configs)
+    def generate_
+        configs = getTarget(:configs)
         reWantedFiles = /\.[ch]pp$/
-        @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
-        setState_(:generated, "I can use #{@trees.map{|t|t.files}.flatten.length} files in #{@trees.length} trees")
+            @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
+        setState(:generated, "I can use #{@trees.map{|t|t.files}.flatten.length} files in #{@trees.length} trees")
     end
 end
-class CppFiles < Target
+class CppFiles < Targett
     attr_reader(:files)
     attr_accessor(:starter)
+    include Target
     def initialize
-        super
+        defineDependencies(hppFiles: HppFiles, trees: Trees, configs: Configs)
         @files = []
         @sourcePerIncludePerSource = Hash.new{|h, k|h[k] = {}}
     end
-    def progressible?(sources)
-        sources.any?{|s|Trees === s && s.state == :generated}
+    def progressible?
+        getTarget(:trees).state?(:generated)
     end
-    def generate(sources)
-        hppFiles, trees, configs = extractTargets(sources, HppFiles, Trees, Configs)
-        case state
-        when :ungenerated
+    def generate_
+        hppFiles, trees, configs = getTargets(:hppFiles, :trees, :configs)
+        case generationState
+        when :firstTime
             #We search for the specified file in the trees
             trees.trees.each do |tree|
                 if file = tree.find(@starter)
@@ -90,102 +86,107 @@ class CppFiles < Target
                     break
                 end
             end
-            return setState_(:error, "The starter #{@starter} could not be found") if @files.empty?
-            setState_(:inprogress, "I will start with #{@files.length} files for compilation")
-        when :inprogress
-            if hppFiles.state == :halted
-                setState_(:halted, "The headers are not making any progress anymore, I will halt too")
+            return setState(:error, "The starter #{@starter} could not be found") if @files.empty?
+            setState(:generating, "I will start with #{@files.length} files for compilation")
+        when :generating
+            if hppFiles.state?(:halted)
+                setState(:halted, "The headers are not making any progress anymore, I will halt too")
             else
                 #Check for new includes
                 uncheckIncludesPerSource = 
-                setState_(:inprogress, "I have currently selected #{@files.length} files for compilation")
+                    setState(:generating, "I have currently selected #{@files.length} files for compilation")
             end
         when :halted
             if [:halted, :generated].include?(hppFiles.state)
                 str = @files.join("\n")
-                setState_(:generated, "I will compile the following files (#{@files.length}):\n#{str}")
+                setState(:generated, "I will compile the following files (#{@files.length}):\n#{str}")
             else
-                setState_(:inprogress, "The headers are still making progress, I will wait some more")
+                setState(:generating, "The headers are still making progress, I will wait some more")
             end
         end
     end
 end
-class HppFiles < Target
+class HppFiles < Targett
     attr_reader(:files)
+    include Target
     def initialize
-        super
+        defineDependencies(cppFiles: CppFiles, trees: Trees)
         @files = []
         @includesPerSource = Hash.new{|h, k|h[k] = []}
     end
-    def progressible?(sources)
-        sources.any?{|s|Trees === s && s.state == :generated}
+    def progressible?
+        getTarget(:trees).state?(:generated)
     end
-    def generate(sources)
-        cppFiles, trees = *extractTargets(sources, CppFiles, Trees)
+    def generate_
+        cppFiles, trees = getTargets(:cppFiles, :trees)
         if cppFiles.files.empty?
-            return setState_(:generated, "No cpp files present") if state == :halted
-            return setState_(:halted, "No cpp files present (yet)")
+            return setState(:generated, "No cpp files present") if generationState?(:halted)
+            return setState(:halted, "No cpp files present (yet)")
         else
             #Search for sources we did not check for headers yet
             uncheckSources = cppFiles.files.reject{|f|@includesPerSource.has_key?(f)}
             if uncheckSources.empty?
-                if state == :halted
+                if generationState?(:halted)
                     str = ""
                     @includesPerSource.each do |s, is|
                         str += "#{s.name} includes " + is.join(", ")
                     end
-                    return setState_(:generated, "No more cpp files to check:\n#{str}")
+                    return setState(:generated, "No more cpp files to check:\n#{str}")
                 end
-                return setState_(:halted, "No more sources to check")
+                return setState(:halted, "No more sources to check")
             end
             uncheckSources.each{|cpp|@includesPerSource[cpp] = extractIncludes_(cpp.name)}
-            setState_(:inprogress, "Still checking")
+            setState(:generating, "Still checking")
         end
     end
     private
     @@reInclude = /^\#include\s+["<](.+)[">]\s*/
-    def extractIncludes_(cpp)
-        String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.compact.uniq
-    end
+        def extractIncludes_(cpp)
+            String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.compact.uniq
+        end
 end
-class CompileSettings < Target
+class CompileSettings < Targett
     attr_reader(:includePaths)
+    include Target
     def initialize
-        super
+        defineDependencies(configs: Configs, trees: Trees, hppFiles: HppFiles, cppFiles: CppFiles)
     end
-    def generate(sources)
+    def generate_
         @includePaths = []
-        setState_(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
+        setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
     end
 end
-class LinkSettings < Target
+class LinkSettings < Targett
     attr_reader(:libraryPaths, :libraries)
+    include Target
     def initialize
-        super
+        defineDependencies(configs: Configs)
     end
-    def generate(sources)
+    def generate_
         @libraryPaths = []
         @libraries = []
-        setState_(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
+        setState(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
     end
 end
-class ObjectFiles < Target
+class ObjectFiles < Targett
     attr_reader(:objects)
+    include Target
     def initialize
-        super
+        defineDependencies(compile: CompileSettings, cppFiles: CppFiles)
         @objects = []
     end
-    def generate(sources)
-        setState_(:generated, "I will link #{@objects.length} objects")
+    def generate_
+        setState(:generated, "I will link #{@objects.length} objects")
     end
 end
-class Executables < Target
+class Executables < Targett
     attr_reader(:executable)
+    include Target
     def initialize
-        super
+        defineDependencies(link: LinkSettings, objects: ObjectFiles)
         @executable = ""
     end
-    def generate(sources)
-        setState_(:generated, "I will compile #{@executable}")
+    def generate_
+        setState(:generated, "I will compile #{@executable}")
     end
 end
