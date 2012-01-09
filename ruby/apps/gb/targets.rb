@@ -6,6 +6,7 @@ class Targett
     attr_reader(:state, :msg)
     def setState(state, msg)
         @state, @msg = state, msg
+        puts("state: #{@state}::#{@msg}")
         @state
     end
     def state?(wantedState)
@@ -176,7 +177,13 @@ class ObjectFiles < Targett
         @objects = []
     end
     def generate_
-        setState(:generated, "I will link #{@objects.length} objects")
+        cppFiles = getTargets(:cppFiles)
+        cppFiles.files.each do |cppFile|
+            objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
+            command = "g++ -c #{cppFile} -o #{objectFile}"
+            @objects << objectFile if system(command)
+        end
+        setState(:generated, "I linked #{@objects.length} objects")
     end
 end
 class Executables < Targett
@@ -187,6 +194,9 @@ class Executables < Targett
         @executable = ""
     end
     def generate_
-        setState(:generated, "I will compile #{@executable}")
+        objects = getTargets(:objects)
+        command = "g++ -o exe " + objects.objects.join(" ")
+        system(command)
+        setState(:generated, "I compiled #{@executable}")
     end
 end
