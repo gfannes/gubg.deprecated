@@ -1,6 +1,7 @@
 require("gubg/utils")
 require("gubg/target")
 require("tree.rb")
+require("set")
 
 class Targett
     attr_reader(:state, :msg)
@@ -71,7 +72,7 @@ class CppFiles < Targett
     def initialize
         defineDependencies(hppFiles: HppFiles, trees: Trees, configs: Configs)
         @files = []
-        @sourcePerIncludePerSource = Hash.new{|h, k|h[k] = {}}
+        @sourceInfoPerHeader = {}
     end
     def progressible?
         getTarget(:trees).state?(:generated)
@@ -82,7 +83,7 @@ class CppFiles < Targett
         when :firstTime
             #We search for the specified file in the trees
             trees.trees.each do |tree|
-                if file = tree.find(@starter)
+                if file = tree.find(@starter, :exact)
                     @files << file
                     break
                 end
@@ -94,8 +95,18 @@ class CppFiles < Targett
                 setState(:halted, "The headers are not making any progress anymore, I will halt too")
             else
                 #Check for new includes
-                uncheckIncludesPerSource = 
-                    setState(:generating, "I have currently selected #{@files.length} files for compilation")
+                uncheckedIncludes = hppFiles.files.reject{|f|@sourceInfoPerHeader.has_key?(f)}
+                if uncheckedIncludes.empty?
+                    return setState(:halted, "No more headers to check")
+                end
+                uncheckedIncludes.each do |hpp|
+                    #We try to find a matching source file for this header
+                    cppName = hpp.name.gsub(/\.hp?p?$/, ".cpp")
+                    cpp = trees.trees.map{|tree|tree.find(cppName, :exact)}.flatten.compact.first
+                    @files << cpp if cpp and !@files.include?(cpp)
+                    @sourceInfoPerHeader[hpp] = {file: cpp}
+                end
+                setState(:generating, "I have currently selected #{@files.length} files for compilation")
             end
         when :halted
             if [:halted, :generated].include?(hppFiles.state)
@@ -113,10 +124,24 @@ class HppFiles < Targett
     def initialize
         defineDependencies(cppFiles: CppFiles, trees: Trees)
         @files = []
-        @includesPerSource = Hash.new{|h, k|h[k] = []}
+        #Per source file: {ref: "header.h", file: file} (:file is present if found in a tree)
+        @includeInfoPerSource = Hash.new{|h, k|h[k] = []}
     end
     def progressible?
         getTarget(:trees).state?(:generated)
+    end
+    def includePaths
+        paths = Set.new
+        @includeInfoPerSource.values.each do |ary|
+            ary.each do |info|
+                if info.has_key?(:file)
+                    path = info[:file].name.dup
+                    path[info[:ref]] = ""
+                    paths << path
+                end
+            end
+        end
+        paths.to_a
     end
     def generate_
         cppFiles, trees = getTargets(:cppFiles, :trees)
@@ -125,24 +150,52 @@ class HppFiles < Targett
             return setState(:halted, "No cpp files present (yet)")
         else
             #Search for sources we did not check for headers yet
-            uncheckSources = cppFiles.files.reject{|f|@includesPerSource.has_key?(f)}
-            if uncheckSources.empty?
+            uncheckedSources = cppFiles.files.reject{|f|@includeInfoPerSource.has_key?(f)}
+            puts("There are #{uncheckedSources.length} unchecked sources")
+            if uncheckedSources.empty?
                 if generationState?(:halted)
                     str = ""
-                    @includesPerSource.each do |s, is|
-                        str += "#{s.name} includes " + is.join(", ")
+                    @includeInfoPerSource.each do |s, ary|
+                        str += "#{s.name} includes " + ary.map{|info|info[:ref]}.join(", ")
                     end
                     return setState(:generated, "No more cpp files to check:\n#{str}")
                 end
                 return setState(:halted, "No more sources to check")
             end
-            uncheckSources.each{|cpp|@includesPerSource[cpp] = extractIncludes_(cpp.name)}
+            uncheckedSources.each do |cpp|
+                refs = extractIncludeRefs_(cpp.name)
+                refs.each do |ref|
+                    puts("Searching for a match for include ref #{ref}")
+                    matches = trees.trees.map{|tree|tree.find(ref, :approx)}.flatten
+                    puts("I found #{matches.length} matches: #{matches.map{|m|m.name}}")
+                    if matches.empty?
+                        @includeInfoPerSource[cpp] << {ref: ref}
+                    else
+                        bestMatch = matches.sort do |x, y|
+                            stringEquality_(cpp.name, x) <=> stringEquality_(cpp.name, y)
+                        end.last
+                        puts("Best match: #{bestMatch}")
+                        @files << bestMatch if !@files.include?(bestMatch)
+                        @includeInfoPerSource[cpp] << {ref: ref, file: bestMatch}
+                    end
+                end
+            end
             setState(:generating, "Still checking")
         end
     end
     private
+    def HppFiles.stringEquality_(x, y)
+        minLength = [x, y].min
+        eq = -1
+        loop do
+            eq += 1
+            break if eq >= minLength
+            break if x[eq] != y[eq]
+        end
+        eq
+    end
     @@reInclude = /^\#include\s+["<](.+)[">]\s*/
-        def extractIncludes_(cpp)
+        def extractIncludeRefs_(cpp)
             String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.compact.uniq
         end
 end
@@ -153,7 +206,8 @@ class CompileSettings < Targett
         defineDependencies(configs: Configs, trees: Trees, hppFiles: HppFiles, cppFiles: CppFiles)
     end
     def generate_
-        @includePaths = []
+        hppFiles = getTargets(:hppFiles)
+        @includePaths = hppFiles.includePaths
         setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
     end
 end
@@ -177,10 +231,12 @@ class ObjectFiles < Targett
         @objects = []
     end
     def generate_
-        cppFiles = getTargets(:cppFiles)
+        cppFiles, compile = getTargets(:cppFiles, :compile)
+        includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
         cppFiles.files.each do |cppFile|
             objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
-            command = "g++ -c #{cppFile} -o #{objectFile}"
+            command = "g++ -std=c++0x -c #{cppFile} -o #{objectFile} #{includePaths}"
+            puts("Compile command: #{command}")
             @objects << objectFile if system(command)
         end
         setState(:generated, "I linked #{@objects.length} objects")

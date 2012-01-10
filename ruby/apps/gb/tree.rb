@@ -9,8 +9,15 @@ class Tree
                 :ok
             end
     end
-    def find(filename)
-        @files.find{|file|file.name == filename}
+    def find(str, strategy)
+        case strategy
+        when :exact
+            @files.find{|file|file.name == str}
+        when :approx
+            @files.select{|file|file.name[-str.length, str.length] == str}
+        else
+            raise("Unknown search strategy #{strategy}")
+        end
     end
     class File
         attr_reader(:tree, :name)
