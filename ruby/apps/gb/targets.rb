@@ -40,16 +40,20 @@ class Location < Targett
     end
 end
 class Configs < Targett
-    attr_reader(:compiler, :linker, :roots, :includePaths)
+    attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
     include Target
     def initialize
         defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
 	@includePaths = []
-	if operatingSystem == "Linux"
+    @libraryPaths = []
+    @libraries = %w[boost_thread boost_system boost_filesystem]
+	if operatingSystem =~ /^Linux/
+        @libraryPaths << "$HOME/sdks/boost/lib"
 	else
 		@includePaths << "h:/software/boost_1_47_0"
+        @libraryPaths << "h:/software/boost_1_47_0/stage/libs"
 	end
     end
     def generate_
@@ -227,8 +231,9 @@ class LinkSettings < Targett
         defineDependencies(configs: Configs)
     end
     def generate_
-        @libraryPaths = []
-        @libraries = []
+         configs = getTargets(:configs)
+        @libraryPaths = configs.libraryPaths
+        @libraries = configs.libraries
         setState(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
     end
 end
@@ -260,8 +265,10 @@ class Executables < Targett
         @executable = ""
     end
     def generate_
-        objects = getTargets(:objects)
-        command = "g++ -o exe " + objects.objects.join(" ")
+        objects, link = getTargets(:objects, :link)
+        libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
+        libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
+        command = "g++ -o exe " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         puts("Link command: #{command}")
         system(command)
         setState(:generated, "I compiled #{@executable}")
