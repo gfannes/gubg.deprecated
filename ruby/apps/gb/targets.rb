@@ -16,6 +16,10 @@ class Targett
     def progressible?
         false
     end
+    def execute_(command)
+	    puts("Executing \"#{command}\"")
+	    system(command)
+    end
 end
 
 class Location < Targett
@@ -36,12 +40,17 @@ class Location < Targett
     end
 end
 class Configs < Targett
-    attr_reader(:compiler, :linker, :roots)
+    attr_reader(:compiler, :linker, :roots, :includePaths)
     include Target
     def initialize
         defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
+	@includePaths = []
+	if operatingSystem == "Linux"
+	else
+		@includePaths << "h:/software/boost_1_47_0"
+	end
     end
     def generate_
         location = getTarget(:location)
@@ -206,8 +215,8 @@ class CompileSettings < Targett
         defineDependencies(configs: Configs, trees: Trees, hppFiles: HppFiles, cppFiles: CppFiles)
     end
     def generate_
-        hppFiles = getTargets(:hppFiles)
-        @includePaths = hppFiles.includePaths
+        hppFiles, configs = getTargets(:hppFiles, :configs)
+        @includePaths = hppFiles.includePaths + configs.includePaths
         setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
     end
 end
@@ -235,9 +244,10 @@ class ObjectFiles < Targett
         includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
         cppFiles.files.each do |cppFile|
             objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
-            command = "g++ -std=c++0x -c #{cppFile} -o #{objectFile} #{includePaths}"
-            puts("Compile command: #{command}")
-            @objects << objectFile if system(command)
+            if !execute_("g++ -std=c++0x -c #{cppFile} -o #{objectFile} #{includePaths}")
+		    return setState(:error, "Failed to compile #{cppFile}")
+	    end
+	    @objects << objectFile
         end
         setState(:generated, "I linked #{@objects.length} objects")
     end

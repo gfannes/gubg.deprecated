@@ -439,7 +439,7 @@ class String
             ix += nrBytesPerLine
             chars.collect! do |b|
                 case b
-                when Collection.new((?a.ord .. ?z.ord), (?A.ord .. ?Z.ord), (?0.ord .. ?9.ord), ?_.ord, ' '.ord)
+                when Collection.new((?a.ord .. ?z.ord), (?A.ord .. ?Z.ord), (?0.ord .. ?9.ord), ?_.ord, ' '.ord, ?#.ord, ?:.ord, ?(.ord, ?).ord, ?{.ord, ?}.ord, ?*.ord)
                     "%c"%b
                 else
                     "."

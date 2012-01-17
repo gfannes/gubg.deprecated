@@ -4,13 +4,14 @@
 #define LOG_LEVEL Debug
 #include "gubg/logging/Log.hpp"
 #include <fstream>
-#include <mutex>
+#include "boost/thread/mutex.hpp"
 
 #ifdef GUBG_LINUX
 #include <stdlib.h>
 #include <unistd.h>
 #endif
 #ifdef GUBG_WIN32
+#include <unistd.h>
 #endif
 
 using namespace std;
@@ -20,44 +21,44 @@ namespace
     //4k is the intel page size
     const size_t MaxPath = 4096;
     char page[MaxPath];
-    mutex pageMutex;
+    boost::mutex pageMutex;
 }
 
 namespace gubg
 {
-	bool spawn(const string &command)
-	{
+    bool spawn(const string &command)
+    {
 #ifdef GUBG_LINUX
-		switch (fork())
-		{
-			case -1:
-				//Something went wrong
-				return false;
-				break;
-			case 0:
-				//Child process
-				execl("/bin/sh", "sh", "-c", command.c_str(), (char *)0);
-				break;
-			default:
-				//Parent process, continue without waiting
-				return true;
-				break;
-		}
+        switch (fork())
+        {
+            case -1:
+                //Something went wrong
+                return false;
+                break;
+            case 0:
+                //Child process
+                execl("/bin/sh", "sh", "-c", command.c_str(), (char *)0);
+                break;
+            default:
+                //Parent process, continue without waiting
+                return true;
+                break;
+        }
 #endif
-		return false;
-	}
+        return false;
+    }
 
-	string escapeForCLI(const string &str, Quotes quotes)
-	{
-		string res;
-		switch (quotes)
-		{
-			case Quotes::Add:
-				res = "\"" + str + "\"";
-				break;
-		}
-		return res;
-	}
+    string escapeForCLI(const string &str, Quotes quotes)
+    {
+        string res;
+        switch (quotes)
+        {
+            case Quotes::Add:
+                res = "\"" + str + "\"";
+                break;
+        }
+        return res;
+    }
 
     bool createDirectory(const string &p)
     {
@@ -90,7 +91,7 @@ namespace gubg
 
     string getCurrentWorkingDirectory()
     {
-        lock_guard<mutex> lock(pageMutex);
+        boost::mutex::scoped_lock lock(pageMutex);
         page[0] = '\0';
         ::getcwd(page, MaxPath);
         return page;

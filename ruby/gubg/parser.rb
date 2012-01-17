@@ -7,7 +7,7 @@
 #       * Should return an array of strings to be used as whitespace
 #    * prepareParsing (optional)
 #    * finishedParsing (optional)
-# * Be careful with using "^" as and indication of "beginning of string". "^" just means "after newline", use "\A" to indicate beginning of a String
+# * Be careful with using "^" as an indication of "beginning of string". "^" just means "after newline", use "\A" to indicate beginning of a String
 # * For the end of a string, use "\Z"
 
 require("gubg/utils")
