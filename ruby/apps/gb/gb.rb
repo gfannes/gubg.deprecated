@@ -25,6 +25,11 @@ if options[:executable]
     sources.add(filename)
 end
 
+def printWarnings(target)
+    puts("Warnings for #{target.class}:")
+    puts target.warnings
+end
+
 cycleCount = -1
 loop do
     cycleCount += 1
@@ -34,6 +39,13 @@ loop do
     case res
     when :direct
     when :implicit
+    when :error
+        puts("Processing resulted in an error")
+        targetGraph.getTargets(:error).each do |target|
+            puts("Target #{target.class} resulted in error")
+            printWarnings(target)
+        end
+        break
     else
 	    puts("Finished: #{res}")
         break

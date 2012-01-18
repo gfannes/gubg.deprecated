@@ -4,7 +4,10 @@ require("tree.rb")
 require("set")
 
 class Targett
-    attr_reader(:state, :msg)
+    attr_reader(:state, :msg, :warnings)
+    def initialize
+        @warnings = []
+    end
     def setState(state, msg)
         @state, @msg = state, msg
         puts("state: #{@state}::#{@msg}")
@@ -20,12 +23,16 @@ class Targett
         puts("Executing \"#{command}\"")
         system(command)
     end
+    def warning(msg)
+        @warnings << msg
+    end
 end
 
 class Location < Targett
     attr_reader(:location)
     include Target
     def initialize
+        super
         defineDependencies()
     end
     def set(loc)
@@ -43,6 +50,7 @@ class Configs < Targett
     attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
     include Target
     def initialize
+        super
         defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
@@ -72,6 +80,7 @@ class Trees < Targett
     attr_reader(:trees)
     include Target
     def initialize
+        super
         defineDependencies(configs: Configs)
     end
     def generate_
@@ -84,6 +93,7 @@ end
 class Sources < Targett
     include Target
     def initialize
+        super
         defineDependencies(references: References, trees: Trees, configs: Configs)
         @files = Set.new
         @staging = []
@@ -102,7 +112,11 @@ class Sources < Targett
         references, trees, configs = getTargets(:references, :trees, :configs)
         if @staging.empty?
             if generationState == :halted and [:halted, :generated].any?{|s|references.state?(s)}
-                return setState(:generated, "No more references to resolve either, we are finished")
+                if @files.empty?
+                    return setState(:error, "No files found for compilation")
+                else
+                    return setState(:generated, "No more references to resolve either, we are finished")
+                end
             else
                 return setState(:halted, "No files found in staging")
             end
@@ -111,12 +125,15 @@ class Sources < Targett
             case file
             when String
                 #We search for the specified file in the trees
+                found = false
                 trees.trees.each do |tree|
                     if f = tree.find(file, :exact)
                         add(f)
+                        found = true
                         break
                     end
                 end
+                warning("Could not find \"#{file}\"") if !found
             when Tree::File
                 unless @files.include?(file)
                     references.add(file)
@@ -132,6 +149,7 @@ end
 class References < Targett
     include Target
     def initialize
+        super
         defineDependencies(sources: Sources, trees: Trees)
         @infoPerFile = {}
         @staging = []
@@ -214,6 +232,7 @@ class CompileSettings < Targett
     attr_reader(:includePaths)
     include Target
     def initialize
+        super
         defineDependencies(configs: Configs, trees: Trees, references: References, sources: Sources)
     end
     def generate_
@@ -226,6 +245,7 @@ class LinkSettings < Targett
     attr_reader(:libraryPaths, :libraries)
     include Target
     def initialize
+        super
         defineDependencies(configs: Configs)
     end
     def generate_
@@ -239,6 +259,7 @@ class ObjectFiles < Targett
     attr_reader(:objects)
     include Target
     def initialize
+        super
         defineDependencies(compile: CompileSettings, sources: Sources)
         @objects = []
     end
@@ -259,6 +280,7 @@ class Executables < Targett
     attr_reader(:executable)
     include Target
     def initialize
+        super
         defineDependencies(link: LinkSettings, objects: ObjectFiles)
         @executable = ""
     end
