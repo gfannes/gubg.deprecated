@@ -10,19 +10,19 @@ $verbose = options[:verbose]
 location = Location.new
 configs = Configs.new
 trees = Trees.new
-cppFiles = CppFiles.new
-hppFiles = HppFiles.new
+sources = Sources.new
+references = References.new
 compileSettings = CompileSettings.new
 linkSettings = LinkSettings.new
 objectFiles = ObjectFiles.new
 executables = Executables.new
-targets = [location, configs, trees, cppFiles, hppFiles, compileSettings, linkSettings, objectFiles, executables]
+targets = [location, configs, trees, sources, references, compileSettings, linkSettings, objectFiles, executables]
 targetGraph = TargetGraph.new(targets)
 
 if options[:executable]
     filename = File.expand_path(options[:executable])
     location.set(File.dirname(filename))
-    cppFiles.starter = filename
+    sources.add(filename)
 end
 
 cycleCount = -1
@@ -35,6 +35,7 @@ loop do
     when :direct
     when :implicit
     else
+	    puts("Finished: #{res}")
         break
     end
 end

@@ -17,8 +17,8 @@ class Targett
         false
     end
     def execute_(command)
-	    puts("Executing \"#{command}\"")
-	    system(command)
+        puts("Executing \"#{command}\"")
+        system(command)
     end
 end
 
@@ -46,15 +46,18 @@ class Configs < Targett
         defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
-	@includePaths = []
-    @libraryPaths = []
-    @libraries = %w[boost_thread boost_system boost_filesystem]
-	if operatingSystem =~ /^Linux/
-        @libraryPaths << "$HOME/sdks/boost/lib"
-	else
-		@includePaths << "h:/software/boost_1_47_0"
-        @libraryPaths << "h:/software/boost_1_47_0/stage/libs"
-	end
+        @includePaths = []
+        @libraryPaths = []
+        boostLibs = %w[boost_thread boost_system boost_filesystem]
+        if operatingSystem =~ /^Linux/
+            @libraryPaths << "$HOME/sdks/boost/lib"
+            @libraries = boostLibs
+        else
+            @includePaths << "h:/software/boost_1_47_0"
+            @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
+            #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
+            @libraries = boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"}
+        end
     end
     def generate_
         location = getTarget(:location)
@@ -78,78 +81,74 @@ class Trees < Targett
         setState(:generated, "I can use #{@trees.map{|t|t.files}.flatten.length} files in #{@trees.length} trees")
     end
 end
-class CppFiles < Targett
-    attr_reader(:files)
-    attr_accessor(:starter)
+class Sources < Targett
     include Target
     def initialize
-        defineDependencies(hppFiles: HppFiles, trees: Trees, configs: Configs)
-        @files = []
+        defineDependencies(references: References, trees: Trees, configs: Configs)
+        @files = Set.new
+        @staging = []
         @sourceInfoPerHeader = {}
+    end
+    def add(file)
+        @staging << file
+    end
+    def files
+        @files.to_a
     end
     def progressible?
         getTarget(:trees).state?(:generated)
     end
     def generate_
-        hppFiles, trees, configs = getTargets(:hppFiles, :trees, :configs)
-        case generationState
-        when :firstTime
-            #We search for the specified file in the trees
-            trees.trees.each do |tree|
-                if file = tree.find(@starter, :exact)
-                    @files << file
-                    break
-                end
-            end
-            return setState(:error, "The starter #{@starter} could not be found") if @files.empty?
-            setState(:generating, "I will start with #{@files.length} files for compilation")
-        when :generating
-            if hppFiles.state?(:halted)
-                setState(:halted, "The headers are not making any progress anymore, I will halt too")
+        references, trees, configs = getTargets(:references, :trees, :configs)
+        if @staging.empty?
+            if generationState == :halted and [:halted, :generated].any?{|s|references.state?(s)}
+                return setState(:generated, "No more references to resolve either, we are finished")
             else
-                #Check for new includes
-                uncheckedIncludes = hppFiles.files.reject{|f|@sourceInfoPerHeader.has_key?(f)}
-                if uncheckedIncludes.empty?
-                    return setState(:halted, "No more headers to check")
-                end
-                uncheckedIncludes.each do |hpp|
-                    #We try to find a matching source file for this header
-                    cppName = hpp.name.gsub(/\.hp?p?$/, ".cpp")
-                    cpp = trees.trees.map{|tree|tree.find(cppName, :exact)}.flatten.compact.first
-                    @files << cpp if cpp and !@files.include?(cpp)
-                    @sourceInfoPerHeader[hpp] = {file: cpp}
-                end
-                setState(:generating, "I have currently selected #{@files.length} files for compilation")
-            end
-        when :halted
-            if [:halted, :generated].include?(hppFiles.state)
-                str = @files.join("\n")
-                setState(:generated, "I will compile the following files (#{@files.length}):\n#{str}")
-            else
-                setState(:generating, "The headers are still making progress, I will wait some more")
+                return setState(:halted, "No files found in staging")
             end
         end
+        while file = @staging.shift
+            case file
+            when String
+                #We search for the specified file in the trees
+                trees.trees.each do |tree|
+                    if f = tree.find(file, :exact)
+                        add(f)
+                        break
+                    end
+                end
+            when Tree::File
+                unless @files.include?(file)
+                    references.add(file)
+                    @files << file
+                end
+            else
+                return setState(:error, "Cannot handle a file of type #{file.class}")
+            end
+        end
+        setState(:generating, "Staging is processed")
     end
 end
-class HppFiles < Targett
-    attr_reader(:files)
+class References < Targett
     include Target
     def initialize
-        defineDependencies(cppFiles: CppFiles, trees: Trees)
-        @files = []
-        #Per source file: {ref: "header.h", file: file} (:file is present if found in a tree)
-        @includeInfoPerFile = Hash.new{|h, k|h[k] = []}
+        defineDependencies(sources: Sources, trees: Trees)
+        @infoPerFile = {}
+        @staging = []
+    end
+    def add(file)
+        @staging << file
     end
     def progressible?
         getTarget(:trees).state?(:generated)
     end
     def includePaths
         paths = Set.new
-        @includeInfoPerFile.values.each do |ary|
-            ary.each do |info|
-                if info.has_key?(:file)
-                    path = info[:file].name.dup
-                    path[info[:ref]] = ""
+        @infoPerFile.each do |file, info|
+            info[:deps].each do |dep|
+                if dep.has_key?(:file)
+                    path = dep[:file].name.dup
+                    path[dep[:ref]] = ""
                     paths << path
                 end
             end
@@ -157,47 +156,46 @@ class HppFiles < Targett
         paths.to_a
     end
     def generate_
-        cppFiles, trees = getTargets(:cppFiles, :trees)
-        if cppFiles.files.empty?
-            return setState(:generated, "No cpp files present") if generationState?(:halted)
-            return setState(:halted, "No cpp files present (yet)")
-        else
-            #Search for files we did not check for includes yet
-            uncheckedFiles = (cppFiles.files + @files).reject{|f|@includeInfoPerFile.has_key?(f)}
-            puts("There are #{uncheckedFiles.length} unchecked files #{uncheckedFiles}")
-            if uncheckedFiles.empty?
-                if generationState?(:halted)
-                    str = ""
-                    @includeInfoPerFile.each do |s, ary|
-                        str += "#{s.name} includes " + ary.map{|info|info[:ref]}.join(", ")
-                    end
-                    return setState(:generated, "No more cpp files to check:\n#{str}")
-                end
-                return setState(:halted, "No more sources to check")
+        sources, trees = getTargets(:sources, :trees)
+        if @staging.empty?
+            if generationState == :halted and [:halted, :generated].any?{|s|sources.state?(s)}
+                return setState(:generated, "No more sources to check either, we are finished")
+            else
+                return setState(:halted, "No files found in staging")
             end
-            uncheckedFiles.each do |file|
+        end
+        while file = @staging.shift
+            return setState(:error, "I don't know how to extract references from #{file.class}") if !(Tree::File === file)
+            unless @infoPerFile.has_key?(file)
                 refs = extractIncludeRefs_(file.name)
-                refs.each do |ref|
+                deps = refs.map do |ref|
+                    dep = {ref: ref}
                     puts("Searching for a match for include ref #{ref}")
                     matches = trees.trees.map{|tree|tree.find(ref, :approx)}.flatten
                     puts("I found #{matches.length} matches: #{matches.map{|m|m.name}}")
-                    if matches.empty?
-                        @includeInfoPerFile[file] << {ref: ref}
-                    else
+                    unless matches.empty?
+                        #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
                         bestMatch = matches.sort do |x, y|
                             stringEquality_(file.name, x) <=> stringEquality_(file.name, y)
                         end.last
                         puts("Best match for #{file}: #{bestMatch}")
-                        @files << bestMatch if !@files.include?(bestMatch)
-                        @includeInfoPerFile[file] << {ref: ref, file: bestMatch}
+                        dep[:file] = bestMatch
+                        add(bestMatch)
                     end
+                    dep
                 end
+                @infoPerFile[file] = {name: file.name, deps: deps}
+                #For headers, we add the source lookalike to sources
+                reHeader = /\.hp*$/
+                    if file.name =~ reHeader
+                        sources.add(file.name.gsub(reHeader, ".cpp"))
+                    end
             end
-            setState(:generating, "Still checking")
         end
+        setState(:generating, "Staging is processed")
     end
     private
-    def HppFiles.stringEquality_(x, y)
+    def References.stringEquality_(x, y)
         minLength = [x, y].min
         eq = -1
         loop do
@@ -216,11 +214,11 @@ class CompileSettings < Targett
     attr_reader(:includePaths)
     include Target
     def initialize
-        defineDependencies(configs: Configs, trees: Trees, hppFiles: HppFiles, cppFiles: CppFiles)
+        defineDependencies(configs: Configs, trees: Trees, references: References, sources: Sources)
     end
     def generate_
-        hppFiles, configs = getTargets(:hppFiles, :configs)
-        @includePaths = hppFiles.includePaths + configs.includePaths
+        references, configs = getTargets(:references, :configs)
+        @includePaths = references.includePaths + configs.includePaths
         setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
     end
 end
@@ -231,7 +229,7 @@ class LinkSettings < Targett
         defineDependencies(configs: Configs)
     end
     def generate_
-         configs = getTargets(:configs)
+        configs = getTargets(:configs)
         @libraryPaths = configs.libraryPaths
         @libraries = configs.libraries
         setState(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
@@ -241,18 +239,18 @@ class ObjectFiles < Targett
     attr_reader(:objects)
     include Target
     def initialize
-        defineDependencies(compile: CompileSettings, cppFiles: CppFiles)
+        defineDependencies(compile: CompileSettings, sources: Sources)
         @objects = []
     end
     def generate_
-        cppFiles, compile = getTargets(:cppFiles, :compile)
+        sources, compile = getTargets(:sources, :compile)
         includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
-        cppFiles.files.each do |cppFile|
+        sources.files.each do |cppFile|
             objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
             if !execute_("g++ -std=c++0x -c #{cppFile} -o #{objectFile} #{includePaths}")
-		    return setState(:error, "Failed to compile #{cppFile}")
-	    end
-	    @objects << objectFile
+                return setState(:error, "Failed to compile #{cppFile}")
+            end
+            @objects << objectFile
         end
         setState(:generated, "I linked #{@objects.length} objects")
     end
