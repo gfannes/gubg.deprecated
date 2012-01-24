@@ -29,6 +29,12 @@ struct AllowOtherCodes
     std::set<T> allowedCodes_;
 };
 
+#ifdef MSS_DEBUG
+#define L_MSS_PRINT(msg) std::cout << msg << std::endl
+#else
+#define L_MSS_PRINT(msg)
+#endif
+
 namespace gubg
 {
     namespace mss
@@ -44,7 +50,10 @@ namespace gubg
             typedef T ReturnCodeT;
             typedef AllowedCodesPolicy<T> AllowedCodesPolicyT;
             ReturnCodeWrapper():v_(T::OK){}
-            T get(){return v_;}
+            T get()
+            {
+                return v_;
+            }
             template <typename OT>
                 bool isOK(OT ov) const {return OT::OK == ov;}
             bool isOK(T v) const {return T::OK == v || AllowedCodesPolicyT::isAllowed(v);}
@@ -128,10 +137,13 @@ namespace gubg
             {
                 typedef ReturnCode ReturnCodeT;
                 ReturnCodeWrapper():v_(ReturnCode::OK){}
-                bool get(){return ReturnCode::OK == v_;}
+                bool get()
+                {
+                    return ReturnCode::OK == v_;
+                }
                 bool isOK(bool b) const {return b;}
                 bool isOK(int v) const {return ReturnCode::OK == v;}
-                bool set(int v)
+                bool set(ReturnCode v)
                 {
                     if (isOK(v))
                     {
@@ -155,7 +167,7 @@ namespace gubg
                 int v_;
             };
         template <>
-            struct ReturnCodeWrapper<void, NoOtherCodesAllowed >
+            struct ReturnCodeWrapper<void, NoOtherCodesAllowed>
             {
                 typedef void ReturnCodeT;
                 ReturnCodeWrapper():l_(Level::OK){}
@@ -327,7 +339,7 @@ else
 #define MSS_J(v) MSS_J_(Unknown, v, "")
 
 #define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, UnknownError, LastCode = 999
-#define MSS_CODE_BEGIN(type) \
+#define MSS_CODES_BEGIN(type) \
     namespace { \
         typedef type l_gubg_mss_type; \
         const char *l_gubg_mss_type_as_string = #type; \
@@ -340,6 +352,6 @@ else
         MSS_CODE_(Error, UnknownError);
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)
 #define MSS_CODE(code) MSS_CODE_(Error, code)
-#define MSS_CODE_END() }
+#define MSS_CODES_END() }
 
 #endif

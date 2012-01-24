@@ -268,7 +268,7 @@ class ObjectFiles < Targett
         includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
         sources.files.each do |cppFile|
             objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
-            if !execute_("g++ -std=c++0x -c #{cppFile} -o #{objectFile} #{includePaths}")
+            if !execute_("g++ -std=c++0x -O3 -c #{cppFile} -o #{objectFile} #{includePaths}")
                 return setState(:error, "Failed to compile #{cppFile}")
             end
             @objects << objectFile
@@ -288,6 +288,7 @@ class Executables < Targett
         objects, link = getTargets(:objects, :link)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
+        system("rm exe")
         command = "g++ -o exe " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         puts("Link command: #{command}")
         system(command)
