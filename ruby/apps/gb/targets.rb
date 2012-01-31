@@ -3,7 +3,7 @@ require("gubg/target")
 require("tree.rb")
 require("set")
 
-class Targett
+class Target
     attr_reader(:state, :msg, :warnings)
     def initialize
         @warnings = []
@@ -28,9 +28,9 @@ class Targett
     end
 end
 
-class Location < Targett
+class Location < Target
     attr_reader(:location)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies()
@@ -46,9 +46,9 @@ class Location < Targett
         end
     end
 end
-class Configs < Targett
+class Configs < Target
     attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(location: Location)
@@ -57,13 +57,15 @@ class Configs < Targett
         @includePaths = []
         @libraryPaths = []
         boostLibs = %w[boost_thread boost_system boost_filesystem]
+        sdlLibs = %w[SDL]
+        cairoLibs = %w[cairomm-1.0]
         if operatingSystem =~ /^Linux/
             @includePaths << "/usr/include/cairomm-1.0"
             @includePaths << "/usr/include/cairo"
             @includePaths << "/usr/include/freetype2"
             @includePaths << "$HOME/sdks/libsigc++"
             @libraryPaths << "$HOME/sdks/boost/lib"
-            @libraries = boostLibs
+            @libraries = boostLibs + sdlLibs + cairoLibs
         else
             @includePaths << "h:/software/boost_1_47_0"
             @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
@@ -80,9 +82,9 @@ class Configs < Targett
         setState(:generated, "The config contains the following roots (#{@roots.length}):\n#{str}")
     end
 end
-class Trees < Targett
+class Trees < Target
     attr_reader(:trees)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(configs: Configs)
@@ -94,8 +96,8 @@ class Trees < Targett
         setState(:generated, "I can use #{@trees.map{|t|t.files}.flatten.length} files in #{@trees.length} trees")
     end
 end
-class Sources < Targett
-    include Target
+class Sources < Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(references: References, trees: Trees, configs: Configs)
@@ -150,8 +152,8 @@ class Sources < Targett
         setState(:generating, "Staging is processed")
     end
 end
-class References < Targett
-    include Target
+class References < Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(sources: Sources, trees: Trees)
@@ -232,9 +234,9 @@ class References < Targett
             String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.compact.uniq
         end
 end
-class CompileSettings < Targett
+class CompileSettings < Target
     attr_reader(:includePaths)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(configs: Configs, trees: Trees, references: References, sources: Sources)
@@ -245,9 +247,9 @@ class CompileSettings < Targett
         setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
     end
 end
-class LinkSettings < Targett
+class LinkSettings < Target
     attr_reader(:libraryPaths, :libraries)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(configs: Configs)
@@ -259,9 +261,9 @@ class LinkSettings < Targett
         setState(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
     end
 end
-class ObjectFiles < Targett
+class ObjectFiles < Target
     attr_reader(:objects)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(compile: CompileSettings, sources: Sources)
@@ -280,9 +282,9 @@ class ObjectFiles < Targett
         setState(:generated, "I linked #{@objects.length} objects")
     end
 end
-class Executables < Targett
+class Executables < Target
     attr_reader(:executable)
-    include Target
+    include GUBG::Target
     def initialize
         super
         defineDependencies(link: LinkSettings, objects: ObjectFiles)
@@ -292,10 +294,24 @@ class Executables < Targett
         objects, link = getTargets(:objects, :link)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
-        system("rm exe")
-        command = "g++ -o exe " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
+        @executable = "exe"
+        system("rm #{@executable}")
+        command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         puts("Link command: #{command}")
         system(command)
         setState(:generated, "I compiled #{@executable}")
+    end
+end
+class Run < Target
+    include GUBG::Target
+    def initialize
+        super
+        defineDependencies(executables: Executables)
+    end
+    def generate_
+        executables = getTargets(:executables)
+        command = "./#{executables.executable}"
+        raise("Failure executing #{command}") if !system(command)
+        setState(:generated, "I ran #{command}")
     end
 end

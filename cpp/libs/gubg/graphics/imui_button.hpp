@@ -3,14 +3,23 @@
 
 #include "gubg/graphics/imui.hpp"
 #include "gubg/graphics/sdl_canvas.hpp"
-#include "gubg/statemachine/StateMachine.hpp"
+//#include "gubg/statemachine/StateMachine.hpp"
 #include <string>
 
 namespace gubg
 {
+    struct StateHolder
+    {
+        StateHolder(WidgetState init):
+            state_(init){}
+        void changeState(WidgetState newState){state_ = newState;}
+        WidgetState state() const {return state_;}
+        WidgetState state_;
+    };
+
     //We don't actually listen to any event, we just process
     enum class Alignment {Left, Center};
-    class Button: public StateMachine<bool, WidgetState>, public IWidget
+    class Button: public IWidget, StateHolder
     {
         public:
             Button(const TwoPoint<> &dimensions, const std::string &label, Alignment alignment, SDLCanvas &canvas);
@@ -22,7 +31,7 @@ namespace gubg
             Button &resetFillColor();
 
             //StateMachine interface
-            virtual bool processEvent(bool);
+            virtual bool processEvent_(bool);
 
             //IWidget interface
             virtual WidgetState process();

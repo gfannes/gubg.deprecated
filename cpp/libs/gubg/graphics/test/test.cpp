@@ -80,10 +80,10 @@ int main(int argc, char *argv[])
         //Create 4 placeholders for widgets. We will get _the same_ place holders each time we
         //loop, but they will all 4 be different since widgets.get() checks who is calling it
         {
-            WidgetProxy &b1 = widgets.get();
-            WidgetProxy &b2 = widgets.get();
-            WidgetProxy &b3 = widgets.get();
-            WidgetProxy &b4 = widgets.get();
+            WidgetProxy &b1 = widgets.get(GUBG_HERE());
+            WidgetProxy &b2 = widgets.get(GUBG_HERE());
+            WidgetProxy &b3 = widgets.get(GUBG_HERE());
+            WidgetProxy &b4 = widgets.get(GUBG_HERE());
             switch (b1.process())
             {
                 case WidgetState::Empty:
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < 4; ++i)
             {
-                WidgetProxy &b = widgets.get(i);
+                WidgetProxy &b = widgets.get(GUBG_HERE(), i);
                 std::ostringstream oss;
                 oss << "Unnamed" << i;
                 switch (b.process())

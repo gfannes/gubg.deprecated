@@ -5,7 +5,7 @@ using namespace gubg;
 #include "debug.hpp"
 
 Button::Button(const TwoPoint<> &dimensions, const std::string &label, Alignment alignment, SDLCanvas &canvas):
-    StateMachine<bool, WidgetState>(WidgetState::Emerging),
+    StateHolder(WidgetState::Emerging),
     dimensions_(dimensions),
     label_(label),
     alignment_(alignment),
@@ -35,7 +35,7 @@ Button &Button::resetFillColor()
     return *this;
 }
 //StateMachine interface
-bool Button::processEvent(bool)
+bool Button::processEvent_(bool)
 {
     switch (state())
     {
@@ -66,7 +66,7 @@ bool Button::processEvent(bool)
 //IWidget interface
 WidgetState Button::process()
 {
-    processEvent(false);
+    processEvent_(false);
     Style s;
     switch (state())
     {

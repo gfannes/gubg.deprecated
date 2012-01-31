@@ -141,15 +141,21 @@ namespace
         void *get_(size_t offset) const {return (void*)*(unsigned int*)(((char *)this) + offset);}
     };
 }
-WidgetProxy &Widgets::get(unsigned int extra)
+WidgetProxy &Widgets::get(const Location &location, unsigned int extra)
 {
+#if 0
+    //This procedure is not very OK, it gets optimized-out...
+
     //This object should remain the first one in this function and its constructor
     //arguments should reflect the size of the arguments and return value of this function
     CallerAddress callerAddress(sizeof(extra), sizeof(WidgetProxy *));
     unsigned int id = createId_(callerAddress.get(), extra);
+#else
+    unsigned int id = *reinterpret_cast<const unsigned int*>(&location.file) + (location.nr << 5) ^ bitmagic::reverseBits(extra);
+#endif
     return widgetPerId_[id];
 }
 unsigned int Widgets::createId_(void *location, unsigned int extra)
 {
-    return (unsigned int)location ^ bitmagic::reverseBits(extra);
+    return *reinterpret_cast<unsigned int *>(&location) ^ bitmagic::reverseBits(extra);
 }

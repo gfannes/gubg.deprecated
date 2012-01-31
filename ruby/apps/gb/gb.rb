@@ -4,6 +4,8 @@ require("gubg/options")
 
 options = parseOptions(name: "Generic build utility", author: "Geert Fannes", version: "0.1") do |parser, options|
     parser.on("-e", "--executable SOURCE", "Produce executable from SOURCE"){|filename|options[:executable] = filename}
+    options[:run] = false
+    parser.on("-r", "--run", "Run the produced executables"){options[:run] = true}
 end
 $verbose = options[:verbose]
 
@@ -16,8 +18,10 @@ compileSettings = CompileSettings.new
 linkSettings = LinkSettings.new
 objectFiles = ObjectFiles.new
 executables = Executables.new
+run = Run.new
 targets = [location, configs, trees, sources, references, compileSettings, linkSettings, objectFiles, executables]
-targetGraph = TargetGraph.new(targets)
+targets << run if options[:run]
+targetGraph = GUBG::TargetGraph.new(targets)
 
 if options[:executable]
     filename = File.expand_path(options[:executable])

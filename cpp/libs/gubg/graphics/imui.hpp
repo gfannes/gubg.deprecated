@@ -2,7 +2,8 @@
 #define gubg_graphics_imui_hpp
 
 #include "point.hpp"
-#include "graphics/imui_key.hpp"
+#include "gubg/graphics/imui_key.hpp"
+#include "gubg/Location.hpp"
 #include <deque>
 #include <map>
 #include <memory>
@@ -84,7 +85,7 @@ namespace gubg
     };
     struct Widgets
     {
-        WidgetProxy &get(unsigned int extra = 0);
+        WidgetProxy &get(const Location &, unsigned int extra = 0);
 
         private:
             unsigned int createId_(void *location, unsigned int extra);
