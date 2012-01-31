@@ -1,9 +1,9 @@
 #ifndef gubg_graphics_imui_button_hpp
 #define gubg_graphics_imui_button_hpp
 
-#include "graphics/imui.hpp"
-#include "graphics/sdl_canvas.hpp"
-#include "statemachine.hpp"
+#include "gubg/graphics/imui.hpp"
+#include "gubg/graphics/sdl_canvas.hpp"
+#include "gubg/statemachine/StateMachine.hpp"
 #include <string>
 
 namespace gubg

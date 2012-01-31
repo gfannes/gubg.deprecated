@@ -4,70 +4,70 @@
 #include <iostream>
 #include <array>
 using namespace gubg;
+using namespace gubg::statemachine;
 using namespace std;
+#define L(m) cout<<m<<endl
 
-enum class Event {Forward, Backward};
-ostream &operator<<(ostream &os, const Event &event)
+enum Direction {Forward, Backward};
+ostream &operator<<(ostream &os, Direction direction)
 {
-    switch (event)
+    switch (direction)
     {
-        case Event::Forward: os << "Forward"; break;
-        case Event::Backward: os << "Backward"; break;
+        case Forward: return os << "Forward";
+        case Backward: return os << "Backward";
     }
     return os;
 }
 
-struct MetaState
+struct Stepper
 {
-    typedef gubg::statemachine::EventProcessor<MetaState, Event, int> State;
-    void changeState(int);
-    State *state;
-};
-typedef gubg::statemachine::StateMachine<MetaState, Event, int> MetaMachine;
-
-struct Stepper: gubg::statemachine::EventDispatcher<Event, int>, MetaMachine::State 
-{
+    typedef Leaf MachineType;
     Stepper(int s):
-        state(0),
-        step(s){}
-    virtual bool processEvent(Event event, MetaState &meta)
+        state(0), step(s){L("\nNew stepper with step " << step);}
+    //This will replace the meta-state using StateMgr
+    template <typename StateMgr>
+    bool process(int newStep, StateMgr &sm)
     {
-        return dispatchEvent(event);
-    }
-    virtual bool processEvent(int s, MetaState &meta)
-    {
-        LOG_SM(Stepper::processEvent, "s: " << s);
-        meta.changeState(s);
+        sm.changeState(new typename StateMgr::Type(newStep));
         return true;
     }
-    virtual bool dispatchEvent(Event event)
+    //This is a basic operation
+    bool process(Direction direction, Stepper &sm)
     {
-        switch (event)
+        switch (direction)
         {
-            case Event::Forward: state += step; break;
-            case Event::Backward: state -= step; break;
+            case Forward: sm.changeState(state + step); break;
+            case Backward: sm.changeState(state - step); break;
             default: return false; break;
         }
         return true;
     }
-    virtual bool dispatchEvent(int){return false;}
 
+    void changeState(int newState)
+    {
+        int prev = state;
+        state = newState;
+        L("Changed state from " << prev << " to " << state << "");
+    }
+    const int step;
     int state;
-    int step;
+};
+typedef StateMachineT<Stepper> StepperSM;
+
+struct MetaStepper: SmartStateT<StepperSM>
+{
+    typedef Hyper MachineType;
+    MetaStepper(){changeState(1);}
+    void changeState(int step){SmartStateT::changeState(new StepperSM(step));}
 };
 
-void MetaState::changeState(int s)
+template <typename T>
+int bottomState(T &t)
 {
-    state = new Stepper(s);
+    L("bootom");
+    return t.state->state;
 }
 
-namespace
-{
-    int bottomState(MetaMachine &mm)
-    {
-        return dynamic_cast<Stepper*>(mm.state)->state;
-    }
-}
 int main()
 {
     LOG_S(main);
@@ -76,29 +76,31 @@ int main()
         LOG_SM(Stepper, "Testing Stepper");
         Stepper sm(2);
         LOG_M("Starting state: " << sm.state);
-        std::array<Event, 3> events = {Event::Forward, Event::Forward, Event::Backward};
+        std::array<Direction, 3> events = {Direction::Forward, Direction::Forward, Direction::Backward};
         for (unsigned int i = 0; i < events.size(); ++i)
         {
-            Event &event = events[i];
-            sm.dispatchEvent(event);
-            LOG_M("Event: " << event << " state after event: " << sm.state);
+            Direction &event = events[i];
+            sm.process(event, sm);
+            LOG_M("Direction: " << event << " state after event: " << sm.state);
         }
     }
 
     //Test the MetaStepper
     {
         LOG_SM(Stepper, "Testing MetaMachine");
+        typedef StateMachineT<MetaStepper> MetaMachine;
         MetaMachine mm;
-        mm.changeState(3);
+        //mm.changeState(3);
         LOG_M("Starting state: " << bottomState(mm));
-        array<Event, 8> events = {Event::Forward, Event::Forward, Event::Forward, Event::Forward, Event::Forward, Event::Backward};
-        for (unsigned int i = 0; i < events.size(); ++i)
+        array<Direction, 8> events = {Direction::Forward, Direction::Forward, Direction::Forward, Direction::Forward, Direction::Forward, Direction::Backward};
+        //If the int hereunder is changed to unsigned int, there is an infinite loop in the statemachine code. No so nice...
+        for (int i = 0; i < events.size(); ++i)
         {
-            Event &event = events[i];
-            mm.dispatchEvent(event);
+            Direction &event = events[i];
+            mm.process(event);
             if (1 == i%3)
-            mm.dispatchEvent(i);
-            LOG_M("Event: " << event << ", state: " << bottomState(mm));
+                mm.process(i);
+            LOG_M("Direction: " << event << ", state: " << bottomState(mm));
         }
     }
     return 0;

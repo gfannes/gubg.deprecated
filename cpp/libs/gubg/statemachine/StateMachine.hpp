@@ -2,78 +2,82 @@
 #define gubg_statemachine_Statemachine_hpp
 
 #include <memory>
-
-//This module provides state machine functionality:
-// * Dispatching and processing of different _types_ of events
-// * Hierarchical setup
-//
-//In general, an event arrives at the StateMachine via dispatchEvent(), which dispatches the event to its state for processing
-//You give the StateMachine template a Policy class that handles storage and changing states
-//
-//This state, which derives from EventProcessor<Policy, Events> can either handle the event itself (e.g., if it is a leaf state)
-//or dispatch the event to a more low-level state. In the latter case, the state derives also from StateMachine<Policy2, Events>
+#include <iostream>
 
 namespace gubg
 {
     namespace statemachine
     {
-        //Interfaces:
-        // * EventDispatcher<Events>
-        template <typename ...Events>
-            struct EventDispatcher;
-        template <typename Event>
-            struct EventDispatcher<Event>
+        using namespace std;
+#define L(m) cout<<m<<endl
+#define L(m)
+
+        //Different machine types, use a typedef to indicate what machine you are implementing
+        enum Leaf{};
+        enum Hyper{};
+
+        //A state holder based on a smart pointer
+        template <typename State>
+            struct SmartStateT
             {
-                virtual bool dispatchEvent(Event) = 0;
-            };
-        template <typename Event, typename ...OtherEvents>
-            struct EventDispatcher<Event, OtherEvents...>: EventDispatcher<OtherEvents...>
-            {
-                EventDispatcher<OtherEvents...>::dispatchEvent;
-                virtual bool dispatchEvent(Event) = 0;
-            };
-        // * EventProcessor<Parent, Events>
-        template <typename Parent, typename ...Events>
-            struct EventProcessor;
-        template <typename Parent, typename Event>
-            struct EventProcessor<Parent, Event>
-            {
-                virtual bool processEvent(Event, Parent &) = 0;
-            };
-        template <typename Parent, typename Event, typename ...OtherEvents>
-            struct EventProcessor<Parent, Event, OtherEvents...>: EventProcessor<Parent, OtherEvents...>
-            {
-                EventProcessor<Parent, OtherEvents...>::processEvent;
-                virtual bool processEvent(Event, Parent &) = 0;
+                typedef State Type;
+                template <typename Event>
+                    bool process(Event event)
+                    {
+                        //We forward the event to the state, and pass ourselves as StateMgr because we hold the state and know how to change it
+                        L("Forward event from SmartStateT");
+                        return state->process(event, *this);
+                    }
+                void changeState(State *newState)
+                {
+                    state.reset(newState);
+                }
+                auto_ptr<State> state;
             };
 
-        //StateMachine
-        template <typename StatePolicy, typename ...Events>
-            struct StateMachine;
-        template <typename StatePolicy, typename Event>
-            struct StateMachine<StatePolicy, Event>: StatePolicy, EventDispatcher<Event>
-            {
-                typedef EventProcessor<StatePolicy, Event> State;
+        //The basic statemaching template
+        template <typename StatePolicy>
+            struct StateMachineT: StatePolicy
+        {
+            template <typename... Args>
+                StateMachineT(Args... args):
+                    StatePolicy(args...){}
 
-                virtual bool dispatchEvent(Event event)
+            //An event enters the system, without a specification how the state can be changed.
+            //We use the StatePolicy to change a state
+            //Typically, when a state handles an event, it will need information from above to know how to change the state
+            //A state knows the next state based on some event, but it doesn't know how states are stored or changed; this is StateMgr
+            template <typename Event>
+                bool process(Event event)
                 {
-                    return StatePolicy::state->processEvent(event, *this);
+                    L("Processing event without StateMgr");
+                    return process(event, *static_cast<StatePolicy*>(this), (typename StatePolicy::MachineType*)(0));
                 }
-            };
-        template <typename StatePolicy, typename Event1, typename Event2>
-            struct StateMachine<StatePolicy, Event1, Event2>: StatePolicy, EventDispatcher<Event1, Event2>
-            {
-                typedef EventProcessor<StatePolicy, Event1, Event2> State;
+            //We import those process methods provided by the StatePolicy, which should stop the template selection machinery
+            StatePolicy::process;
 
-                virtual bool dispatchEvent(Event1 event)
+            //A Hyper machine goes via the StateMgr to process the event
+            template <typename Event, typename StateMgr>
+                bool process(Event event, StateMgr &sm, Hyper *p)
                 {
-                    return StatePolicy::state->processEvent(event, *this);
+                    L("Processing event for hyper machine");
+                    return sm.process(event);
                 }
-                virtual bool dispatchEvent(Event2 event)
+            //A Leaf machine handles the event directly
+            template <typename Event, typename StateMgr>
+                bool process(Event event, StateMgr &sm, Leaf *p)
                 {
-                    return StatePolicy::state->processEvent(event, *this);
+                    L("Processing event for leaf machine");
+                    return process(event, sm);
                 }
-            };
+            //This is a catch-all from the StateMgr, we will discard the StateMgr and try again to see if we find a match
+            template <typename Event, typename StateMgr>
+                bool process(Event event, StateMgr &sm)
+                {
+                    L("Processing event for catchall");
+                    return process(event);
+                }
+        };
     }
 }
 

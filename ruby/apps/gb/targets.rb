@@ -58,6 +58,10 @@ class Configs < Targett
         @libraryPaths = []
         boostLibs = %w[boost_thread boost_system boost_filesystem]
         if operatingSystem =~ /^Linux/
+            @includePaths << "/usr/include/cairomm-1.0"
+            @includePaths << "/usr/include/cairo"
+            @includePaths << "/usr/include/freetype2"
+            @includePaths << "$HOME/sdks/libsigc++"
             @libraryPaths << "$HOME/sdks/boost/lib"
             @libraries = boostLibs
         else
