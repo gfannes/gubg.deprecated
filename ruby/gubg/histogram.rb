@@ -1,6 +1,6 @@
 require("gubg/utils")
 
-module Gubg
+module GUBG
 	class Histogram
 		attr(:bins, true)
 		attr(:counts, true)
@@ -49,6 +49,6 @@ module Gubg
 end
 
 if __FILE__ == $0
-	histogram = Gubg::Histogram.new([1, 1, 1, 2, 3, 3], 3)
+	histogram = GUBG::Histogram.new([1, 1, 1, 2, 3, 3], 3)
 	puts("#{histogram}")
 end

@@ -452,6 +452,12 @@ class String
         lines
     end
 
+    def to_snake
+	    gsub(/(.)([A-Z])/, "\\1_\\2").downcase
+    end
+    def to_camel
+	    split("_").map{|part|part.capitalize}.join("")
+    end
 end
 
 class Hash
