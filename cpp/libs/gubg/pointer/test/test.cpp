@@ -1,4 +1,5 @@
 #include "pointer/Locked.hpp"
+#include "pointer/StackPointer.hpp"
 #include "testing/Testing.hpp"
 #include "threading/InstanceCounter.hpp"
 #include "sleep/sleep.hpp"
@@ -134,6 +135,38 @@ int main()
             gubg::nanosleep(0, 100000000);
         while (IncrementThread<TDDataPtr>::nrInstances() > 0)
             gubg::nanosleep(0, 100000000);
+    }
+    {
+        LOG_SM(StackPointer, "StackPointer");
+        struct S
+        {
+            S():data(0){LOG_SM(ctor, "ctor " << this);}
+            S(int d):data(d){LOG_SM(ctor, "ctor with data " << this << " data: " << data);}
+            ~S(){LOG_SM(dtor, "dtor " << this << " data: " << data);}
+            int data;
+        };
+        typedef StackPointer<S> SP;
+        LOG_M("sizeof(SP): " << sizeof(SP) << "");
+        {
+            LOG_M("not used");
+            SP sp;
+            LOG_M("sp: " << &sp);
+        }
+        {
+            LOG_M("used");
+            SP sp;
+            LOG_M("sp: " << &sp);
+            sp();
+        }
+        {
+            LOG_M("used with data");
+            SP sp;
+            LOG_M("sp: " << &sp);
+            sp(123);
+            sp(456);
+            sp().data = 789;
+            sp();
+        }
     }
 
     return 0;

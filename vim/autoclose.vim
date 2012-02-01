@@ -156,6 +156,7 @@ function <SID>JumpOut(char) " ----------{{{2
         return a:char
     endif
 endf
+
 function <SID>CloseStackPop(char) " ---{{{2
     "echom "pop"
     if(a:char == '')
@@ -218,6 +219,8 @@ function <SID>OpenCloseBackspace() " ---{{{2
         let curletter = curline[curpos-1]
         let prevletter = curline[curpos-2]
         if (prevletter == '"' && curletter == '"') ||
+\          (prevletter == "|" && curletter == "|") ||
+\          (prevletter == "<" && curletter == ">") ||
 \          (prevletter == "'" && curletter == "'") ||
 \          (prevletter == "(" && curletter == ")") ||
 \          (prevletter == "{" && curletter == "}") ||
