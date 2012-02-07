@@ -1,7 +1,7 @@
 #ifndef gubg_pointer_StackPointer_hpp
 #define gubg_pointer_StackPointer_hpp
 
-namespace
+namespace gubg
 {
     template <typename T>
         class StackPointer
@@ -27,7 +27,7 @@ namespace
                 template <typename... Args>
                     T &operator()(Args&&... args)
                     {
-                        create(args);
+						create(std::forward<Args>(args)...);
                         return *reinterpret_cast<T*>(buffer);
                     }
             private:
