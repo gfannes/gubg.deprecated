@@ -1,8 +1,8 @@
-#include "pointer/Locked.hpp"
-#include "pointer/StackPointer.hpp"
-#include "testing/Testing.hpp"
-#include "threading/InstanceCounter.hpp"
-#include "sleep/sleep.hpp"
+#include "gubg/pointer/Locked.hpp"
+#include "gubg/pointer/StackPointer.hpp"
+#include "gubg/testing/Testing.hpp"
+#include "gubg/threading/InstanceCounter.hpp"
+#include "gubg/sleep/sleep.hpp"
 #include "boost/thread.hpp"
 #define GUBG_LOG
 #include "logging/Log.hpp"

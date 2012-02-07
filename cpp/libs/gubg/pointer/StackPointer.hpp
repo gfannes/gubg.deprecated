@@ -14,14 +14,20 @@ namespace
                     if (valid)
                         reinterpret_cast<T*>(buffer)->~T();
                 }
+                bool isValid() const {return valid;}
                 template <typename... Args>
-                    T &operator()(Args... args)
+                    bool create(Args&&... args)
                     {
-                        if (!valid)
-                        {
-                            new (buffer) T(args...);
-                            valid = true;
-                        }
+                        if (valid)
+                            return false;
+                        new (buffer) T(std::forward<Args>(args)...);
+                        valid = true;
+                        return true;
+                    }
+                template <typename... Args>
+                    T &operator()(Args&&... args)
+                    {
+                        create(args);
                         return *reinterpret_cast<T*>(buffer);
                     }
             private:
