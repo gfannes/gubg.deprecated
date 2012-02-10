@@ -1,7 +1,21 @@
+require("gubg/statemachine")
 require("gubg/graph")
 
 module GUBG
-	module Target
+    module Target
+        def stateMachine
+            StateMachine.new({
+                idle:     {                process: :p_expand},
+                p_expand: {entry: :expand, process: :p_check,                   error: :error, newTarget: :p_wait,},
+                p_wait:   {                                                     error: :error, ready: :p_expand},
+                p_check:  {entry: :check, allReady: :ready, notAllReady: :wait, error: :error},
+                p_ready:  {                process: [:ready, :generate],        error: :error},
+                ready:    {entry: :targetReady},
+                error:    {entry: :stop},
+            })
+        end
+    end
+	module OldTarget
 		attr_reader(:generationState)
 		def defineDependencies(klassPerName = {})
 			@klassPerName = klassPerName
