@@ -33,7 +33,7 @@ class Run
         @exe = exe
     end
     def generate_
-        command = "./#{exe}"
+        command = "./#{@exe}"
         raise("Failure executing #{command}") if !system(command)
     end
 end
@@ -41,17 +41,21 @@ end
 class ObjectFiles
     include Executer
     attr_reader(:objects)
+    @@reCpp = /\.cpp$/
     def generate_
         @objects = []
         sources = generate(Sources)
         compile = generate(CompileSettings)
         includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
-        sources.files.each do |cppFile|
-            objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
-            if !execute_("g++ -std=c++0x -O3 -c #{cppFile} -o #{objectFile} #{includePaths}")
-                return setState(:error, "Failed to compile #{cppFile}")
+        sources.files.each do |file|
+            case file
+            when @@reCpp
+                objectFile = file.gsub(/\.cpp$/, ".o")
+                if !execute_("g++ -std=c++0x -O3 -c #{file} -o #{objectFile} #{includePaths}")
+                    raise("Failed to compile #{file}")
+                end
+                @objects << objectFile
             end
-            @objects << objectFile
         end
     end
 end
@@ -76,7 +80,7 @@ class Sources
         end
     end
     def files
-        @metaPerFile.keys
+        @metaPerFile.keys.map{|f|f.name}.uniq
     end
     def includePaths
         paths = Set.new
