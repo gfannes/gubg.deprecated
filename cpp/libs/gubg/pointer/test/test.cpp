@@ -6,6 +6,7 @@
 #include "boost/thread.hpp"
 #define GUBG_LOG
 #include "logging/Log.hpp"
+using namespace gubg;
 using namespace gubg::pointer;
 
 namespace

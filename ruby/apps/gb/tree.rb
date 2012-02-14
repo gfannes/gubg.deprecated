@@ -3,11 +3,11 @@ require("gubg/utils")
 class Tree
     attr_reader(:files)
     def initialize(root, reWantedFiles)
-            @files = []
-            Dir.each(root) do |dir, fn|
-                @files << File.new(self, ::File.expand_path(fn, dir)) if reWantedFiles =~ fn
-                :ok
-            end
+        @files = []
+        Dir.each(root) do |dir, fn|
+            @files << File.new(self, ::File.expand_path(fn, dir)) if reWantedFiles =~ fn
+            :ok
+        end
     end
     def find(str, strategy)
         case strategy

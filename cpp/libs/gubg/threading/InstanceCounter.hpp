@@ -2,7 +2,7 @@
 #define gubg_threading_InstanceCounter_hpp
 
 #include "boost/thread.hpp"
-#include <mutex>
+#include "boost/thread/mutex.hpp"
 
 namespace gubg
 {
@@ -13,29 +13,29 @@ namespace gubg
             public:
                 InstanceCounter()
                 {
-                    std::lock_guard<std::mutex> lock(nrInstancesMutex__); 
+                    boost::lock_guard<boost::mutex> lock(nrInstancesMutex__); 
                     ++nrInstances__;
                 }
                 virtual ~InstanceCounter()
                 {
-                    std::lock_guard<std::mutex> lock(nrInstancesMutex__); 
+                    boost::lock_guard<boost::mutex> lock(nrInstancesMutex__); 
                     --nrInstances__;
                 }
 
                 static unsigned int nrInstances()
                 {
-                    std::lock_guard<std::mutex> lock(nrInstancesMutex__); 
+                    boost::lock_guard<boost::mutex> lock(nrInstancesMutex__); 
                     return nrInstances__;
                 }
 
             private:
                 static unsigned int nrInstances__;
-                static std::mutex nrInstancesMutex__;
+                static boost::mutex nrInstancesMutex__;
         };
     template <typename T>
         unsigned int InstanceCounter<T>::nrInstances__;
     template <typename T>
-        std::mutex InstanceCounter<T>::nrInstancesMutex__;
+        boost::mutex InstanceCounter<T>::nrInstancesMutex__;
 }
 
 #endif

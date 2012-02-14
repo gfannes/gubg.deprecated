@@ -3,55 +3,160 @@ require("gubg/target")
 require("tree.rb")
 require("set")
 
-class Target
-    attr_reader(:state, :msg, :warnings)
-    def initialize
-        @warnings = []
-    end
-    def setState(state, msg)
-        @state, @msg = state, msg
-        puts("state: #{@state}::#{@msg}")
-        @state
-    end
-    def state?(wantedState)
-        @state == wantedState
-    end
-    def progressible?
-        false
-    end
+module Executer
     def execute_(command)
-        puts("Executing \"#{command}\"")
+        puts("Executing command #{command}")
         system(command)
-    end
-    def warning(msg)
-        @warnings << msg
     end
 end
 
-class Location < Target
-    attr_reader(:location)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies()
-    end
-    def set(loc)
-        @location = loc
+class Executable
+    attr_reader(:executable, :mainfile)
+    def initialize(mainfile)
+        @mainfile = File.expand_path(mainfile)
     end
     def generate_
-        if @location.nil?
-            setState(:error, "You have to set the location")
-        else
-            setState(:generated, "Location is #{@location}")
+        defineScope(:exe)
+        objects = generate(ObjectFiles)
+        link = generate(LinkSettings)
+        libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
+        libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
+        @executable = "exe"
+        system("rm #{@executable}")
+        command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
+        puts("Link command: #{command}")
+        system(command)
+    end
+end
+class Run
+    def initialize(exe)
+        @exe = exe
+    end
+    def generate_
+        command = "./#{exe}"
+        raise("Failure executing #{command}") if !system(command)
+    end
+end
+
+class ObjectFiles
+    include Executer
+    attr_reader(:objects)
+    def generate_
+        @objects = []
+        sources = generate(Sources)
+        compile = generate(CompileSettings)
+        includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
+        sources.files.each do |cppFile|
+            objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
+            if !execute_("g++ -std=c++0x -O3 -c #{cppFile} -o #{objectFile} #{includePaths}")
+                return setState(:error, "Failed to compile #{cppFile}")
+            end
+            @objects << objectFile
         end
     end
 end
-class Configs < Target
+class Sources
+    def generate_
+        @metaPerFile = {}
+        @trees = generate(Trees).trees
+
+        newFiles = resolveFiles_(context.mainfile)
+        while file = newFiles.shift
+            puts("Next file to process: #{file}")
+            meta = generate(Meta.new(file, @trees))
+            @metaPerFile[file] = meta
+            #Add the source look-alikes of the headers
+            headers = meta.headers
+            puts("Headers: #{headers}")
+            sources = findMatchingSources_(headers)
+            puts("Sources: #{sources}")
+            (headers + sources).each do |file|
+                newFiles << file unless @metaPerFile.has_key?(file)
+            end
+        end
+    end
+    def files
+        @metaPerFile.keys
+    end
+    def includePaths
+        paths = Set.new
+        @metaPerFile.each do |file, meta|
+            meta.refs.each do |ref|
+                if header = meta.headerMatching(ref)
+                    path = header.name.dup
+                    path[ref] = ""
+                    paths << path
+                end
+            end
+        end
+        paths.to_a
+    end
+    private
+    def resolveFiles_(*files)
+        files.flatten.map{|file|@trees.map{|tree|tree.find(file, :exact)}}.flatten
+    end
+    class Meta
+        @@verbose = false
+        @@reInclude = /^\#include\s+["<](.+)[">]\s*/
+            attr_reader :file, :refs
+        def initialize(file, trees)
+            @file, @trees = file, trees
+        end
+        def generate_
+            puts("Generating meta info for #{@file}")
+            @refs = String.loadLines(@file.name).map{|l|l[@@reInclude, 1]}.compact.uniq
+            @headerPerRef = {}
+            @refs.each do |ref|
+                puts("Searching for a match for include ref #{ref}") if @@verbose
+                matches = @trees.map{|tree|tree.find(ref, :approx)}.flatten
+                puts("I found #{matches.length} matches: #{matches.map{|m|m.name}}") if @@verbose
+                unless matches.empty?
+                    #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
+                    bestMatch = matches.sort do |x, y|
+                        stringEquality_(@file.name, x) <=> stringEquality_(@file.name, y)
+                    end.last
+                    puts("Best match for #{@file}: #{bestMatch}") if @@verbose
+                    @headerPerRef[ref] = bestMatch
+                end
+            end
+        end
+        def headers
+            @refs.map{|ref|@headerPerRef[ref]}.compact
+        end
+        def headerMatching(ref)
+            @headerPerRef[ref]
+        end
+        def Meta.stringEquality_(x, y)
+            minLength = [x, y].min
+            eq = -1
+            loop do
+                eq += 1
+                break if eq >= minLength
+                break if x[eq] != y[eq]
+            end
+            eq
+        end
+    end
+    @@reHeader = /\.hp*$/
+        def findMatchingSources_(headers)
+            sources = []
+            headers.each do |header|
+                sources << resolveFiles_(header.name.gsub(@@reHeader, ".cpp")) if header.name =~ @@reHeader
+            end
+            sources.flatten.compact
+        end
+end
+class Trees
+    attr_reader(:trees)
+    def generate_
+        configs = generate(Configs)
+        reWantedFiles = /\.[ch]pp$/
+            @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
+    end
+end
+class Configs
     attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
-    include GUBG::Target
     def initialize
-        super
-        defineDependencies(location: Location)
         @compiler = "g++ -std=c++0x"
         @linker = "g++ -std=c++0x"
         @includePaths = []
@@ -74,244 +179,24 @@ class Configs < Target
         end
     end
     def generate_
-        location = getTarget(:location)
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
-        @roots = [location.location.dup, gubgRoot]
-        str = @roots.join("\n")
-        setState(:generated, "The config contains the following roots (#{@roots.length}):\n#{str}")
+        @roots = [File.dirname(context.mainfile), gubgRoot]
     end
 end
-class Trees < Target
-    attr_reader(:trees)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(configs: Configs)
-    end
-    def generate_
-        configs = getTarget(:configs)
-        reWantedFiles = /\.[ch]pp$/
-            @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
-        setState(:generated, "I can use #{@trees.map{|t|t.files}.flatten.length} files in #{@trees.length} trees")
-    end
-end
-class Sources < Target
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(references: References, trees: Trees, configs: Configs)
-        @files = Set.new
-        @staging = []
-        @sourceInfoPerHeader = {}
-    end
-    def add(file)
-        @staging << file
-    end
-    def files
-        @files.to_a
-    end
-    def progressible?
-        getTarget(:trees).state?(:generated)
-    end
-    def generate_
-        references, trees, configs = getTargets(:references, :trees, :configs)
-        if @staging.empty?
-            if generationState == :halted and [:halted, :generated].any?{|s|references.state?(s)}
-                if @files.empty?
-                    return setState(:error, "No files found for compilation")
-                else
-                    return setState(:generated, "No more references to resolve either, we are finished")
-                end
-            else
-                return setState(:halted, "No files found in staging")
-            end
-        end
-        while file = @staging.shift
-            case file
-            when String
-                #We search for the specified file in the trees
-                found = false
-                trees.trees.each do |tree|
-                    if f = tree.find(file, :exact)
-                        add(f)
-                        found = true
-                        break
-                    end
-                end
-                warning("Could not find \"#{file}\"") if !found
-            when Tree::File
-                unless @files.include?(file)
-                    references.add(file)
-                    @files << file
-                end
-            else
-                return setState(:error, "Cannot handle a file of type #{file.class}")
-            end
-        end
-        setState(:generating, "Staging is processed")
-    end
-end
-class References < Target
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(sources: Sources, trees: Trees)
-        @infoPerFile = {}
-        @staging = []
-    end
-    def add(file)
-        @staging << file
-    end
-    def progressible?
-        getTarget(:trees).state?(:generated)
-    end
-    def includePaths
-        paths = Set.new
-        @infoPerFile.each do |file, info|
-            info[:deps].each do |dep|
-                if dep.has_key?(:file)
-                    path = dep[:file].name.dup
-                    path[dep[:ref]] = ""
-                    paths << path
-                end
-            end
-        end
-        paths.to_a
-    end
-    def generate_
-        sources, trees = getTargets(:sources, :trees)
-        if @staging.empty?
-            if generationState == :halted and [:halted, :generated].any?{|s|sources.state?(s)}
-                return setState(:generated, "No more sources to check either, we are finished")
-            else
-                return setState(:halted, "No files found in staging")
-            end
-        end
-        while file = @staging.shift
-            return setState(:error, "I don't know how to extract references from #{file.class}") if !(Tree::File === file)
-            unless @infoPerFile.has_key?(file)
-                refs = extractIncludeRefs_(file.name)
-                deps = refs.map do |ref|
-                    dep = {ref: ref}
-                    puts("Searching for a match for include ref #{ref}")
-                    matches = trees.trees.map{|tree|tree.find(ref, :approx)}.flatten
-                    puts("I found #{matches.length} matches: #{matches.map{|m|m.name}}")
-                    unless matches.empty?
-                        #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
-                        bestMatch = matches.sort do |x, y|
-                            stringEquality_(file.name, x) <=> stringEquality_(file.name, y)
-                        end.last
-                        puts("Best match for #{file}: #{bestMatch}")
-                        dep[:file] = bestMatch
-                        add(bestMatch)
-                    end
-                    dep
-                end
-                @infoPerFile[file] = {name: file.name, deps: deps}
-                #For headers, we add the source lookalike to sources
-                reHeader = /\.hp*$/
-                    if file.name =~ reHeader
-                        sources.add(file.name.gsub(reHeader, ".cpp"))
-                    end
-            end
-        end
-        setState(:generating, "Staging is processed")
-    end
-    private
-    def References.stringEquality_(x, y)
-        minLength = [x, y].min
-        eq = -1
-        loop do
-            eq += 1
-            break if eq >= minLength
-            break if x[eq] != y[eq]
-        end
-        eq
-    end
-    @@reInclude = /^\#include\s+["<](.+)[">]\s*/
-        def extractIncludeRefs_(cpp)
-            String.loadLines(cpp).map{|l|l[@@reInclude, 1]}.compact.uniq
-        end
-end
-class CompileSettings < Target
+class CompileSettings
     attr_reader(:includePaths)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(configs: Configs, trees: Trees, references: References, sources: Sources)
-    end
     def generate_
-        references, configs = getTargets(:references, :configs)
-        @includePaths = references.includePaths + configs.includePaths
-        setState(:generated, "I will use the following include paths: #{@includePaths.join('|')}")
+        configs = generate(Configs)
+        sources = generate(Sources)
+        @includePaths = sources.includePaths + configs.includePaths
     end
 end
-class LinkSettings < Target
+class LinkSettings
     attr_reader(:libraryPaths, :libraries)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(configs: Configs)
-    end
     def generate_
-        configs = getTargets(:configs)
+        configs = generate(Configs)
         @libraryPaths = configs.libraryPaths
         @libraries = configs.libraries
-        setState(:generated, "I will link against the following libraries: #{@libraries.join('|')}")
-    end
-end
-class ObjectFiles < Target
-    attr_reader(:objects)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(compile: CompileSettings, sources: Sources)
-        @objects = []
-    end
-    def generate_
-        sources, compile = getTargets(:sources, :compile)
-        includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
-        sources.files.each do |cppFile|
-            objectFile = cppFile.name.gsub(/\.cpp$/, ".o")
-            if !execute_("g++ -std=c++0x -O3 -c #{cppFile} -o #{objectFile} #{includePaths}")
-                return setState(:error, "Failed to compile #{cppFile}")
-            end
-            @objects << objectFile
-        end
-        setState(:generated, "I linked #{@objects.length} objects")
-    end
-end
-class Executables < Target
-    attr_reader(:executable)
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(link: LinkSettings, objects: ObjectFiles)
-        @executable = ""
-    end
-    def generate_
-        objects, link = getTargets(:objects, :link)
-        libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
-        libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
-        @executable = "exe"
-        system("rm #{@executable}")
-        command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
-        puts("Link command: #{command}")
-        system(command)
-        setState(:generated, "I compiled #{@executable}")
-    end
-end
-class Run < Target
-    include GUBG::Target
-    def initialize
-        super
-        defineDependencies(executables: Executables)
-    end
-    def generate_
-        executables = getTargets(:executables)
-        command = "./#{executables.executable}"
-        raise("Failure executing #{command}") if !system(command)
-        setState(:generated, "I ran #{command}")
     end
 end
