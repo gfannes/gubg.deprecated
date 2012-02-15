@@ -12,9 +12,9 @@ $verbose = options[:verbose]
 
 global = Breakdown::Global.new do |global|
     if options[:executable]
-        exe = global.generate(Executable.new(options[:executable]))
+        exe = global.breakdown(Executable.new(options[:executable]))
         if options[:run]
-            global.generate(Run.new(exe.executable))
+            global.breakdown(Run.new(exe.executable))
         end
     end
 end

@@ -15,10 +15,10 @@ class Executable
     def initialize(mainfile)
         @mainfile = File.expand_path(mainfile)
     end
-    def generate_
+    def breakdown_
         defineScope(:exe)
-        objects = generate(ObjectFiles)
-        link = generate(LinkSettings)
+        objects = breakdown(ObjectFiles)
+        link = breakdown(LinkSettings)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
         @executable = "exe"
@@ -32,7 +32,7 @@ class Run
     def initialize(exe)
         @exe = exe
     end
-    def generate_
+    def breakdown_
         command = "./#{@exe}"
         raise("Failure executing #{command}") if !system(command)
     end
@@ -42,10 +42,10 @@ class ObjectFiles
     include Executer
     attr_reader(:objects)
     @@reCpp = /\.cpp$/
-    def generate_
+    def breakdown_
         @objects = []
-        sources = generate(Sources)
-        compile = generate(CompileSettings)
+        sources = breakdown(Sources)
+        compile = breakdown(CompileSettings)
         includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
         sources.files.each do |file|
             case file
@@ -60,14 +60,14 @@ class ObjectFiles
     end
 end
 class Sources
-    def generate_
+    def breakdown_
         @metaPerFile = {}
-        @trees = generate(Trees).trees
+        @trees = breakdown(Trees).trees
 
         newFiles = resolveFiles_(context.mainfile)
         while file = newFiles.shift
             puts("Next file to process: #{file}")
-            meta = generate(Meta.new(file, @trees))
+            meta = breakdown(Meta.new(file, @trees))
             @metaPerFile[file] = meta
             #Add the source look-alikes of the headers
             headers = meta.headers
@@ -106,7 +106,7 @@ class Sources
         def initialize(file, trees)
             @file, @trees = file, trees
         end
-        def generate_
+        def breakdown_
             puts("Generating meta info for #{@file}")
             @refs = String.loadLines(@file.name).map{|l|l[@@reInclude, 1]}.compact.uniq
             @headerPerRef = {}
@@ -152,8 +152,8 @@ class Sources
 end
 class Trees
     attr_reader(:trees)
-    def generate_
-        configs = generate(Configs)
+    def breakdown_
+        configs = breakdown(Configs)
         reWantedFiles = /\.[ch]pp$/
             @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
     end
@@ -182,7 +182,7 @@ class Configs
             @libraries = boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"}
         end
     end
-    def generate_
+    def breakdown_
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
         @roots = [File.dirname(context.mainfile), gubgRoot]
@@ -190,16 +190,16 @@ class Configs
 end
 class CompileSettings
     attr_reader(:includePaths)
-    def generate_
-        configs = generate(Configs)
-        sources = generate(Sources)
+    def breakdown_
+        configs = breakdown(Configs)
+        sources = breakdown(Sources)
         @includePaths = sources.includePaths + configs.includePaths
     end
 end
 class LinkSettings
     attr_reader(:libraryPaths, :libraries)
-    def generate_
-        configs = generate(Configs)
+    def breakdown_
+        configs = breakdown(Configs)
         @libraryPaths = configs.libraryPaths
         @libraries = configs.libraries
     end

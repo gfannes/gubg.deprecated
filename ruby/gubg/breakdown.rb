@@ -1,16 +1,16 @@
 #This module provides support for dependency programming
-#You start with creating an instance of Breakdown::Global and provide this with a block of top-level targets you want to generate
+#You start with creating an instance of Breakdown::Global and provide this with a block of top-level targets you want to breakdown
 #Each target lives in a context (this instance variable is added), by default, this is your single Global instance
 #Each target can create a new scope (Global defines the :global scope) using defineScope (this method is added)
-#Each target you add should provide the generate_ method that will be called to generate it
-#Each target can generate subtargets (or look them up) using generate(description). This method is added to the target
+#Each target you add should provide the breakdown_ method that will be called to breakdown it
+#Each target can breakdown subtargets (or look them up) using breakdown(description). This method is added to the target
 #The description for a target can be:
 # * A Class => a single instance will be created in the current context, and this instance is reused if the target is needed multiple times in the same scope
 # * An object, no reuse is happening here
 module Breakdown
     class Processor
         def initialize
-            @generated = []
+            @breakdownd = []
             @ungenerated = []
             @targetsPerContext = Hash.new{|h, k|h[k] = {}}
         end
@@ -33,7 +33,7 @@ module Breakdown
                 def defineScope(name)
                     @scope = name
                 end
-                def generate(*args)
+                def breakdown(*args)
                     description, context = @processor.resolve(self, *args)
                     target = @processor.find(description, context)
                     unless target 
@@ -56,10 +56,10 @@ module Breakdown
                 target.info = {}
                 begin
                     target.info[:startTime] = Time.now
-                    target.generate_
+                    target.breakdown_
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :ok
-                    @generated << target
+                    @breakdownd << target
                 rescue => exc
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :error
@@ -84,7 +84,7 @@ module Breakdown
             @processor.add(self, nil)
             @block = block
         end
-        def generate_
+        def breakdown_
             defineScope(:global)
             @block.yield(self)
         end
@@ -99,26 +99,26 @@ if __FILE__ == $0
         def initialize(filename)
             @filename = filename
         end
-        def generate_
+        def breakdown_
             defineScope :exe
-            objects = generate Objects
-            settings = generate LinkSettings
+            objects = breakdown Objects
+            settings = breakdown LinkSettings
         end
     end
     class Objects
-        def generate_
+        def breakdown_
         end
     end
     class LinkSettings
-        def generate_
-            objects = generate Objects
+        def breakdown_
+            objects = breakdown Objects
             puts("objects: #{objects}")
         end
     end
 
     global = Breakdown::Global.new do |global|
-        global.generate(Exe.new("main1.cpp"))
-        global.generate(Exe.new("main2.cpp"))
+        global.breakdown(Exe.new("main1.cpp"))
+        global.breakdown(Exe.new("main2.cpp"))
     end
     global.process
 end
