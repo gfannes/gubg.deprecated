@@ -12,7 +12,7 @@ class Tree
     def find(str, strategy)
         case strategy
         when :exact
-            @files.find{|file|file.name == str}
+            @files.find{|file|file.name[1, file.name.length] == str[1, str.length]}
         when :approx
             @files.select{|file|file.name[-str.length, str.length] == str}
         else

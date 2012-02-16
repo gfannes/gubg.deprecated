@@ -609,23 +609,45 @@ end
 
 class << File
     alias expand_path_old expand_path
-    def expand_path(entry, dir = nil)
-        if entry.encoding.name == "UTF-8" and dir and dir.encoding.name == "UTF-8"
-            res = nil
-            if dir[-1] == "/"
-                res = dir + entry
-            else
-                res = dir + "/" + entry
-            end
-            while res.gsub!(/\/[^\/]+\/\.\./, "") do end
-            res.gsub!("/.", "")
-            return res
-        else
-            return expand_path_old(entry, dir)
-        end
+    def expand_links(path)
+	    return path unless %w[Windows MinGW].include?(operatingSystem)
+	    if $substMapping.nil?
+		    $substMapping = {}
+		    re = /^(.:).+ => (.:)(.+)$/
+		    `subst`.split("\n").each do |line|
+			    if md = re.match(line)
+				    subst = md[1]
+				    drive = md[2]
+				    rest = md[3].gsub("\\", "/")
+				    $substMapping[subst.upcase] = drive.upcase+rest
+				    $substMapping[subst.downcase] = drive.downcase+rest
+			    end
+		    end
+	    end
+	    if expanded = $substMapping[path[0, 2]]
+		    path = path.dup
+		    path[0, 2] = expanded
+	    end
+	    path
+    end
+    def expand_path(entry, dir = nil, expandLinks = false)
+	    res = nil
+	    if entry.encoding.name == "UTF-8" and dir and dir.encoding.name == "UTF-8"
+		    if dir[-1] == "/"
+			    res = dir + entry
+		    else
+			    res = dir + "/" + entry
+		    end
+		    while res.gsub!(/\/[^\/]+\/\.\./, "") do end
+		    res.gsub!("/.", "")
+	    else
+		    res = expand_path_old(entry, dir)
+	    end
+	    res = expand_links(res) if expandLinks
+	    res
     end
 end
 
 if __FILE__ == $0
-    puts Dir.relative(Dir.pwd+'/')
+	puts File.expand_path("utils.rb", nil, true)
 end

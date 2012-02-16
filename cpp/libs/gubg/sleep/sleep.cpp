@@ -2,18 +2,18 @@
 
 #ifdef MINGW32
 
-#include <windows.h>
+#include <Windows.h>
 namespace gubg
 {
 #ifdef DONT_KNOW_HOW_TO_CALL_sleep_HERE
     void sleep(int nrSec)
     {
-        Sleep(1000*nrSec);
+        ::Sleep(1000*nrSec);
     }
 #endif
     void nanosleep(int nrSec, int nrNanoSec)
     {
-        Sleep(1000*nrSec + nrNanoSec/1000000);
+        ::Sleep(1000*nrSec + nrNanoSec/1000000);
     }
 }
 

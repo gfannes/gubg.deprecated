@@ -13,7 +13,7 @@ end
 class Executable
     attr_reader(:executable, :mainfile)
     def initialize(mainfile)
-        @mainfile = File.expand_path(mainfile)
+        @mainfile = File.expand_path(mainfile, nil, true)
     end
     def breakdown_
         defineScope(:exe)
@@ -42,22 +42,23 @@ class ObjectFiles
     include Executer
     attr_reader(:objects)
     @@reCpp = /\.cpp$/
-    def breakdown_
-        @objects = []
-        sources = breakdown(Sources)
-        compile = breakdown(CompileSettings)
-        includePaths = compile.includePaths.map{|ip|"-I#{ip}"}.join(" ")
-        sources.files.each do |file|
-            case file
-            when @@reCpp
-                objectFile = file.gsub(/\.cpp$/, ".o")
-                if !execute_("g++ -std=c++0x -O3 -c #{file} -o #{objectFile} #{includePaths}")
-                    raise("Failed to compile #{file}")
+        def breakdown_
+            @objects = []
+            sources = breakdown(Sources)
+            compile = breakdown(CompileSettings)
+            includePaths = compile.includePaths.map{|ip|"-I#{ip}"}*" "
+            macros = compile.macros.map{|m|"-D#{m}"}*" "
+            sources.files.each do |file|
+                case file
+                when @@reCpp
+                    objectFile = file.gsub(/\.cpp$/, ".o")
+                    if !execute_("g++ -std=c++0x -O3 -c #{file} -o #{objectFile} #{macros} #{includePaths}")
+                        raise("Failed to compile #{file}")
+                    end
+                    @objects << objectFile
                 end
-                @objects << objectFile
             end
         end
-    end
 end
 class Sources
     def breakdown_
@@ -97,7 +98,7 @@ class Sources
     end
     private
     def resolveFiles_(*files)
-        files.flatten.map{|file|@trees.map{|tree|tree.find(file, :exact)}}.flatten
+        files.flatten.map{|file|@trees.map{|tree|tree.find(file, :exact)}.compact.first}.flatten
     end
     class Meta
         @@verbose = false
@@ -189,11 +190,16 @@ class Configs
     end
 end
 class CompileSettings
-    attr_reader(:includePaths)
+    attr_reader(:includePaths, :macros)
     def breakdown_
         configs = breakdown(Configs)
         sources = breakdown(Sources)
         @includePaths = sources.includePaths + configs.includePaths
+        @macros = []
+        case operatingSystem
+        when "MinGW"
+            @macros << "MINGW32"
+        end
     end
 end
 class LinkSettings

@@ -8,9 +8,14 @@
 # * A Class => a single instance will be created in the current context, and this instance is reused if the target is needed multiple times in the same scope
 # * An object, no reuse is happening here
 module Breakdown
+    class ProcessingError < Exception
+        def initialize
+            super("Processing error")
+        end
+    end
     class Processor
         def initialize
-            @breakdownd = []
+            @generated = []
             @ungenerated = []
             @targetsPerContext = Hash.new{|h, k|h[k] = {}}
         end
@@ -36,10 +41,11 @@ module Breakdown
                 def breakdown(*args)
                     description, context = @processor.resolve(self, *args)
                     target = @processor.find(description, context)
-                    unless target 
+                    unless target
                         target = @processor.add(description, context)
-                        @processor.process
+                        raise(Breakdown::ProcessingError) if @processor.process != :ok
                     end
+                    raise("Target has problems") if target.info[:state] != :ok
                     target
                 end
             end
@@ -59,7 +65,12 @@ module Breakdown
                     target.breakdown_
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :ok
-                    @breakdownd << target
+                    @generated << target
+                rescue ProcessingError => exc
+                    target.info[:stopTime] = Time.now
+                    target.info[:state] = :error
+                    puts(indent("!") + "ProcessingError generating #{target}")
+                    return :error
                 rescue => exc
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :error
