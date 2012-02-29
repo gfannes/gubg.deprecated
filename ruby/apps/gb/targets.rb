@@ -166,7 +166,7 @@ class Configs
         @linker = "g++ -std=c++0x"
         @includePaths = []
         @libraryPaths = []
-        boostLibs = %w[boost_thread boost_system boost_filesystem]
+        boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
         sdlLibs = %w[SDL]
         cairoLibs = %w[cairomm-1.0]
         if operatingSystem =~ /^Linux/
