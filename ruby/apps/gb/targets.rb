@@ -2,18 +2,22 @@ require("gubg/utils")
 require("gubg/target")
 require("tree.rb")
 require("set")
+require("digest/md5")
 
 module Executer
     def execute_(command)
-        puts("Executing command #{command}")
-        system(command)
+        log("Executing command:\n#{command}")
+        res = system(command)
+        log("Result: #{res}")
+        res
     end
 end
 
 class Executable
-    attr_reader(:executable, :mainfile)
+    attr_reader(:executable, :mainfile, :filestore)
     def initialize(mainfile)
         @mainfile = File.expand_path(mainfile, nil, true)
+        @filestore = $filestore
     end
     def breakdown_
         defineScope(:exe)
@@ -24,7 +28,7 @@ class Executable
         @executable = "exe"
         system("rm #{@executable}")
         command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
-        puts("Link command: #{command}")
+        log("Link command: #{command}")
         system(command)
     end
 end
@@ -39,7 +43,6 @@ class Run
 end
 
 class ObjectFiles
-    include Executer
     attr_reader(:objects)
     @@reCpp = /\.cpp$/
         def breakdown_
@@ -49,43 +52,173 @@ class ObjectFiles
             includePaths = compile.includePaths.map{|ip|"-I#{ip}"}*" "
             macros = compile.macros.map{|m|"-D#{m}"}*" "
             sources.files.each do |file|
-                case file
-                when @@reCpp
-                    objectFile = file.gsub(/\.cpp$/, ".o")
-                    if !execute_("g++ -std=c++0x -O3 -c #{file} -o #{objectFile} #{macros} #{includePaths}")
-                        raise("Failed to compile #{file}")
-                    end
-                    @objects << objectFile
-                end
+                objectFile = breakdown(ObjectFile, file, macros, includePaths)
+                @objects << objectFile.file
             end
         end
 end
-class Sources
+class ObjectFile
+    include Executer
+    attr_reader(:file)
+    def initialize(source, macros, includePaths)
+        @source, @macros, @includePaths = source, macros, includePaths
+    end
+    def ObjectFile.key_(context, source, macros, includePaths)
+        source.name
+    end
+    def breakdown_
+        obj = @source.name.gsub(/\.cpp$/, ".o")
+        fi = FileInfo.new(obj)
+        fmi = breakdown(FullMetaInfo, @source)
+        fi["recursive header digest"] = fmi.digest
+        fi["macros"] = "#{@macros}"
+        fi["include paths"] = "#{@includePaths}"
+        context.filestore.create(fi) do |fn|
+            unless execute_("g++ -std=c++0x -O3 -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
+                raise("Failed to compile #{@source}")
+            end
+        end
+        @file = context.filestore.name(fi)
+    end
+    def to_s; @source.to_s end
+end
+class FullMetaInfo
+    def initialize(source)
+        @source = source
+    end
+    def FullMetaInfo.key_(context, source)
+        source
+    end
     def breakdown_
         @metaPerFile = {}
         @trees = breakdown(Trees).trees
 
-        newFiles = resolveFiles_(context.mainfile)
+        @source = resolveFiles_(@source).first
+
+        newFiles = [@source]
         while file = newFiles.shift
-            puts("Next file to process: #{file}")
-            meta = breakdown(Meta.new(file, @trees))
+            log("Next file to process: #{file}")
+            meta = breakdown(MetaInfo, file, @trees)
             @metaPerFile[file] = meta
             #Add the source look-alikes of the headers
             headers = meta.headers
-            puts("Headers: #{headers}")
-            sources = findMatchingSources_(headers)
-            puts("Sources: #{sources}")
-            (headers + sources).each do |file|
-                newFiles << file unless @metaPerFile.has_key?(file)
+            if headers.empty?
+                log("No headers could be resolved from #{file}")
+            else
+                log("Headers: #{headers}")
+                sources = findMatchingSources_(headers)
+                log("Sources: #{sources}")
+                (headers + sources).each do |file|
+                    newFiles << file unless @metaPerFile.has_key?(file)
+                end
             end
         end
     end
-    def files
-        @metaPerFile.keys.map{|f|f.name}.uniq
+    def sourceFiles
+        reCpp = /.cpp$/
+            @metaPerFile.keys.select{|f|f.name =~ reCpp}
+    end
+    def metas
+        @metaPerFile.values
+    end
+    def digest
+        md5 = Digest::MD5.new
+        md5 << String.loadBinary(@source.name)
+        directlyUsedHeaders_.each do |header|
+            md5 << String.loadBinary(header.name)
+        end
+        md5.digest
+    end
+    def to_s; @source.to_s end
+    private
+    def directlyUsedHeaders_
+        headers = {}
+        newHeaders = @metaPerFile[@source].headers
+        until newHeaders.empty?
+            tmp = []
+            newHeaders.each do |header|
+                unless headers.has_key?(header)
+                    headers[header] = true
+                    raise("Nothing is known about #{header}") unless @metaPerFile.has_key?(header)
+                    tmp << @metaPerFile[header].headers
+                end
+            end
+            newHeaders = tmp.flatten
+        end
+        headers.keys
+    end
+    def resolveFiles_(*files)
+        files.flatten.map do |file|
+            if Tree::File === file
+                file
+            else
+                @trees.map{|tree|tree.find(file, :exact)}.compact.first
+            end
+        end.flatten
+    end
+    @@reHeader = /\.hp*$/
+    def findMatchingSources_(headers)
+        sources = []
+        headers.each do |header|
+            sources << resolveFiles_(header.name.gsub(@@reHeader, ".cpp")) if header.name =~ @@reHeader
+        end
+        sources.flatten.compact
+    end
+end
+class MetaInfo
+    @@verbose = false
+    @@reInclude = /^\#include\s+["<](.+)[">]\s*/
+        attr_reader :file, :refs
+    def initialize(file, trees)
+        @file, @trees = file, trees
+    end
+    def MetaInfo.key_(context, file, trees)
+        file
+    end
+    def breakdown_
+        @refs = String.loadLines(@file.name).map{|l|l[@@reInclude, 1]}.compact.uniq
+        @headerPerRef = {}
+        @refs.each do |ref|
+            log("Searching for a match for include ref #{ref}") if @@verbose
+            matches = @trees.map{|tree|tree.find(ref, :approx)}.flatten
+            log("I found #{matches.length} matches: #{matches.map{|m|m.name}}") if @@verbose
+            unless matches.empty?
+                #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
+                bestMatch = matches.sort do |x, y|
+                    stringEquality_(@file.name, x) <=> stringEquality_(@file.name, y)
+                end.last
+                log("Best match for #{@file}: #{bestMatch}") if @@verbose
+                @headerPerRef[ref] = bestMatch
+            end
+        end
+    end
+    def headers
+        @refs.map{|ref|@headerPerRef[ref]}.compact
+    end
+    def headerMatching(ref)
+        @headerPerRef[ref]
+    end
+    def MetaInfo.stringEquality_(x, y)
+        minLength = [x, y].min
+        eq = -1
+        loop do
+            eq += 1
+            break if eq >= minLength
+            break if x[eq] != y[eq]
+        end
+        eq
+    end
+    def to_s; "#{@file}" end
+end
+class Sources
+    attr_reader(:files)
+    def breakdown_
+        @fullMetaInfo = breakdown(FullMetaInfo, context.mainfile)
+        @files = @fullMetaInfo.sourceFiles.uniq
     end
     def includePaths
         paths = Set.new
-        @metaPerFile.each do |file, meta|
+        @fullMetaInfo.metas.each do |meta|
             meta.refs.each do |ref|
                 if header = meta.headerMatching(ref)
                     path = header.name.dup
@@ -96,61 +229,8 @@ class Sources
         end
         paths.to_a
     end
-    private
-    def resolveFiles_(*files)
-        files.flatten.map{|file|@trees.map{|tree|tree.find(file, :exact)}.compact.first}.flatten
-    end
-    class Meta
-        @@verbose = false
-        @@reInclude = /^\#include\s+["<](.+)[">]\s*/
-            attr_reader :file, :refs
-        def initialize(file, trees)
-            @file, @trees = file, trees
-        end
-        def breakdown_
-            puts("Generating meta info for #{@file}")
-            @refs = String.loadLines(@file.name).map{|l|l[@@reInclude, 1]}.compact.uniq
-            @headerPerRef = {}
-            @refs.each do |ref|
-                puts("Searching for a match for include ref #{ref}") if @@verbose
-                matches = @trees.map{|tree|tree.find(ref, :approx)}.flatten
-                puts("I found #{matches.length} matches: #{matches.map{|m|m.name}}") if @@verbose
-                unless matches.empty?
-                    #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
-                    bestMatch = matches.sort do |x, y|
-                        stringEquality_(@file.name, x) <=> stringEquality_(@file.name, y)
-                    end.last
-                    puts("Best match for #{@file}: #{bestMatch}") if @@verbose
-                    @headerPerRef[ref] = bestMatch
-                end
-            end
-        end
-        def headers
-            @refs.map{|ref|@headerPerRef[ref]}.compact
-        end
-        def headerMatching(ref)
-            @headerPerRef[ref]
-        end
-        def Meta.stringEquality_(x, y)
-            minLength = [x, y].min
-            eq = -1
-            loop do
-                eq += 1
-                break if eq >= minLength
-                break if x[eq] != y[eq]
-            end
-            eq
-        end
-    end
-    @@reHeader = /\.hp*$/
-        def findMatchingSources_(headers)
-            sources = []
-            headers.each do |header|
-                sources << resolveFiles_(header.name.gsub(@@reHeader, ".cpp")) if header.name =~ @@reHeader
-            end
-            sources.flatten.compact
-        end
 end
+
 class Trees
     attr_reader(:trees)
     def breakdown_

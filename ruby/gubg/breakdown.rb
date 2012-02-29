@@ -19,18 +19,21 @@ module Breakdown
             @ungenerated = []
             @targetsPerContext = Hash.new{|h, k|h[k] = {}}
         end
-        def add(description, context)
-            target = createTarget(description, context)
+        def createTarget(*description)
+            case description.first
+            when Class
+                klass = description.first
+                klass.new(*description[1, description.length])
+            else
+                description.first
+            end
+        end
+        def addTarget(key, context, target)
             addMethodsToTarget(target)
             target.processor = self
             target.context = context
-            target
-        end
-        def createTarget(description, context)
-            case description
-            when Class then description.new
-            else description
-            end.tap{|target|@ungenerated << target; @targetsPerContext[context][description] = target}
+            @ungenerated << target
+            @targetsPerContext[context][key] = target
         end
         def addMethodsToTarget(target)
             class << target
@@ -39,26 +42,31 @@ module Breakdown
                     @scope = name
                 end
                 def breakdown(*args)
-                    description, context = @processor.resolve(self, *args)
-                    target = @processor.find(description, context)
+                    context = @processor.context(self)
+                    key = @processor.key(context, *args)
+                    target = @processor.find(key, context)
                     unless target
-                        target = @processor.add(description, context)
+                        target = @processor.createTarget(*args)
+                        @processor.addTarget(key, context, target)
                         raise(Breakdown::ProcessingError) if @processor.process != :ok
                     end
                     raise("Target has problems") if target.info[:state] != :ok
                     target
                 end
+                def log(msg)
+                    puts(@processor.indent(" ", " ")+self.class.to_s+"::"+msg)
+                end
             end
         end
 
         @@processLevel = 0
-        def indent(ch)
-            "="*2*(@@processLevel-1) + ch*2 + " "
+        def indent(ch, l = "=")
+            l*2*(@@processLevel-1) + ch*2 + " "
         end
         def process
             @@processLevel += 1
             while target = @ungenerated.shift
-                puts(indent(">") + "Generating #{target}")
+                puts(indent(">") + "#{target.class}::#{target}")
                 target.info = {}
                 begin
                     target.info[:startTime] = Time.now
@@ -69,30 +77,43 @@ module Breakdown
                 rescue ProcessingError => exc
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :error
-                    puts(indent("!") + "ProcessingError generating #{target}")
+                    puts(indent("!") + "ProcessingError generating #{target.class}::#{target}")
                     return :error
                 rescue => exc
                     target.info[:stopTime] = Time.now
                     target.info[:state] = :error
-                    puts(indent("!") + "ERROR generating #{target}: #{exc.message}\n#{exc.backtrace*"\n"}")
+                    puts(indent("!") + "ERROR generating #{target.class}::#{target}: #{exc.message}\n#{exc.backtrace*"\n"}")
                     return :error
                 end
-                puts(indent("<") + "Generating #{target}")
+                puts(indent("<") + "#{target.class}::#{target} took #{target.info[:stopTime] - target.info[:startTime]} seconds")
             end
             @@processLevel -= 1
             :ok
         end
-        def resolve(host, *args)
-            return args.first, (host.scope ? host : host.context)
+        def key(context, *args)
+            case args.first
+            when Class
+                if args.length == 1
+                    ("class_" + args.first.to_s).to_sym
+                else
+                    "key_#{args.first}_#{args.first.key_(context, *args[1, args.length])}"
+                end
+            else
+                "object_#{args.first.class}_#{args.first.object_id}"
+            end
         end
-        def find(description, context)
-            @targetsPerContext[context][description]
+        def context(host)
+            host.scope ? host : host.context
+        end
+        def find(key, context)
+            @targetsPerContext[context][key]
         end
     end
     class Global
         def initialize(&block)
             @processor = Processor.new
-            @processor.add(self, nil)
+            context = nil
+            @processor.addTarget(@processor.key(context, Global), context, self)
             @block = block
         end
         def breakdown_
