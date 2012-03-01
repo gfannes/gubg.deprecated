@@ -12,7 +12,7 @@ options = parseOptions(name: "Generic build utility", author: "Geert Fannes", ve
 end
 $verbose = options[:verbose]
 
-$filestore = FileStore.new
+$filestore = FileStore.new("/tmp")
 if options[:clean]
     puts("Cleaning the filestore \"#{$filestore.base}\"")
     $filestore.clean

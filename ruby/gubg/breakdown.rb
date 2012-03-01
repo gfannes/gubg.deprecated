@@ -85,7 +85,7 @@ module Breakdown
                     puts(indent("!") + "ERROR generating #{target.class}::#{target}: #{exc.message}\n#{exc.backtrace*"\n"}")
                     return :error
                 end
-                puts(indent("<") + "#{target.class}::#{target} took #{target.info[:stopTime] - target.info[:startTime]} seconds")
+                puts(indent("<") + "#{target.class}::#{target} (#{target.info[:stopTime] - target.info[:startTime]} sec)")
             end
             @@processLevel -= 1
             :ok

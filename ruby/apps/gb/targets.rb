@@ -37,8 +37,10 @@ class Run
         @exe = exe
     end
     def breakdown_
+        puts("*"*100)
         command = "./#{@exe}"
         raise("Failure executing #{command}") if !system(command)
+        puts("*"*100)
     end
 end
 
@@ -97,7 +99,7 @@ class FullMetaInfo
 
         newFiles = [@source]
         while file = newFiles.shift
-            log("Next file to process: #{file}")
+            log("Next file to process: #{file} #{file.class}")
             meta = breakdown(MetaInfo, file, @trees)
             @metaPerFile[file] = meta
             #Add the source look-alikes of the headers
@@ -166,7 +168,7 @@ class FullMetaInfo
     end
 end
 class MetaInfo
-    @@verbose = false
+    @@verbose = true
     @@reInclude = /^\#include\s+["<](.+)[">]\s*/
         attr_reader :file, :refs
     def initialize(file, trees)
@@ -181,11 +183,11 @@ class MetaInfo
         @refs.each do |ref|
             log("Searching for a match for include ref #{ref}") if @@verbose
             matches = @trees.map{|tree|tree.find(ref, :approx)}.flatten
-            log("I found #{matches.length} matches: #{matches.map{|m|m.name}}") if @@verbose
+            log("I found #{matches.length} matches: #{matches.map{|m|[m.name, m.class]}}") if @@verbose
             unless matches.empty?
                 #Select _that_ match that looks the most like the original file.name, meaning it is somewhere close in a tree
                 bestMatch = matches.sort do |x, y|
-                    stringEquality_(@file.name, x) <=> stringEquality_(@file.name, y)
+                    MetaInfo.stringEquality_(@file.name, x.name) <=> MetaInfo.stringEquality_(@file.name, y.name)
                 end.last
                 log("Best match for #{@file}: #{bestMatch}") if @@verbose
                 @headerPerRef[ref] = bestMatch
@@ -199,7 +201,7 @@ class MetaInfo
         @headerPerRef[ref]
     end
     def MetaInfo.stringEquality_(x, y)
-        minLength = [x, y].min
+        minLength = [x, y].map{|a|a.length}.min
         eq = -1
         loop do
             eq += 1
@@ -228,6 +230,9 @@ class Sources
             end
         end
         paths.to_a
+    end
+    def to_s
+        @files ? "#{@files.length} source files found" : ""
     end
 end
 

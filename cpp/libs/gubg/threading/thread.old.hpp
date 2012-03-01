@@ -7,19 +7,19 @@
 // virtual bool Thread::execute();
 class Thread
 {
-public:
-    Thread():
-        _running(false){};
-    int start();
-    void finish();
-    bool isRunning(){return _running;};
-protected:
-    static void *staticDummy(void *);
-    virtual bool execute() = 0;
-    void setRunning(bool b){_running = b;};
-private:
-    bool _running;
-    pthread_t _thread;
+    public:
+        Thread():
+            _running(false){};
+        int start();
+        void finish();
+        bool isRunning(){return _running;};
+    protected:
+        static void *staticDummy(void *);
+        virtual bool execute() = 0;
+        void setRunning(bool b){_running = b;};
+    private:
+        bool _running;
+        pthread_t _thread;
 };
 
 // Locks a resource of type ResourceType away behind a mutex.
@@ -32,32 +32,32 @@ private:
 template <typename ResourceType>
 class Mutex
 {
-public:
-    Mutex(ResourceType *resource):
-        _resource(resource){pthread_mutex_init(&_mutex, NULL);};
+    public:
+        Mutex(ResourceType *resource):
+            _resource(resource){pthread_mutex_init(&_mutex, NULL);};
 
-    template <typename ResourceRequester>
-    bool access(ResourceRequester &resourceRequester)
+        template <typename ResourceRequester>
+            bool access(ResourceRequester &resourceRequester)
+            {
+                bool ok;
+                pthread_mutex_lock(&_mutex);
+                ok = resourceRequester.execute4Mutex(_resource);
+                pthread_mutex_unlock(&_mutex);
+                return ok;
+            }
+
+        void lock()
         {
-            bool ok;
             pthread_mutex_lock(&_mutex);
-            ok = resourceRequester.execute4Mutex(_resource);
-            pthread_mutex_unlock(&_mutex);
-            return ok;
         }
-
-    void lock()
-        {
-            pthread_mutex_lock(&_mutex);
-        }
-    void unlock()
+        void unlock()
         {
             pthread_mutex_unlock(&_mutex);
         }
 
-private:
-    pthread_mutex_t _mutex;
-    ResourceType *_resource;
+    private:
+        pthread_mutex_t _mutex;
+        ResourceType *_resource;
 };
 
 #endif

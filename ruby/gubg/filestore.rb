@@ -54,9 +54,8 @@ end
 
 class FileStore
     attr_reader(:base)
-    #Make sure you choose the base correctly, the clean method will wipe it out completely, potentially removing important things too
-    def initialize(base = "filestore")
-        @base = File.expand_path(base)
+    def initialize(base = "./")
+        @base = File.expand_path("filestore", base)
         FileUtils.mkdir_p(@base) if !File.exist?(@base)
     end
     def create(fi)

@@ -1,6 +1,10 @@
 #ifndef gubg_pointer_Locked_hpp
 #define gubg_pointer_Locked_hpp
 
+//This needs some serious rework:
+// * Naming is not ok, change unlock to lock
+// * The data is not deleted
+
 #include "boost/thread/recursive_mutex.hpp"
 #include "boost/thread/condition.hpp"
 #include "boost/shared_ptr.hpp"
