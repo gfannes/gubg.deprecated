@@ -322,6 +322,14 @@ class String
         end
     end
 
+    def addExtension(ext)
+	    if ext
+		    ext = ".#{ext}" unless ext[0] == "."
+		    self << ext unless self =~ /#{ext}$/
+	    end
+	    self
+    end
+
     @@floatPattern = /^[+-]?(\d[\d_]*)?[,\.][\d_]*(e[+-]?)?(_*\d[\d_]*)$/i
     @@integerPattern = /^[+-]?[0-9][\d_]*$/
         @@zeroPattern = /^0\.?0?$/

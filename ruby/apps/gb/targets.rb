@@ -11,9 +11,20 @@ module Executer
         log("Result: #{res}")
         res
     end
+    def addExtension_(name, type)
+	    extPerType = case operatingSystem
+			 when /^Linux/
+				 {executable: nil}
+			 when /^Windows/, /^Min/
+				 {executable: "exe"}
+			 end
+	    raise("No info found to type #{type}") unless extPerType.has_key?(type)
+	    name.addExtension(extPerType[type])
+    end
 end
 
 class Executable
+    include Executer
     attr_reader(:executable, :mainfile, :filestore)
     def initialize(mainfile)
         @mainfile = File.expand_path(mainfile, nil, true)
@@ -25,11 +36,10 @@ class Executable
         link = breakdown(LinkSettings)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
-        @executable = "exe"
-        system("rm #{@executable}")
+        @executable = addExtension_("exe", :executable)
+        execute_("rm #{@executable}") if File.exist?(@executable)
         command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
-        log("Link command: #{command}")
-        system(command)
+        execute_(command)
     end
 end
 class Run

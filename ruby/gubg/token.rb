@@ -1,4 +1,5 @@
 class Token
+	@@verbose = false
     def initialize(buffer, b = nil, e = nil)
         @buffer = buffer
         @range = [b || 0, e || @buffer.length]
@@ -24,7 +25,7 @@ class Token
                 #Make sure we start matching from the start of the content buffer
                 re = Regexp.new("\\A" + re.source, re.options) if re.source[0, 2] != "\\A"
                 if md = re.match(content)
-                    puts("Match for #{re}: (((#{md[0]})))")
+                    puts("Match for #{re}: (((#{md[0]})))") if @@verbose
                     return split(md[0].length)
                 else
                     return nil

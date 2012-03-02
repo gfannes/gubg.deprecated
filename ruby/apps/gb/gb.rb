@@ -12,18 +12,23 @@ options = parseOptions(name: "Generic build utility", author: "Geert Fannes", ve
 end
 $verbose = options[:verbose]
 
-$filestore = FileStore.new("/tmp")
+tmpDir = case operatingSystem
+	 when /^Linux/ then "/tmp"
+	 when /^Windows/, /^Min/ then "c:/tmp"
+	 end
+puts("I will create the filestore in \"#{tmpDir}\"")
+$filestore = FileStore.new(tmpDir, "gb-cache")
 if options[:clean]
-    puts("Cleaning the filestore \"#{$filestore.base}\"")
-    $filestore.clean
+	puts("Cleaning the filestore \"#{$filestore.base}\"")
+	$filestore.clean
 end
 
 global = Breakdown::Global.new do |global|
-    if options[:executable]
-        exe = global.breakdown(Executable.new(options[:executable]))
-        if options[:run]
-            global.breakdown(Run.new(exe.executable))
-        end
-    end
+	if options[:executable]
+		exe = global.breakdown(Executable.new(options[:executable]))
+		if options[:run]
+			global.breakdown(Run.new(exe.executable))
+		end
+	end
 end
 global.process

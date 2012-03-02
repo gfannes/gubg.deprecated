@@ -54,8 +54,8 @@ end
 
 class FileStore
     attr_reader(:base)
-    def initialize(base = "./")
-        @base = File.expand_path("filestore", base)
+    def initialize(base = "./", name = "filestore")
+        @base = File.expand_path(name, base)
         FileUtils.mkdir_p(@base) if !File.exist?(@base)
     end
     def create(fi)
