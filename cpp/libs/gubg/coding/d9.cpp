@@ -4,11 +4,6 @@ using namespace std;
 #include <iostream>
 #define L(m) cout<<m<<endl
 
-//                --package-start--   alterations        ----------0xd9-free-buffer--------------- ---package-end---
-//                0xd9     0xd9       |||||||   0xd8                                               0xd9     0xd8
-// * Block mode:  11011001 11011001 (0???????)* 11011000 <0xd9-free data, same size as orig data>  11011001 11011000
-// * Stream mode: 11011001 11011001  10000000            (<0xd8/9-free data> | 11011000 ###?????)* 11011001 11011000
-
 namespace
 {
     const unsigned char D8 = 0xd8;
@@ -16,7 +11,7 @@ namespace
     const unsigned char BlockByte =  0xff;
     const unsigned char StreamByte = 0x80;
 
-    size_t nrD8D9Bytes(const string &plain)
+    size_t nrDXBytesInBuffer_(const string &plain)
     {
         size_t nr = 0;
         auto end = plain.end();
@@ -28,9 +23,9 @@ namespace
         }
         return nr;
     }
-    void encodeInBlockMode(string &coded, const string &plain)
+    void encodeInBlockMode_(string &coded, const string &plain)
     {
-        const size_t nrAlterationBytes = (nrD8D9Bytes(plain)+6)/7;
+        const size_t nrAlterationBytes = (nrDXBytesInBuffer_(plain)+6)/7;
         const size_t codedSize = 2 + nrAlterationBytes + 1 + plain.size() + 2;
         coded.resize(codedSize);
 
@@ -93,7 +88,7 @@ namespace
         }
         bool isFull() const {return nr >= 5;}
     };
-    void encodeInStreamMode(string &coded, const string &plain)
+    void encodeInStreamMode_(string &coded, const string &plain)
     {
         ostringstream oss;
         oss << D9 << D9 << StreamByte;
@@ -118,6 +113,17 @@ namespace
         oss << D9 << D8;
         coded = oss.str();
     }
+
+    template <typename Source>
+    string convertBytesToString_(Source &&bytes)
+    {
+        string res(bytes.size(), 0);
+        auto end = bytes.end();
+        size_t i = 0;
+        for (auto it = bytes.begin(); it != end; ++it, ++i)
+            res[i] = *it;
+        return std::move(res);
+    }
 }
 
 namespace gubg
@@ -126,13 +132,53 @@ namespace gubg
     {
         namespace d9
         {
+            string encodeRLE(unsigned long v)
+            {
+                if (v <= 0x3f)
+                    return convertBytesToString_({v | 0x80});
+                if (v <= 0x1fff)
+                    return convertBytesToString_({(v&0x1fff)>>6, (v&0x3f)|0x80});
+                if (v <= 0xfffff)
+                    return convertBytesToString_({(v&0xfffff)>>13, (v&0x1fff)>>6, (v&0x3f)|0x80});
+                if (v <= 0x7ffffff)
+                    return convertBytesToString_({(v&0x7ffffff)>>20, (v&0xfffff)>>13, (v&0x1fff)>>6, (v&0x3f)|0x80});
+                return convertBytesToString_({v>>27, (v&0x7ffffff)>>20, (v&0xfffff)>>13, (v&0x1fff)>>6, (v&0x3f)|0x80});
+            }
+
+            ReturnCode decodeRLE(unsigned long &v, const string &rle)
+            {
+                MSS_BEGIN(ReturnCode);
+                MSS_T(!rle.empty(), RLETooSmall);
+                MSS_T(rle.size() <= 5, RLETooLarge);
+                v = 0;
+                auto end = rle.end();
+                for (auto it = rle.begin(); it != end; ++it)
+                {
+                    ubyte b = *it;
+                    MSS_T((b&0xc0)!=0xc0, RLEIllegaleMSBits);
+                    if (b&0x80)
+                    {
+                        //This is the closing byte of the RLE
+                        MSS_T(it+1 == end, RLEClosingByteExpected);
+                        v <<= 6;
+                        v |= (0x3f&b);
+                    }
+                    else
+                    {
+                        v <<= 7;
+                        v |= (0x7f&b);
+                    }
+                }
+                MSS_END();
+            }
+
             string encode(const string &plain, Mode mode)
             {
                 string coded;
                 switch (mode)
                 {
-                    case Block:  encodeInBlockMode (coded, plain); break;
-                    case Stream: encodeInStreamMode(coded, plain); break;
+                    case Block:  encodeInBlockMode_ (coded, plain); break;
+                    case Stream: encodeInStreamMode_(coded, plain); break;
                 }
                 return std::move(coded);
             }

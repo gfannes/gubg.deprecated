@@ -12,6 +12,25 @@
 //
 //The general package format looks like:
 //
+//            0xd9     metabyte attributes    content                                      CRC       0xd9     0xff
+// * Package: 11011001 0bbbbbbb (rle-number)* (<0xd9-free data, stream or block encoded>)? 0bbbbbbb (11011001 11111111)?
+// * Meta-byte for version 0:
+//    * Bit 0: version
+//    * Bit 1: extended attributes are present
+//    * Bit 2: package has content and content-type attribute is present
+//    * Bit 3: mode: 0 => block, 1 => stream
+//    * Bit 4: source attribute is present
+//    * Bit 5: destination attribute is present
+//    * Bit 6: package-id attribute is present
+// * Package has 7 bit CRC with msbit == 0, either before the closing 0xd9, or at the end of a content-less package
+// * Run-length encoded number: (0bbbbbbb)* 10bbbbbb
+//    * Big-endian byte-order
+//
+// * Extended attributes:
+//    * Bit 0: sequence number for a partial package
+//    * Bit 1: total number for a partial package
+//
+//DEPRECATED:
 //                --package-start--   alterations         ----------0xd9-free-buffer--------------- ---package-end---
 //                0xd9     0xd9       |||||||   0xff                                               0xd9     0xd8
 // * Block mode:  11011001 11011001 (0???????)* 11111111  <0xd9-free data, same size as orig data>  11011001 11011000
@@ -36,6 +55,7 @@ namespace gubg
     using namespace std;
     namespace coding
     {
+        typedef unsigned char ubyte;
         namespace d9
         {
             enum class ReturnCode
@@ -43,7 +63,12 @@ namespace gubg
                 MSS_DEFAULT_CODES,
                 MissingStart, MissingEnd, MissingMode,
                 TooFewAlterations,
+                RLETooSmall, RLETooLarge, RLEIllegaleMSBits, RLEClosingByteExpected,
             };
+
+            string encodeRLE(unsigned long);
+
+            ReturnCode decodeRLE(unsigned long &, const string &plain);
 
             enum Mode {Block, Stream};
 

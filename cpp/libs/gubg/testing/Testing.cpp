@@ -144,6 +144,6 @@ int main()
     while (Thread::nrInstances() > 0){}
 
     TEST_REPORT_TYPE(OnlyErrors);
-    //We the program closes, another test report will be presented. Make sure we don't show the 1000 successes from the threads in Full
+    //When the program closes, another test report will be presented. Make sure we don't show the 1000 successes from the threads in Full
 }
 #endif
