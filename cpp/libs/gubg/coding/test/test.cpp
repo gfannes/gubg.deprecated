@@ -38,44 +38,33 @@ int main()
                 TEST_EQ(coded, encodePair(*p));
                 pair<unsigned long, unsigned long> p2;
                 decodePair(p2, coded);
-                TEST_EQ(p2.first, p->first);
-                TEST_EQ(p2.second, p->second);
+                TEST_EQ(p->first, p2.first);
+                TEST_EQ(p->second, p2.second);
             }
         }
         {
             Bits bits;
-            L("bits: " << toHex(bits.coded()));
+            string coded;
+            Ixs ixs;
+            coded = bits.encode();
+            L("bits: " << toHex(coded));
+            TEST_OK(Bits::decode(ixs, coded));
+            TEST_TRUE(ixs.empty());
             bits.add(true);
-            L("bits: " << toHex(bits.coded()));
+            coded = bits.encode();
+            L("bits: " << toHex(coded));
+            TEST_OK(Bits::decode(ixs, coded));
+            TEST_EQ(1, ixs.size());
+            TEST_EQ(Ixs({0}), ixs);
             bits.add(false);
-            L("bits: " << toHex(bits.coded()));
+            L("bits: " << toHex(bits.encode()));
             for (int i = 0; i < 100; ++i)
                 bits.add(true);
-            L("bits: " << toHex(bits.coded()));
+            L("bits: " << toHex(bits.encode()));
             bits.clear();
-            L("bits: " << toHex(bits.coded()));
+            L("bits: " << toHex(bits.encode()));
         }
     }
-#if 0
-    {
-        TEST_TAG(encode);
-        vector<string> plains = {"", "abc", "a" "\xd8" "b" "\xd9" "c", "\xd8" "\xd9" "\xd8" "\xd9" "\xd8" "\xd9" "\xd8"};
-        for (auto plain = plains.begin(); plain != plains.end(); ++plain)
-        {
-            L("plain : " << toHex(*plain));
-            string coded;
-            {
-                coded = encode(*plain, Format::Block);
-                L("block : " << toHex(coded));
-            }
-            {
-                coded = encode(*plain, Format::Stream);
-                L("stream: " << toHex(coded));
-            }
-            L("");
-        }
-    }
-#endif
     {
         TEST_TAG(Package);
         string coded;
@@ -97,6 +86,13 @@ int main()
                     L("plain: " << toHex(*plain));
                     pkg.encode(coded);
                     L("coded(" << to_s(*format) << "): " << toHex(coded));
+                    {
+                        Package pkg2;
+                        TEST_OK(pkg2.decode(coded));
+                        string plain2;
+                        TEST_OK(pkg2.getContent(plain2));
+                        TEST_EQ(*plain, plain2);
+                    }
                 }
             }
         }

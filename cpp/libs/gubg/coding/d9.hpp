@@ -61,10 +61,11 @@ namespace gubg
                 MSS_DEFAULT_CODES,
                 MissingStart, MissingEnd, MissingFormat,
                 TooFewAlterations,
-                RLETooSmall, RLETooLarge, RLEIllegaleMSBits, RLEClosingByteExpected,
+                RLETooSmall, RLETooLarge, RLEIllegalMSBits, RLEClosingByteExpected,
                 UnknownFormat,
                 UnsupportedVersion,
                 AlterationsNotAllowedForAsIs,
+                PackageTooSmall, NoContentPresent, CannotDecodeMeta, UnexpectedBitsEnd,
             };
 
             enum class Meta {Checksum, Version, Content, Source, Destination, PackageId};
@@ -73,6 +74,7 @@ namespace gubg
             enum class ContentType {NoContent = -1, Raw = 0, String_c, UNumber_be, UNumber_le, SNumber_be, SNumber_le, MsgpackMap, MsgpackArray};
             typedef unsigned long Address;
             typedef unsigned long Id;
+            typedef vector<unsigned long> Ixs;
 
             //Runlength encoding/decoding
             namespace rle
@@ -91,7 +93,10 @@ namespace gubg
                     public:
                         Bits();
                         void add(bool);
-                        string coded() const;
+                        string encode() const;
+                        //Returns the ixs where a 1 is found
+                        static ReturnCode decode(Ixs &ixs, const string &coded);
+                        static ReturnCode decode(Ixs &ixs, istream &coded);
                         void clear();
                         bool empty() const;
                     private:
@@ -120,8 +125,12 @@ namespace gubg
                     Package &destination(Address);
                     Package &id(Id);
 
+                    //Getters
+                    ReturnCode getContent(string &plain) const;
+
                     ReturnCode encode(string &coded) const;
-                    ReturnCode decode(string &plain) const;
+                    ReturnCode decode(const string &coded);
+                    ReturnCode decode(istream &is);
 
                 private:
                     bool checksum_;

@@ -134,10 +134,15 @@ namespace
         public:
             void add(unsigned long attrib){oss_ << gubg::coding::d9::rle::encodeNumber(attrib);}
             void add(unsigned long first, unsigned long second){oss_ << gubg::coding::d9::rle::encodePair(first, second);}
-            string coded() const {return oss_.str();}
+            string encode() const {return oss_.str();}
         private:
             ostringstream oss_;
     };
+
+    bool read_(ubyte &b, istream &is)
+    {
+        return is >> b;
+    }
 }
 
 namespace gubg
@@ -170,7 +175,7 @@ namespace gubg
                     for (auto it = coded.begin(); it != end; ++it)
                     {
                         ubyte b = *it;
-                        MSS_T((b&0xc0)!=0xc0, RLEIllegaleMSBits);
+                        MSS_T((b&0xc0)!=0xc0, RLEIllegalMSBits);
                         if (b&0x80)
                         {
                             //This is the closing byte of the RLE
@@ -262,7 +267,7 @@ namespace gubg
                     for (auto it = coded.begin(); it != end; ++it)
                     {
                         ubyte b = *it;
-                        MSS_T((b&0xc0)!=0xc0, RLEIllegaleMSBits);
+                        MSS_T((b&0xc0)!=0xc0, RLEIllegalMSBits);
                         if (b&0x80)
                         {
                             //This is the closing byte of the RLE
@@ -294,7 +299,7 @@ namespace gubg
                     if (++nr >= nrBits)
                         appendCurrentToBuffer_();
                 }
-                string Bits::coded() const
+                string Bits::encode() const
                 {
                     string res;
                     if (buffer.empty())
@@ -309,6 +314,44 @@ namespace gubg
                             res.push_back(*it);
                     }
                     return std::move(res);
+                }
+                ReturnCode Bits::decode(Ixs &ixs, const string &coded)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    ixs.clear();
+                    unsigned long offset = 0;
+                    auto end = coded.rend();
+                    for (auto it = coded.rbegin(); it != end; ++it)
+                    {
+                        ubyte b = *it;
+                        const int nrBits = (b & 0x80 ? 6 : 7);
+                        for (int i = 0; i < nrBits; ++i)
+                            if (b & 1<<i)
+                                ixs.push_back(offset+i);
+                        offset += nrBits;
+                    }
+                    MSS_END();
+                }
+                ReturnCode Bits::decode(Ixs &ixs, istream &is)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    //Read a RLE encoded bits into a string
+                    string coded;
+                    {
+                        while (true)
+                        {
+                            ubyte b;
+                            MSS_T(read_(b, is), UnexpectedBitsEnd);
+                            MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                            coded.push_back(b);
+                            if (0x80 & b)
+                                //This is the end-byte of the RLE
+                                break;
+                        }
+                    }
+                    //Convert the coded string into ixs
+                    MSS(decode(ixs, coded));
+                    MSS_END();
                 }
                 void Bits::clear()
                 {
@@ -350,6 +393,8 @@ namespace gubg
                 src_(AddressNotSet),
                 dst_(AddressNotSet),
                 id_(IdNotSet){}
+
+            //Setters
             Package &Package::checksum(bool b){checksum_ = b; return *this;}
             Package &Package::format(Format format){format_ = format; return *this;}
             Package &Package::content(string c, ContentType contentType)
@@ -367,6 +412,15 @@ namespace gubg
             Package &Package::source(Address address){src_ = address; return *this;}
             Package &Package::destination(Address address){dst_ = address; return *this;}
             Package &Package::id(Id i){id_ = i; return *this;}
+
+            //Getters
+            ReturnCode Package::getContent(string &plain) const
+            {
+                MSS_BEGIN(ReturnCode);
+                MSS_T(contentType_ != ContentType::NoContent, NoContentPresent);
+                plain = content_;
+                MSS_END();
+            }
 
             ReturnCode Package::encode(string &coded) const
             {
@@ -416,7 +470,7 @@ namespace gubg
                                             }
                                             else
                                             {
-                                                d9FreeBuffer.append(alterations.coded());
+                                                d9FreeBuffer.append(alterations.encode());
                                                 d9FreeBuffer.append(coded);
                                             }
                                             break;
@@ -463,8 +517,8 @@ namespace gubg
                     else
                         meta.add(false);
 
-                    coss << meta.coded();
-                    coss << attributes.coded();
+                    coss << meta.encode();
+                    coss << attributes.encode();
                     if (hasContent)
                         coss << d9FreeBuffer;
                     if (checksum_)
@@ -479,9 +533,20 @@ namespace gubg
                 coded = oss.str();
                 MSS_END();
             }
-            ReturnCode Package::decode(string &plain) const
+            ReturnCode Package::decode(const string &coded)
+            {
+                //For now, we use the streamed version for reading
+                istringstream iss(coded);
+                return decode(iss);
+            }
+            ReturnCode Package::decode(istream &is)
             {
                 MSS_BEGIN(ReturnCode);
+                ubyte b;
+                MSS_T(read_(b, is), PackageTooSmall);
+                MSS_T(b == D9, MissingStart);
+                Ixs ixs;
+                MSS_T(rle::Bits::decode(ixs, is), CannotDecodeMeta);
                 MSS_END();
             }
         }

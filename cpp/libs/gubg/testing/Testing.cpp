@@ -45,6 +45,35 @@ namespace gubg
             {
                 return lhs == rhs;
             }
+        bool isPrintable(char ch)
+        {
+            if ('a' <= ch && ch <= 'z')
+                return true;
+            if ('A' <= ch && ch <= 'Z')
+                return true;
+            return false;
+        }
+        std::string toString_(const std::string &str)
+        {
+            std::ostringstream oss;
+            std::ostringstream ossHex;
+            OnlyOnce skipPipe;
+            int nrHex = 0;
+            oss << '"';
+            for (auto it = str.begin(); it != str.end(); ++it)
+            {
+                char ch = *it;
+                bool ip = isPrintable(ch);
+                if (!ip)
+                    ++nrHex;
+                oss <<  (ip ? ch : '.');
+                ossHex << (skipPipe() ? "" : "|") << std::hex << std::setw(2) << std::setfill('0') << (0xff&(unsigned int)ch);
+            }
+            oss << '"';
+            if (nrHex)
+                oss << " (" << ossHex.str() << ")";
+            return oss.str();
+        }
     }
 }
 

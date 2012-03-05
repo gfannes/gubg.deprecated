@@ -6,9 +6,9 @@
 #include <string>
 #include <ostream>
 #include <iostream>
-#include <iomanip>
 #include <vector>
 #include <cstring>
+#include <iomanip>
 
 #include <sstream>
 
@@ -92,6 +92,19 @@ namespace gubg
                 oss << t;
                 return oss.str();
             }
+
+        bool isPrintable(char ch);
+        std::string toString_(const std::string &str);
+        template <typename T>
+            std::string toString_(const std::vector<T> &vec)
+            {
+                std::ostringstream oss;
+                oss << '{';
+                for (auto it = vec.begin(); it != vec.end(); ++it)
+                    oss << (int)*it << ", ";
+                oss << '}';
+                return oss.str();
+            }
         template <>
             std::string toString_<std::nullptr_t>(const std::nullptr_t &);
 
@@ -137,6 +150,26 @@ namespace gubg
                     std::cout << location << ": it should be false, but it is true." << std::endl;
             }
 #define TEST_FALSE(value) gubg::testing::test_false((value), HERE(), l_gubg_testing_test_tag_)
+
+        template<typename T>
+            void test_ok(const T &v, SourceLocation location, TestTag &testTag)
+            {
+                bool success = (T::OK == v);
+                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                if (!success)
+                    std::cout << location << ": it should be OK, but it is not." << std::endl;
+            }
+#define TEST_OK(value) gubg::testing::test_ok((value), HERE(), l_gubg_testing_test_tag_)
+
+        template<typename T>
+            void test_ko(const T &v, SourceLocation location, TestTag &testTag)
+            {
+                bool success = (T::OK != v);
+                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                if (!success)
+                    std::cout << location << ": it should be not OK, but it is." << std::endl;
+            }
+#define TEST_KO(value) gubg::testing::test_ko((value), HERE(), l_gubg_testing_test_tag_)
 
 #define TEST_THROW(ExceptionType, expr) \
         try \
