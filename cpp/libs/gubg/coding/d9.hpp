@@ -15,12 +15,12 @@
 //            0xd9     metabyte attributes    content                                      checksum  0xd9     0xff
 // * Package: 11011001 0bbbbbbb (rle-number)* (<0xd9-free data, stream or block encoded>)? 0bbbbbbb (11011001 11111111)?
 // * Meta-bits for version 0:
-//    * Bit 0: version
-//    * Bit 1: package has content. A content format-type pair attribute is given
-//    * Bit 2: source attribute is present (default: unknown)
-//    * Bit 3: destination attribute is present (default: everybody)
-//    * Bit 4: package-id attribute is present
-// * Package has 7 bit checksum with msbit == 0, either before the closing 0xd9, or at the end of a content-less package
+//    * Bit 0: 7-bit checksum is added, either at the end, or before the close 0xd9, 0xff pair
+//    * Bit 1: version
+//    * Bit 2: package has content and content format/type pair attribute is given
+//    * Bit 3: source attribute is present (default: unknown)
+//    * Bit 4: destination attribute is present (default: everybody)
+//    * Bit 5: package-id attribute is present
 // * Run-length encoded number: (0bbbbbbb)* 10bbbbbb
 //    * Big-endian byte-order
 //
@@ -64,10 +64,11 @@ namespace gubg
                 RLETooSmall, RLETooLarge, RLEIllegaleMSBits, RLEClosingByteExpected,
                 UnknownFormat,
                 UnsupportedVersion,
+                AlterationsNotAllowedForAsIs,
             };
 
-            enum class Meta { Version, Content, Source, Destination, PackageId, };
-            enum class Format {Unknown = -1, Block, Stream};
+            enum class Meta {Checksum, Version, Content, Source, Destination, PackageId};
+            enum class Format {Unknown = -1, AsIs, Block, Stream};
             string to_s(Format);
             enum class ContentType {NoContent = -1, Raw = 0, String_c, UNumber_be, UNumber_le, SNumber_be, SNumber_le, MsgpackMap, MsgpackArray};
             typedef unsigned long Address;
@@ -92,6 +93,7 @@ namespace gubg
                         void add(bool);
                         string coded() const;
                         void clear();
+                        bool empty() const;
                     private:
                         void appendCurrentToBuffer_();
 
@@ -110,6 +112,7 @@ namespace gubg
                     Package();
 
                     //Setters, allowing chained setup
+                    Package &checksum(bool);
                     Package &format(Format);
                     Package &content(string plain, ContentType ct = ContentType::Raw);
                     Package &content(string &&plain, ContentType ct = ContentType::Raw);
@@ -121,6 +124,7 @@ namespace gubg
                     ReturnCode decode(string &plain) const;
 
                 private:
+                    bool checksum_;
                     size_t version_;
                     Format format_;
                     ContentType contentType_;

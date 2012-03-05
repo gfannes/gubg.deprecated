@@ -310,6 +310,15 @@ namespace gubg
                     }
                     return std::move(res);
                 }
+                void Bits::clear()
+                {
+                    nr = current = 0;
+                    buffer.clear();
+                }
+                bool Bits::empty() const
+                {
+                    return buffer.empty() && nr == 0;
+                }
                 void Bits::appendCurrentToBuffer_()
                 {
                     if (buffer.empty())
@@ -317,11 +326,6 @@ namespace gubg
                     buffer.push_back(current);
                     nr = 0;
                     current = 0;
-                }
-                void Bits::clear()
-                {
-                    nr = current = 0;
-                    buffer.clear();
                 }
             }
 
@@ -339,12 +343,14 @@ namespace gubg
             const static long AddressNotSet = -1;
             const static long IdNotSet = -1;
             Package::Package():
+                checksum_(true),
                 version_(0),
                 format_(Format::Unknown),
                 contentType_(ContentType::NoContent),
                 src_(AddressNotSet),
                 dst_(AddressNotSet),
                 id_(IdNotSet){}
+            Package &Package::checksum(bool b){checksum_ = b; return *this;}
             Package &Package::format(Format format){format_ = format; return *this;}
             Package &Package::content(string c, ContentType contentType)
             {
@@ -374,6 +380,9 @@ namespace gubg
                     rle::Bits meta;
                     Attributes attributes;
 
+                    //Checksum
+                    meta.add(checksum_);
+
                     //Version
                     {
                         MSS_T(version_ == 0, UnsupportedVersion);
@@ -383,27 +392,44 @@ namespace gubg
                     string d9FreeBuffer;
                     if (hasContent)
                     {
-                        meta.add(true);//Content
+                        Format realFormat = format_;
                         switch (format_)
                         {
+                            case Format::AsIs:
                             case Format::Block:
                                 {
-                                    attributes.add(0, (unsigned long)contentType_);
                                     rle::Bits alterations;
                                     string coded;
                                     encodeInBlockFormat_(alterations, coded, content_);
-                                    d9FreeBuffer.append(alterations.coded());
-                                    d9FreeBuffer.append(coded);
+                                    switch (format_)
+                                    {
+                                        case Format::AsIs:
+                                            MSS_T(alterations.empty(), AlterationsNotAllowedForAsIs);
+                                            d9FreeBuffer.append(coded);
+                                            break;
+                                        case Format::Block:
+                                            if (alterations.empty())
+                                            {
+                                                //When no 0dx8/9 characters are used, we can save on the alterations by switching to Format::AsIs
+                                                realFormat = (alterations.empty() ? Format::AsIs : Format::Block);
+                                                d9FreeBuffer.append(coded);
+                                            }
+                                            else
+                                            {
+                                                d9FreeBuffer.append(alterations.coded());
+                                                d9FreeBuffer.append(coded);
+                                            }
+                                            break;
+                                    }
                                 }
                                 break;
                             case Format::Stream:
-                                {
-                                    attributes.add(1, (unsigned long)contentType_);
                                     encodeInStreamFormat_(d9FreeBuffer, content_);
-                                }
                                 break;
                             default: MSS_L(UnknownFormat); break;
                         }
+                        meta.add(true);//Content
+                        attributes.add((unsigned long)realFormat, (unsigned long)contentType_);
                     }
                     else
                     {
@@ -441,8 +467,9 @@ namespace gubg
                     coss << attributes.coded();
                     if (hasContent)
                         coss << d9FreeBuffer;
-                    //Added the 7 lsbits fo the checksum
-                    oss << ubyte(coss.checksum & 0x7f);
+                    if (checksum_)
+                        //Added the 7 lsbits of the checksum
+                        oss << ubyte(coss.checksum & 0x7f);
                 }
                 if (hasContent)
                 {
