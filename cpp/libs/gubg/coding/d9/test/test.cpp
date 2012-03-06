@@ -1,4 +1,5 @@
-#include "gubg/coding/d9.hpp"
+#include "gubg/coding/d9/d9.hpp"
+#include "gubg/coding/d9/rle.hpp"
 #include "gubg/testing/Testing.hpp"
 #include <string>
 #include <iostream>
