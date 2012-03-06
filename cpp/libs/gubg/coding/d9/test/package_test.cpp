@@ -16,18 +16,22 @@ int main()
         auto checksums = {true, false};
         for (auto cs = checksums.begin(); cs != checksums.end(); ++cs)
         {
+            string cs_s = (*cs ? "checksum" : "no checksum");
             Package pkg;
             pkg.format(*format);
             pkg.checksum(*cs);
             pkg.encode(coded);
-            L("coded(" << to_s(*format) << ", " << (*cs ? "checksum" : "no checksum") << "): " << toHex(coded));
-            vector<string> plains = {"", "abc", "a" "\xd8" "b" "\xd9" "c", "\xd8" "\xd9" "\xd8" "\xd9" "\xd8" "\xd9" "\xd8", string(100, '0'), string(100, 0xd9)};
+            L("coded(" << to_s(*format) << ", " << cs_s << "): " << toHex(coded));
+            string alternating;
+            for (int i = 0; i < 50; ++i)
+                alternating.append("\xd8" "a");
+            vector<string> plains = {"", "abc", "a" "\xd8" "b" "\xd9" "c", "\xd8" "\xd9" "\xd8" "\xd9" "\xd8" "\xd9" "\xd8", string(100, '0'), string(100, 0xd9), alternating};
             for (auto plain = plains.begin(); plain != plains.end(); ++plain)
             {
                 pkg.content(*plain);
                 L("plain: " << toHex(*plain));
                 pkg.encode(coded);
-                L("coded(" << to_s(*format) << "): length: " << coded.size() << ", hex: " << toHex(coded));
+                L("coded(" << to_s(*format) << ", " << cs_s << "): length: " << coded.size() << ", hex: " << toHex(coded));
                 {
                     Package pkg2;
                     TEST_OK(pkg2.decode(coded));

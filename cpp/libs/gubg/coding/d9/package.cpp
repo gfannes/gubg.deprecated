@@ -113,6 +113,7 @@ namespace
             plain = coded.substr(i+1);
         }
         auto ix = ixs.begin();
+        auto ixend = ixs.end();
         int nrDX = 0;
         auto end = plain.end();
         for (auto it = plain.begin(); it != end; ++it)
@@ -120,7 +121,7 @@ namespace
             ubyte b = *it;
             if (b == Byte::D8)
             {
-                if (nrDX == *ix)
+                if (ix != ixend && nrDX == *ix)
                 {
                     *it = Byte::D9;
                     ++ix;
@@ -252,110 +253,111 @@ namespace gubg
             {
                 MSS_BEGIN(ReturnCode);
                 ostringstream oss;
+                rle::Bits meta;
+                Attributes attributes;
+
+                //Checksum
+                meta.add(checksum_);
+
+                //Version
+                {
+                    MSS_T(version_ == 0, UnsupportedVersion);
+                    meta.add(false);
+                }
+
+                string d9FreeBuffer;
                 const bool hasContent = contentType_ != ContentType::NoContent;
-                //Add everything that is covered by the checksum
+                if (hasContent)
+                {
+                    Format realFormat = format_;
+                    switch (format_)
+                    {
+                        case Format::AsIs:
+                        case Format::Block:
+                            {
+                                rle::Bits alterations;
+                                string coded;
+                                encodeInBlockFormat_(alterations, coded, content_);
+                                switch (format_)
+                                {
+                                    case Format::AsIs:
+                                        MSS_T(alterations.empty(), AlterationsNotAllowedForAsIs);
+                                        d9FreeBuffer.append(coded);
+                                        break;
+                                    case Format::Block:
+                                        if (alterations.empty())
+                                        {
+                                            //When no 0dx8/9 characters are used, we can save on the alterations by switching to Format::AsIs
+                                            realFormat = (alterations.empty() ? Format::AsIs : Format::Block);
+                                            d9FreeBuffer.append(coded);
+                                        }
+                                        else
+                                        {
+                                            d9FreeBuffer.append(alterations.encode());
+                                            d9FreeBuffer.append(coded);
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case Format::Stream:
+                            encodeInStreamFormat_(d9FreeBuffer, content_);
+                            break;
+                        default: MSS_L(UnknownFormat); break;
+                    }
+                    meta.add(true);//Content
+                    attributes.add((unsigned long)realFormat, (unsigned long)contentType_);
+                }
+                else
+                {
+                    meta.add(false);//Content
+                }
+
+                //Source
+                if (src_ >= 0)
+                {
+                    meta.add(true);
+                    attributes.add(src_);
+                }
+                else
+                    meta.add(false);
+
+                //Destination
+                if (dst_ >= 0)
+                {
+                    meta.add(true);
+                    attributes.add(dst_);
+                }
+                else
+                    meta.add(false);
+
+                //PackageId
+                if (id_ >= 0)
+                {
+                    meta.add(true);
+                    attributes.add(id_);
+                }
+                else
+                    meta.add(false);
+
+                //Add all collected info and compute a checksum
                 {
                     ChecksumStream coss(oss);
                     coss << Byte::D9;
-                    rle::Bits meta;
-                    Attributes attributes;
-
-                    //Checksum
-                    meta.add(checksum_);
-
-                    //Version
-                    {
-                        MSS_T(version_ == 0, UnsupportedVersion);
-                        meta.add(false);
-                    }
-
-                    string d9FreeBuffer;
-                    if (hasContent)
-                    {
-                        Format realFormat = format_;
-                        switch (format_)
-                        {
-                            case Format::AsIs:
-                            case Format::Block:
-                                {
-                                    rle::Bits alterations;
-                                    string coded;
-                                    encodeInBlockFormat_(alterations, coded, content_);
-                                    switch (format_)
-                                    {
-                                        case Format::AsIs:
-                                            MSS_T(alterations.empty(), AlterationsNotAllowedForAsIs);
-                                            d9FreeBuffer.append(coded);
-                                            break;
-                                        case Format::Block:
-                                            if (alterations.empty())
-                                            {
-                                                //When no 0dx8/9 characters are used, we can save on the alterations by switching to Format::AsIs
-                                                realFormat = (alterations.empty() ? Format::AsIs : Format::Block);
-                                                d9FreeBuffer.append(coded);
-                                            }
-                                            else
-                                            {
-                                                d9FreeBuffer.append(alterations.encode());
-                                                d9FreeBuffer.append(coded);
-                                            }
-                                            break;
-                                    }
-                                }
-                                break;
-                            case Format::Stream:
-                                encodeInStreamFormat_(d9FreeBuffer, content_);
-                                break;
-                            default: MSS_L(UnknownFormat); break;
-                        }
-                        meta.add(true);//Content
-                        attributes.add((unsigned long)realFormat, (unsigned long)contentType_);
-                    }
-                    else
-                    {
-                        meta.add(false);//Content
-                    }
-
-                    //Source
-                    if (src_ >= 0)
-                    {
-                        meta.add(true);
-                        attributes.add(src_);
-                    }
-                    else
-                        meta.add(false);
-
-                    //Destination
-                    if (dst_ >= 0)
-                    {
-                        meta.add(true);
-                        attributes.add(dst_);
-                    }
-                    else
-                        meta.add(false);
-
-                    //PackageId
-                    if (id_ >= 0)
-                    {
-                        meta.add(true);
-                        attributes.add(id_);
-                    }
-                    else
-                        meta.add(false);
-
                     coss << meta.encode();
                     coss << attributes.encode();
                     if (hasContent)
+                    {
                         coss << d9FreeBuffer;
+                        coss << Byte::D9;
+                        coss << Byte::End;
+                    }
+
                     if (checksum_)
                         //Added the 7 lsbits of the checksum
                         oss << ubyte(coss.checksum & 0x7f);
                 }
-                if (hasContent)
-                {
-                    oss << Byte::D9;
-                    oss << Byte::End;
-                }
+
                 coded = oss.str();
                 MSS_END();
             }
@@ -393,7 +395,6 @@ namespace gubg
                         default: MSS_L(UnknownMetaField); break;
                     }
                 }
-                ubyte checksum = 0;
                 if (contentType_ != ContentType::NoContent)
                 {
                     string coded;
@@ -403,12 +404,6 @@ namespace gubg
                         MSS_T(input.read(b), ExpectedEndByte);
                         MSS_T(b == Byte::End, ExpectedEndByte);
                     }
-                    if (checksum_)
-                    {
-                        MSS_T(!coded.empty(), ExpectedChecksum);
-                        checksum = coded[coded.size()-1];
-                        coded.resize(coded.size()-1);
-                    }
                     switch (format_)
                     {
                         case Format::AsIs: content_ = std::move(coded); break;
@@ -417,8 +412,10 @@ namespace gubg
                         default: MSS_L(IllegalFormat); break;
                     }
                 }
-                else if (checksum_)
+                if (checksum_)
                 {
+                    //Checksum us not checked yet
+                    ubyte checksum = 0;
                     MSS_T(input.read(checksum), ExpectedChecksum);
                 }
                 MSS_END();
