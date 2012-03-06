@@ -7,6 +7,8 @@ using gubg::coding::ubyte;
 
 namespace
 {
+    using namespace gubg::coding::d9;
+
     const ubyte D8 = 0xd8;
     const ubyte D9 = 0xd9;
     const ubyte EndByte = 0xff;
@@ -97,6 +99,65 @@ namespace
         coded = oss.str();
     }
 
+    ReturnCode decodeFromBlockFormat_(string &plain, const string &coded)
+    {
+        MSS_BEGIN(ReturnCode);
+        Ixs ixs;
+        {
+            int i = 0;
+            for (; i < coded.size(); ++i)
+            {
+                ubyte b = coded[i];
+                MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                if (b & 0x80)
+                    break;
+            }
+            MSS(rle::Bits::decode(ixs, coded.substr(0, i+1)));
+            plain = coded.substr(i+1);
+        }
+        auto ix = ixs.begin();
+        int nrDX = 0;
+        auto end = plain.end();
+        for (auto it = plain.begin(); it != end; ++it)
+        {
+            ubyte b = *it;
+            if (b == D8)
+            {
+                if (nrDX == *ix)
+                {
+                    *it = D9;
+                    ++ix;
+                }
+                ++nrDX;
+            }
+        }
+        MSS_END();
+    }
+
+    ReturnCode decodeFromStreamFormat_(string &plain, const string &coded)
+    {
+        MSS_BEGIN(ReturnCode);
+        ostringstream oss;
+        auto end = coded.end();
+        for (auto it = coded.begin(); it != end; ++it)
+        {
+            ubyte b = *it;
+            if (b == D8)
+            {
+                ++it;
+                MSS_T(it != end, IllegalEscapeSequence);
+                b = *it;
+                int nr = (b>>5);
+                for (int i = 0; i < nr; ++i, b >>= 1)
+                    oss << (b&0x01 ? D9 : D8);
+            }
+            else
+                oss << b;
+        }
+        plain = oss.str();
+        MSS_END();
+    }
+
     template <typename Source>
         string convertBytesToString_(Source &&bytes)
         {
@@ -141,7 +202,27 @@ namespace
 
     bool read_(ubyte &b, istream &is)
     {
-        return is >> b;
+        if (!is.good())
+            return false;
+        int ch = is.get();
+        if (ch == EOF)
+            return false;
+        b = 0xff&ch;
+        return true;
+    }
+    bool readUntil_(string &str, const ubyte wanted, istream &is)
+    {
+        str.clear();
+        while (true)
+        {
+            ubyte b;
+            if (!read_(b, is))
+                return false;
+            if (b == wanted)
+                return true;
+            str.push_back(b);
+        }
+        return false;
     }
 }
 
@@ -153,6 +234,21 @@ namespace gubg
         {
             namespace rle
             {
+                ReturnCode readRLE(string &coded, istream &is)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    coded.clear();
+                    while (true)
+                    {
+                        ubyte b;
+                        MSS_T(read_(b, is), RLETooSmall);
+                        MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                        coded.push_back(b);
+                        if (b & 0x80)
+                            break;
+                    }
+                    MSS_END();
+                }
                 string encodeNumber(unsigned long v)
                 {
                     if (v <= 0x3f)
@@ -189,6 +285,14 @@ namespace gubg
                             v |= (0x7f&b);
                         }
                     }
+                    MSS_END();
+                }
+                ReturnCode decodeNumber(unsigned long &v, istream &is)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    string coded;
+                    MSS(readRLE(coded, is));
+                    MSS(decodeNumber(v, coded));
                     MSS_END();
                 }
                 string encodePair(unsigned long first, unsigned long second)
@@ -285,6 +389,14 @@ namespace gubg
                             second |= (0x0f&b);
                         }
                     }
+                    MSS_END();
+                }
+                ReturnCode decodePair(unsigned long &first, unsigned long &second, istream &is)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    string coded;
+                    MSS(readRLE(coded, is));
+                    MSS(decodePair(first, second, coded));
                     MSS_END();
                 }
 
@@ -478,7 +590,7 @@ namespace gubg
                                 }
                                 break;
                             case Format::Stream:
-                                    encodeInStreamFormat_(d9FreeBuffer, content_);
+                                encodeInStreamFormat_(d9FreeBuffer, content_);
                                 break;
                             default: MSS_L(UnknownFormat); break;
                         }
@@ -547,7 +659,66 @@ namespace gubg
                 MSS_T(b == D9, MissingStart);
                 Ixs ixs;
                 MSS_T(rle::Bits::decode(ixs, is), CannotDecodeMeta);
+                clear_();
+                for (auto ix = ixs.begin(); ix != ixs.end(); ++ix)
+                {
+                    switch (*ix)
+                    {
+                        case Meta::Checksum: checksum_ = true; break;
+                        case Meta::Version: MSS_L(UnsupportedVersion); break;
+                        case Meta::Content:
+                                            {
+                                                unsigned long format, type;
+                                                MSS_T(rle::decodePair(format, type, is), CannotDecodeContentMeta);
+                                                format_ = (Format)format;
+                                                contentType_ = (ContentType)type;
+                                            }
+                                            break;
+                        case Meta::Source: MSS_T(rle::decodeNumber(src_, is), CannotDecodeSource); break;
+                        case Meta::Destination: MSS_T(rle::decodeNumber(src_, is), CannotDecodeDestination); break;
+                        case Meta::PackageId: MSS_T(rle::decodeNumber(src_, is), CannotDecodeId); break;
+                        default: MSS_L(UnknownMetaField); break;
+                    }
+                }
+                ubyte checksum = 0;
+                if (contentType_ != ContentType::NoContent)
+                {
+                    string coded;
+                    MSS_T(readUntil_(coded, D9, is), CannotReadCodedContent);
+                    {
+                        ubyte b;
+                        MSS_T(read_(b, is), ExpectedEndByte);
+                        MSS_T(b == EndByte, ExpectedEndByte);
+                    }
+                    if (checksum_)
+                    {
+                        MSS_T(!coded.empty(), ExpectedChecksum);
+                        checksum = coded[coded.size()-1];
+                        coded.resize(coded.size()-1);
+                    }
+                    switch (format_)
+                    {
+                        case Format::AsIs: content_ = std::move(coded); break;
+                        case Format::Block: MSS(decodeFromBlockFormat_(content_, coded)); break;
+                        case Format::Stream: MSS(decodeFromStreamFormat_(content_, coded)); break;
+                        default: MSS_L(IllegalFormat); break;
+                    }
+                }
+                else if (checksum_)
+                {
+                    MSS_T(read_(checksum, is), ExpectedChecksum);
+                }
                 MSS_END();
+            }
+            void Package::clear_()
+            {
+                checksum_ = false;
+                version_ = 0;
+                format_ = Format::Unknown;
+                contentType_ = ContentType::NoContent;
+                src_ = AddressNotSet;
+                dst_ = AddressNotSet;
+                id_ = IdNotSet;
             }
         }
     }

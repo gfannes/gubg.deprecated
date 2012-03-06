@@ -79,13 +79,13 @@ int main()
                 pkg.checksum(*cs);
                 pkg.encode(coded);
                 L("coded(" << to_s(*format) << ", " << (*cs ? "checksum" : "no checksum") << "): " << toHex(coded));
-                vector<string> plains = {"", "abc", "a" "\xd8" "b" "\xd9" "c", "\xd8" "\xd9" "\xd8" "\xd9" "\xd8" "\xd9" "\xd8"};
+                vector<string> plains = {"", "abc", "a" "\xd8" "b" "\xd9" "c", "\xd8" "\xd9" "\xd8" "\xd9" "\xd8" "\xd9" "\xd8", string(100, '0'), string(100, 0xd9)};
                 for (auto plain = plains.begin(); plain != plains.end(); ++plain)
                 {
                     pkg.content(*plain);
                     L("plain: " << toHex(*plain));
                     pkg.encode(coded);
-                    L("coded(" << to_s(*format) << "): " << toHex(coded));
+                    L("coded(" << to_s(*format) << "): length: " << coded.size() << ", hex: " << toHex(coded));
                     {
                         Package pkg2;
                         TEST_OK(pkg2.decode(coded));

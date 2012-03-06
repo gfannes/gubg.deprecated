@@ -2,13 +2,14 @@
 #define gubg_coding_d9_hpp
 
 //The d9-coding can be used to encode a binary buffer for serial transport. It features:
-// * Space-efficiency, especially if 0xd9 and 0xd8 do not occur a lot (e.g., won't clash with current msgpack type identifiers)
-//    * 100 bytes, no 0xd9 nor 0xd8 => 105 in stream format, 106 bytes in block format
-//    * 100 bytes, all 0xd9 or 0xd8 => 119 in stream format, 118 bytes in block format
+// * Space-efficiency, especially if 0xd9 and 0xd8 occur infrequent
+//    * 100 bytes, no 0xd9 nor 0xd8 => 105 in stream format, 105 bytes in block format (+ optional checksum)
+//    * 100 bytes, all 0xd9 or 0xd8 => 119 in stream format, 118 bytes in block format (+ optional checksum)
 // * Performance-efficiency
 // * Stream-format, allowing encoding/decoding as data arrives
 // * Block-format, does not require memmoves
 // * Both the start and end of an encoded message can be found unambiguously in a buffer of messages
+// * Won't clash with current msgpack type identifiers
 //
 //The general package format looks like:
 //
@@ -21,29 +22,15 @@
 //    * Bit 3: source attribute is present (default: unknown)
 //    * Bit 4: destination attribute is present (default: everybody)
 //    * Bit 5: package-id attribute is present
-// * Run-length encoded number: (0bbbbbbb)* 10bbbbbb
+//    * Bit 6: sequence number attribute is present (for a partial package)
+//    * Bit 7: total number attribute is present (for a partial package)
+//
+// * Run-length encoded number/bits: (0bbbbbbb)* 10bbbbbb
 //    * Big-endian byte-order
-//
-// * Extended attributes:
-//    * Bit 0: sequence number for a partial package
-//    * Bit 1: total number for a partial package
-//
-//DEPRECATED:
-//                --package-start--   alterations         ----------0xd9-free-buffer--------------- ---package-end---
-//                0xd9     0xd9       |||||||   0xff                                               0xd9     0xd8
-// * Block format:  11011001 11011001 (0???????)* 11111111  <0xd9-free data, same size as orig data>  11011001 11011000
-// * Stream format: 11011001 11011001             10000000 (<0xd8/9-free data> | 11011000 ###?????)* 11011001 11011000
-//                                              0x80
-//
-// * Package start     : <0xd9 0xd9>
-// * Block-format        : All alterations are given upfront and ended with a 0xff. There should not be more 0xd8
-//                       occurences in the 0xd9-free buffer than alterations specified
-// * Stream-format       : Each occurence of (0xd8 ###?????) corresponds with an escaped sequence of at most 5 0xd8 or 0xd9 bytes
-//                       ### indicate how many 0xd8/9 bytes the escape sequence should be expanded to
-//                       ????? indicate the alterations: 0 => 0xd8, 1 => 0xd9, from least to most significant
-// * Alteration bit (?): 0 => 0xd8, 1 => 0xd9
-//                       Excess alterations should be set to 0
-// * Package end       : <0xd9 0xd8>
+// * Run-length encoded pair: (0fffssss)* 10ffssss
+//    * Big-endian byte-order
+//    * 'f'-bits are for the first number of the pair
+//    * 's'-bits are for the second number of the pair
 
 #include "gubg/mss.hpp"
 #include <string>
@@ -59,16 +46,14 @@ namespace gubg
             enum class ReturnCode
             {
                 MSS_DEFAULT_CODES,
-                MissingStart, MissingEnd, MissingFormat,
-                TooFewAlterations,
-                RLETooSmall, RLETooLarge, RLEIllegalMSBits, RLEClosingByteExpected,
-                UnknownFormat,
-                UnsupportedVersion,
-                AlterationsNotAllowedForAsIs,
-                PackageTooSmall, NoContentPresent, CannotDecodeMeta, UnexpectedBitsEnd,
+                MissingStart, MissingEnd, MissingFormat, TooFewAlterations, RLETooSmall,
+                RLETooLarge, RLEIllegalMSBits, RLEClosingByteExpected, UnknownFormat, UnsupportedVersion,
+                AlterationsNotAllowedForAsIs, PackageTooSmall, NoContentPresent, UnexpectedBitsEnd, CannotDecodeMeta,
+                CannotDecodeContentMeta, UnknownMetaField, CannotDecodeSource, CannotDecodeDestination, CannotDecodeId,
+                CannotReadCodedContent, ExpectedChecksum, ExpectedEndByte, IllegalEscapeSequence, IllegalFormat, 
             };
 
-            enum class Meta {Checksum, Version, Content, Source, Destination, PackageId};
+            enum class Meta {Checksum, Version, Content, Source, Destination, PackageId, SequenceNr, SequenceTotal};
             enum class Format {Unknown = -1, AsIs, Block, Stream};
             string to_s(Format);
             enum class ContentType {NoContent = -1, Raw = 0, String_c, UNumber_be, UNumber_le, SNumber_be, SNumber_le, MsgpackMap, MsgpackArray};
@@ -79,10 +64,31 @@ namespace gubg
             //Runlength encoding/decoding
             namespace rle
             {
+                ReturnCode readRLE(string &coded, istream &is);
                 string     encodeNumber(unsigned long);
                 ReturnCode decodeNumber(unsigned long &number, const string &coded);
+                ReturnCode decodeNumber(unsigned long &number, istream &coded);
+                template <typename Number>
+                    ReturnCode decodeNumber(Number &number, const string &coded)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        unsigned long v;
+                        MSS(decodeNumber(v, coded));
+                        number = v;
+                        MSS_END();
+                    }
+                template <typename Number>
+                    ReturnCode decodeNumber(Number &number, istream &coded)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        unsigned long v;
+                        MSS(decodeNumber(v, coded));
+                        number = v;
+                        MSS_END();
+                    }
                 string     encodePair(unsigned long first, unsigned long second);
                 ReturnCode decodePair(unsigned long &first, unsigned long &second, const string &coded);
+                ReturnCode decodePair(unsigned long &first, unsigned long &second, istream &coded);
                 template <typename Base>
                     string encodePair(pair<Base, Base> p){return encodePair(p.first, p.second);}
                 template <typename Base>
@@ -133,6 +139,8 @@ namespace gubg
                     ReturnCode decode(istream &is);
 
                 private:
+                    void clear_();
+
                     bool checksum_;
                     size_t version_;
                     Format format_;
