@@ -16,6 +16,16 @@ def operatingSystem
         "Other"
     end
 end
+def operatingSystem?(type)
+    case type
+    when :linux
+        %w[Linux Linux64].include?(operatingSystem)
+    when :windows
+        %w[Windows MinGW].include?(operatingSystem)
+    else
+        raise("Unknown operating system #{type}")
+    end
+end
 def mingw?
     operatingSystem == "MinGW"
 end
@@ -322,7 +332,7 @@ class String
         end
     end
 
-    def addExtension(ext)
+    def addExtension!(ext)
 	    case ext
 	    when NilClass
 	    when ""
@@ -333,7 +343,7 @@ class String
 	    end
 	    self
     end
-    def setExtension(ext)
+    def setExtension!(ext)
 	    case ext
 	    when NilClass
 	    when ""

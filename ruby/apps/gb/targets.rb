@@ -19,7 +19,7 @@ module Executer
 				 {executable: "exe"}
 			 end
 	    raise("No info found to type #{type}") unless extPerType.has_key?(type)
-	    name.setExtension(extPerType[type])
+	    name.dup.setExtension!(extPerType[type])
     end
 end
 
@@ -48,7 +48,7 @@ class Run
     end
     def breakdown_
         puts("*"*100)
-        command = "./#{@exe}"
+        command = @exe
         raise("Failure executing #{command}") if !system(command)
         puts("*"*100)
     end
@@ -95,6 +95,7 @@ class ObjectFile
     def to_s; @source.to_s end
 end
 class FullMetaInfo
+    @@verbose = false
     def initialize(source)
         @source = source
     end
@@ -109,17 +110,17 @@ class FullMetaInfo
 
         newFiles = [@source]
         while file = newFiles.shift
-            log("Next file to process: #{file} #{file.class}")
+            log("Next file to process: #{file} #{file.class}") if @@verbose
             meta = breakdown(MetaInfo, file, @trees)
             @metaPerFile[file] = meta
             #Add the source look-alikes of the headers
             headers = meta.headers
             if headers.empty?
-                log("No headers could be resolved from #{file}")
+                log("No headers could be resolved from #{file}") if @@verbose
             else
-                log("Headers: #{headers}")
+                log("Headers: #{headers}") if @@verbose
                 sources = findMatchingSources_(headers)
-                log("Sources: #{sources}")
+                log("Sources: #{sources}") if @@verbose
                 (headers + sources).each do |file|
                     newFiles << file unless @metaPerFile.has_key?(file)
                 end
@@ -178,7 +179,7 @@ class FullMetaInfo
     end
 end
 class MetaInfo
-    @@verbose = true
+    @@verbose = false
     @@reInclude = /^\#include\s+["<](.+)[">]\s*/
         attr_reader :file, :refs
     def initialize(file, trees)
@@ -281,8 +282,8 @@ class Configs
     def breakdown_
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
-        getRoot = File.expand_path("g:/src/cpp")
-        @roots = [File.dirname(context.mainfile), gubgRoot, getRoot]
+        @roots = [File.dirname(context.mainfile), gubgRoot]
+        @roots << File.expand_path("g:/src/cpp") if operatingSystem?(:windows)
     end
 end
 class CompileSettings
