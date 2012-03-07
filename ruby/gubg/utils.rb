@@ -323,9 +323,28 @@ class String
     end
 
     def addExtension(ext)
-	    if ext
+	    case ext
+	    when NilClass
+	    when ""
+		    #We don't add any extension
+	    else
 		    ext = ".#{ext}" unless ext[0] == "."
 		    self << ext unless self =~ /#{ext}$/
+	    end
+	    self
+    end
+    def setExtension(ext)
+	    case ext
+	    when NilClass
+	    when ""
+		    #We remove any extension that might be present
+		    currentExt = File.extname(self)
+		    self.slice!(-currentExt.length, currentExt.length) unless currentExt.empty?
+	    else
+		    currentExt = File.extname(self)
+		    self.slice!(-currentExt.length, currentExt.length) unless currentExt.empty?
+		    ext = ".#{ext}" unless ext[0] == "."
+		    self << ext
 	    end
 	    self
     end

@@ -11,15 +11,15 @@ module Executer
         log("Result: #{res}")
         res
     end
-    def addExtension_(name, type)
+    def setExtension_(name, type)
 	    extPerType = case operatingSystem
 			 when /^Linux/
-				 {executable: nil}
+				 {executable: ""}
 			 when /^Windows/, /^Min/
 				 {executable: "exe"}
 			 end
 	    raise("No info found to type #{type}") unless extPerType.has_key?(type)
-	    name.addExtension(extPerType[type])
+	    name.setExtension(extPerType[type])
     end
 end
 
@@ -36,7 +36,7 @@ class Executable
         link = breakdown(LinkSettings)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
-        @executable = addExtension_("exe", :executable)
+        @executable = setExtension_(@mainfile, :executable)
         execute_("rm #{@executable}") if File.exist?(@executable)
         command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         execute_(command)
@@ -281,7 +281,8 @@ class Configs
     def breakdown_
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
-        @roots = [File.dirname(context.mainfile), gubgRoot]
+        getRoot = File.expand_path("g:/src/cpp")
+        @roots = [File.dirname(context.mainfile), gubgRoot, getRoot]
     end
 end
 class CompileSettings
