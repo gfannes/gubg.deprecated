@@ -137,9 +137,9 @@ namespace gubg
             {
                 typedef ReturnCode ReturnCodeT;
                 ReturnCodeWrapper():v_(ReturnCode::OK){}
-                bool get()
+                int get()
                 {
-                    return ReturnCode::OK == v_;
+                    return v_;
                 }
                 bool isOK(bool b) const {return b;}
                 bool isOK(int v) const {return ReturnCode::OK == v;}
