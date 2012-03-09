@@ -1,116 +1,92 @@
 #!/usr/bin/env ruby
 
 require("gubg/utils")
+require("gubg/options")
+require("gubg/output")
 
-arguments = ARGV.dup
-action = :print
-if ARGV.length == 0
-  puts(%Q@fr [option] <pattern>
-\t-i\t\tSearch case-insensitive
-\t-o\t\tOpen the files in emacs that match the <pattern>
-\t-r string\tShow how the <pattern> would be replaced, but do not actually replace
-\t-R string\tSame as -r, but now <pattern> is actually replaced
-Geert Fannes.
-@)
-  exit
+options = parseOptions(name: "Searches recursively in files: fr <options> <pattern>", author: "Geert Fannes") do |parser, options|
+	parser.on("-i", "--case-insensitive", "Case insensitive search"){options[:ci] = true}
+	parser.on("-o", "--open", "Open files in editor"){options[:open] = true}
+	parser.on("-e", "--export FILE", "Export matches to FILE"){|filename|options[:export] = filename}
+	options[:operation] = :show
+	parser.on("-r", "--try-replace NEWSTR", "Show how a replacement would look like") do |newstr|
+		options[:newStr] = newstr
+		options[:operation] = :tryReplace
+	end
+	parser.on("-R", "--replace NEWSTR", "Do the actual replacement") do |newstr|
+		options[:newStr] = newstr
+		options[:operation] = :replace
+	end
 end
+files2Open = options[:open] && []
 
-caseInsensitive = nil
-action = :print
-files2Open = nil
-replace = nil
-newValue = nil
+finalize("You have to provide one and only one search pattern", :error) unless ARGV.length == 1
 
-arguments = ARGV.dup
-foundOption = nil
-begin
-  foundOption = true
-  case arguments[0]
-  when "-i"
-    arguments.shift
-    caseInsensitive = true
-  when "-o"
-    arguments.shift
-    action = :open
-    files2Open = []
-  when "-r"
-    arguments.shift
-    action = :replace
-    replace = false
-    newValue = arguments.shift
-  when "-R"
-    arguments.shift
-    action = :replace
-    replace = true
-    newValue = arguments.shift
-  else
-    foundOption = false
-  end
-end while foundOption
-
-lookFor = Regexp.new(arguments[0], caseInsensitive)
+lookFor = Regexp.new(ARGV[0], options[:ci])
+puts("Regexp: #{lookFor}") if $verbose
 
 recursor = Proc.new do |dir|
-  case File.basename(dir)
-  when /^\./
-    false
-  when /^(html)|(docs)|(data)$/
-    false
-  else
-    true
-  end
+	case File.basename(dir)
+	when /^\./
+		false
+	when /^(html)|(docs)|(data)$/
+		false
+	else
+		true
+	end
 end
 
 unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c cloak.cpp]
-str = unwantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
-reUnwantedExtensions = Regexp.compile("(#{str})"+'$')
+str = unwantedExtensions.map{|ext|"(\\.#{ext})"}*"|"
+reUnwantedExtensions = /(#{str})$/
 
 wantedExtensions = %w[c h cpp hpp d rb S asm]
-str = wantedExtensions.collect{|ext|"(\\.#{ext})"}.join("|")
-reWantedExtensions = Regexp.compile("(#{str})"+'$')
+str = wantedExtensions.map{|ext|"(\\.#{ext})"}*"|"
+reWantedExtensions = /(#{str})$/
 
+output = Output.new(options[:export] && File.open(options[:export], "w"))
 pwd = Dir.pwd+'/'
 Dir.each("./",recursor) do |dir, fn|
-  check = true
-  case fn
-  when reUnwantedExtensions
-    check = false
-  when reWantedExtensions
-  when /^Makefile/
-  else
-    check = false
-  end
-  if check
-    str = String.load(File.expand_path(fn, dir))
-    if str.nil?
-      puts("Failed to load #{File.expand_path(fn, dir)}")
-    elsif str[lookFor]
-      path = File.expand_path(fn, dir)
-      path[pwd] = ''
-      lines = str.split("\n")
-      lines.each_with_index do |line, ix|
-        if line[lookFor]
-          case action
-          when :print
-            puts(path+":#{ix+1} #{line}")
-          when :open
-            files2Open << {path: path, lineNr: ix+1}
-          when :replace
-            print(path+":#{ix+1} (#{line}) -> ")
-            line[lookFor] = newValue
-            puts("(#{line})")
-          end
-        end
-      end
-      if action == :replace and replace
-        lines.join("\n").export(File.expand_path(fn, dir))
-      end
-    end
-  end
-  :ok
+	doCheck = true
+	case fn
+	when reUnwantedExtensions
+		doCheck = false
+	when reWantedExtensions
+	when /^Makefile/
+	else
+		doCheck = false
+	end
+	if doCheck
+		str = String.load(File.expand_path(fn, dir))
+		if str.nil?
+			output.puts("Failed to load #{File.expand_path(fn, dir)}")
+		elsif str =~ lookFor
+			path = File.expand_path(fn, dir)
+			path[pwd] = ''
+			lines = str.split("\n")
+			lines.each_with_index do |line, ix|
+				if line[lookFor]
+					case options[:operation]
+					when :show
+						output.puts(path+":#{ix+1} #{line}")
+					when :open
+						files2Open << {path: path, lineNr: ix+1}
+					when :tryReplace, :replace
+						print(path+":#{ix+1} (#{line}) -> ")
+						line[lookFor] = newValue
+						output.puts("(#{line})")
+					end
+				end
+			end
+			if options[:operation] == :replace
+				lines.join("\n").export(File.expand_path(fn, dir))
+			end
+		end
+	end
+	:ok
 end
 
-case action
+case options[:operation]
 when :open
 	files2Open.each do |file|
 		puts "g +#{file[:lineNr]} #{file[:path]}"

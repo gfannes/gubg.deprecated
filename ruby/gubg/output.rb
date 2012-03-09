@@ -4,7 +4,7 @@ class Output
         @fo = fo
     end
     def puts(str)
-        @fo.puts(str)
+        @fo.puts(str) if @fo
         Kernel.puts(str)
     end
     def Output.create(fileName)

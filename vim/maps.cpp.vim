@@ -4,8 +4,10 @@ map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslas
 map -y <Bslash>aa" <<  << "<Esc><Bslash>a4hi
 map -l o<Esc>:call ReadString("Line")<CR>$
 
-" include
+" include ""
 map -r <Bslash>aO#include "<Esc>:call ReadString("Header")<CR>A"<Esc>j<Bslash>a
+" include <>
+map -R <Bslash>aO#include <<Esc>:call ReadString("Header")<CR>A><Esc>j<Bslash>a
 " guard
 map -g <Bslash>ai#ifndef <Esc>:call ReadString("Path to header")<CR>$by$o#define <Esc>p-o-oo#endif<Esc>kk<Bslash>a
 " block

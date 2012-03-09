@@ -201,6 +201,37 @@ class Array
             yield(el, ix)
         end
     end
+    #Returns an array of {value:, badness:} hashes
+    #You can provide a block that will convert an element into a string
+    def selectLookAlikes(wanted, na = {})
+	    unless block_given?
+		    raise("All entries should be strings if no block is given") unless all?{|e|String === e}
+	    end
+	    raise("I can only find lookalikes based on a string, but wanted is a #{wanted.class}") unless String === wanted
+
+	    #Prepare some regular expressions to determine match badness
+	    #The base regexp matches all characters but allows anything in between
+	    base = "(" + wanted.split("").join(".*") + ")"
+	    reFirstAndLast = Regexp.new("^#{base}$")
+	    reFirst = Regexp.new("^#{base}")
+	    reLast = Regexp.new("#{base}$")
+	    reAny = Regexp.new(base)
+
+	    #Compute the badness
+	    lookAlikes = map do |value|
+		    str = (block_given? ? yield(value) : value)
+		    badness = case str
+			      when wanted         then 0
+			      when reFirstAndLast then str[reFirstAndLast, 1].length
+			      when reFirst        then str[reFirst, 1].length + 2
+			      when reLast         then str[reLast, 1].length + 4
+			      when reAny          then str[reAny, 1].length + 6
+			      else                nil
+			      end
+		    {value: value, badness: badness}
+	    end
+	    lookAlikes.select{|ll|ll[:badness]}.sort{|x, y|x[:badness] <=> y[:badness]}
+    end
 end
 
 class Dir
