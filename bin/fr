@@ -6,9 +6,9 @@ require("gubg/output")
 
 options = parseOptions(name: "Searches recursively in files: fr <options> <pattern>", author: "Geert Fannes") do |parser, options|
 	parser.on("-i", "--case-insensitive", "Case insensitive search"){options[:ci] = true}
-	parser.on("-o", "--open", "Open files in editor"){options[:open] = true}
 	parser.on("-e", "--export FILE", "Export matches to FILE"){|filename|options[:export] = filename}
 	options[:operation] = :show
+	parser.on("-o", "--open", "Open files in editor"){options[:open] = true; options[:operation] = :open}
 	parser.on("-r", "--try-replace NEWSTR", "Show how a replacement would look like") do |newstr|
 		options[:newStr] = newstr
 		options[:operation] = :tryReplace

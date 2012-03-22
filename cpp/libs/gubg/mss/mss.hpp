@@ -224,8 +224,12 @@ namespace gubg
                     ReturnCodeWrapper &returnCodeWrapper_;
             };
 
-        //A helper template to fix a bug in decltype (decltype can currently not be comined with a scope operator)
+        //A helper template to fix a bug in decltype (decltype can currently not be combined with a scope operator)
         template <typename TT> struct l_declfix {typedef TT T;};
+
+	template <typename RC>
+		bool isOK(RC rc){return RC::OK == rc;}
+	inline bool isOK(bool b){return b;}
 
         struct ElapseReporter
         {
@@ -244,7 +248,7 @@ namespace gubg
     }
 }
 
-#define MSS_RC_VAR rc
+#define MSS_RC_VAR l_gubg_mss_rc_var
 
 #define MSS_BEGIN(...)       typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> gubg_return_code_wrapper_type; \
     typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
@@ -273,16 +277,26 @@ gubg_return_code_wrapper_type MSS_RC_VAR
     MSS_END(); \
 }
 
+#define L_MSS_LOG_PRIM(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
 #define L_MSS_LOG(l, rc, msg) \
 { \
-    auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \
-    std::cout << GUBG_HERE() << " " << level << "::" << rc.toString() << msg << std::endl; \
+	auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \
+	L_MSS_LOG_PRIM(rc.toString(), level, msg); \
+}
+
+//Will cause a "controlled crash" if v is not OK or false
+#define MSS_ENSURE(v, msg) if (!gubg::mss::isOK(v)) \
+{ \
+	L_MSS_LOG_PRIM("<" #v ">", gubg::mss::Level::Fatal, "MSS_ENSURE(" << #v << ") failure, termination is inevitable: " << msg); \
+	typedef void(*Crash)(); \
+	Crash crash = 0; \
+	crash(); \
 }
 
 //Direct handling, v should be of the same type as specified in MSS_BEGIN(type)
 #define MSS_(level, v, msg) \
-    do { \
-        if (!MSS_RC_VAR.set(v)) \
+	do { \
+		if (!MSS_RC_VAR.set(v)) \
         { \
             L_MSS_LOG(level, MSS_RC_VAR, msg); \
             MSS_END(); \

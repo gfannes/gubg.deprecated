@@ -4,11 +4,11 @@
 #include "gubg/Singleton.hpp"
 #include "boost/thread/thread.hpp"
 #include "boost/thread/tss.hpp"
-#include "boost/scoped_ptr.hpp"
 #include "boost/algorithm/string/join.hpp"
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 //This header file provides logging functionality:
 // * #define GUBG_LOG to enable logging before including this header
@@ -48,23 +48,36 @@ namespace
     gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, true); \
     std::ostringstream l_gubg_logging_scope_oss_; \
     l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << std::endl; \
-    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
+    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str()); \
+    const bool l_gubg_logging_verbose_ = true
 #define LOG_SM(tag, msg) \
     gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, true); \
     std::ostringstream l_gubg_logging_scope_oss_; \
     l_gubg_logging_scope_oss_ << l_gubg_logging_scope_.indent() << ">>" << msg << std::endl; \
-    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str());
+    gubg::logging::Output::write(l_gubg_logging_scope_oss_.str()); \
+    const bool l_gubg_logging_verbose_ = true
+#define LOG_SQ(tag) \
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false); \
+    const bool l_gubg_logging_verbose_ = false
+#define LOG_SMQ(tag, msg) \
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false); \
+    const bool l_gubg_logging_verbose_ = false
 #define LOG_S_SILENT(tag) \
-    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false);
+    gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false)
 #define LOG_M(msg) \
     { \
-        std::ostringstream l_gubg_logging_message_oss_; \
-        l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << "  " << msg << std::endl; \
-        gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
+	    if (l_gubg_logging_verbose_) \
+	    { \
+		    std::ostringstream l_gubg_logging_message_oss_; \
+		    l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << "  " << msg << std::endl; \
+		    gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
+	    } \
     }
 #else
 #define LOG_S(tag)
 #define LOG_SM(tag, msg)
+#define LOG_SQ(tag)
+#define LOG_SMQ(tag, msg)
 #define LOG_S_SILENT(tag)
 #define LOG_M(msg)
 #endif
@@ -232,7 +245,7 @@ namespace gubg
             boost::thread::id threadId_;
             bool verboseDtor_;
             NameStack *nameStack_;
-            boost::scoped_ptr<std::string> indent_;
+	    std::unique_ptr<std::string> indent_;
         };
     }
 }
