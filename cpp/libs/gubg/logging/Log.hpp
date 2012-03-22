@@ -64,21 +64,21 @@ namespace
     const bool l_gubg_logging_verbose_ = false
 #define LOG_S_SILENT(tag) \
     gubg::logging::Scope l_gubg_logging_scope_(l_gubg_logging_module__, #tag, false)
-#define LOG_M(msg) \
+#define LOG_M_PRIM(msg) \
     { \
-	    if (l_gubg_logging_verbose_) \
-	    { \
-		    std::ostringstream l_gubg_logging_message_oss_; \
-		    l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << "  " << msg << std::endl; \
-		    gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
-	    } \
+        std::ostringstream l_gubg_logging_message_oss_; \
+        l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << "  " << msg << std::endl; \
+        gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
     }
+#define LOG_M(msg) { if (l_gubg_logging_verbose_) LOG_M_PRIM(msg); }
+
 #else
 #define LOG_S(tag)
 #define LOG_SM(tag, msg)
 #define LOG_SQ(tag)
 #define LOG_SMQ(tag, msg)
 #define LOG_S_SILENT(tag)
+#define LOG_M_PRIM(msg)
 #define LOG_M(msg)
 #endif
 
@@ -91,22 +91,22 @@ namespace
 
 #define LOG_S_Fubar(tag) LOG_S(tag)
 #define LOG_SM_Fubar(tag, msg) LOG_SM(tag, "<Fubar>" << msg)
-#define LOG_M_Fubar(msg) LOG_M("<Fubar>" << msg)
+#define LOG_M_Fubar(msg) LOG_M_PRIM("<Fubar>" << msg)
 #define LOG_S_Fatal(tag) LOG_S(tag)
 #define LOG_SM_Fatal(tag, msg) LOG_SM(tag, "<Fatal>" << msg)
-#define LOG_M_Fatal(msg) LOG_M("<Fatal>" << msg)
+#define LOG_M_Fatal(msg) LOG_M_PRIM("<Fatal>" << msg)
 #define LOG_S_Error(tag) LOG_S(tag)
 #define LOG_SM_Error(tag, msg) LOG_SM(tag, "<Error>" << msg)
-#define LOG_M_Error(msg) LOG_M("<Error>" << msg)
+#define LOG_M_Error(msg) LOG_M_PRIM("<Error>" << msg)
 #define LOG_S_Warning(tag) LOG_S(tag)
 #define LOG_SM_Warning(tag, msg) LOG_SM(tag, "<Warning>" << msg)
-#define LOG_M_Warning(msg) LOG_M("<Warning>" << msg)
+#define LOG_M_Warning(msg) LOG_M_PRIM("<Warning>" << msg)
 #define LOG_S_Info(tag) LOG_S(tag)
 #define LOG_SM_Info(tag, msg) LOG_SM(tag, "<Info>" << msg)
-#define LOG_M_Info(msg) LOG_M("<Info>" << msg)
+#define LOG_M_Info(msg) LOG_M_PRIM("<Info>" << msg)
 #define LOG_S_Debug(tag) LOG_S(tag)
 #define LOG_SM_Debug(tag, msg) LOG_SM(tag, "<Debug>" << msg)
-#define LOG_M_Debug(msg) LOG_M("<Debug>" << msg)
+#define LOG_M_Debug(msg) LOG_M_PRIM("<Debug>" << msg)
 
 #define L_LOG_LEVEL__(level) GUBG_LOG_LEVEL_ ## level
 #define L_LOG_LEVEL_(level) L_LOG_LEVEL__(level)

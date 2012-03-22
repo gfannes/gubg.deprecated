@@ -6,6 +6,8 @@
 // * When a complete message has been received, create() can parse it into a Package
 
 #include "gubg/coding/d9/package.hpp"
+#include "gubg/chunky.hpp"
+#include <list>
 
 namespace gubg
 {
@@ -16,8 +18,17 @@ namespace gubg
             class Parser
             {
                 public:
-                    ReturnCode add();
+                    Parser();
+
+                    ReturnCode add(ubyte);
                     ReturnCode create(Package &);
+
+                    void clear();
+
+                private:
+                    enum State {Idle, Sd9, Meta, Attributes, Body, Ed9, Checksum};
+                    State state_;
+                    list<Chunky> messages_;
             };
         }
     }

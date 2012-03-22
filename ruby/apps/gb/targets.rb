@@ -34,11 +34,12 @@ class Executable
         defineScope(:exe)
         objects = breakdown(ObjectFiles)
         link = breakdown(LinkSettings)
+        config = breakdown(Configs)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
         @executable = setExtension_(@mainfile, :executable)
         execute_("rm #{@executable}") if File.exist?(@executable)
-        command = "g++ -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
+        command = "#{config.linker} -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         execute_(command)
     end
 end
@@ -82,11 +83,12 @@ class ObjectFile
         obj = @source.name.gsub(/\.cpp$/, ".o")
         fi = FileInfo.new(obj)
         fmi = breakdown(FullMetaInfo, @source)
+        config = breakdown(Configs)
         fi["recursive header digest"] = fmi.digest
         fi["macros"] = "#{@macros}"
         fi["include paths"] = "#{@includePaths}"
         context.filestore.create(fi) do |fn|
-            unless execute_("g++ -std=c++0x -O3 -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
+            unless execute_("#{config.compiler} -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
                 raise("Failed to compile #{@source}")
             end
         end
@@ -258,7 +260,7 @@ end
 class Configs
     attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
     def initialize
-        @compiler = "g++ -std=c++0x"
+        @compiler = "g++ -std=c++0x -O3"
         @linker = "g++ -std=c++0x"
         @includePaths = []
         @libraryPaths = []
