@@ -10,6 +10,7 @@
 #include "boost/mpl/vector.hpp"
 #include <ostream>
 #include <iomanip>
+#include <vector>
 using namespace gubg::coding;
 using d9::ubyte;
 using d9::Parser;
@@ -38,11 +39,13 @@ namespace
         bool isD9() const
         {
             bool res = (d9::Byte::D9 == value);
-            LOG_SM(isD9, "byte: " << *this << ", res: " << res);
+            LOG_S(isD9, STREAM(*this, res));
             return res;
         }
     };
     struct OK {};
+    struct Fail {};
+    struct Skipped {};
     struct ReadAttribute {};
 
     bool isEndRLE(const ubyte value)
@@ -55,6 +58,8 @@ ostream &operator<<(ostream &os, const Byte &b)
     return os << "Byte(0x"<< hex << (int)b.value << ")";
 }
 ostream &operator<<(ostream &os, const OK &) { return os << "OK"; }
+ostream &operator<<(ostream &os, const Fail &) { return os << "Fail"; }
+ostream &operator<<(ostream &os, const Skipped &) { return os << "Skipped"; }
 ostream &operator<<(ostream &os, const ReadAttribute &) { return os << "ReadAttribute"; }
 template <typename T>
 string to_s(const T &t)
@@ -66,6 +71,8 @@ string to_s(const T &t)
 #define L_DEFINE_TO_S(type) string to_s(const type &v){ostringstream oss; oss << v; return oss.str();}
     L_DEFINE_TO_S(Byte);
     L_DEFINE_TO_S(OK);
+    L_DEFINE_TO_S(Fail);
+    L_DEFINE_TO_S(Skipped);
     L_DEFINE_TO_S(ReadAttribute);
 namespace
 {
@@ -85,7 +92,7 @@ namespace
             void on_entry(const E &e, M &m)
             {
                 L("Entering state ReadingMeta via event " << to_s(e));
-                if (!bytes.empty() && isEndRLE(bytes.back()))
+                if (!m.meta_.empty() && isEndRLE(m.meta_.back()))
                     m.process_event(OK());
             }
         template <typename E, typename M>
@@ -93,27 +100,14 @@ namespace
             {
                 L("Leaving state ReadingMeta via event " << to_s(e));
             }
-        string bytes;
-        void clear(){bytes.clear();}
-        size_t nrAttributes() const
-        {
-            size_t nr = 0;
-            if (bytes.empty())
-                return nr;
-            auto b = bytes[0];
-            for (size_t i = 1; i < 7; ++i)
-                if (b & (0x01 << i))
-                    ++nr;
-            return nr;
-        }
     };
     struct ReadingAttributes: front::state<>
     {
         template <typename E, typename M>
             void on_entry(const E &e, M &m)
             {
-                LOG_SM(ReadingAttributes::on_entry, "nrAttributes: " << nrAttributes << ", attributes.size(): " << attributes.size());
-                if (attributes.size() == nrAttributes)
+                LOG_S(ReadingAttributes::on_entry);
+                if (m.attribute_ == m.attributes_.end())
                     m.process_event(OK());
                 else
                     m.process_event(ReadAttribute());
@@ -123,9 +117,6 @@ namespace
             {
                 L("Leaving state ReadingAttributes via event " << to_s(e));
             }
-        size_t nrAttributes;
-        vector<string> attributes;
-        void clear(){attributes.clear();}
     };
     struct ReadingAttribute: front::state<>
     {
@@ -135,13 +126,33 @@ namespace
     };
     struct ReadingData: front::state<>
     {
-        L_ENTRY_EXIT(ReadingData);
-        string bytes;
-        void clear(){bytes.clear();}
+        template <typename E, typename M>
+            void on_entry(const E &e, M &m)
+            {
+                LOG_S(ReadingData::on_entry, STREAM((bool)m.data_));
+                if (!m.data_)
+                    m.process_event(Skipped());
+            }
+        template <typename E, typename M>
+            void on_exit(const E &e, M &)
+            {
+                L("Leaving state ReadingData via event " << to_s(e));
+            }
     };
     struct ReadingChecksum: front::state<>
     {
-        L_ENTRY_EXIT(ReadingChecksum);
+        template <typename E, typename M>
+            void on_entry(const E &e, M &m)
+            {
+                LOG_S(ReadingChecksum::on_entry, STREAM(m.expectChecksum_, (int)m.checksum_));
+                if (!m.expectChecksum_)
+                    m.process_event(Skipped());
+            }
+        template <typename E, typename M>
+            void on_exit(const E &e, M &)
+            {
+                L("Leaving state ReadingChecksum via event " << to_s(e));
+            }
     };
     struct MessageRead: front::state<>
     {
@@ -151,9 +162,9 @@ namespace
     //Finite statemachine
     struct Statemachine_: front::state_machine_def<Statemachine_>
     {
-        void add_byte(const Byte &b)
+        void add_byte(const Byte &byte)
         {
-            LOG_SM(add_byte, "byte: " << b);
+            LOG_S(add_byte, STREAM(byte));
         }
 
         //Actions
@@ -162,9 +173,46 @@ namespace
             template <typename E, typename M, typename S, typename T>
                 void operator()(const E &e, M &m, S &s, T &t)
                 {
-                    LOG_SM(CheckStartOfMessage, "Event: " << e);
+                    LOG_S(CheckStartOfMessage);
                     if (e.isD9())
+                    {
+                        LOG_M("I found the start of a message and will switch to ReadingMeta");
+                        m.initializeChecksum_(e);
                         m.process_event(OK());
+                    }
+                    else
+                        LOG_M("This is not the start of a message, I will remain Idle");
+                }
+        };
+        struct ClearMachine
+        {
+            template <typename E, typename M, typename S, typename T>
+                void operator()(const E &e, M &m, S &s, T &t)
+                {
+                    LOG_S(ClearMachine);
+                    m.clear();
+                }
+        };
+        struct AppendToMeta
+        {
+            template <typename E, typename M, typename S, typename T>
+                void operator()(const E &e, M &m, S &s, T &t)
+                {
+                    LOG_S(AppendToMeta, STREAM(e));
+                    m.meta_.push_back(e.value);
+                    m.updateChecksum_(e);
+                    LOG_M(STREAM(m.meta_.size()));
+                }
+        };
+        struct AllocateAttributes
+        {
+            template <typename E, typename M, typename S, typename T>
+                void operator()(const E &e, M &m, S &s, T &t)
+                {
+                    LOG_S(AllocateAttributes);
+                    m.attributes_.resize(m.nrAttributes());
+                    m.attribute_ = m.attributes_.begin();
+                    LOG_M(STREAM(m.attributes_.size()));
                 }
         };
         struct ClearTarget
@@ -176,23 +224,14 @@ namespace
                     t.clear();
                 }
         };
-        struct ClearTargetAndSetNrAttributes
-        {
-            template <typename E, typename M, typename S, typename T>
-                void operator()(const E &e, M &m, S &s, T &t)
-                {
-                    LOG_S(ClearTargetAndSetNrAttributes);
-                    t.clear();
-                    t.nrAttributes = s.nrAttributes();
-                }
-        };
         struct AppendByte
         {
             template <typename E, typename M, typename S, typename T>
                 void operator()(const E &e, M &m, S &s, T &t)
                 {
-                    LOG_S(Append);
+                    LOG_S(Append, STREAM(e));
                     t.bytes.push_back(e.value);
+                    m.updateChecksum_(e);
                 }
         };
         struct AppendAttribute
@@ -200,24 +239,85 @@ namespace
             template <typename E, typename M, typename S, typename T>
                 void operator()(const E &e, M &m, S &s, T &t)
                 {
-                    LOG_S(Append);
-                    t.attributes.push_back(s.bytes);
+                    LOG_S(AppendAttribute, STREAM(s.bytes.size()));
+                    m.attribute_->swap(s.bytes);
+                    ++m.attribute_;
+                }
+        };
+        struct AppendByteToData
+        {
+            template <typename E, typename M, typename S, typename T>
+                void operator()(const E &e, M &m, S &s, T &t)
+                {
+                    LOG_S(AppendByteToData, STREAM(e));
+                    MSS_ENSURE((bool)m.data_, "Expected data to be valid");
+                    m.data_->push_back(e.value);
+                    m.updateChecksum_(e);
+                }
+        };
+        struct CheckChecksum
+        {
+            template <typename E, typename M, typename S, typename T>
+                void operator()(const E &e, M &m, S &s, T &t)
+                {
+                    LOG_S(CheckChecksum, STREAM(e, m.checksum_));
+                    if ((e.value & 0x7f) == (m.checksum_ & 0x7f))
+                        m.process_event(OK());
+                    else
+                        m.process_event(Fail());
                 }
         };
         typedef Idle initial_state;
         typedef Statemachine_ SM;
         struct transition_table: mpl::vector<
                                  Row<Idle, Byte, Idle, CheckStartOfMessage>,
-                                 Row<Idle, OK, ReadingMeta, ClearTarget>,
-                                 Row<ReadingMeta, Byte, ReadingMeta, AppendByte>,
-                                 Row<ReadingMeta, OK, ReadingAttributes, ClearTargetAndSetNrAttributes>,
+                                 Row<Idle, OK, ReadingMeta, ClearMachine>,
+                                 Row<ReadingMeta, Byte, ReadingMeta, AppendToMeta>,
+                                 Row<ReadingMeta, OK, ReadingAttributes, AllocateAttributes>,
                                  Row<ReadingAttributes, ReadAttribute, ReadingAttribute, ClearTarget>,
-                                 Row<ReadingAttributes, OK, ReadingData, ClearTarget>,
                                  Row<ReadingAttribute, Byte, ReadingAttribute, AppendByte>,
-                                 Row<ReadingAttribute, OK, ReadingAttributes, AppendAttribute>
+                                 Row<ReadingAttribute, OK, ReadingAttributes, AppendAttribute>,
+                                 Row<ReadingAttributes, OK, ReadingData>,
+                                 Row<ReadingData, Byte, ReadingData, AppendByteToData>,
+                                 Row<ReadingData, OK, ReadingChecksum>,
+                                 Row<ReadingData, Skipped, ReadingChecksum>,
+                                 Row<ReadingChecksum, Byte, ReadingChecksum, CheckChecksum>,
+                                 Row<ReadingChecksum, Skipped, MessageRead>,
+                                 Row<ReadingChecksum, OK, MessageRead>,
+                                 Row<ReadingChecksum, Fail, Idle, ClearMachine>
                                  >
         {
         };
+
+        void clear()
+        {
+            meta_.clear();
+            attributes_.clear();
+            attribute_ = attributes_.end();
+            data_.reset();
+            expectChecksum_ = false;
+        }
+        string meta_;
+        typedef vector<string> Attributes;
+        Attributes attributes_;
+        Attributes::iterator attribute_;
+        unique_ptr<string> data_;
+        bool expectChecksum_;
+        ubyte checksum_;
+        void initializeChecksum_(Byte b){LOG_S(initializeChecksum_, b); checksum_ = b.value;}
+        void updateChecksum_(Byte b){LOG_S(updateChecksum_, b); checksum_ ^= b.value;}
+
+        size_t nrAttributes() const
+        {
+            size_t nr = 0;
+            if (meta_.empty())
+                return nr;
+            auto b = meta_[0];
+            for (size_t i = 1; i < 7; ++i)
+                if (b & (0x01 << i))
+                    ++nr;
+            return nr;
+        }
     };
     typedef back::state_machine<Statemachine_> Statemachine;
 }
