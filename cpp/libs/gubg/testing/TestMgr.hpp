@@ -20,7 +20,7 @@ namespace gubg
 {
     namespace testing
     {
-        enum class TestResult {Success, Failure};
+        enum class TestResult {OK, Failure};
         struct Statistics
         {
             Statistics();
@@ -28,7 +28,7 @@ namespace gubg
             Statistics &operator+=(const Statistics &rhs);
             unsigned int nrTotal() const;
 
-            unsigned int nrSuccess;
+            unsigned int nrOK;
             unsigned int nrFailure;
         };
 

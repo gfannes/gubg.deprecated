@@ -41,7 +41,7 @@ namespace gubg
             }
             static TwoPoint expanded(TwoPoint source, T factor)
             {
-                return TwoPoint::centered(source.centerX, source.centerY, factor*source.width, factor*source.height);
+                return TwoPoint::centered(source.centerX(), source.centerY(), factor*source.width(), factor*source.height());
             }
             PointT p0;
             PointT p1;
@@ -62,7 +62,8 @@ namespace gubg
                 {
                     if (p.x < p0.x || p1.x < p.x)
                         return false;
-                } else
+                }
+                else
                 {
                     if (p.x < p1.x || p0.x < p.x)
                         return false;
@@ -72,7 +73,8 @@ namespace gubg
                 {
                     if (p.y < p0.y || p1.y < p.y)
                         return false;
-                } else
+                }
+                else
                 {
                     if (p.y < p1.y || p0.y < p.y)
                         return false;

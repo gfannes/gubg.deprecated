@@ -73,7 +73,7 @@ namespace gubg
     }
     bool deleteFile(const std::string &name, bool recursive)
     {
-        LOG_SM_(Debug, deleteFile, "Deleting " << name << " recursive: " << recursive);
+        LOG_S_(Debug, deleteFile, "Deleting " << name << " recursive: " << recursive);
         try
         {
             if (recursive)

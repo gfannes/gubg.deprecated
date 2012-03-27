@@ -23,25 +23,25 @@ namespace
 
 //Statistics methods
 Statistics::Statistics():
-    nrSuccess(0),
+    nrOK(0),
     nrFailure(0){}
 void Statistics::addResult(TestResult result)
 {
     switch (result)
     {
-        case TestResult::Success: ++nrSuccess; break;
+        case TestResult::OK: ++nrOK; break;
         case TestResult::Failure: ++nrFailure; break;
     }
 }
 Statistics &Statistics::operator+=(const Statistics &rhs)
 {
     nrFailure += rhs.nrFailure;
-    nrSuccess += rhs.nrSuccess;
+    nrOK += rhs.nrOK;
     return *this;
 }
 unsigned int Statistics::nrTotal() const
 {
-    return nrSuccess + nrFailure;
+    return nrOK + nrFailure;
 }
 
 //TestTag methods
@@ -174,9 +174,9 @@ int main()
     {
         TestTag root("root");
         TestTag level1("level1");
-        level1.addResult(TestResult::Success);
+        level1.addResult(TestResult::OK);
         TestTag level2("level2");
-        level2.addResult(TestResult::Success);
+        level2.addResult(TestResult::OK);
     }
     cout << TestMaster::instance() << endl;
     {
@@ -184,7 +184,7 @@ int main()
         TestTag level1("level1");
         level1.addResult(TestResult::Failure);
         TestTag level2("level2");
-        level2.addResult(TestResult::Success);
+        level2.addResult(TestResult::OK);
         level2.addResult(TestResult::Failure);
     }
     cout << TestMaster::instance() << endl;

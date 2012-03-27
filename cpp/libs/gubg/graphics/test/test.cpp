@@ -1,12 +1,13 @@
-#include "graphics/style.hpp"
-#include "graphics/sdl.hpp"
-#include "graphics/canvas.hpp"
-#include "graphics/sdl_canvas.hpp"
-#include "graphics/imui.hpp"
-#include "graphics/imui_button.hpp"
-#include "sleep.hpp"
-#include "timer.hpp"
-#include "sequence.hpp"
+#include "gubg/graphics/style.hpp"
+#include "gubg/graphics/sdl.hpp"
+#include "gubg/graphics/canvas.hpp"
+#include "gubg/graphics/sdl_canvas.hpp"
+#include "gubg/testing/Testing.hpp"
+#include "gubg/graphics/imui.hpp"
+#include "gubg/graphics/imui_button.hpp"
+#include "gubg/sleep/sleep.hpp"
+#include "gubg/clock/timer.hpp"
+#include "gubg/sequence/sequence.hpp"
 #include <iostream>
 #include <array>
 using namespace gubg;
@@ -14,8 +15,10 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+//    TEST_TAG(main);
     //Color and Style tests
     {
+  //      TEST_TAG(Color);
         cout << Color::red << endl;
         cout << Color(0.1, 0.2, 0.3) << endl;
         cout << Color({0.1, 0.2, 0.3}) << endl;
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    //Demonstrate the creation of and handling of button, IMUI-style
+    //Demonstrate the creation and handling of button, IMUI-style
     Widgets widgets;
     Timer timer(ResetType::NoAuto);
     while (timer.difference() < 10)

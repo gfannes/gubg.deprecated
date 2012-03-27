@@ -1,7 +1,7 @@
 #ifndef gubg_testing_Testing_hpp
 #define gubg_testing_Testing_hpp
 
-#include "testing/TestMgr.hpp"
+#include "gubg/testing/TestMgr.hpp"
 #include <memory>
 #include <string>
 #include <ostream>
@@ -112,7 +112,7 @@ namespace gubg
             void test_eq(const ExpectedT &expected, const ActualT &actual, SourceLocation location, TestTag &testTag)
             {
                 bool success = areEqual(actual, expected);
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
             }
@@ -124,7 +124,7 @@ namespace gubg
             void test_neq(const NotExpectedT &notExpected, const ActualT &actual, SourceLocation location, TestTag &testTag)
             {
                 bool success = !areEqual(actual, notExpected);
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": " << notExpected << " was not expected, but it was received." << std::endl;
             }
@@ -135,7 +135,7 @@ namespace gubg
             void test_true(const T &v, SourceLocation location, TestTag &testTag)
             {
                 bool success = v;
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be true, but it is false." << std::endl;
             }
@@ -145,7 +145,7 @@ namespace gubg
             void test_false(const T &v, SourceLocation location, TestTag &testTag)
             {
                 bool success = !v;
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be false, but it is true." << std::endl;
             }
@@ -155,7 +155,7 @@ namespace gubg
             void test_ok(const T &v, SourceLocation location, TestTag &testTag)
             {
                 bool success = (T::OK == v);
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be OK, but it is not." << std::endl;
             }
@@ -165,7 +165,7 @@ namespace gubg
             void test_ko(const T &v, SourceLocation location, TestTag &testTag)
             {
                 bool success = (T::OK != v);
-                testTag.addResult(success ? TestResult::Success : TestResult::Failure);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be not OK, but it is." << std::endl;
             }
@@ -180,7 +180,7 @@ namespace gubg
         } \
         catch (ExceptionType &exc) \
         { \
-            l_gubg_testing_test_tag_.addResult(gubg::testing::TestResult::Success) ; \
+            l_gubg_testing_test_tag_.addResult(gubg::testing::TestResult::OK) ; \
         }
     }
 }
