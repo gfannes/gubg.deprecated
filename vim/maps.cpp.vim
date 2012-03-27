@@ -1,8 +1,8 @@
 " Cpp mappings
-map -p <Bslash>aoLOG_M("");<Esc><Bslash>ahhhi
+map -p <Bslash>aoLOG_M();<Esc><Bslash>ahhi
 map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslash>ahhhi
+map -l <Bslash>aiSTREAM()<Esc><Bslash>ai
 map -y <Bslash>aa" <<  << "<Esc><Bslash>a4hi
-map -l o<Esc>:call ReadString("Line")<CR>$
 
 " include ""
 map -r <Bslash>aO#include "<Esc>:call ReadString("Header")<CR>A"<Esc>j<Bslash>a

@@ -73,7 +73,7 @@ Dir.each("./",recursor) do |dir, fn|
 						files2Open << {path: path, lineNr: ix+1}
 					when :tryReplace, :replace
 						print(path+":#{ix+1} (#{line}) -> ")
-						line[lookFor] = newValue
+						line[lookFor] = options[:newStr]
 						output.puts("(#{line})")
 					end
 				end
