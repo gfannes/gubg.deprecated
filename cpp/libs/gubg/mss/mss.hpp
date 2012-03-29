@@ -72,6 +72,8 @@ namespace gubg
                 bool set(OT ot, T v = T::UnknownError){return set(OT::OK == ot ? T::OK : v);}
             template <typename P>
                 bool set(P *p, T v = T::NullPointer){return set(0 != p ? T::OK : v);}
+            template <typename X>
+                bool set(std::shared_ptr<X> p, T v = T::NullPointer){return set((bool)p ? T::OK : v);}
             bool set(bool b, T v = T::False){return set(b ? T::OK : v);}
             Level level() const {return getInfo<T>(v_).level;}
             std::string toString() const
@@ -84,7 +86,7 @@ namespace gubg
             T v_;
         };
         //We use this for return code storage for bools and ints
-        enum ReturnCode {OK = 0, False = -1, NullPointer = -2, InternalError = -3, IllegalArgument = -4, NotImplemented = -5, UnknownError = -6};
+        enum ReturnCode {OK = 0, False = -1, NullPointer = -2, InternalError = -3, IllegalArgument = -4, NotImplemented = -5, UnknownError = -6, PimplError = -7};
 #define L_CASE_CODE(code) case code: return #code
         inline const char *l_MSSCode_AsString(ReturnCode code)
         {
@@ -97,6 +99,7 @@ namespace gubg
                 L_CASE_CODE(False          );
                 L_CASE_CODE(NullPointer    );
                 L_CASE_CODE(UnknownError   );
+                L_CASE_CODE(PimplError   );
             }
             return "Please extend l_MSSCode_AsString in gubg/mss/mss.hpp";
         }
@@ -154,8 +157,10 @@ namespace gubg
                     v_ = v;
                     return false;
                 }
-                template <typename OT>
+                template <typename OT, OT has_ok = OT::OK>
                     bool set(OT ot, ReturnCode v = ReturnCode::UnknownError) { return set(OT::OK == ot ? ReturnCode::OK : v); }
+                template <typename OT, typename OT::pimpl_tag is_pimpl = OT::pimpl_tag::OK>
+                    bool set(OT ot, ReturnCode v = ReturnCode::PimplError) { return set(ot.pimplOK() ? ReturnCode::OK : v); }
                 template <typename P>
                     bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
                 bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
@@ -227,8 +232,10 @@ namespace gubg
         //A helper template to fix a bug in decltype (decltype can currently not be combined with a scope operator)
         template <typename TT> struct l_declfix {typedef TT T;};
 
-	template <typename RC>
+	template <typename RC, RC has_ok = RC::OK>
 		bool isOK(RC rc){return RC::OK == rc;}
+	template <typename X, typename X::pimpl_tag is_pimpl = X::pimpl_tag::OK>
+		bool isOK(X x){return x.pimplOK();}
 	inline bool isOK(bool b){return b;}
 
         struct ElapseReporter
@@ -352,7 +359,7 @@ else
     } while (false)
 #define MSS_J(v) MSS_J_(Unknown, v, "")
 
-#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, UnknownError, LastCode = 999
+#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, UnknownError, PimplError, LastCode = 999
 #define MSS_CODES_BEGIN(type) \
     namespace { \
         typedef type l_gubg_mss_type; \
@@ -363,7 +370,8 @@ else
         MSS_CODE_(Error, IllegalArgument); \
         MSS_CODE_(Error, False); \
         MSS_CODE_(Error, NullPointer); \
-        MSS_CODE_(Error, UnknownError);
+        MSS_CODE_(Error, UnknownError); \
+        MSS_CODE_(Error, PimplError);
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)
 #define MSS_CODE(code) MSS_CODE_(Error, code)
 #define MSS_CODES_END() }

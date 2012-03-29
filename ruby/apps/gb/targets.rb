@@ -50,8 +50,11 @@ class Run
     def breakdown_
         puts("*"*100)
         command = @exe
-        raise("Failure executing #{command}") if !system(command)
+        res = system(command)
         puts("*"*100)
+        if !res
+            log("ERROR::Failure executing #{command} (#{$?})")
+        end
     end
 end
 

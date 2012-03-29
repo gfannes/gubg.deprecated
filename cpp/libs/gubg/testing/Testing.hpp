@@ -2,6 +2,7 @@
 #define gubg_testing_Testing_hpp
 
 #include "gubg/testing/TestMgr.hpp"
+#include "gubg/mss.hpp"
 #include <memory>
 #include <string>
 #include <ostream>
@@ -108,7 +109,13 @@ namespace gubg
         template <>
             std::string toString_<std::nullptr_t>(const std::nullptr_t &);
 
-        template<typename ExpectedT, typename ActualT>
+        template <typename T>
+            struct traits
+            {
+                enum default_tag {OK};
+            };
+
+        template<typename ExpectedT, typename ActualT, typename gubg::testing::traits<ExpectedT>::default_tag is_default = gubg::testing::traits<ExpectedT>::default_tag::OK>
             void test_eq(const ExpectedT &expected, const ActualT &actual, SourceLocation location, TestTag &testTag)
             {
                 bool success = areEqual(actual, expected);
@@ -116,6 +123,22 @@ namespace gubg
                 if (!success)
                     std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
             }
+
+
+#ifdef WIP
+        //Try to find a way to dispatch a test_eq(ReturnCode) to this function _only_, and not to the one above
+        template<ExpectedT , ExpectedT is_ok = ExpectedT::OK>
+            struct traits<ExpectedT> {};
+        template<typename ExpectedT, typename ActualT, ExpectedT is_ok = ExpectedT::OK>
+            void test_eq(const ExpectedT &expected, const ActualT &actual, SourceLocation location, TestTag &testTag)
+            {
+                bool success = areEqual(actual, expected);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
+                if (!success)
+                    std::cout << location << ": " << toString_(expected) << " was expected, but " << toString_(actual) << " was received." << std::endl;
+            }
+#endif
+
 #define TEST_EQ(expected, actual) gubg::testing::test_eq((expected), (actual), HERE(),l_gubg_testing_test_tag_)
 #define TEST_EQ_TYPE(type, expected, actual) gubg::testing::test_eq((type)(expected), (type)(actual), HERE(),l_gubg_testing_test_tag_)
 #define TEST_NULL(actual) gubg::testing::test_eq(nullptr, (actual), HERE(), l_gubg_testing_test_tag_)
@@ -154,7 +177,7 @@ namespace gubg
         template<typename T>
             void test_ok(const T &v, SourceLocation location, TestTag &testTag)
             {
-                bool success = (T::OK == v);
+                bool success = gubg::mss::isOK(v);
                 testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be OK, but it is not." << std::endl;
@@ -164,7 +187,7 @@ namespace gubg
         template<typename T>
             void test_ko(const T &v, SourceLocation location, TestTag &testTag)
             {
-                bool success = (T::OK != v);
+                bool success = !gubg::mss::isOK(v);
                 testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
                     std::cout << location << ": it should be not OK, but it is." << std::endl;
