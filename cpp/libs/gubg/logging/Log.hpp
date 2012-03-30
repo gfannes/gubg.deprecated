@@ -2,6 +2,7 @@
 #define gubg_logging_Log_hpp
 
 #include "gubg/Singleton.hpp"
+#include "gubg/macro.hpp"
 #include "boost/thread/thread.hpp"
 #include "boost/thread/tss.hpp"
 #include "boost/algorithm/string/join.hpp"
@@ -33,8 +34,7 @@
 #endif
 #define LOG_S__2(level, tag) LOG_S_ ## level(tag)
 #define LOG_S__3(level, tag, msg) LOG_SM_ ## level(tag, msg)
-#define GET_4TH_ARG(_1,_2,_3,_4,...) _4
-#define LOG_S__MACRO_CHOOSER(...) GET_4TH_ARG(__VA_ARGS__, LOG_S__3,LOG_S__2)
+#define LOG_S__MACRO_CHOOSER(...) GUBG_GET_4TH_ARG(__VA_ARGS__, LOG_S__3,LOG_S__2)
 #define LOG_S_(...) LOG_S__MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 #define LOG_M_(level, msg) LOG_M_ ## level(msg)
 
@@ -68,10 +68,9 @@ namespace
 #define LOG_S_2(tag, msg) L_LOG_SCOPE(tag, msg, true)
 #define LOG_SQ_1(tag) L_LOG_SCOPE(tag, "", false)
 #define LOG_SQ_2(tag, msg) L_LOG_SCOPE(tag, msg, false)
-#define GET_3TH_ARG(_1,_2,_3,...) _3
-#define LOG_S_MACRO_CHOOSER(...) GET_3TH_ARG(__VA_ARGS__, LOG_S_2,LOG_S_1)
+#define LOG_S_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, LOG_S_2,LOG_S_1)
 #define LOG_S(...) LOG_S_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
-#define LOG_SQ_MACRO_CHOOSER(...) GET_3TH_ARG(__VA_ARGS__, LOG_SQ_2,LOG_SQ_1)
+#define LOG_SQ_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, LOG_SQ_2,LOG_SQ_1)
 #define LOG_SQ(...) LOG_SQ_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define GUBG_LOG_LEVEL_Debug   0
@@ -176,8 +175,7 @@ namespace
 #define STREAM_8(_1,_2,_3,_4,_5,_6,_7,_8       )  STREAM_7(_1,_2,_3,_4,_5,_6,_7      ) STREAM_FORMAT_B(_8)
 #define STREAM_9(_1,_2,_3,_4,_5,_6,_7,_8,_9    )  STREAM_8(_1,_2,_3,_4,_5,_6,_7,_8   ) STREAM_FORMAT_B(_9)
 #define STREAM_10(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10) STREAM_9(_1,_2,_3,_4,_5,_6,_7,_8,_9) STREAM_FORMAT_B(_10)
-#define GET_11TH_ARG(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,...) _11
-#define STREAM_MACRO_CHOOSER(...) GET_11TH_ARG(__VA_ARGS__, STREAM_10,STREAM_9,STREAM_8,STREAM_7,STREAM_6,STREAM_5,STREAM_4,STREAM_3,STREAM_2,STREAM_1)
+#define STREAM_MACRO_CHOOSER(...) GUBG_GET_11TH_ARG(__VA_ARGS__, STREAM_10,STREAM_9,STREAM_8,STREAM_7,STREAM_6,STREAM_5,STREAM_4,STREAM_3,STREAM_2,STREAM_1)
 #define STREAM(...) STREAM_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) "}"
 
 namespace gubg

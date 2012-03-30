@@ -4,15 +4,15 @@
 #define LOG(msg) std::cout << msg << std::endl
 
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
-MSS_CODE_BEGIN(Compare);
+MSS_CODES_BEGIN(Compare);
 MSS_CODE_(Debug, Smaller);
 MSS_CODE_(Debug, Larger);
-MSS_CODE_END();
+MSS_CODES_END();
 Compare compare(int lhs, int rhs)
 {
     MSS_BEGIN(Compare);
-    MSS_T(lhs <= rhs, Larger);
-    MSS_T(lhs >= rhs, Smaller);
+    MSS(lhs <= rhs, Larger);
+    MSS(lhs >= rhs, Smaller);
     MSS_END();
 }
 
@@ -46,12 +46,14 @@ void f()
 void f_log()
 {
     MSS_BEGIN_(void, "f_log");
+    //Signalled as unsuccessful, we quit before MSS_END
     return;
     MSS_END_();
 }
 void f_log2()
 {
-    MSS_BEGIN_(void, "f_log");
+    MSS_BEGIN_(void, "f_log2");
+    //Signalled as unsuccessful
     MSS(false);
     MSS_END_();
 }
@@ -74,7 +76,7 @@ Compare notImplemented()
 
 ReturnCode allowed()
 {
-    MSS_BEGIN(ReturnCode, AllowOtherCodes);
+    MSS_BEGIN_ALLOW(ReturnCode);
     MSS_ALLOW(NotSoSerious);
     MSS_L(NotSoSerious);
     MSS_L(Serious);
@@ -91,7 +93,7 @@ ReturnCode skip_if()
         LOG("I found it");
     }
     //Check that we are still following the MSS
-    MSS(rc.v_);
+    MSS(MSS_RC_VAR.v_);
     LOG("Could not find it");
     MSS_SKIP_IF(findSomething2(), NotFound)
     {

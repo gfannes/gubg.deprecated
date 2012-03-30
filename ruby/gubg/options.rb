@@ -28,7 +28,7 @@ def parseOptions(na = {name: nil, brief: nil, author: nil, version: nil}, &block
 	options
 end
 
-def finalize(msg, code)
+def finalize(msg, code = :error)
     prefix = case code
              when :ok then ""
              else "#{code.to_s.upcase}::"

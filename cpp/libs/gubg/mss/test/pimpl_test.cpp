@@ -63,7 +63,6 @@ Ptr f()
 
 int main()
 {
-    LOG_S(main);
     TEST_TAG(main);
     MSS_BEGIN(int);
     API api;

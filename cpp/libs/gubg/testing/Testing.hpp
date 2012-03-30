@@ -69,7 +69,8 @@ namespace gubg
         std::cout << #tag << std::endl
 #else
 #define TEST_TAG(tag) \
-        gubg::testing::TestTag l_gubg_testing_test_tag_(#tag)
+        gubg::testing::TestTag l_gubg_testing_test_tag_(#tag); \
+	LOG_S(tag)
 #endif
 
 #define TEST_REPORT() std::cout << gubg::testing::TestMaster::instance() << std::endl
