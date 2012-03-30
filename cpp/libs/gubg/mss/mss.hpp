@@ -73,7 +73,7 @@ namespace gubg
             template <typename P>
                 bool set(P *p, T v = T::NullPointer){return set(0 != p ? T::OK : v);}
             template <typename X>
-                bool set(std::shared_ptr<X> p, T v = T::NullPointer){return set((bool)p ? T::OK : v);}
+                bool set(std::shared_ptr<X> p, T v = T::InvalidSharedPointer){return set((bool)p ? T::OK : v);}
             bool set(bool b, T v = T::False){return set(b ? T::OK : v);}
             Level level() const {return getInfo<T>(v_).level;}
             std::string toString() const
@@ -86,23 +86,26 @@ namespace gubg
             T v_;
         };
         //We use this for return code storage for bools and ints
-        enum ReturnCode {OK = 0, False = -1, NullPointer = -2, InternalError = -3, IllegalArgument = -4, NotImplemented = -5, UnknownError = -6, PimplError = -7};
+        enum ReturnCode {OK = 0, False = -1, NullPointer = -2, InvalidSharedPointer = -3, InternalError = -4, IllegalArgument = -5, NotImplemented = -6, UnknownError = -7, PimplError = -8};
 #define L_CASE_CODE(code) case code: return #code
         inline const char *l_MSSCode_AsString(ReturnCode code)
         {
             switch (code)
             {
                 L_CASE_CODE(OK             );
+                L_CASE_CODE(False          );
+                L_CASE_CODE(NullPointer    );
+                L_CASE_CODE(InvalidSharedPointer);
                 L_CASE_CODE(InternalError  );
                 L_CASE_CODE(IllegalArgument);
                 L_CASE_CODE(NotImplemented );
-                L_CASE_CODE(False          );
-                L_CASE_CODE(NullPointer    );
                 L_CASE_CODE(UnknownError   );
                 L_CASE_CODE(PimplError   );
             }
             return "Please extend l_MSSCode_AsString in gubg/mss/mss.hpp";
         }
+        template <typename T>
+            const char *l_MSSCode_AsString(std::shared_ptr<T> p) {return ((bool)p ? "shared_ptr OK" : "shared_ptr INVALID");}
         template <>
             struct ReturnCodeWrapper<bool, NoOtherCodesAllowed>
             {
@@ -126,6 +129,8 @@ namespace gubg
                     bool set(OT ot, ReturnCode v = ReturnCode::UnknownError) { return set(OT::OK == ot ? ReturnCode::OK : v); }
                 template <typename P>
                     bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
+                template <typename X>
+                    bool set(std::shared_ptr<X> p, ReturnCode v = ReturnCode::InvalidSharedPointer){return set((bool)p ? ReturnCode::OK : v);}
                 bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
                 Level level() const {return getInfo<ReturnCode>(v_).level;}
                 std::string toString() const
@@ -163,6 +168,8 @@ namespace gubg
                     bool set(OT ot, ReturnCode v = ReturnCode::PimplError) { return set(ot.pimplOK() ? ReturnCode::OK : v); }
                 template <typename P>
                     bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
+                template <typename X>
+                    bool set(std::shared_ptr<X> p, ReturnCode v = ReturnCode::InvalidSharedPointer){return set((bool)p ? ReturnCode::OK : v);}
                 bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
                 Level level() const {return getInfo<ReturnCode>((ReturnCode)(v_)).level;}
                 std::string toString() const
@@ -205,6 +212,40 @@ namespace gubg
                 std::string toString() const {return v_;}
                 std::string v_;
                 Level l_;
+            };
+        //std::shared_ptr support
+        template <typename T>
+            struct ReturnCodeWrapper<std::shared_ptr<T>, NoOtherCodesAllowed>
+            {
+                typedef std::shared_ptr<T> ReturnCodeT;
+                ReturnCodeWrapper(){}
+                ReturnCodeT get(){return v_;}
+                bool isOK(bool b) const {return b;}
+                bool isOK(ReturnCode v) const {return ReturnCode::OK == v;}
+                bool isOK(ReturnCodeT v) const {return (bool)v;}
+                bool set(ReturnCode v)
+                {
+                    if (isOK(v))
+                    {
+                        //Every allowed code becomes OK
+                        return true;
+                    }
+                    v_.reset();
+                    return false;
+                }
+                template <typename OT>
+                    bool set(OT ot, ReturnCode v = ReturnCode::UnknownError) { return set(OT::OK == ot ? ReturnCode::OK : v); }
+                template <typename P>
+                    bool set(P *p, ReturnCode v = ReturnCode::NullPointer) { return set(0 != p ? ReturnCode::OK : v); }
+                template <typename X>
+                    bool set(std::shared_ptr<X> p, ReturnCode v = ReturnCode::InvalidSharedPointer){return set((bool)p ? ReturnCode::OK : v);}
+                bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
+                Level level() const {return gubg::mss::Level::Error;}
+                std::string toString() const
+                {
+                    return l_MSSCode_AsString(v_);
+                }
+                ReturnCodeT v_;
             };
         template <typename ReturnCodeWrapper>
             struct SuccessChecker
@@ -259,7 +300,7 @@ namespace gubg
 
 #define MSS_BEGIN(...)       typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> gubg_return_code_wrapper_type; \
     typedef gubg_return_code_wrapper_type::ReturnCodeT gubg_return_code_type; \
-gubg_return_code_wrapper_type MSS_RC_VAR
+    gubg_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_gubg_mss_elapse_reporter_msg; \
     l_gubg_mss_elapse_reporter_msg << msg; \
@@ -359,7 +400,7 @@ else
     } while (false)
 #define MSS_J(v) MSS_J_(Unknown, v, "")
 
-#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, UnknownError, PimplError, LastCode = 999
+#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, InvalidSharedPointer, UnknownError, PimplError, LastCode = 999
 #define MSS_CODES_BEGIN(type) \
     namespace { \
         typedef type l_gubg_mss_type; \
@@ -370,6 +411,7 @@ else
         MSS_CODE_(Error, IllegalArgument); \
         MSS_CODE_(Error, False); \
         MSS_CODE_(Error, NullPointer); \
+        MSS_CODE_(Error, InvalidSharedPointer); \
         MSS_CODE_(Error, UnknownError); \
         MSS_CODE_(Error, PimplError);
 #define MSS_CODE_(level, code) gubg::mss::InfoSetter<l_gubg_mss_type> l_gubg_mss_InfoSetter_ ## _ ## code(l_gubg_mss_type::code, gubg::mss::Level::level, l_gubg_mss_type_as_string, #code)

@@ -51,6 +51,16 @@ int API::Pimpl::get() const {return data;}
 void API::Pimpl::ff() {}
 int API::Pimpl::multiply(int n){return data*n;}
 
+
+//shared_ptr - mss integration
+typedef shared_ptr<int> Ptr;
+Ptr f()
+{
+    MSS_BEGIN(Ptr);
+    MSS(ReturnCode::NotImplemented);
+    MSS_END();
+}
+
 int main()
 {
     LOG_S(main);
@@ -72,5 +82,7 @@ int main()
         api.get();
     }
     catch (const std::string &str) {LOG_M("Catched string " << str);}
+
+    MSS(f());
     MSS_END();
 }
