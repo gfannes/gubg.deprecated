@@ -10,7 +10,7 @@
 //    As soon as one fails, we return from the function with the failing code
 //    If nothing fails, MSS_END() will return from the function with a "OK" value
 //MSS(some_function_that_returns_ReturnCodeT());
-//MSS_T(some_function_that_returns_WhateverT(), code_upon_failure); => MSS_RC_VAR is set to code_upon_failure when some_function_that_returns_WhateverT() fails
+//MSS(some_function_that_returns_WhateverT(), code_upon_failure); => MSS_RC_VAR is set to code_upon_failure when some_function_that_returns_WhateverT() fails
 //...
 // => You can return or continue here
 //
@@ -410,7 +410,7 @@ namespace gubg
 #define MSS__2(level, v)          MSS_DIRECT(level, v, "")
 #define MSS__3(level, v, nc)      MSS_TRANS(level, v, nc, "")
 #define MSS__4(level, v, nc, msg) MSS_TRANS(level, v, nc, msg)
-#define MSS__MACRO_CHOOSER(...) GUBG_GET_5TH_ARG(__VA_ARGS__, MSS__3,MSS__2,MSS__1)
+#define MSS__MACRO_CHOOSER(...) GUBG_GET_5TH_ARG(__VA_ARGS__, MSS__4,MSS__3,MSS__2,MSS__1)
 #define MSS_(...) MSS__MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 //Direct return of a hardcoded value, c should be a value of the enum type specified in MSS_BEGIN(type)

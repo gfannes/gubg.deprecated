@@ -29,17 +29,17 @@ namespace
 
 std::ostream &operator<<(std::ostream &os, const gubg::file::File::Ptr &file)
 {
-    LOG_SM_(Debug, stream, "File");
+    LOG_S_(Debug, stream, "File");
     return os << file->name();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Directory::Ptr &dir)
 {
-    LOG_SM_(Debug, stream, "Directory: " << dir.get());
+    LOG_S_(Debug, stream, "Directory: " << dir.get());
     return os << dir->path();
 }
 std::ostream &operator<<(std::ostream &os, const gubg::file::Regular::Ptr &regular)
 {
-    LOG_SM_(Debug, stream, "Regular");
+    LOG_S_(Debug, stream, "Regular");
     return os << regular->filepath();
 }
 
@@ -79,7 +79,7 @@ namespace gubg
         Directory::Ptr Directory::create(const std::string &p)
         {
             string tmpPath = p;
-            LOG_SM_(Info, Directory::create, "path: " << tmpPath);
+            LOG_S_(Info, Directory::create, "path: " << tmpPath);
 
             if (tmpPath == "/")
             {
@@ -172,13 +172,13 @@ SkipSpecialName:
 
         bool Directory::isRoot() const
         {
-            LOG_SM_(Debug, isRoot, this);
+            LOG_S_(Debug, isRoot, this);
             //The root has itself as its location
             return this == location_.get(); 
         }
         string Directory::path() const
         {
-            LOG_SM_(Debug, path, "");
+            LOG_S_(Debug, path, "");
             if (!location_)
                 return name_;
 #ifdef GUBG_WIN32
@@ -210,7 +210,7 @@ SkipSpecialName:
             if (!selfPtr)
                 return nrExpanded;
             Directory &self = *selfPtr;
-            LOG_SM_(Debug, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
+            LOG_S_(Debug, Directory::expand, "Expanding directory " << self.path() << " using strategy " << (int)strategy);
             switch (strategy)
             {
                 case ExpandStrategy::Shallow:
@@ -293,7 +293,7 @@ SkipSpecialName:
         //Regular methods
         Regular::Ptr Regular::create(const string &filename)
         {
-            LOG_SM(Regular::create, "filename: " << filename);
+            LOG_S(Regular::create, "filename: " << filename);
             Ptr ret;
             if (filename.empty())
                 return ret;
@@ -342,7 +342,7 @@ SkipSpecialName:
 
         bool Regular::load(string &content)
         {
-            LOG_SM_(Warning, Regular::load, "Loading " << filepath());
+            LOG_S_(Warning, Regular::load, "Loading " << filepath());
 
             //Check that the file exists
             if (!exists())

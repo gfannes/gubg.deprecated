@@ -14,8 +14,8 @@ OptionParser::OptionParser(const string &caption):
 OptionParser::ReturnCode OptionParser::createArgs(Args &args, int argc, char **argv)
 {
     MSS_BEGIN(ReturnCode);
-    MSS_T(argc >= 0, IllegalArgument);
-    MSS_T(argv, IllegalArgument);
+    MSS(argc >= 0, IllegalArgument);
+    MSS(argv, IllegalArgument);
     for (int i = 0; i < argc; ++i)
         args.push_back(argv[i]);
     MSS_END();
@@ -26,7 +26,7 @@ OptionParser::ReturnCode OptionParser::parse(Args &args, bool stripExe)
     MSS_BEGIN(ReturnCode);
     if (stripExe)
     {
-        MSS_T(!args.empty(), CouldNotFindExecutable);
+        MSS(!args.empty(), CouldNotFindExecutable);
         args.pop_front();
     }
 

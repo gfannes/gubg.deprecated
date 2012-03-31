@@ -73,7 +73,7 @@ int main()
     LOG_S(main);
     //Test of the Stepper SM directly
     {
-        LOG_SM(Stepper, "Testing Stepper");
+        LOG_S(Stepper, "Testing Stepper");
         Stepper sm(2);
         LOG_M("Starting state: " << sm.state);
         std::array<Direction, 3> events = {Direction::Forward, Direction::Forward, Direction::Backward};
@@ -87,7 +87,7 @@ int main()
 
     //Test the MetaStepper
     {
-        LOG_SM(Stepper, "Testing MetaMachine");
+        LOG_S(Stepper, "Testing MetaMachine");
         typedef StateMachineT<MetaStepper> MetaMachine;
         MetaMachine mm;
         //mm.changeState(3);

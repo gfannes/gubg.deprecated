@@ -9,6 +9,7 @@ options = parseOptions(name: "Generic build utility", author: "Geert Fannes", ve
     options[:run] = false
     parser.on("-r", "--run", "Run the produced executables"){options[:run] = true}
     parser.on("-c", "--clean", "Clean the filestore, forcing a complete rebuild"){options[:clean] = true}
+    parser.on("-T", "--test-all", "Compile and run all tests"){options[:testAll] = true}
 end
 $verbose = options[:verbose]
 
@@ -30,5 +31,11 @@ global = Breakdown::Global.new do |global|
 			global.breakdown(Run.new(exe.executable))
 		end
 	end
+    if options[:testAll]
+        testAll = global.breakdown(TestAll.new(Dir.pwd))
+    end
 end
-global.process
+
+time("Processing GB") do
+    global.process
+end

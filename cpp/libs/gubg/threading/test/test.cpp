@@ -41,7 +41,7 @@ struct Producer: gubg::InstanceCounter<Producer>
         thread_(boost::ref(*this)){}
     void operator()()
     {
-        LOG_SM(Producer, "Starting up");
+        LOG_S(Producer, "Starting up");
         for (int i = 0; i < nrMessages_; ++i)
             queue_.push(unique_ptr<Message>(new Message(true)));
         LOG_M("Time the go");
@@ -58,7 +58,7 @@ struct Consumer: gubg::InstanceCounter<Consumer>
         thread_(boost::ref(*this)){}
     void operator()()
     {
-        LOG_SM(Consumer, "Starting up");
+        LOG_S(Consumer, "Starting up");
         try
         {
             while (true)

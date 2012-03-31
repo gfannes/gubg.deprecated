@@ -3,6 +3,7 @@
 #include "Testing.hpp"
 #include <iostream>
 using namespace gubg;
+using namespace gubg::testing;
 using namespace std;
 
 //#define L_ENABLE_DEBUG

@@ -48,7 +48,7 @@ namespace gubg
                 {
                     MSS_BEGIN(ReturnCode);
                     res = 0;
-                    MSS_T(inputs.size() == weights_.size(), InputSizeError);
+                    MSS(inputs.size() == weights_.size(), InputSizeError);
                     for (size_t ix = 0; ix < inputs.size(); ++ix)
                         res += inputs[ix]*weights_[ix];
                     MSS_END();

@@ -65,8 +65,9 @@ module Breakdown
         end
         def process
             @@processLevel += 1
+            verbose = false
             while target = @ungenerated.shift
-                puts(indent(">") + "#{target.class}::#{target}")
+                puts(indent(">") + "#{target.class}::#{target}") if verbose
                 target.info = {}
                 begin
                     target.info[:startTime] = Time.now
@@ -85,7 +86,7 @@ module Breakdown
                     puts(indent("!") + "ERROR generating #{target.class}::#{target}: #{exc.message}\n#{exc.backtrace*"\n"}")
                     return :error
                 end
-                puts(indent("<") + "#{target.class}::#{target} (#{target.info[:stopTime] - target.info[:startTime]} sec)")
+                puts(indent("<") + "#{target.class}::#{target} (#{target.info[:stopTime] - target.info[:startTime]} sec)") if verbose
             end
             @@processLevel -= 1
             :ok

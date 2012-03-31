@@ -18,12 +18,12 @@ namespace
 
             Data()
             {
-                LOG_SM(Data, "constructor");
+                LOG_S(Data, "constructor");
                 value_ = 0;
             }
             virtual ~Data()
             {
-                LOG_SM(Data, "destructor, value_: " << value_);
+                LOG_S(Data, "destructor, value_: " << value_);
             }
 
             void increase(){++value_;}
@@ -36,11 +36,11 @@ namespace
         public:
             Derived()
             {
-                LOG_SM(Derived, "constructor");
+                LOG_S(Derived, "constructor");
             }
             virtual ~Derived()
             {
-                LOG_SM(Derived, "destructor");
+                LOG_S(Derived, "destructor");
             }
     };
     typedef Locked<Data, ThreadSafeInstance> IDataPtr;
@@ -73,21 +73,21 @@ int main()
     TEST_TAG(main);
     LOG_S(main);
     {
-        LOG_SM(constructor, "Constructor");
+        LOG_S(constructor, "Constructor");
         {
-            LOG_SM(RawPointer, "RawPointer");
+            LOG_S(RawPointer, "RawPointer");
             IDataPtr data(new Data);
             TEST_TRUE(data());
         }
         {
-            LOG_SM(SharedPointer, "SharedPointer");
+            LOG_S(SharedPointer, "SharedPointer");
             Data::Ptr dataPtr(new Data);
             IDataPtr data(dataPtr);
             TEST_TRUE(data());
         }
     }
     {
-        LOG_SM(Unlock, "Unlock");
+        LOG_S(Unlock, "Unlock");
         IDataPtr data(new Data);
         data->increase();
         IDataPtr::Unlock unlock(data);
@@ -98,7 +98,7 @@ int main()
         }
     }
     {
-        LOG_SM(MultiThreaded, "MultiThreaded");
+        LOG_S(MultiThreaded, "MultiThreaded");
         const int NrThreads = 10;
         IDataPtr data(new Data);
         for (int i = 0; i < NrThreads; ++i)
@@ -109,7 +109,7 @@ int main()
         TEST_EQ(NrThreads, unlock->value_);
     }
     {
-        LOG_SM(Singleton, "Mutex per instance");
+        LOG_S(Singleton, "Mutex per instance");
         IDataPtr data1(new Data);
         IDataPtr data2(new Data);
         new IncrementThread<IDataPtr>(data1);
@@ -118,7 +118,7 @@ int main()
             gubg::nanosleep(0, 100000000);
     }
     {
-        LOG_SM(Singleton, "Mutex per type");
+        LOG_S(Singleton, "Mutex per type");
         TDataPtr data1(new Data);
         TDataPtr data2(new Data);
         new IncrementThread<TDataPtr>(data1);
@@ -127,7 +127,7 @@ int main()
             gubg::nanosleep(0, 100000000);
     }
     {
-        LOG_SM(Singleton, "Mutex per base type");
+        LOG_S(Singleton, "Mutex per base type");
         TBDataPtr base(new Data);
         TDDataPtr derived(new Derived);
         new IncrementThread<TBDataPtr>(base);
@@ -138,12 +138,12 @@ int main()
             gubg::nanosleep(0, 100000000);
     }
     {
-        LOG_SM(StackPointer, "StackPointer");
+        LOG_S(StackPointer, "StackPointer");
         struct S
         {
-            S():data(0){LOG_SM(ctor, "ctor " << this);}
-            S(int d):data(d){LOG_SM(ctor, "ctor with data " << this << " data: " << data);}
-            ~S(){LOG_SM(dtor, "dtor " << this << " data: " << data);}
+            S():data(0){LOG_S(ctor, "ctor " << this);}
+            S(int d):data(d){LOG_S(ctor, "ctor with data " << this << " data: " << data);}
+            ~S(){LOG_S(dtor, "dtor " << this << " data: " << data);}
             int data;
         };
         typedef StackPointer<S> SP;

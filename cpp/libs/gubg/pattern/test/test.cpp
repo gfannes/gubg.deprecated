@@ -17,14 +17,14 @@ class Increment: public Command
 
         virtual bool execute()
         {
-            LOG_SM(Increment::execute, "Value before: " << receiver_);
+            LOG_S(Increment::execute, "Value before: " << receiver_);
             ++receiver_;
             LOG_M("Value after: " << receiver_);
             return true;
         }
         virtual bool undo()
         {
-            LOG_SM(Increment::undo, "Value before: " << receiver_);
+            LOG_S(Increment::undo, "Value before: " << receiver_);
             --receiver_;
             LOG_M("Value after: " << receiver_);
             return true;
@@ -38,7 +38,7 @@ class Decrement: public Command
 
         virtual bool execute()
         {
-            LOG_SM(Decrement::execute, "Value before: " << receiver_);
+            LOG_S(Decrement::execute, "Value before: " << receiver_);
             --receiver_;
             LOG_M("Value after: " << receiver_);
             return true;

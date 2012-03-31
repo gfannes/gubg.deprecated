@@ -23,16 +23,72 @@ module Executer
     end
 end
 
+class TestAll
+    attr_reader(:directory)
+    def initialize(directory)
+        @directory = directory
+    end
+    def breakdown_
+        defineScope(:testAll)
+        configs = breakdown(Configs)
+        tests = []
+        Dir.each(@directory) do |dir, fn|
+            filename = File.expand_path(fn, dir)
+            case filename
+            when /tests?\.cpp$/ then tests << {filename: filename}
+            end
+            :ok
+        end
+        log("Collected #{tests.length} tests:")
+        log("#{tests*"\n"}")
+
+        tests.each do |test|
+            begin
+                exe = breakdown(Executable.new(test[:filename]))
+                test[:exe] = exe
+                test[:state] = exe.state
+            rescue
+                test[:state] = :error
+            end
+        end
+
+        tests.each do |test|
+            if test[:state] == :ok and test.has_key?(:exe)
+                run = breakdown(Run.new(test[:exe].executable))
+                test[:run] = run
+                test[:state] = run.state == :ok ? :ok : :runError
+            end
+        end
+
+
+        log("")
+        log("TEST REPORT")
+        nrPerState = Hash.new(0)
+        tests.each do |t|
+            state = t[:state]
+            puts("#{t[:filename]}".ljust(100) + "#{state}")
+            nrPerState[state] += 1
+        end
+        nrPerState.each{|state, nr|log("state #{state}:\t#{nr}")}
+        log("")
+    end
+end
 class Executable
     include Executer
-    attr_reader(:executable, :mainfile, :filestore)
+    attr_reader(:executable, :mainfile, :directory, :filestore, :state)
     def initialize(mainfile)
         @mainfile = File.expand_path(mainfile, nil, true)
+        @directory = File.dirname(@mainfile)
         @filestore = $filestore
+        @state = nil
     end
     def breakdown_
         defineScope(:exe)
         objects = breakdown(ObjectFiles)
+        if objects.failures > 0
+            @state = :compileError
+            return
+        end
         link = breakdown(LinkSettings)
         config = breakdown(Configs)
         libraryPaths = link.libraryPaths.map{|lp|"-L#{lp}"}.join(" ")
@@ -40,26 +96,37 @@ class Executable
         @executable = setExtension_(@mainfile, :executable)
         execute_("rm #{@executable}") if File.exist?(@executable)
         command = "#{config.linker} -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
-        execute_(command)
+        @state = (execute_(command) ? :ok : :linkError)
     end
 end
 class Run
+    attr_reader(:state)
     def initialize(exe)
         @exe = exe
     end
     def breakdown_
+        if !@exe
+            @state = :error
+            return
+        end
+        puts("")
         puts("*"*100)
         command = @exe
+        puts(command.center(100, "*"))
+        puts("*"*100)
         res = system(command)
         puts("*"*100)
-        if !res
+        if res
+            @state = :ok
+        else
+            @state = :error
             log("ERROR::Failure executing #{command} (#{$?})")
         end
     end
 end
 
 class ObjectFiles
-    attr_reader(:objects)
+    attr_reader(:objects, :failures)
     @@reCpp = /\.cpp$/
         def breakdown_
             @objects = []
@@ -67,17 +134,23 @@ class ObjectFiles
             compile = breakdown(CompileSettings)
             includePaths = compile.includePaths.map{|ip|"-I#{ip}"}*" "
             macros = compile.macros.map{|m|"-D#{m}"}*" "
+            @failures = 0
             sources.files.each do |file|
                 objectFile = breakdown(ObjectFile, file, macros, includePaths)
-                @objects << objectFile.file
+                if objectFile.state == :ok
+                    @objects << objectFile.file
+                else
+                    @failures += 1
+                end
             end
         end
 end
 class ObjectFile
     include Executer
-    attr_reader(:file)
+    attr_reader(:file, :state)
     def initialize(source, macros, includePaths)
         @source, @macros, @includePaths = source, macros, includePaths
+        @state = nil
     end
     def ObjectFile.key_(context, source, macros, includePaths)
         source.name
@@ -90,12 +163,17 @@ class ObjectFile
         fi["recursive header digest"] = fmi.digest
         fi["macros"] = "#{@macros}"
         fi["include paths"] = "#{@includePaths}"
-        context.filestore.create(fi) do |fn|
-            unless execute_("#{config.compiler} -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
-                raise("Failed to compile #{@source}")
+        begin
+            context.filestore.create(fi) do |fn|
+                unless execute_("#{config.compiler} -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
+                    raise("Failed to compile #{@source}")
+                end
             end
+            @file = context.filestore.name(fi)
+            @state = :ok
+        rescue
+            @state = :error
         end
-        @file = context.filestore.name(fi)
     end
     def to_s; @source.to_s end
 end
@@ -287,7 +365,7 @@ class Configs
     def breakdown_
         #This is still a short cut
         gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
-        @roots = [File.dirname(context.mainfile), gubgRoot]
+        @roots = [context.directory, gubgRoot]
         @roots << File.expand_path("g:/src/cpp") if operatingSystem?(:windows)
     end
 end

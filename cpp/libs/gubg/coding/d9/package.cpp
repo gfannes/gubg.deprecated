@@ -105,7 +105,7 @@ namespace
             for (; i < coded.size(); ++i)
             {
                 ubyte b = coded[i];
-                MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                MSS((b&0xc0) != 0xc0, RLEIllegalMSBits);
                 if (b & 0x80)
                     break;
             }
@@ -143,7 +143,7 @@ namespace
             if (b == Byte::D8)
             {
                 ++it;
-                MSS_T(it != end, IllegalEscapeSequence);
+                MSS(it != end, IllegalEscapeSequence);
                 b = *it;
                 int nr = (b>>5);
                 for (int i = 0; i < nr; ++i, b >>= 1)
@@ -244,7 +244,7 @@ namespace gubg
             ReturnCode Package::getContent(string &plain) const
             {
                 MSS_BEGIN(ReturnCode);
-                MSS_T(contentType_ != ContentType::NoContent, NoContentPresent);
+                MSS(contentType_ != ContentType::NoContent, NoContentPresent);
                 plain = content_;
                 MSS_END();
             }
@@ -261,7 +261,7 @@ namespace gubg
 
                 //Version
                 {
-                    MSS_T(version_ == 0, UnsupportedVersion);
+                    MSS(version_ == 0, UnsupportedVersion);
                     meta.add(false);
                 }
 
@@ -281,7 +281,7 @@ namespace gubg
                                 switch (format_)
                                 {
                                     case Format::AsIs:
-                                        MSS_T(alterations.empty(), AlterationsNotAllowedForAsIs);
+                                        MSS(alterations.empty(), AlterationsNotAllowedForAsIs);
                                         d9FreeBuffer.append(coded);
                                         break;
                                     case Format::Block:
@@ -370,10 +370,10 @@ namespace gubg
             {
                 MSS_BEGIN(ReturnCode);
                 ubyte b;
-                MSS_T(input.read(b), PackageTooSmall);
-                MSS_T(b == Byte::D9, MissingStart);
+                MSS(input.read(b), PackageTooSmall);
+                MSS(b == Byte::D9, MissingStart);
                 Ixs ixs;
-                MSS_T(rle::Bits::decode(ixs, input), CannotDecodeMeta);
+                MSS(rle::Bits::decode(ixs, input), CannotDecodeMeta);
                 clear_();
                 for (auto ix = ixs.begin(); ix != ixs.end(); ++ix)
                 {
@@ -384,25 +384,25 @@ namespace gubg
                         case Meta::Content:
                                             {
                                                 unsigned long format, type;
-                                                MSS_T(rle::decodePair(format, type, input), CannotDecodeContentMeta);
+                                                MSS(rle::decodePair(format, type, input), CannotDecodeContentMeta);
                                                 format_ = (Format)format;
                                                 contentType_ = (ContentType)type;
                                             }
                                             break;
-                        case Meta::Source: MSS_T(rle::decodeNumber(src_, input), CannotDecodeSource); break;
-                        case Meta::Destination: MSS_T(rle::decodeNumber(src_, input), CannotDecodeDestination); break;
-                        case Meta::PackageId: MSS_T(rle::decodeNumber(src_, input), CannotDecodeId); break;
+                        case Meta::Source: MSS(rle::decodeNumber(src_, input), CannotDecodeSource); break;
+                        case Meta::Destination: MSS(rle::decodeNumber(src_, input), CannotDecodeDestination); break;
+                        case Meta::PackageId: MSS(rle::decodeNumber(src_, input), CannotDecodeId); break;
                         default: MSS_L(UnknownMetaField); break;
                     }
                 }
                 if (contentType_ != ContentType::NoContent)
                 {
                     string coded;
-                    MSS_T(readUntil_(coded, Byte::D9, input), CannotReadCodedContent);
+                    MSS(readUntil_(coded, Byte::D9, input), CannotReadCodedContent);
                     {
                         ubyte b;
-                        MSS_T(input.read(b), ExpectedEndByte);
-                        MSS_T(b == Byte::End, ExpectedEndByte);
+                        MSS(input.read(b), ExpectedEndByte);
+                        MSS(b == Byte::End, ExpectedEndByte);
                     }
                     switch (format_)
                     {
@@ -416,7 +416,7 @@ namespace gubg
                 {
                     //Checksum us not checked yet
                     ubyte checksum = 0;
-                    MSS_T(input.read(checksum), ExpectedChecksum);
+                    MSS(input.read(checksum), ExpectedChecksum);
                 }
                 MSS_END();
             }

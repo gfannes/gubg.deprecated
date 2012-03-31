@@ -30,8 +30,8 @@ namespace gubg
                     while (true)
                     {
                         ubyte b;
-                        MSS_T(input.read(b), RLETooSmall);
-                        MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                        MSS(input.read(b), RLETooSmall);
+                        MSS((b&0xc0) != 0xc0, RLEIllegalMSBits);
                         coded.push_back(b);
                         if (b & 0x80)
                             break;
@@ -53,18 +53,18 @@ namespace gubg
                 ReturnCode decodeNumber(unsigned long &v, const string &coded)
                 {
                     MSS_BEGIN(ReturnCode);
-                    MSS_T(!coded.empty(), RLETooSmall);
-                    MSS_T(coded.size() <= 5, RLETooLarge);
+                    MSS(!coded.empty(), RLETooSmall);
+                    MSS(coded.size() <= 5, RLETooLarge);
                     v = 0;
                     auto end = coded.end();
                     for (auto it = coded.begin(); it != end; ++it)
                     {
                         ubyte b = *it;
-                        MSS_T((b&0xc0)!=0xc0, RLEIllegalMSBits);
+                        MSS((b&0xc0)!=0xc0, RLEIllegalMSBits);
                         if (b&0x80)
                         {
                             //This is the closing byte of the RLE
-                            MSS_T(it+1 == end, RLEClosingByteExpected);
+                            MSS(it+1 == end, RLEClosingByteExpected);
                             v <<= 6;
                             v |= (0x3f&b);
                         }
@@ -153,18 +153,18 @@ namespace gubg
                 ReturnCode decodePair(unsigned long &first, unsigned long &second, const string &coded)
                 {
                     MSS_BEGIN(ReturnCode);
-                    MSS_T(!coded.empty(), RLETooSmall);
-                    MSS_T(coded.size() <= 9, RLETooLarge);
+                    MSS(!coded.empty(), RLETooSmall);
+                    MSS(coded.size() <= 9, RLETooLarge);
                     first = second = 0;
                     auto end = coded.end();
                     for (auto it = coded.begin(); it != end; ++it)
                     {
                         ubyte b = *it;
-                        MSS_T((b&0xc0)!=0xc0, RLEIllegalMSBits);
+                        MSS((b&0xc0)!=0xc0, RLEIllegalMSBits);
                         if (b&0x80)
                         {
                             //This is the closing byte of the RLE
-                            MSS_T(it+1 == end, RLEClosingByteExpected);
+                            MSS(it+1 == end, RLEClosingByteExpected);
                             first <<= 2;
                             first |= (0x03&b>>4);
                             second <<= 4;
@@ -242,8 +242,8 @@ namespace gubg
                         while (true)
                         {
                             ubyte b;
-                            MSS_T(input.read(b), UnexpectedBitsEnd);
-                            MSS_T((b&0xc0) != 0xc0, RLEIllegalMSBits);
+                            MSS(input.read(b), UnexpectedBitsEnd);
+                            MSS((b&0xc0) != 0xc0, RLEIllegalMSBits);
                             coded.push_back(b);
                             if (0x80 & b)
                                 //This is the end-byte of the RLE

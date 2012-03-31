@@ -2,18 +2,18 @@
 #include <iostream>
 
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
-MSS_CODE_BEGIN(Compare);
+MSS_CODES_BEGIN(Compare);
 MSS_CODE_(Info, Smaller);
 MSS_CODE(Larger);
-MSS_CODE_END();
+MSS_CODES_END();
 
 Compare compare(int lhs, int rhs)
 {
     MSS_BEGIN(Compare);
-    MSS_T(lhs >= 0, IllegalArgument);
-    MSS_T(rhs >= 0, IllegalArgument);
-    MSS_T(lhs >= rhs, Smaller);
-    MSS_T_(Info, lhs <= rhs, Larger, lhs << " is larger than " << rhs);
+    MSS(lhs >= 0, IllegalArgument);
+    MSS(rhs >= 0, IllegalArgument);
+    MSS(lhs >= rhs, Smaller);
+    MSS_(Info, lhs <= rhs, Larger, lhs << " is larger than " << rhs);
     MSS_END();
 }
 Compare fasterThanLight()

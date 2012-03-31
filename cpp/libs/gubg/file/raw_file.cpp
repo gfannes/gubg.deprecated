@@ -28,26 +28,26 @@ ReturnCode Directory::expand(ExpandStrategy expandStrategy, HiddenStrategy hidde
             {
                 gubg::file::basic::Directories dirs;
                 gubg::file::basic::Files files;
-                MSS_T(gubg::file::basic::getDirectoryContent(dirs, files, path()), CouldNotGetDirContent);
+                MSS(gubg::file::basic::getDirectoryContent(dirs, files, path()), CouldNotGetDirContent);
                 for (auto d = dirs.begin(); d != dirs.end(); ++d)
                 {
                     auto &name = *d;
-                    MSS_T(!name.empty(), EmptyEntry);
+                    MSS(!name.empty(), EmptyEntry);
                     if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
                         continue;
                     auto dir = new Directory;
                     dir->name = name;
-                    MSS_T(add(dir), CouldNotAddEntry);
+                    MSS(add(dir), CouldNotAddEntry);
                 }
                 for (auto f = files.begin(); f != files.end(); ++f)
                 {
                     auto &name = *f;
-                    MSS_T(!name.empty(), EmptyEntry);
+                    MSS(!name.empty(), EmptyEntry);
                     if (NoHiddenFiles == hiddenStrategy && name[0] == '.')
                         continue;
                     auto reg = new Regular;
                     reg->name = name;
-                    MSS_T(add(reg), CouldNotAddEntry);
+                    MSS(add(reg), CouldNotAddEntry);
                 }
                 if (Recursive == expandStrategy)
                     for (auto r = rangeOnly<Directory*>(childs_); !r.empty(); r.popFront())

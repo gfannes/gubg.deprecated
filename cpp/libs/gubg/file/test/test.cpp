@@ -57,7 +57,7 @@ int main(int argc, char **argv)
             string content;
             TEST_FALSE(file::Regular::create(unexistingFilepath)->load(content));
             TEST_TRUE(file::Regular::create(thisFilepath)->load(content));
-            LOG_SM(load, "I loaded " << content.size() << " bytes from " << thisFilepath);
+            LOG_S(load, "I loaded " << content.size() << " bytes from " << thisFilepath);
         }
     }
     {

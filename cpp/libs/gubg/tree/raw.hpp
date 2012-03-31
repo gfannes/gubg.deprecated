@@ -67,7 +67,7 @@ namespace gubg
                     ReturnCode add(Node *component)
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS_T(component, IllegalArgument);
+                        MSS(component, IllegalArgument);
                         component->setParent(this);
                         childs_.push_back(component);
                         MSS_END();
@@ -75,9 +75,9 @@ namespace gubg
                     ReturnCode remove(Node *component)
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS_T(component, IllegalArgument);
+                        MSS(component, IllegalArgument);
                         auto it = childs_.find(component);
-                        MSS_T(it != childs_.end(), UnknownNode);
+                        MSS(it != childs_.end(), UnknownNode);
                         childs_.remove(it);
                         MSS_END();
                     }

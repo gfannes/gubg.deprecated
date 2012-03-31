@@ -15,10 +15,10 @@ namespace
         RC tokenizeAbsolutePath(Parts &parts, const string &path)
         {
             MSS_BEGIN(RC);
-            MSS_T(!path.empty(), PathIsEmpty);
+            MSS(!path.empty(), PathIsEmpty);
             parts = gubg::parse::tokenize(path, "/");
-            MSS_T(!parts.empty(), PartsIsEmpty);
-            MSS_T(parts[0] == "", PathIsNotAbsolute);
+            MSS(!parts.empty(), PartsIsEmpty);
+            MSS(parts[0] == "", PathIsNotAbsolute);
             parts.pop_front();
             MSS_END();
         }
@@ -30,7 +30,7 @@ gubg::file::basic::ReturnCode gubg::file::basic::expandPath(string &pathE, const
 
     //Split path into a vector of parts
     auto parts = gubg::parse::tokenize(path, "/");
-    MSS_T(!parts.empty(), InvalidPath);
+    MSS(!parts.empty(), InvalidPath);
 
     //We construct the expanded path by gradually changing the working directory based on parts from path
     deque<string> partsE;
@@ -93,7 +93,7 @@ gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories
     MSS(expandPath(pathE, path));
     //Open the directory
     DIR *dirp = ::opendir(pathE.c_str());
-    MSS_T(dirp, CouldNotOpenDir);
+    MSS(dirp, CouldNotOpenDir);
     //Create enough space for the dirent struct
     string entrypBuffer(offsetof(struct dirent, d_name)+NAME_MAX+1, '0');
     struct dirent *entryp = (struct dirent *)entrypBuffer.data();
@@ -101,7 +101,7 @@ gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories
     struct dirent *tmp;
     for (;;)
     {
-        MSS_T(0 == ::readdir_r(dirp, entryp, &tmp), CouldNotReadEntry);
+        MSS(0 == ::readdir_r(dirp, entryp, &tmp), CouldNotReadEntry);
         if (!tmp)
             //If this is set to 0, we are done with iterating
             break;
