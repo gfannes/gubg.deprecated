@@ -641,12 +641,16 @@ def tempDir(dir = '/tmp', subdir = nil)
     end
     FileUtils.mkdir_p(tmpDir)
     if block_given?
-        begin
-            yield(tmpDir)
-        rescue => exc
-            puts("I caught an exception: #{exc}, I'll cleanup and rethrow the exception")
-            raise
-        ensure
+	    cwd = Dir.pwd
+	    begin
+		    Dir.chdir(tmpDir)
+		    yield(tmpDir)
+	    rescue => exc
+		    puts("I caught an exception: #{exc}, I'll cleanup and rethrow the exception")
+		    Dir.chdir(cwd)
+		    raise
+	    ensure
+		    Dir.chdir(cwd)
             FileUtils.rm_r(tmpDir)
         end
         nil
