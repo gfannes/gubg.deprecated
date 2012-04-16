@@ -348,13 +348,17 @@ class Configs
         boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
         sdlLibs = %w[SDL]
         cairoLibs = %w[cairomm-1.0]
+        sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
+        openglLibs = %w[GLU]
         if operatingSystem =~ /^Linux/
             @includePaths << "/usr/include/cairomm-1.0"
             @includePaths << "/usr/include/cairo"
             @includePaths << "/usr/include/freetype2"
             @includePaths << "$HOME/sdks/libsigc++"
+            @includePaths << "$HOME/sdks/SFML/include"
             @libraryPaths << "$HOME/sdks/boost/lib"
-            @libraries = boostLibs + sdlLibs + cairoLibs
+            @libraryPaths << "$HOME/sdks/SFML/lib"
+            @libraries = boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs
         else
             @includePaths << "h:/software/boost_1_47_0"
             @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
