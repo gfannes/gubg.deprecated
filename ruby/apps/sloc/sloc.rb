@@ -40,10 +40,10 @@ end
 
 [sloc, keywords].zip(%w[sloc keywords]).each do |cube, str|
 	unless cube.empty?
-		puts("Total #{str}: #{cube.get}")
+		puts("Total #{str}: #{cube.aggregate}")
 		[:ext, :dir, :keyword].each do |sym|
 			cube.dimension(sym).each do |v|
-				puts("\t#{v}\t#{cube.get(sym => v)}")
+				puts("\t#{v}\t#{cube.aggregate(sym => v)}")
 			end if cube.hasDimension?(sym)
 		end
 	end
