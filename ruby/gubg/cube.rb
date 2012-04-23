@@ -85,6 +85,13 @@ class Cube
         end
         res
     end
+    def reject!(&block)
+        @valuesPerLoc.each do |loc, values|
+            values.reject!{|value|block.call(loc, value)}
+        end
+	@valuesPerLoc.reject!{|loc, values|values.empty?}
+	self
+    end
 
     #Location values along a dimension
     def dimension(dim)
