@@ -1,5 +1,6 @@
 require("gubg/utils")
 require("gubg/target")
+require("gubg/cartouche")
 require("tree.rb")
 require("set")
 require("digest/md5")
@@ -22,11 +23,24 @@ module Executer
 	    name.dup.setExtension!(extPerType[type])
     end
 end
+module Platform
+    def hostPlatform_
+        if operatingSystem?(:linux)
+            "pc-linux"
+        elsif operatingSystem?(:windows)
+            "pc-windows"
+        else
+            raise("Unknown host platform")
+        end
+    end
+end
 
 class TestAll
-    attr_reader(:directory)
+    include Platform
+    attr_reader(:directory, :targetPlatform)
     def initialize(directory)
         @directory = directory
+        @targetPlatform = hostPlatform_
     end
     def breakdown_
         defineScope(:testAll)
@@ -75,12 +89,16 @@ class TestAll
 end
 class Executable
     include Executer
-    attr_reader(:executable, :mainfile, :directory, :filestore, :state)
+    include Platform
+    attr_reader(:executable, :mainfile, :directory, :filestore, :state, :targetPlatform)
     def initialize(mainfile)
         @mainfile = File.expand_path(mainfile, nil, true)
         @directory = File.dirname(@mainfile)
         @filestore = $filestore
         @state = nil
+        @cartouche = Cartouche.createFrom(file: @mainfile)
+        info = @cartouche.getInfo({})
+        @targetPlatform = info["platform.target"] || hostPlatform_
     end
     def breakdown_
         defineScope(:exe)
@@ -95,7 +113,7 @@ class Executable
         libraries = link.libraries.map{|l|"-l#{l}"}.join(" ")
         @executable = setExtension_(@mainfile, :executable)
         execute_("rm #{@executable}") if File.exist?(@executable)
-        command = "#{config.linker} -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
+        command = "#{config.linker} #{config.linkSettings} -o #{@executable} " + objects.objects.join(" ") + " " + libraryPaths + " " + libraries
         @state = (execute_(command) ? :ok : :linkError)
     end
 end
@@ -124,26 +142,40 @@ class Run
         end
     end
 end
+class ProgramArduino
+    include Executer
+    attr_reader(:state)
+    def initialize(elf)
+        @elf = elf
+        @hex = "#{@elf}.hex"
+    end
+    def breakdown_
+        cmd = "avr-objcopy -j .text -O ihex #{@elf} #{@hex}"
+        raise("Could not convert elf into hex") unless execute_(cmd)
+        cmd = "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:#{@hex}"
+        raise("Could not program hex into arduino") unless execute_(cmd)
+        @state = :ok
+    end
+end
 
 class ObjectFiles
     attr_reader(:objects, :failures)
-    @@reCpp = /\.cpp$/
-        def breakdown_
-            @objects = []
-            sources = breakdown(Sources)
-            compile = breakdown(CompileSettings)
-            includePaths = compile.includePaths.map{|ip|"-I#{ip}"}*" "
-            macros = compile.macros.map{|m|"-D#{m}"}*" "
-            @failures = 0
-            sources.files.each do |file|
-                objectFile = breakdown(ObjectFile, file, macros, includePaths)
-                if objectFile.state == :ok
-                    @objects << objectFile.file
-                else
-                    @failures += 1
-                end
+    def breakdown_
+        @objects = []
+        sources = breakdown(Sources)
+        compile = breakdown(CompileSettings)
+        includePaths = compile.includePaths.map{|ip|"-I#{ip}"}*" "
+        macros = compile.macros.map{|m|"-D#{m}"}*" "
+        @failures = 0
+        sources.files.each do |file|
+            objectFile = breakdown(ObjectFile, file, macros, includePaths)
+            if objectFile.state == :ok
+                @objects << objectFile.file
+            else
+                @failures += 1
             end
         end
+    end
 end
 class ObjectFile
     include Executer
@@ -156,7 +188,7 @@ class ObjectFile
         source.name
     end
     def breakdown_
-        obj = @source.name.gsub(/\.cpp$/, ".o")
+        obj = @source.name.gsub(/\.c(pp)?$/, ".o")
         fi = FileInfo.new(obj)
         fmi = breakdown(FullMetaInfo, @source)
         config = breakdown(Configs)
@@ -165,7 +197,7 @@ class ObjectFile
         fi["include paths"] = "#{@includePaths}"
         begin
             context.filestore.create(fi) do |fn|
-                unless execute_("#{config.compiler} -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
+                unless execute_("#{config.compiler} #{config.compileSettings} -c #{@source} -o #{fn} #{@macros} #{@includePaths}")
                     raise("Failed to compile #{@source}")
                 end
             end
@@ -190,6 +222,7 @@ class FullMetaInfo
         @trees = breakdown(Trees).trees
 
         @source = resolveFiles_(@source).first
+        log("Looking for all info for #{@source}")
 
         newFiles = [@source]
         while file = newFiles.shift
@@ -211,7 +244,7 @@ class FullMetaInfo
         end
     end
     def sourceFiles
-        reCpp = /.cpp$/
+        reCpp = /.c(pp)?$/
             @metaPerFile.keys.select{|f|f.name =~ reCpp}
     end
     def metas
@@ -309,8 +342,9 @@ end
 class Sources
     attr_reader(:files)
     def breakdown_
+        configs = breakdown(Configs)
         @fullMetaInfo = breakdown(FullMetaInfo, context.mainfile)
-        @files = @fullMetaInfo.sourceFiles.uniq
+        @files = @fullMetaInfo.sourceFiles.uniq + configs.extrafiles.map{|fn|Tree::File.new(nil, fn)}
     end
     def includePaths
         paths = Set.new
@@ -334,43 +368,70 @@ class Trees
     attr_reader(:trees)
     def breakdown_
         configs = breakdown(Configs)
-        reWantedFiles = /\.[ch]pp$/
-            @trees = configs.roots.map{|root|Tree.new(root, reWantedFiles)}
+        @trees = configs.roots.map{|root|Tree.new(root, configs.wantedFiles)}
     end
 end
 class Configs
-    attr_reader(:compiler, :linker, :roots, :includePaths, :libraryPaths, :libraries)
+    attr_reader(:roots, :compiler, :compileSettings, :linker, :linkSettings, :includePaths, :libraryPaths, :libraries, :wantedFiles, :extrafiles)
     def initialize
-        @compiler = "g++ -std=c++0x -O3"
-        @linker = "g++ -std=c++0x"
+        @roots = []
+        @compiler = nil
+        @compileSettings = nil
         @includePaths = []
+        @linker = nil
+        @linkSettings = nil
         @libraryPaths = []
-        boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
-        sdlLibs = %w[SDL]
-        cairoLibs = %w[cairomm-1.0]
-        sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
-        openglLibs = %w[GLU]
-        if operatingSystem =~ /^Linux/
-            @includePaths << "/usr/include/cairomm-1.0"
-            @includePaths << "/usr/include/cairo"
-            @includePaths << "/usr/include/freetype2"
-            @includePaths << "$HOME/sdks/libsigc++"
-            @includePaths << "$HOME/sdks/SFML/include"
-            @libraryPaths << "$HOME/sdks/boost/lib"
-            @libraryPaths << "$HOME/sdks/SFML/lib"
-            @libraries = boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs
-        else
-            @includePaths << "h:/software/boost_1_47_0"
-            @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
-            #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
-            @libraries = boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"}
-        end
+        @libraries = []
+        @wantedFiles = /\.[ch]pp$/
+        @extrafiles = []
     end
     def breakdown_
-        #This is still a short cut
-        gubgRoot = File.expand_path("cpp/libs/gubg", ENV["GUBG"])
-        @roots = [context.directory, gubgRoot]
-        @roots << File.expand_path("g:/src/cpp") if operatingSystem?(:windows)
+        @roots << context.directory
+        case context.targetPlatform
+        when /^pc-/
+            @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
+            @compiler, @linker = "g++", "g++"
+            @compileSettings = "-std=c++0x -O3"
+            @linkSettings = "-std=c++0x"
+            boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
+            case context.targetPlatform
+            when "pc-linux"
+                @includePaths << "/usr/include/cairomm-1.0"
+                @includePaths << "/usr/include/cairo"
+                @includePaths << "/usr/include/freetype2"
+                @includePaths << "$HOME/sdks/libsigc++"
+                @includePaths << "$HOME/sdks/SFML/include"
+                @libraryPaths << "$HOME/sdks/boost/lib"
+                @libraryPaths << "$HOME/sdks/SFML/lib"
+                sdlLibs = %w[SDL]
+                cairoLibs = %w[cairomm-1.0]
+                sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
+                openglLibs = %w[GLU]
+                @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs
+            when "pc-windows"
+                @roots << File.expand_path("g:/src/cpp")
+                @includePaths << "h:/software/boost_1_47_0"
+                @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
+                #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
+                @libraries += boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"}
+            else
+                raise("Unknown pc platform")
+            end
+        when "arduino"
+            @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/cores"
+            @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/variants/standard"
+            @compiler, @linker = "avr-g++", "avr-g++"
+            @compileSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
+            @linkSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
+            @wantedFiles = /\.[ch](pp)?$/
+            %w[main.cpp wiring.c wiring_digital.c].each do |base|
+                @extrafiles << "/home/gfannes/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
+            end
+            #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/cores/arduino"
+            #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/variants/standard"
+        else
+            raise("Unknown targetPlatform #{context.targetPlatform}")
+        end
     end
 end
 class CompileSettings
