@@ -1,26 +1,49 @@
-#ifdef VIX_WITH_UPP
+#include "codes.hpp"
+#include "model.hpp"
+#include "view.hpp"
+#include "controller.hpp"
+#include "gubg/mss.hpp"
+#include "SFML/Graphics.hpp"
 
-#include "vix/controller/VixApplication.hpp"
-
-GUI_APP_MAIN
+namespace 
 {
-    VixApplication().Run();
+    ReturnCode handleEvents_(sf::RenderWindow &window, Controller &controller)
+    {
+        MSS_BEGIN(ReturnCode);
+        Event event;
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+                case Event::Closed: window.close(); break;
+                default: controller.addEvent(event); break;
+            }
+        }
+        MSS_END();
+    }
+    ReturnCode drawModel_(Model &model, sf::RenderWindow &window)
+    {
+        MSS_BEGIN(ReturnCode);
+        window.clear();
+        window.display();
+        MSS_END();
+    }
 }
 
-#endif
-
-
-
-#ifdef VIX_WITH_QT
-
-#include "controller/VixApplication.hpp"
-#include <QApplication>
-
-int main(int argc, char **argv)
+int main()
 {
-    vix::VixApplication application(argc, argv);
+    MSS_BEGIN(int);
 
-    return application.exec();
+    Model model;
+    sf::RenderWindow window(sf::VideoMode(800, 600), "ViX: VI inspired eXplorer");
+    View view(model, window);
+    Controller controller(model, view);
+
+    while (window.isOpen())
+    {
+        handleEvents_(window, controller);
+        drawModel_(model, window);
+    }
+
+    MSS_END();
 }
-
-#endif

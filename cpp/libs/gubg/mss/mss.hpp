@@ -23,7 +23,8 @@
 #include <memory>
 #include <set>
 
-#define MSS_DEFAULT_CODES OK, InternalError, IllegalArgument, NotImplemented, False, NullPointer, InvalidSharedPtr, UnknownError, PimplError, LastCode = 999
+#define MSS_DEFAULT_CODES_WITHOUT_OK InternalError, IllegalArgument, NotImplemented, False, NullPointer, InvalidSharedPtr, UnknownError, PimplError, LastCode = 999
+#define MSS_DEFAULT_CODES OK, MSS_DEFAULT_CODES_WITHOUT_OK
 
 template <typename T>
 struct AllowOtherCodes
@@ -85,7 +86,7 @@ namespace gubg
             T v_;
         };
         //We use this for return code storage for bools and ints
-	enum ReturnCode {StartOfCodes = -128, MSS_DEFAULT_CODES};
+	enum ReturnCode {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
 #define L_CASE_CODE(code) case code: return #code
         inline const char *l_MSSCode_AsString(ReturnCode code)
         {
@@ -403,7 +404,7 @@ namespace gubg
 
 #define MSS_Q_1(v)          MSS_DIRECT_Q(v)
 #define MSS_Q_2(v, nc)      MSS_TRANS_Q(v, nc)
-#define MSS_Q_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_Q_3,MSS_Q_2,MSS_Q_1)
+#define MSS_Q_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_Q_2,MSS_Q_1)
 #define MSS_Q(...) MSS_Q_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define MSS__1(level) You have to specify also a value
