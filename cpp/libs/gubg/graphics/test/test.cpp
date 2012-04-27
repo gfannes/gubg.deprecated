@@ -1,8 +1,8 @@
+#include "gubg/testing/Testing.hpp"
 #include "gubg/graphics/style.hpp"
 #include "gubg/graphics/sdl.hpp"
 #include "gubg/graphics/canvas.hpp"
 #include "gubg/graphics/sdl_canvas.hpp"
-#include "gubg/testing/Testing.hpp"
 #include "gubg/graphics/imui.hpp"
 #include "gubg/graphics/imui_button.hpp"
 #include "gubg/sleep/sleep.hpp"
@@ -15,10 +15,11 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-//    TEST_TAG(main);
+    MSS_BEGIN(int);
+    TEST_TAG(main);
     //Color and Style tests
     {
-  //      TEST_TAG(Color);
+        TEST_TAG(Color);
         cout << Color::red << endl;
         cout << Color(0.1, 0.2, 0.3) << endl;
         cout << Color({0.1, 0.2, 0.3}) << endl;
@@ -148,6 +149,5 @@ int main(int argc, char *argv[])
         //Don't burn the CPU
         nanosleep(0, 10000000);
     }
-
-    return 0;
+    MSS_END();
 }

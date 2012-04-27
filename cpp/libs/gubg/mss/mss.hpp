@@ -38,10 +38,10 @@ namespace gubg
 {
     namespace mss
     {
-	using namespace std;
+        using namespace std;
         template <typename T>
-        struct mss_shared_ptr { typedef std::shared_ptr<T> type; };
-	    
+            struct mss_shared_ptr { typedef std::shared_ptr<T> type; };
+
         template <typename T>
             struct NoOtherCodesAllowed
             {
@@ -55,7 +55,7 @@ namespace gubg
             ReturnCodeWrapper():v_(T::OK){}
             T get() { return v_; }
             template <typename OT>
-            bool isOK(OT ov) const { return OT::OK == ov; }
+                bool isOK(OT ov) const { return OT::OK == ov; }
             bool isOK(T v) const {return T::OK == v || AllowedCodesPolicyT::isAllowed(v);}
             bool set(T v)
             {
@@ -86,7 +86,7 @@ namespace gubg
             T v_;
         };
         //We use this for return code storage for bools and ints
-	enum ReturnCode {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
+        enum ReturnCode {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
 #define L_CASE_CODE(code) case code: return #code
         inline const char *l_MSSCode_AsString(ReturnCode code)
         {
@@ -209,8 +209,8 @@ namespace gubg
                         l_ = Level::OK;
                         return true;
                     }
-		template <typename OT>
-		bool isOK(OT ov) const {return OT::OK == ov;}
+                template <typename OT>
+                    bool isOK(OT ov) const {return OT::OK == ov;}
                 Level level() const {return l_;}
                 std::string toString() const {return v_;}
                 std::string v_;
@@ -276,13 +276,13 @@ namespace gubg
         //A helper template to fix a bug in decltype (decltype can currently not be combined with a scope operator)
         template <typename TT> struct l_declfix {typedef TT T;};
 
-	template <typename RC, RC has_ok = RC::OK>
-		bool isOK(RC rc){return RC::OK == rc;}
-	inline bool isOK(bool b){return b;}
-	template <typename X>
-		bool isOK(boost::shared_ptr<X> p){return (bool)p;}
-	template <typename X, typename X::pimpl_tag is_pimpl = X::pimpl_tag::OK>
-		bool isOK(X x){return x.pimplOK();}
+        template <typename RC, RC has_ok = RC::OK>
+            bool isOK(RC rc){return RC::OK == rc;}
+        inline bool isOK(bool b){return b;}
+        template <typename X>
+            bool isOK(boost::shared_ptr<X> p){return (bool)p;}
+        template <typename X, typename X::pimpl_tag is_pimpl = X::pimpl_tag::OK>
+            bool isOK(X x){return x.pimplOK();}
 
         struct ElapseReporter
         {
@@ -304,25 +304,25 @@ namespace gubg
 #define MSS_RC_VAR l_mss_rc_var
 
 #define MSS_BEGIN_RC_WRAPPER(...)   typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> mss_return_code_wrapper_type; \
-                                    typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \
-                                    mss_return_code_wrapper_type MSS_RC_VAR
+    typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \
+mss_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_1(type)           MSS_BEGIN_RC_WRAPPER(type); \
-	                            LOG_S(type)
+    LOG_S(type)
 #define MSS_BEGIN_2(type, tc)       MSS_BEGIN_RC_WRAPPER(type); \
-	                            LOG_S(tc)
+    LOG_S(tc)
 #define MSS_BEGIN_3(type, tc, msg)  MSS_BEGIN_RC_WRAPPER(type); \
-	                            LOG_S(tc, msg)
+    LOG_S(tc, msg)
 #define MSS_BEGIN_MACRO_CHOOSER(...) GUBG_GET_4TH_ARG(__VA_ARGS__, MSS_BEGIN_3,MSS_BEGIN_2,MSS_BEGIN_1)
 #define MSS_BEGIN(...) MSS_BEGIN_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define MSS_BEGIN_ALLOW(type)       MSS_BEGIN_RC_WRAPPER(type, AllowOtherCodes); \
-	                            LOG_S(type)
+    LOG_S(type)
 
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_mss_elapse_reporter_msg; \
-                                  l_mss_elapse_reporter_msg << msg; \
-                                  gubg::mss::ElapseReporter l_mss_elapse_reporter(GUBG_HERE(), l_mss_elapse_reporter_msg.str()); \
-                                  MSS_BEGIN(t)
+    l_mss_elapse_reporter_msg << msg; \
+gubg::mss::ElapseReporter l_mss_elapse_reporter(GUBG_HERE(), l_mss_elapse_reporter_msg.str()); \
+MSS_BEGIN(t)
 
 #define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(mss_return_code_type::v)
 
@@ -332,35 +332,35 @@ namespace gubg
 //Checks if the main success scenario is successfully completed. It detects direct return statements and exceptions
 #define MSS_BEGIN_(type, msg) \
     MSS_BEGIN(type); \
+{ \
+    gubg::mss::SuccessChecker<mss_return_code_wrapper_type> l_mss_success_checker(GUBG_HERE(), MSS_RC_VAR); \
     { \
-        gubg::mss::SuccessChecker<mss_return_code_wrapper_type> l_mss_success_checker(GUBG_HERE(), MSS_RC_VAR); \
-        { \
-            std::ostringstream l_mss_success_checker_m; l_mss_success_checker_m << msg; \
-            l_mss_success_checker.setMessage(l_mss_success_checker_m.str()); \
-        }
+        std::ostringstream l_mss_success_checker_m; l_mss_success_checker_m << msg; \
+        l_mss_success_checker.setMessage(l_mss_success_checker_m.str()); \
+    }
 
 #define MSS_END_() \
-        l_mss_success_checker.indicateSuccess(); \
-        MSS_END(); \
-    }
+    l_mss_success_checker.indicateSuccess(); \
+    MSS_END(); \
+}
 
 //Logging
 #define L_MSS_LOG_PRIM(rc_str, level, msg) LOG_M(std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg)
 #define L_MSS_LOG_PRIM_(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
 #define L_MSS_LOG(l, rc, msg) \
 { \
-	auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \
-	L_MSS_LOG_PRIM(rc.toString(), level, msg); \
+    auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \
+    L_MSS_LOG_PRIM(rc.toString(), level, msg); \
 }
 
 //Will cause a "controlled crash" if v is not OK or false
 #define MSS_ENSURE(v, msg) if (!gubg::mss::isOK(v)) \
-    { \
-        L_MSS_LOG_PRIM_("<" #v ">", gubg::mss::Level::Fatal, "MSS_ENSURE(" << #v << ") failure, termination is inevitable: " << msg); \
-        typedef void(*Crash)(); \
-        Crash crash = 0; \
-        crash(); \
-    }
+{ \
+    L_MSS_LOG_PRIM_("<" #v ">", gubg::mss::Level::Fatal, "MSS_ENSURE(" << #v << ") failure, termination is inevitable: " << msg); \
+    typedef void(*Crash)(); \
+    Crash crash = 0; \
+    crash(); \
+}
 
 //Direct handling, v should be of the same type as specified in MSS_BEGIN(type)
 #define MSS_DIRECT(level, v, msg) \
@@ -422,9 +422,9 @@ namespace gubg
 //If v == c, the block under this macro will be skipped
 #define MSS_SKIP_IF(v, c) \
     for (auto l_v = v, l_firstTime = gubg::mss::l_declfix<decltype(l_v)>::T::OK; l_firstTime == gubg::mss::l_declfix<decltype(l_v)>::T::OK; l_firstTime = gubg::mss::l_declfix<decltype(l_v)>::T::False) \
-        if (l_v == gubg::mss::l_declfix<decltype(l_v)>::T::c) {} \
-        else if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
-        else
+if (l_v == gubg::mss::l_declfix<decltype(l_v)>::T::c) {} \
+else if (!MSS_RC_VAR.isOK(l_v)) {MSS(l_v);} \
+else
 
 //Allows you to test for one specific failure value, which is typically an error value that can be rectified, allowing MSS to continue
 //If v == c, the block under this macro will be entered
