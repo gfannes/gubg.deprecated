@@ -2,8 +2,9 @@
 #include "model.hpp"
 #include "view.hpp"
 #include "controller.hpp"
-#include "view_box.hpp"
+#include "text_box.hpp"
 #include "gubg/mss.hpp"
+#include "gubg/sleep/sleep.hpp"
 #include "SFML/Graphics.hpp"
 #include <string>
 using namespace std;
@@ -33,7 +34,7 @@ namespace
             str.push_back(ch);
         for (auto ch = 'A'; ch <= 'Z'; ++ch)
             str.push_back(ch);
-        ViewBox vb(400, 400);
+        TextBox vb(400, 400, 20);
         vb.set(str);
 
         window.clear();
@@ -53,10 +54,13 @@ int main()
     View view(model, window);
     Controller controller(model, view);
 
+    int i = 0;
     while (window.isOpen())
     {
+        cout << ++i << endl;
         handleEvents_(window, controller);
         drawModel_(model, window);
+        gubg::nanosleep(0, 5000000000);
     }
 
     MSS_END();

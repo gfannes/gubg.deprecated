@@ -1,5 +1,5 @@
-#ifndef sleep_hpp
-#define sleep_hpp
+#ifndef gubg_sleep_hpp
+#define gubg_sleep_hpp
 
 namespace gubg
 {
