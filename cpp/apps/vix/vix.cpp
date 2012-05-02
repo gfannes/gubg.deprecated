@@ -2,8 +2,11 @@
 #include "model.hpp"
 #include "view.hpp"
 #include "controller.hpp"
+#include "view_box.hpp"
 #include "gubg/mss.hpp"
 #include "SFML/Graphics.hpp"
+#include <string>
+using namespace std;
 
 namespace 
 {
@@ -21,11 +24,22 @@ namespace
         }
         MSS_END();
     }
+    const int FontSize = 15;
     ReturnCode drawModel_(Model &model, sf::RenderWindow &window)
     {
         MSS_BEGIN(ReturnCode);
+        string str;
+        for (auto ch = 'a'; ch <= 'z'; ++ch)
+            str.push_back(ch);
+        for (auto ch = 'A'; ch <= 'Z'; ++ch)
+            str.push_back(ch);
+        ViewBox vb(400, 400);
+        vb.set(str);
+
         window.clear();
+        window.draw(vb);
         window.display();
+
         MSS_END();
     }
 }
