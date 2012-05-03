@@ -1,11 +1,20 @@
-#ifndef vix_text_box_hpp
-#define vix_text_box_hpp
+#ifndef vix_TextBox_hpp
+#define vix_TextBox_hpp
 
 #include "SFML/Graphics/Drawable.hpp"
+#include "SFML/Graphics.hpp"
 #include "gubg/tree/node.hpp"
 #include <string>
 
-class TextBox: public sf::Drawable
+struct Style
+{
+    sf::Color color;
+    Style():
+        color(sf::Color::Green){}
+};
+typedef gubg::Node<Style, std::string> FT;
+
+class TextBox: public sf::Transformable, public sf::Drawable
 {
     public:
         TextBox(size_t width, size_t height, size_t nrLines):
@@ -16,7 +25,7 @@ class TextBox: public sf::Drawable
 
         TextBox &setNrLines(size_t nrLines)
         {
-            const float cs = float(height_)/nrLines;
+            const float cs = float(height_)/(nrLines+0.3);
             texts_.resize(nrLines);
             for (auto t = texts_.begin(); t != texts_.end(); ++t)
             {
@@ -33,6 +42,16 @@ class TextBox: public sf::Drawable
                 t->setString(str);
             }
         }
+        void set(const FT &ft)
+        {
+            size_t ix = 0;
+            for (auto it = ft.begin(); it != ft.end(); ++it)
+            {
+                const auto& n = *it;
+                if (n.leaf)
+                    texts_[ix++].setString(*n.leaf);
+            }
+        }
 
         virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const
         {
@@ -43,7 +62,8 @@ class TextBox: public sf::Drawable
                 texture.draw(*t);
             texture.display();
             sf::Sprite sprite(texture.getTexture());
-            target.draw(sprite);
+            states.transform *= getTransform();
+            target.draw(sprite, states);
         }
     private:
         size_t width_;
