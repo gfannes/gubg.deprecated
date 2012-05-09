@@ -307,7 +307,7 @@ namespace gubg
     typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \
 mss_return_code_wrapper_type MSS_RC_VAR
 #define MSS_BEGIN_1(type)           MSS_BEGIN_RC_WRAPPER(type); \
-    LOG_S(type)
+    LOG_SQ(type)
 #define MSS_BEGIN_2(type, tc)       MSS_BEGIN_RC_WRAPPER(type); \
     LOG_S(tc)
 #define MSS_BEGIN_3(type, tc, msg)  MSS_BEGIN_RC_WRAPPER(type); \

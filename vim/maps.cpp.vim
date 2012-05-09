@@ -19,4 +19,4 @@ map -s <Bslash>aonamespace <Esc>:call ReadString("Namespace name")<CR>-oa{<Esc>-
 " MSS
 map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
 map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
-map -m <Bslash>ajOMSS<Esc>:call ReadString("Suffix")<CR>A();<Esc><Bslash>ahi
+map -m <Bslash>ajOMSS();<Esc><Bslash>ahi
