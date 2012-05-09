@@ -420,13 +420,15 @@ class Configs
         when "arduino"
             @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/cores"
             @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/variants/standard"
+            @roots << "/home/gfannes/sdks/Arduino/libraries/Servo"
             @compiler, @linker = "avr-g++", "avr-g++"
             @compileSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @linkSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
-            %w[main.cpp wiring.c wiring_digital.c].each do |base|
+            %w[main.cpp wiring.c wiring_digital.c WMath.cpp].each do |base|
                 @extrafiles << "/home/gfannes/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
             end
+            #@extrafiles << "/home/gfannes/sdks/Arduino/libraries/Servo/Servo.cpp"
             #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/cores/arduino"
             #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/variants/standard"
         else
