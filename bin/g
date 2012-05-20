@@ -2,18 +2,25 @@
 
 require("gubg/utils")
 
-res = ARGV.map do |arg|
-    Regexp.new(arg.split("")*".*")
-end
 fns = []
-PWD = Dir.pwd
-Dir.each("./") do |dir, fn|
-    fn = File.expand_path(fn, dir)
-    fnRelative = Dir.relative(fn, PWD)
-    fns << fn if res.any?{|re|re =~ fnRelative}
-    :ok
+
+if ARGV[0] == "-e"
+    fns = ARGV[1, ARGV.length]
+else
+    res = ARGV.map do |arg|
+        Regexp.new(arg.split("")*".*")
+    end
+    PWD = Dir.pwd
+    Dir.each("./") do |dir, fn|
+        fn = File.expand_path(fn, dir)
+        fnRelative = Dir.relative(fn, PWD)
+        fns << fn if res.any?{|re|re =~ fnRelative}
+        :ok
+    end
 end
+
 fns.each do |fn|
     system("gvim --remote-tab-silent #{fn}")
+    sleep(0.1)
 end
 system("wmctrl -a GVIM")
