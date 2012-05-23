@@ -42,11 +42,17 @@ namespace gubg
                         return hub == rhs.hub && child == rhs.child;
                     }
                 };
-                typedef std::vector<Link> Path;
+                typedef std::vector<Hub*> Path;
                 class iterator
                 {
                     public:
-                        const Path path() const { return path_; }
+                        const Path path() const
+                        {
+                            Path path;
+                            for (auto link = path_.begin(); link != path_.end(); ++link)
+                                path.push_back(link->hub);
+                            return path;
+                        }
                         bool isLeaf() const {return (bool)path_.back().child->leaf;}
                         Leaf &leaf(){return *path_.back().child->leaf;}
                         bool isHub() const {return (bool)path_.back().child->hub;}
@@ -115,7 +121,8 @@ namespace gubg
                         }
 
                         friend class Hub;
-                        Path path_;
+                        typedef std::vector<Link> LinkPath;
+                        LinkPath path_;
                 };
                 iterator begin()
                 {
@@ -140,7 +147,7 @@ namespace gubg
         {
             typedef LeafT Leaf;
             typedef gubg::Hub<Leaf, HubData> Hub;
-            typedef std::vector<Hub> Path;
+            typedef typename Hub::Path Path;
         };
 }
 
