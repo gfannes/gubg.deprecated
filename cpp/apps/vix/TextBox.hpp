@@ -3,8 +3,12 @@
 
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics.hpp"
-#include "gubg/tree/node.hpp"
+#include "gubg/tree/tree.hpp"
+#include "gubg/string_algo.hpp"
 #include <string>
+
+#include <iostream>
+#define L(m) std::cout<<m<<std::endl
 
 struct Style
 {
@@ -12,7 +16,7 @@ struct Style
     Style():
         color(sf::Color::Green){}
 };
-typedef gubg::Node<Style, std::string> FT;
+typedef gubg::Tree<std::string, Style>::Hub FT;
 
 class TextBox: public sf::Transformable, public sf::Drawable
 {
@@ -25,31 +29,81 @@ class TextBox: public sf::Transformable, public sf::Drawable
 
         TextBox &setNrLines(size_t nrLines)
         {
-            const float cs = float(height_)/(nrLines+0.3);
             texts_.resize(nrLines);
-            for (auto t = texts_.begin(); t != texts_.end(); ++t)
-            {
-                t->setCharacterSize(cs);
-                t->setPosition(0.0, cs*(t - texts_.begin()));
-            }
             return *this;
         }
 
-        void set(const std::string &str)
+        sf::Text createText_(size_t ix) const
+        {
+            float cs = float(height_)/(texts_.size()+0.3);
+            //We cache the character width computed from '_' that we will use for a ' '
+            //TODO::Make this thread-safe and upgrade the cache to something that can handle more than 1 character size
+            static float cw_ = 0.0;
+            {
+                static float cs_ = 0.0;
+                if (cs != cs_)
+                {
+                    cs_ = cs;
+                    auto t = sf::Text("_");
+                    t.setCharacterSize(cs);
+                    cw_ = t.getLocalBounds().width;
+                    L("cw_: " << cw_);
+                }
+            }
+            sf::Text text;
+            text.setCharacterSize(cs);
+            float xpos = 0.0;
+            if (!texts_[ix].empty())
+            {
+                const auto &t = texts_[ix].back();
+                auto str = t.getString().toAnsiString();
+                auto nrWhiteSpace = gubg::string_algo::nrLeading(' ', str) + gubg::string_algo::nrTrailing(' ', str);
+                L("nr ws: " << nrWhiteSpace);
+                auto width = t.getLocalBounds().width + cw_*nrWhiteSpace;
+                L("width: " << width);
+                xpos = t.getPosition().x + width;
+            }
+            text.setPosition(xpos, cs*ix);
+            return text;
+        }
+        void clearTexts_()
         {
             for (auto t = texts_.begin(); t != texts_.end(); ++t)
+                t->clear();
+        }
+        void set(const std::string &str)
+        {
+            clearTexts_();
+            for (auto t = texts_.begin(); t != texts_.end(); ++t)
             {
-                t->setString(str);
+                auto text = createText_(t-texts_.begin());
+                text.setString(str);
+                t->push_back(text);
             }
         }
         void set(const FT &ft)
         {
+            clearTexts_();
             size_t ix = 0;
+            const FT *style = &ft;
             for (auto it = ft.begin(); it != ft.end(); ++it)
             {
-                const auto& n = *it;
-                if (n.leaf)
-                    texts_[ix++].setString(*n.leaf);
+                auto newStyle = &it.parent();
+                if (style != newStyle)
+                    style = newStyle;
+
+                auto str = it.leaf();
+                if (!str.empty())
+                {
+                    if (str == "\n")
+                        ++ix;
+                    else
+                    {
+                        auto text = createText_(ix);
+                        text.setString(str);
+                        texts_[ix].push_back(text);
+                    }
+                }
             }
         }
 
@@ -58,8 +112,11 @@ class TextBox: public sf::Transformable, public sf::Drawable
             sf::RenderTexture texture;
             texture.create(width_, height_);
             texture.clear(sf::Color::Red);
-            for (auto t = texts_.begin(); t != texts_.end(); ++t)
-                texture.draw(*t);
+            for (auto ts = texts_.begin(); ts != texts_.end(); ++ts)
+            {
+                for (auto t = ts->begin(); t != ts->end(); ++t)
+                    texture.draw(*t);
+            }
             texture.display();
             sf::Sprite sprite(texture.getTexture());
             states.transform *= getTransform();
@@ -68,7 +125,7 @@ class TextBox: public sf::Transformable, public sf::Drawable
     private:
         size_t width_;
         size_t height_;
-        typedef std::vector<sf::Text> Texts;
+        typedef std::vector<std::vector<sf::Text>> Texts;
         Texts texts_;
 };
 

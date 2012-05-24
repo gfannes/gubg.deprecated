@@ -19,9 +19,15 @@ int main()
     tb3.set("TB3");
     TextBox tb4(300, 200, 10);
     tb4.setPosition(sf::Vector2f(450, 350));
-    FT ft = FT::createHub();
-    ft.childs->push_back(FT::createLeaf("LEAF"));
-    ft.childs->push_back(FT::createLeaf("LEAF2"));
+
+    FT ft;
+    ft.push_back(std::string("LE AF|"));
+    ft.push_back(std::string(" "));
+    ft.push_back(std::string("|LAF2|"));
+    ft.push_back(std::string("_"));
+    ft.push_back(std::string("|LAF2|"));
+    ft.push_back(std::string("\n"));
+    ft.push_back(std::string("blablabla"));
     tb4.set(ft);
 
     gubg::Timer timer(gubg::ResetType::NoAuto);
