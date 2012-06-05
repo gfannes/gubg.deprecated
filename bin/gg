@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+system("gvim --remote-tab-silent #{ARGV[0]}")
+system("wmctrl -a GVIM")
