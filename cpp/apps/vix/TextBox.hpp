@@ -109,16 +109,21 @@ class TextBox: public sf::Transformable, public sf::Drawable
 
         virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const
         {
-            sf::RenderTexture texture;
-            texture.create(width_, height_);
-            texture.clear(sf::Color::Red);
-            for (auto ts = texts_.begin(); ts != texts_.end(); ++ts)
+            std::unique_ptr<sf::Texture> texture2;
             {
-                for (auto t = ts->begin(); t != ts->end(); ++t)
-                    texture.draw(*t);
+                sf::RenderTexture texture;
+                texture.create(width_, height_);
+                texture.clear(sf::Color::Red);
+                for (auto ts = texts_.begin(); ts != texts_.end(); ++ts)
+                {
+                    for (auto t = ts->begin(); t != ts->end(); ++t)
+                        texture.draw(*t);
+                }
+                texture.display();
+                //    sf::Sprite sprite(texture.getTexture());
+                texture2.reset(new sf::Texture(texture.getTexture()));
             }
-            texture.display();
-            sf::Sprite sprite(texture.getTexture());
+            sf::Sprite sprite(*texture2);
             states.transform *= getTransform();
             target.draw(sprite, states);
         }

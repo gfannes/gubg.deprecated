@@ -393,8 +393,8 @@ class Configs
             @compiler, @linker = "g++", "g++"
             @compileSettings = "-std=c++0x -O3"
             @linkSettings = "-std=c++0x"
-            boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
-	    sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
+            sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
+            boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             case context.targetPlatform
             when "pc-linux"
                 @includePaths << "/usr/include/cairomm-1.0"
@@ -402,16 +402,20 @@ class Configs
                 @includePaths << "/usr/include/freetype2"
                 @includePaths << "$HOME/sdks/libsigc++"
                 @includePaths << "$HOME/sdks/SFML/include"
+                @includePaths << "$HOME/sdks/wt/src"
                 @libraryPaths << "$HOME/sdks/boost/lib"
                 @libraryPaths << "$HOME/sdks/SFML/lib"
+                @libraryPaths << "$HOME/sdks/wt/build/src"
+                @libraryPaths << "$HOME/sdks/wt/build/src/http"
                 sdlLibs = %w[SDL]
                 cairoLibs = %w[cairomm-1.0]
+                wtLibs = %w[wt wthttp]
                 openglLibs = %w[GLU]
-                @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs
+                @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs + wtLibs
             when "pc-windows"
                 @roots << File.expand_path("g:/src/cpp")
                 @includePaths << "h:/software/boost_1_47_0"
-		@includePaths << "h:/sdks/SFML/include"
+                @includePaths << "h:/sdks/SFML/include"
                 @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
                 @libraryPaths << "h:/sdks/SFML/lib"
                 #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
