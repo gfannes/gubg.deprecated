@@ -1,3 +1,4 @@
 #!/usr/bin/env ruby
+ENV["GUBG"] = "/home/gfannes/gubg"
 system("gvim --remote-tab-silent #{ARGV[0]}")
 system("wmctrl -a GVIM")
