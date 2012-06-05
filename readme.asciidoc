@@ -3,6 +3,7 @@ GUBG: Generic Utilities by GUBG
 
 == Introduction
 This software package implements general functionality:
+
 * Artificial intelligence: not so much is actually there yet, but it will come
 * Compilation, documentation and test management: gb is a generic build tool that can compile and run tests, and in the future can create documentation
 * Visualization
