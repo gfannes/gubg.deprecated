@@ -394,6 +394,7 @@ class Configs
             @compileSettings = "-std=c++0x -O3"
             @linkSettings = "-std=c++0x"
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex]
+	    sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             case context.targetPlatform
             when "pc-linux"
                 @includePaths << "/usr/include/cairomm-1.0"
@@ -405,15 +406,16 @@ class Configs
                 @libraryPaths << "$HOME/sdks/SFML/lib"
                 sdlLibs = %w[SDL]
                 cairoLibs = %w[cairomm-1.0]
-                sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
                 openglLibs = %w[GLU]
                 @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs
             when "pc-windows"
                 @roots << File.expand_path("g:/src/cpp")
                 @includePaths << "h:/software/boost_1_47_0"
+		@includePaths << "h:/sdks/SFML/include"
                 @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
+                @libraryPaths << "h:/sdks/SFML/lib"
                 #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
-                @libraries += boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"}
+                @libraries += boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"} + sfmlLibs
             else
                 raise("Unknown pc platform")
             end

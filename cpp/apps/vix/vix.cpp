@@ -2,7 +2,7 @@
 #include "model.hpp"
 #include "view.hpp"
 #include "controller.hpp"
-#include "text_box.hpp"
+#include "TextBox.hpp"
 #include "gubg/mss.hpp"
 #include "gubg/sleep/sleep.hpp"
 #include "SFML/Graphics.hpp"

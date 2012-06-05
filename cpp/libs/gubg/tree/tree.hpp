@@ -10,6 +10,14 @@ namespace gubg
         class Hub: HubData
     {
         public:
+		Hub(){}
+		Hub(Hub &&dead):
+			childs_(std::move(dead.childs_)){}
+		Hub &operator=(Hub &&dead)
+		{
+			childs_ = std::move(dead.childs_);
+		}
+
             template <typename T>
                 void push_back(T &&v)
                 {
@@ -17,16 +25,28 @@ namespace gubg
                 }
 
         private:
-            struct Node
-            {
-                std::unique_ptr<Leaf> leaf;
-                std::unique_ptr<Hub> hub;
+            class Node
+	    {
+		    public:
+			    std::unique_ptr<Leaf> leaf;
+			    std::unique_ptr<Hub> hub;
 
-                Node(Leaf &&l):
-                    leaf(new Leaf) { *leaf = std::move(l); }
-                Node(Hub &&h):
-                    hub(new Hub) { *hub = std::move(h); }
-            };
+			    Node(Node &&dead):
+				    leaf(std::move(dead.leaf)),
+				    hub(std::move(dead.hub)){}
+			    Node &operator=(Node &&dead)
+			    {
+				    leaf = std::move(dead.leaf);
+				    hub = std::move(dead.hub);
+			    }
+			    Node(Leaf &&l):
+				    leaf(new Leaf) { *leaf = std::move(l); }
+			    Node(Hub &&h):
+				    hub(new Hub) { *hub = std::move(h); }
+		    private:
+			    Node(const Node &);
+			    Node &operator=(const Node &);
+	    };
             typedef std::vector<Node> Nodes;
             Nodes childs_;
 
