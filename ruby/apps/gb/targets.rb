@@ -390,6 +390,7 @@ class Configs
         case context.targetPlatform
         when /^pc-/
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
+            @roots << File.expand_path("cpp/icui", ENV["ICUI"])
             @compiler, @linker = "g++", "g++"
             @compileSettings = "-std=c++0x -O3"
             @linkSettings = "-std=c++0x"
@@ -402,6 +403,7 @@ class Configs
                 @includePaths << "$HOME/sdks/libsigc++"
                 @includePaths << "$HOME/sdks/SFML/include"
                 @includePaths << "$HOME/sdks/wt/src"
+                @includePaths << "$HOME/sdks/eigen"
                 @libraryPaths << "$HOME/sdks/boost/lib"
                 @libraryPaths << "$HOME/sdks/SFML/lib"
                 @libraryPaths << "$HOME/sdks/wt/build/src"
