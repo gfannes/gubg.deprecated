@@ -296,7 +296,7 @@ namespace gubg
                 std::cout << location_ << "::" << msg_ << " => " << elapse << " sec" << endl;
             }
             private:
-            gubg::Location location_;
+            const gubg::Location location_;
             const string msg_;
             gubg::Timer timer_;
         };
@@ -347,13 +347,8 @@ MSS_BEGIN(t)
 }
 
 //Logging
-#if 0
 #define L_MSS_LOG_PRIM(rc_str, level, msg) LOG_M(GUBG_HERE() << " " << level << "::" << rc_str << msg)
 #define L_MSS_LOG_PRIM_(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
-#else
-#define L_MSS_LOG_PRIM(rc_str, level, msg) std::cout << GUBG_HERE() << msg
-#define L_MSS_LOG_PRIM_(rc_str, level, msg)
-#endif
 #define L_MSS_LOG(l, rc, msg) \
 { \
     auto level = (gubg::mss::Level::Unknown == gubg::mss::Level::l ? rc.level() : gubg::mss::Level::l); \

@@ -7,6 +7,20 @@ namespace gubg
 {
     namespace distribution
     {
+        template<typename Result, typename Values>
+        ReturnCode findMinMax(Result &mi, Result &ma, const Values &values)
+        {
+            MSS_BEGIN(ReturnCode);
+            MSS(!values.empty());
+            mi = ma = values.front();
+            for (auto value: values)
+                if (value < mi)
+                    mi = value;
+                else if (value > ma)
+                    ma = value;
+            MSS_END();
+        }
+
         template <typename Mean, typename Values>
             ReturnCode computeMean(Mean &mean, const Values &values)
             {

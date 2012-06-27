@@ -1,6 +1,9 @@
-#ifndef vector_h
-#define vector_h
+#ifndef gubg_vector_vector_hpp
+#define gubg_vector_vector_hpp
 
+#include "random.hpp"
+#include "math.hpp"
+#include "cube.hpp"
 #include <vector>
 #include <algorithm>
 #include <sstream>
@@ -8,12 +11,6 @@
 #include <cmath>
 #include <iostream>
 #include <utility>
-
-#include "random.hpp"
-#include "math.hpp"
-#include "cube.hpp"
-
-using namespace std;
 
 namespace gubg
 {

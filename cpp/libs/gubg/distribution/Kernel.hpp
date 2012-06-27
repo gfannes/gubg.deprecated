@@ -1,12 +1,13 @@
 #ifndef gubg_distribution_Kernel_hpp
 #define gubg_distribution_Kernel_hpp
 
+#include <iostream>
+#include "gubg/Location.hpp"
 #include "gubg/distribution/Codes.hpp"
 #include "gubg/distribution/Table.hpp"
+#include "gubg/function/Linear.hpp"
 #include "gubg/distribution/Gaussian.hpp"
 #include "gubg/distribution/Estimation.hpp"
-#include "gubg/function/Linear.hpp"
-#include "gubg/vector/vector.hpp"
 #include <vector>
 #include <cmath>
 
@@ -108,7 +109,7 @@ namespace gubg
                     {
                         MSS_BEGIN(ReturnCode);
                         data_ = data;
-                        Vector::findMinMax(min_, max_, data_);
+                        MSS(findMinMax(min_, max_, data_));
                         if (weights)
                             weights_ = *weights;
                         else
