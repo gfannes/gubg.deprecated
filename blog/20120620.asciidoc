@@ -1,0 +1,30 @@
+== Raspberry Pi first boot
+
+=== Writing image with dd
+This did not work, I first thought my PSU was too weak (180mA), but I later tested this with 700mA and 1A, and still nothing
+The command I used was +dd bs=1M if=file.img of=/dev/sdc1+
+
+=== Writing image with win32diskimager
+This works fine, I tested two images:
+* 4GB with Debian wheezy
+* 32GB with archlinuxarm
+Both are working.
+
+=== Debian wheezy
+* Works out-of-the-box, +startx+ fires LXDE fine
+* gcc 4.6.3
+
+=== Archlinux ARM
+I needed some trial and error to get it updated. I'm not sure what I exactly did, but it was something like:
+* +pacman -Sf pacman+
+* +pacman -Suyf+
+* The +-f+ was needed top get rid of udev conflicts
+* +pacman -S gcc+
+This gives gcc 4.7.0, which is even more up-to-date than my main devbox
+Getting LXDE up and running just requires:
+* +pacman -S lxde xorg-xinit xf86-video-fbdev+
+* +xinit /usr/bin/lxsession+
+This works, but looks less nice than the wheezy LXDE.
+Next to try are:
+* Some WM called awesome
+* Check what top version Liam is using in his april 17 video on rp.org.

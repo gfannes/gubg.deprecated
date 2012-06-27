@@ -17,7 +17,8 @@ namespace gubg
         int nr;
     };
 }
-inline std::ostream &operator<<(std::ostream &os, const gubg::Location &location)
+//inline std::ostream &operator<<(std::ostream &os, const gubg::Location &location)
+inline std::ostream &operator<<(std::ostream &os, gubg::Location location)
 {
     if (!location.file)
         return os << "Unknown location";
