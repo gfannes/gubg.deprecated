@@ -1,0 +1,4 @@
+== Raspberry Pi
+
+* https://projects.drogon.net/raspberry-pi/wiringpi/[WiringPi] is a port of the IO core of arduino (called Wiring) to the RPi.
+* PONTE is a bridge between the RPi and Arduino

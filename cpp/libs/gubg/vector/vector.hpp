@@ -1,6 +1,9 @@
-#ifndef vector_h
-#define vector_h
+#ifndef gubg_vector_vector_hpp
+#define gubg_vector_vector_hpp
 
+#include "random.hpp"
+#include "math.hpp"
+#include "cube.hpp"
 #include <vector>
 #include <algorithm>
 #include <sstream>
@@ -8,12 +11,6 @@
 #include <cmath>
 #include <iostream>
 #include <utility>
-
-#include "random.hpp"
-#include "math.hpp"
-#include "cube.hpp"
-
-using namespace std;
 
 namespace gubg
 {
@@ -479,70 +476,6 @@ namespace gubg
             sum = 0;
             for (long i=0;i<values.size();i++)
                 sum += values[i];
-            return true;
-        }
-
-        template <typename T>
-        bool computeMean(double &mean, vector<T> &values)
-        {
-            if (values.size()<1)
-            {
-                cerr << "You need at least two values to compute a mean" << endl;
-                return false;
-            }
-            T sum = 0;
-            for (long i=0;i<values.size();i++)
-                sum += values[i];
-            mean = sum/double(values.size());
-            return true;
-        }
-
-        template <typename T, typename W>
-        bool computeMean(double &mean, vector<T> &values, vector<W> &weights)
-        {
-            double sumV = 0;
-            W sumW = 0;
-            for (int i=0; i<values.size(); ++i)
-            {
-                sumV += weights[i]*values[i];
-                sumW += weights[i];
-            }
-            mean = sumV/sumW;
-            return true;
-        }
-
-        template <typename T>
-        bool computeMeanSigma(double &mean, double &sigma, vector<T> &values)
-        {
-            if (values.size()<2)
-            {
-                cerr << "You need at least two values to compute a standard deviation" << endl;
-                return false;
-            }
-            T sum = 0;
-            for (long i=0;i<values.size();i++)
-                sum += values[i];
-            mean = sum/double(values.size());
-            sigma = 0;
-            for (long i=0;i<values.size();i++)
-                sigma += (values[i]-mean)*(values[i]-mean);
-            sigma /= values.size()-1;
-            sigma = sqrt(sigma);
-            return true;
-        }
-
-        template <typename T, typename W>
-        bool computeMeanSigma(double &mean, double &sigma, vector<T> &values, vector<W> &weights)
-        {
-            computeMean(mean, values, weights);
-            sigma = 0;
-            W sumW = 0;
-            for (long i=0; i<values.size(); ++i)
-            {
-                sigma += weights[i]*(values[i]-mean)*(values[i]-mean);
-                sumW += weights[i];
-            }
-            sigma = sqrt(sigma/sumW);
             return true;
         }
 

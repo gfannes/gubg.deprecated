@@ -10,7 +10,7 @@ namespace gubg
         enum class ReturnCode
         {
             MSS_DEFAULT_CODES,
-            SizeMismatch, DivisionByZero,
+            SizeMismatch, DivisionByZero, StdDevTooSmall,
         };
     }
 }

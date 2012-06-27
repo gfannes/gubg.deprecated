@@ -20,8 +20,10 @@
 #include "gubg/mss/info.hpp"
 #include "gubg/clock/timer.hpp"
 #include "gubg/logging/Log.hpp"
+#include "gubg/Location.hpp"
 #include <memory>
 #include <set>
+#include <iostream>
 
 #define MSS_DEFAULT_CODES_WITHOUT_OK InternalError, IllegalArgument, NotImplemented, False, NullPointer, InvalidSharedPtr, UnknownError, PimplError, LastCode = 999
 #define MSS_DEFAULT_CODES OK, MSS_DEFAULT_CODES_WITHOUT_OK
@@ -294,7 +296,7 @@ namespace gubg
                 std::cout << location_ << "::" << msg_ << " => " << elapse << " sec" << endl;
             }
             private:
-            gubg::Location location_;
+            const gubg::Location location_;
             const string msg_;
             gubg::Timer timer_;
         };
@@ -345,7 +347,7 @@ MSS_BEGIN(t)
 }
 
 //Logging
-#define L_MSS_LOG_PRIM(rc_str, level, msg) LOG_M(std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg)
+#define L_MSS_LOG_PRIM(rc_str, level, msg) LOG_M(GUBG_HERE() << " " << level << "::" << rc_str << msg)
 #define L_MSS_LOG_PRIM_(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
 #define L_MSS_LOG(l, rc, msg) \
 { \
