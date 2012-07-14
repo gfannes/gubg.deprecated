@@ -2,6 +2,7 @@
 #define gubg_draw_SVG_hpp
 
 #include "gubg/draw/Shape.hpp"
+#include "gubg/draw/Style.hpp"
 #include "gubg/xml/Builder.hpp"
 #include <ostream>
 #include <memory>
@@ -26,6 +27,11 @@ namespace gubg
     {
         namespace svg
         {
+            typedef RGBA<unsigned char> Color;
+            typedef gubg::draw::Style<Color, double> Style;
+
+            void addStyle_(xml::builder::Tag &, const Style &);
+
             //Interface that is used to stream elements and items to an xml tag
             struct IStream
             {
@@ -34,23 +40,51 @@ namespace gubg
                 virtual void stream(xml::builder::Tag &tag) const = 0;
             };
             //PolyWraps that add IStream to basic shapes
-            template <typename T, typename Tag>
-                void stream_pw(const Circle<T> &c, Tag &tag)
-                {
-                    tag.tag("circle").attr("cx", c.x).attr("cy", c.y).attr("r", c.r);
-                }
-            template <typename T, typename Tag>
-                void stream_pw(const Rectangle<T> &r, Tag &tag)
-                {
-                    tag.tag("rect").attr("x", r.x).attr("y", r.y).attr("width", r.width).attr("height", r.height);
-                }
+            namespace pw
+            {
+                template <typename T, typename Tag>
+                    void stream(const Circle<T> &c, Tag &tag)
+                    {
+                        tag.tag("circle").attr("cx", c.x).attr("cy", c.y).attr("r", c.r);
+                    }
+                template <typename T, typename Tag>
+                    void stream(const Circle<T> &c, const Style &s, Tag &tag)
+                    {
+                        auto circle = tag.tag("circle");
+                        circle.attr("cx", c.x).attr("cy", c.y).attr("r", c.r);
+                        addStyle_(circle, s);
+                    }
+                template <typename T, typename Tag>
+                    void stream(const Rectangle<T> &r, Tag &tag)
+                    {
+                        tag.tag("rect").attr("x", r.x-0.5*r.dx).attr("y", r.y-0.5*r.dy).attr("width", r.dx).attr("height", r.dy);
+                    }
+                template <typename T, typename Tag>
+                    void stream(const Line<T> &l, Tag &tag)
+                    {
+                        tag.tag("line").attr("x1", l.x1).attr("y1", l.y1).attr("x2", l.x2).attr("y2", l.y2).attr("stroke", "black");
+                    }
+                template <typename T, typename Tag>
+                    void stream(const PiecewiseLinear<T> &pwl, Tag &tag)
+                    {
+                        std::ostringstream path;
+                        bool first = true;
+                        for (auto p: pwl.points)
+                        {
+                            path << (first ? "M" : " L") << ' ' << p.x << ' ' << p.y;
+                            first = false;
+                        }
+                        tag.tag("path").attr("d", path.str()).attr("stroke", "black");
+                    }
+            }
             //A group
             class Group: public IStream
             {
                 public:
                     Group(){}
                     Group(Group &&group):
-                        shapes_(std::move(group.shapes_)){}
+                        shapes_(std::move(group.shapes_)),
+                        style_(std::move(group.style_)){}
 
                     template <typename Shape>
                         Group &add(const Shape &shape)
@@ -58,25 +92,44 @@ namespace gubg
                             shapes_.push_back(IStream::Ptr(new ShapePW<Shape>(shape)));
                             return *this;
                         }
+                    template <typename Shape>
+                        Group &add(const Shape &shape, Style &&style)
+                        {
+                            shapes_.push_back(IStream::Ptr(new ShapeStylePW<Shape>(shape, std::move(style))));
+                            return *this;
+                        }
                     Group &add(Group &&group)
                     {
                         shapes_.push_back(IStream::Ptr(new Group(std::move(group))));
                         return *this;
                     }
+
+                    Style &style(){return style_;}
+
                     //IStream API
                     virtual ~Group(){}
                     virtual void stream(xml::builder::Tag &) const;
 
                 private:
                     template <typename Shape>
-                        struct ShapePW: IStream, Shape
-                    {
-                        ShapePW(const Shape &shape):Shape(shape){}
-                        virtual ~ShapePW(){}
-                        virtual void stream(xml::builder::Tag &tag) const {return stream_pw(static_cast<const Shape&>(*this), tag);}
-                    };
+                        struct ShapePW
+                        :IStream, Shape
+                        {
+                            ShapePW(const Shape &shape):Shape(shape){}
+                            virtual ~ShapePW(){}
+                            virtual void stream(xml::builder::Tag &tag) const {return pw::stream(static_cast<const Shape&>(*this), tag);}
+                        };
+                    template <typename Shape>
+                        struct ShapeStylePW
+                        :IStream, Shape, Style
+                        {
+                            ShapeStylePW(const Shape &shape, Style &&style):Shape(shape), Style(std::move(style)){}
+                            virtual ~ShapeStylePW(){}
+                            virtual void stream(xml::builder::Tag &tag) const {return pw::stream(static_cast<const Shape&>(*this), static_cast<const Style&>(*this), tag);}
+                        };
                     typedef std::vector<IStream::Ptr> Shapes;
                     Shapes shapes_;
+                    Style style_;
             };
             //An SVG is a group with size settings
             class SVG: public Group
