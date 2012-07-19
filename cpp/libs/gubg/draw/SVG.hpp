@@ -50,9 +50,7 @@ namespace gubg
                 template <typename T, typename Tag>
                     void stream(const Circle<T> &c, const Style &s, Tag &tag)
                     {
-                        auto circle = tag.tag("circle");
-                        circle.attr("cx", c.x).attr("cy", c.y).attr("r", c.r);
-                        addStyle_(circle, s);
+                        addStyle_(tag.tag("circle").attr("cx", c.x).attr("cy", c.y).attr("r", c.r), s);
                     }
                 template <typename T, typename Tag>
                     void stream(const Rectangle<T> &r, Tag &tag)
@@ -60,12 +58,22 @@ namespace gubg
                         tag.tag("rect").attr("x", r.x-0.5*r.dx).attr("y", r.y-0.5*r.dy).attr("width", r.dx).attr("height", r.dy);
                     }
                 template <typename T, typename Tag>
-                    void stream(const Line<T> &l, Tag &tag)
+                    void stream(const Rectangle<T> &r, const Style &s, Tag &tag)
                     {
-                        tag.tag("line").attr("x1", l.x1).attr("y1", l.y1).attr("x2", l.x2).attr("y2", l.y2).attr("stroke", "black");
+                        addStyle_(tag.tag("rect").attr("x", r.x-0.5*r.dx).attr("y", r.y-0.5*r.dy).attr("width", r.dx).attr("height", r.dy), s);
                     }
                 template <typename T, typename Tag>
-                    void stream(const PiecewiseLinear<T> &pwl, Tag &tag)
+                    void stream(const Line<T> &l, Tag &tag)
+                    {
+                        tag.tag("line").attr("x1", l.x1).attr("y1", l.y1).attr("x2", l.x2).attr("y2", l.y2);
+                    }
+                template <typename T, typename Tag>
+                    void stream(const Line<T> &l, const Style &s, Tag &tag)
+                    {
+                        addStyle_(tag.tag("line").attr("x1", l.x1).attr("y1", l.y1).attr("x2", l.x2).attr("y2", l.y2), s);
+                    }
+                template <typename T>
+                    std::string path_(const PiecewiseLinear<T> &pwl)
                     {
                         std::ostringstream path;
                         bool first = true;
@@ -74,7 +82,17 @@ namespace gubg
                             path << (first ? "M" : " L") << ' ' << p.x << ' ' << p.y;
                             first = false;
                         }
-                        tag.tag("path").attr("d", path.str()).attr("stroke", "black");
+                        return path.str();
+                    }
+                template <typename T, typename Tag>
+                    void stream(const PiecewiseLinear<T> &pwl, Tag &tag)
+                    {
+                        tag.tag("path").attr("d", path_(pwl));
+                    }
+                template <typename T, typename Tag>
+                    void stream(const PiecewiseLinear<T> &pwl, const Style &s, Tag &tag)
+                    {
+                        addStyle_(tag.tag("path").attr("d", path_(pwl)), s);
                     }
             }
             //A group

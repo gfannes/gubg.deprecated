@@ -81,7 +81,7 @@ namespace gubg
             else
                 boost::filesystem::remove(name);
         }
-        catch (boost::filesystem3::filesystem_error &exc)
+        catch (boost::filesystem::filesystem_error &exc)
         {
             LOG_M_(Warning, "Failed to delete " << name << ": " << exc.what());
             return false;
