@@ -8,7 +8,8 @@ namespace gubg
         enum class Primitive
         {
             PosFix, UInt8, UInt16, UInt32, NegFix, Int8, Int16, Int32,
-            Nil, Boolean, FixArray, 
+            Nil, Boolean,
+            FixArray, Array16, Array32, 
         };
 
 #define L_MSGPACK_DEFINE_TAG(name) \
@@ -23,6 +24,9 @@ namespace gubg
         L_MSGPACK_DEFINE_TAG(Int32);
         L_MSGPACK_DEFINE_TAG(Nil);
         L_MSGPACK_DEFINE_TAG(Boolean);
+        L_MSGPACK_DEFINE_TAG(FixArray);
+        L_MSGPACK_DEFINE_TAG(Array16);
+        L_MSGPACK_DEFINE_TAG(Array32);
     }
 }
 

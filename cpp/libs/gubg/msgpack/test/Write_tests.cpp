@@ -62,5 +62,16 @@ int main()
         TEST_EQ(str_({0xc3}), pack(true));
         TEST_EQ(str_({0xc2}), pack(false));
     }
+    {
+        TEST_TAG(array);
+        {
+            vector<bool> vec = {true, false, true, true};
+            TEST_EQ(str_({0x94, 0xc3, 0xc2, 0xc3, 0xc3}), pack(vec));
+        }
+        {
+            vector<int> vec = {0, 1, 2, 3, 4, 0x7fffffff};
+            TEST_EQ(str_({0x96, 0x00, 0x01, 0x02, 0x03, 0x04, 0xce, 0x7f, 0xff, 0xff, 0xff}), pack(vec));
+        }
+    }
     return 0;
 }

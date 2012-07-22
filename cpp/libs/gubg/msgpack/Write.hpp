@@ -166,7 +166,79 @@ namespace gubg
 			}
 
         //Array
-		template <typename Buffer, typename T>
+		template <typename Buffer, typename Container>
+            ReturnCode write(Buffer &buffer, const Container &container, FixArray_tag)
+            {
+                MSS_BEGIN(ReturnCode);
+                auto s = container.size();
+                MSS_Q(s <= 15, TooLarge);
+                buffer.push_back(0x90 | s);
+                for (const auto &v: container)
+                    MSS(write(buffer, v));
+                MSS_END();
+            }
+		template <typename Buffer, typename Container>
+            ReturnCode write(Buffer &buffer, const Container &container, Array16_tag)
+            {
+                MSS_BEGIN(ReturnCode);
+                auto s = container.size();
+                MSS_Q(s <= 65535, TooLarge);
+                buffer.push_back(0xdc);
+				buffer.push_back((char)((s >> 8) & 0xff));
+				buffer.push_back((char)(s & 0xff));
+                for (const auto &v: container)
+                    MSS(write(buffer, v));
+                MSS_END();
+            }
+		template <typename Buffer, typename Container>
+            ReturnCode write(Buffer &buffer, const Container &container, Array32_tag)
+            {
+                MSS_BEGIN(ReturnCode);
+                auto s = container.size();
+                MSS_Q(s <= 4294967295, TooLarge);
+                buffer.push_back(0xdd);
+				buffer.push_back((char)((s >> 24) & 0xff));
+				buffer.push_back((char)((s >> 16) & 0xff));
+				buffer.push_back((char)((s >> 8) & 0xff));
+				buffer.push_back((char)(s & 0xff));
+                for (const auto &v: container)
+                    MSS(write(buffer, v));
+                MSS_END();
+            }
+   		template <typename Buffer, typename T>
+            ReturnCode write(Buffer &buffer, const std::vector<T> &ary)
+            {
+                if (ReturnCode::OK == write(buffer, ary, FixArray_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array16_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array32_tag()))
+                    return ReturnCode::OK;
+                return ReturnCode::TooLarge;
+            }
+   		template <typename Buffer, typename T>
+            ReturnCode write(Buffer &buffer, const std::deque<T> &ary)
+            {
+                if (ReturnCode::OK == write(buffer, ary, FixArray_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array16_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array32_tag()))
+                    return ReturnCode::OK;
+                return ReturnCode::TooLarge;
+            }
+   		template <typename Buffer, typename T>
+            ReturnCode write(Buffer &buffer, const std::list<T> &ary)
+            {
+                //Suboptimal implementation
+                if (ReturnCode::OK == write(buffer, ary, FixArray_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array16_tag()))
+                    return ReturnCode::OK;
+                if (ReturnCode::OK == write(buffer, ary, Array32_tag()))
+                    return ReturnCode::OK;
+                return ReturnCode::TooLarge;
+            }
 	}
 }
 
