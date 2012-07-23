@@ -9,7 +9,18 @@ namespace gubg
         {
             PosFix, UInt8, UInt16, UInt32, NegFix, Int8, Int16, Int32,
             Nil, Boolean,
-            FixArray, Array16, Array32, 
+            FixArray, Array16, Array32,
+            FixRaw, Raw16, Raw32,
+        };
+        enum class Group
+        {
+            Integer, Nil, Boolean, Array, Raw,
+        };
+
+        struct Type
+        {
+            Primitive primitive;
+            Group group;
         };
 
 #define L_MSGPACK_DEFINE_TAG(name) \
@@ -27,6 +38,9 @@ namespace gubg
         L_MSGPACK_DEFINE_TAG(FixArray);
         L_MSGPACK_DEFINE_TAG(Array16);
         L_MSGPACK_DEFINE_TAG(Array32);
+        L_MSGPACK_DEFINE_TAG(FixRaw);
+        L_MSGPACK_DEFINE_TAG(Raw16);
+        L_MSGPACK_DEFINE_TAG(Raw32);
     }
 }
 
