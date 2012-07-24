@@ -160,13 +160,13 @@ syn region asciidocGlossary start="\S" end=":-\s*$" oneline
 "Styles
 highlight asciidocAdmonitionNote term=reverse ctermfg=white ctermbg=green guifg=white guibg=green
 highlight asciidocAdmonitionWarn term=reverse ctermfg=white ctermbg=red guifg=white guibg=red
-highlight asciidocBackslash ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocBackslash ctermfg=magenta guifg=magenta
 highlight asciidocBiblio term=bold ctermfg=darkcyan cterm=bold guifg=darkcyan gui=bold
-highlight asciidocDoubleDollarPassthrough term=underline ctermfg=darkmagenta guifg=darkmagenta
-highlight asciidocFootnote term=underline ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocDoubleDollarPassthrough term=underline ctermfg=magenta guifg=magenta
+highlight asciidocFootnote term=underline ctermfg=magenta guifg=magenta
 highlight asciidocGlossary term=underline ctermfg=darkgreen cterm=underline guifg=darkgreen gui=underline
 highlight asciidocHLabel term=underline ctermfg=darkgreen cterm=underline guifg=darkgreen gui=underline
-highlight asciidocInclude term=underline ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocInclude term=underline ctermfg=magenta guifg=magenta
 highlight asciidocQuestion term=underline ctermfg=darkgreen cterm=underline guifg=darkgreen gui=underline
 highlight asciidocQuotedBold term=bold cterm=bold gui=bold
 highlight asciidocQuotedDoubleQuoted term=bold ctermfg=darkyellow guifg=darkyellow
@@ -178,12 +178,12 @@ highlight asciidocQuotedUnconstrainedMonospaced term=standout ctermfg=darkyellow
 highlight asciidocQuotedSingleQuoted term=bold ctermfg=darkyellow guifg=darkyellow
 highlight asciidocQuotedSubscript term=bold ctermfg=darkyellow guifg=darkyellow
 highlight asciidocQuotedSuperscript term=bold ctermfg=darkyellow guifg=darkyellow
-highlight asciidocReference term=underline ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocReference term=underline ctermfg=magenta guifg=magenta
 highlight asciidocReplacements term=standout ctermfg=darkcyan guifg=darkcyan
 highlight asciidocRevisionInfo term=standout ctermfg=blue guifg=darkblue gui=bold
 highlight asciidocSource term=standout ctermfg=darkyellow guifg=darkyellow
 highlight asciidocToDo term=reverse ctermfg=black ctermbg=yellow guifg=black guibg=yellow
-highlight asciidocTripplePlusPassthrough term=underline ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocTripplePlusPassthrough term=underline ctermfg=magenta guifg=magenta
 
 "Attributes
 highlight asciidocAttributeEntry term=standout ctermfg=darkgreen guifg=darkgreen
@@ -200,23 +200,23 @@ highlight asciidocListLabel term=underline ctermfg=darkgreen cterm=underline gui
 highlight asciidocListNumber term=bold ctermfg=darkcyan cterm=bold guifg=darkcyan gui=bold
 
 "Sections
-highlight asciidocSect0 term=bold,underline ctermfg=darkmagenta cterm=bold,underline guifg=darkmagenta gui=bold,underline
-highlight asciidocSect1 term=underline ctermfg=darkmagenta cterm=underline guifg=darkmagenta gui=underline
-highlight asciidocSect2 term=underline ctermfg=darkmagenta cterm=underline guifg=darkmagenta gui=underline
-highlight asciidocSect3 term=underline ctermfg=darkmagenta cterm=underline guifg=darkmagenta gui=underline
-highlight asciidocSect4 term=underline ctermfg=darkmagenta cterm=underline guifg=darkmagenta gui=underline
-highlight asciidocSect0Old term=underline ctermfg=darkmagenta cterm=bold guifg=darkmagenta gui=bold
-highlight asciidocSect1Old term=underline ctermfg=darkmagenta guifg=darkmagenta
-highlight asciidocSect2Old term=underline ctermfg=darkmagenta guifg=darkmagenta
-highlight asciidocSect3Old term=underline ctermfg=darkmagenta guifg=darkmagenta
-highlight asciidocSect4Old term=underline ctermfg=darkmagenta guifg=darkmagenta
+highlight asciidocSect0 term=bold,underline ctermfg=magenta cterm=bold,underline guifg=magenta gui=bold,underline
+highlight asciidocSect1 term=underline ctermfg=magenta cterm=underline guifg=magenta gui=underline
+highlight asciidocSect2 term=underline ctermfg=magenta cterm=underline guifg=magenta gui=underline
+highlight asciidocSect3 term=underline ctermfg=magenta cterm=underline guifg=magenta gui=underline
+highlight asciidocSect4 term=underline ctermfg=magenta cterm=underline guifg=magenta gui=underline
+highlight asciidocSect0Old term=underline ctermfg=magenta cterm=bold guifg=magenta gui=bold
+highlight asciidocSect1Old term=underline ctermfg=magenta guifg=magenta
+highlight asciidocSect2Old term=underline ctermfg=magenta guifg=magenta
+highlight asciidocSect3Old term=underline ctermfg=magenta guifg=magenta
+highlight asciidocSect4Old term=underline ctermfg=magenta guifg=magenta
 
 "Links
-highlight asciidocEmail term=underline ctermfg=darkred cterm=underline guifg=darkred gui=underline
-highlight asciidocLink term=underline ctermfg=darkred cterm=underline guifg=darkred gui=underline
+highlight asciidocEmail term=underline ctermfg=red cterm=underline guifg=red gui=underline
+highlight asciidocLink term=underline ctermfg=red cterm=underline guifg=red gui=underline
 highlight asciidocOneLineTitle ctermfg=darkyellow guifg=darkyellow gui=underline
 highlight asciidocTwoLineTitle ctermfg=darkyellow guifg=darkyellow gui=underline
-highlight asciidocURL term=underline ctermfg=darkred cterm=underline guifg=darkred gui=underline
+highlight asciidocURL term=underline ctermfg=red cterm=underline guifg=red gui=underline
 
 "Blocks
 highlight asciidocBlockTitle term=underline ctermfg=darkgreen cterm=underline guifg=darkgreen gui=underline
@@ -242,11 +242,11 @@ highlight asciidocCommentBlock term=standout ctermfg=darkblue guifg=darkblue
 highlight asciidocCommentLine term=standout ctermfg=darkblue guifg=darkblue
 
 "Macros
-highlight asciidocAnchorMacro term=standout ctermfg=darkred guifg=darkred
+highlight asciidocAnchorMacro term=standout ctermfg=red guifg=red
 highlight link asciidocIndexTerm Macro
-highlight asciidocMacro term=underline ctermfg=darkred cterm=underline guifg=darkred gui=underline
+highlight asciidocMacro term=underline ctermfg=red cterm=underline guifg=red gui=underline
 highlight asciidocMacroAttributes term=bold ctermfg=darkyellow guifg=darkyellow
-highlight asciidocRefMacro term=standout ctermfg=darkred guifg=darkred
+highlight asciidocRefMacro term=standout ctermfg=red guifg=red
 
 "Other
 highlight link asciidocCallout Label
