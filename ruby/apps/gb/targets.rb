@@ -415,13 +415,17 @@ class Configs
                 openglLibs = %w[GLU]
                 @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs + wtLibs
             when "pc-windows"
+		    boost = {major: "1_50", minor: "0"}
                 @roots << File.expand_path("g:/src/cpp")
-                @includePaths << "h:/software/boost_1_47_0"
+                @includePaths << "h:/sdks/boost_#{boost[:major]}_#{boost[:minor]}"
                 @includePaths << "h:/sdks/SFML/include"
-                @libraryPaths << "h:/software/boost_1_47_0/stage/lib"
+                @libraryPaths << "h:/sdks/boost_#{boost[:major]}_#{boost[:minor]}/stage/lib"
                 @libraryPaths << "h:/sdks/SFML/lib"
-                #Boost was built as such: ".\b2 toolset=gcc --build-type=complete stage"
-                @libraries += boostLibs.map!{|l|"#{l}-mgw45-mt-1_47"} + sfmlLibs
+                #Boost was built like:
+		#cd boost_1_50_1
+		#bootstrap
+		#.\b2 toolset=gcc --build-type=complete stage
+                @libraries += boostLibs.map!{|l|"#{l}-mgw46-mt-#{boost[:major]}"}
             else
                 raise("Unknown pc platform")
             end
