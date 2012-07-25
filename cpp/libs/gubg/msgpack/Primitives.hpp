@@ -5,7 +5,7 @@ namespace gubg
 {
     namespace msgpack
     {
-        enum class Primitive
+        enum class Primitive: unsigned char
         {
             Unknown,
             PosFix, UInt8, UInt16, UInt32, NegFix, Int8, Int16, Int32,
@@ -13,7 +13,7 @@ namespace gubg
             FixArray, Array16, Array32,
             FixRaw, Raw16, Raw32,
         };
-        enum class Group
+        enum class Group: unsigned char
         {
             Unknown,
             Integer, Nil, Boolean, Array, Raw,
@@ -27,6 +27,7 @@ namespace gubg
             Type(): primitive(Primitive::Unknown), group(Group::Unknown), nr(0){}
         };
 
+        //Primitive tags
 #define L_MSGPACK_DEFINE_TAG(name) \
         struct name ## _tag {static const Primitive primitive = Primitive::name;}
         L_MSGPACK_DEFINE_TAG(PosFix);
@@ -46,6 +47,7 @@ namespace gubg
         L_MSGPACK_DEFINE_TAG(Raw16);
         L_MSGPACK_DEFINE_TAG(Raw32);
 
+        //Group tags
         struct Integer_tag {};
         struct SInteger_tag {};
         struct UInteger_tag {};

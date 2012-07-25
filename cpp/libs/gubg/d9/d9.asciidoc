@@ -1,0 +1,22 @@
+= D9 framing
+
+== Features
+* Simple format, hence easy implementation
+* Efficient, especially if 0xd9 occurs infrequently
+
+== Format
+=== Binary content encoding
+11011001 (0bbbbbbb)* 10bbbbbb (0xd9-free content) 11011001 11111111
+|-0xd9-| |----flip bits-----| |-----------------| |-0xd9-| |-0xff-|
+=== Control commands
+11011001 111bbbbb
+* -1: End of binary encoding
+* -2: ACK
+* -3: NACK
+
+== Examples
+* raw "acb":          0xd9 0x80      0x61 0x62 0x63      0xd9 0xff => 7 bytes
+* msgpack "abc":      0xd9 0x80      0xa3 0x61 0x62 0x63 0xd9 0xff => 8 bytes
+* raw "\xd9\xd8\xd9": 0xd9 0x85      0xd8 0xd8 0xd8      0xd9 0xff => 7 bytes
+* raw "\xd9"*7:       0xd9 0x7f 0x80 0xd8*7              0xd9 0xff => 11 bytes
+* raw "\xd9"*8:       0xd9 0x7f 0x81 0xd8*8              0xd9 0xff => 12 bytes
