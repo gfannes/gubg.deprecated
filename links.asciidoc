@@ -3,3 +3,5 @@
 === SVG
 * http://alignedleft.com/tutorials/d3/an-svg-primer/
 * http://www.w3.org/Graphics/SVG/IG/resources/svgprimer.html
+* http://www.mathalicious.com/
+* http://www.khanacademy.org/

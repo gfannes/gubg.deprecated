@@ -21,13 +21,23 @@ namespace
             str.push_back((char)byte);
         return str;
     }
-    bool check_(const vector<int> &wanted, const string &plain)
+    ReturnCode checkEnc_(const vector<int> &wanted, const string &plain)
     {
+        MSS_BEGIN(ReturnCode, checkEnc_);
         string encoded;
-        if (!encode(encoded, plain))
-            return false;
-        LOG_S(check_, toHex(plain) << " encodes into " << toHex(encoded));
-        return encoded == str_(wanted);
+        MSS(encode(encoded, plain));
+        LOG_M(toHex(plain) << " encodes into " << toHex(encoded));
+        MSS(encoded == str_(wanted));
+        MSS_END();
+    }
+    ReturnCode checkDec_(const vector<int> &encoded, const string &wanted)
+    {
+        MSS_BEGIN(ReturnCode, checkDec_);
+        string dec;
+        MSS(decode(dec, str_(encoded)));
+        LOG_M(toHex(str_(encoded)) << " decodes into " << toHex(dec));
+        MSS(wanted == dec);
+        MSS_END();
     }
 }
 
@@ -37,21 +47,30 @@ int main()
     {
         TEST_TAG(encode);
         string enc;
-        TEST_TRUE(encode(enc, str_("abc")));
+        TEST_OK(encode(enc, str_("abc")));
         LOG_M(toHex(enc));
 
-        TEST_TRUE(check_({0xd9,       0x80, 0x61, 0x62, 0x63,                         0xd9, 0xff}, str_("abc")));
-        TEST_TRUE(check_({0xd9,       0x80, 0xd8,                                     0xd9, 0xff}, str_("\xd8")));
-        TEST_TRUE(check_({0xd9,       0x81, 0xd8,                                     0xd9, 0xff}, str_("\xd9")));
-        TEST_TRUE(check_({0xd9,       0x83, 0xd8, 0xd8,                               0xd9, 0xff}, str_("\xd9\xd9")));
-        TEST_TRUE(check_({0xd9,       0x87, 0xd8, 0xd8, 0xd8,                         0xd9, 0xff}, str_("\xd9\xd9\xd9")));
-        TEST_TRUE(check_({0xd9,       0x8f, 0xd8, 0xd8, 0xd8, 0xd8,                   0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9")));
-        TEST_TRUE(check_({0xd9,       0x9f, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,             0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9")));
-        TEST_TRUE(check_({0xd9,       0xbf, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,       0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9")));
-        TEST_TRUE(check_({0xd9, 0x7f, 0x80, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0x80, 0x61, 0x62, 0x63,                         0xd9, 0xff}, str_("abc")));
+        TEST_OK(checkEnc_({0xd9,       0x80, 0xd8,                                     0xd9, 0xff}, str_("\xd8")));
+        TEST_OK(checkEnc_({0xd9,       0x81, 0xd8,                                     0xd9, 0xff}, str_("\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0x83, 0xd8, 0xd8,                               0xd9, 0xff}, str_("\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0x87, 0xd8, 0xd8, 0xd8,                         0xd9, 0xff}, str_("\xd9\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0x8f, 0xd8, 0xd8, 0xd8, 0xd8,                   0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0x9f, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,             0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9,       0xbf, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,       0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkEnc_({0xd9, 0x7f, 0x80, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9\xd9")));
     }
     {
         TEST_TAG(decode);
+        TEST_OK(checkDec_({0xd9,       0x80, 0x61, 0x62, 0x63,                         0xd9, 0xff}, str_("abc")));
+        TEST_OK(checkDec_({0xd9,       0x80, 0xd8,                                     0xd9, 0xff}, str_("\xd8")));
+        TEST_OK(checkDec_({0xd9,       0x81, 0xd8,                                     0xd9, 0xff}, str_("\xd9")));
+        TEST_OK(checkDec_({0xd9,       0x83, 0xd8, 0xd8,                               0xd9, 0xff}, str_("\xd9\xd9")));
+        TEST_OK(checkDec_({0xd9,       0x87, 0xd8, 0xd8, 0xd8,                         0xd9, 0xff}, str_("\xd9\xd9\xd9")));
+        TEST_OK(checkDec_({0xd9,       0x8f, 0xd8, 0xd8, 0xd8, 0xd8,                   0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkDec_({0xd9,       0x9f, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,             0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkDec_({0xd9,       0xbf, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8,       0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9")));
+        TEST_OK(checkDec_({0xd9, 0x7f, 0x80, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd8, 0xd9, 0xff}, str_("\xd9\xd9\xd9\xd9\xd9\xd9\xd9")));
     }
     return 0;
 }
