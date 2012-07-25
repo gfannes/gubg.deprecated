@@ -19,14 +19,16 @@ namespace gubg
                     {
                         MSS_BEGIN(ReturnCode);
                         MSS(it_ != end_, RangeIsEmpty);
-                        auto ch = *(it_++);
+                        int ch = *(it_++);
                         if (ch & 0x80)
                         {
                             if (ch & 0x40)
                             {
                                 if (ch & 0x20)
                                 {
-                                    //NegFix
+                                    type.primitive = Primitive::NegFix;
+                                    type.group = Group::Integer;
+                                    type.nr = (ch &0x1f);
                                 }
                                 else
                                 {
@@ -117,9 +119,9 @@ namespace gubg
                         }
                         else
                         {
-                            //PosFix
                             type.primitive = Primitive::PosFix;
                             type.group = Group::Integer;
+                            type.nr = (ch &0x7f);
                         }
                         MSS_END();
                     }
@@ -130,8 +132,8 @@ namespace gubg
                     const const_iterator end_;
             };
 
-        template <typename String>
-            ReturnCode read(int &v, const String &str)
+        template <typename String, typename Integer>
+            ReturnCode read(Integer &v, const String &str, SInteger_tag)
             {
                 MSS_BEGIN(ReturnCode);
                 Range<String> range(str);
@@ -140,8 +142,10 @@ namespace gubg
                 switch (type.primitive)
                 {
                     case Primitive::PosFix:
+                        v = type.nr;
                         break;
                     case Primitive::NegFix:
+                        v = type.nr-32;
                         break;
                     default:
                         MSS_L(ReadError);
@@ -149,6 +153,8 @@ namespace gubg
                 }
                 MSS_END();
             }
+        template <typename String>
+            ReturnCode read(int &v, const String &str) { return read(v, str, SInteger_tag()); }
     }
 }
 

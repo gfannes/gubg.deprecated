@@ -109,9 +109,8 @@ namespace gubg
                 buffer.push_back((char)(v & 0xff));
                 return ReturnCode::OK;
             }
-        struct integer_tag {};
         template <typename Buffer, typename Integer>
-            ReturnCode write(Buffer &buffer, Integer v, integer_tag)
+            ReturnCode write(Buffer &buffer, Integer v, Integer_tag)
             {
                 MSS_BEGIN(ReturnCode);
                 if (v >= 0)
@@ -141,13 +140,13 @@ namespace gubg
                 MSS_END();
             }
         template <typename Buffer>
-            ReturnCode write(Buffer &buffer, int v){return write(buffer, v, integer_tag());}
+            ReturnCode write(Buffer &buffer, int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
-            ReturnCode write(Buffer &buffer, unsigned int v){return write(buffer, v, integer_tag());}
+            ReturnCode write(Buffer &buffer, unsigned int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
-            ReturnCode write(Buffer &buffer, long int v){return write(buffer, v, integer_tag());}
+            ReturnCode write(Buffer &buffer, long int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
-            ReturnCode write(Buffer &buffer, long long int v){return write(buffer, v, integer_tag());}
+            ReturnCode write(Buffer &buffer, long long int v){return write(buffer, v, Integer_tag());}
 
         //Nil
         template <typename Buffer>

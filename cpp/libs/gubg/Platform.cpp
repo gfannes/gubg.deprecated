@@ -93,7 +93,7 @@ namespace gubg
     {
         boost::mutex::scoped_lock lock(pageMutex);
         page[0] = '\0';
-        ::getcwd(page, MaxPath);
+        auto tmp = ::getcwd(page, MaxPath);
         return page;
     }
     string getHomeDirectory()
