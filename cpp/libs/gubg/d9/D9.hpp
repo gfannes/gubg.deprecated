@@ -9,7 +9,6 @@ namespace gubg
 {
     namespace d9
     {
-        const size_t NrFlipsPerByte = 7;
         template <typename Frame, typename Plain>
             ReturnCode encode(Frame &dst, const Plain &src)
             {
@@ -72,7 +71,7 @@ namespace gubg
                 typename Frame::const_iterator src = plain.begin();
                 const typename Frame::const_iterator end = plain.end();
 
-                MSS(Byte::D9 == (ubyte)*src++, StartMarkerMissing);
+                MSS(Byte::D9 == (ubyte)*src++, StartMarkerExpected);
                 MSS(src != end, PlainTooShort);
 
                 typename Frame::const_iterator flip = src;

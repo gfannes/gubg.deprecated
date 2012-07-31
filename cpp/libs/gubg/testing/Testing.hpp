@@ -181,7 +181,7 @@ namespace gubg
                 bool success = gubg::mss::isOK(v);
                 testTag.addResult(success ? TestResult::OK : TestResult::Failure);
                 if (!success)
-                    std::cout << location << ": it should be OK, but it is not." << std::endl;
+                    std::cout << location << ": it should be OK, but it is not (" << (int)v << ")" << std::endl;
             }
 #define TEST_OK(value) gubg::testing::test_ok((value), HERE(), l_gubg_testing_test_tag_)
 

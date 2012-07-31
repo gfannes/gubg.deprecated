@@ -11,6 +11,9 @@ namespace gubg
         {
             MSS_DEFAULT_CODES,
             ResizeFailed, StartMarkerMissing, PlainTooShort, PlainTooLong, EndMarkerMissing, IllegalEncoding,
+            End, Ack, Nack,
+            UnknownControlReceived, NoPlainSet, StartMarkerExpected, IllegalFlipFormat, UnexpectedEndReceived,
+            EndMarkerExpected, PlainNotEmpty,
         };
     }
 }

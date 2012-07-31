@@ -15,6 +15,8 @@ namespace gubg
             const static ubyte Ack =  0xfe;
             const static ubyte Nack = 0xfd;
         };
+
+        const size_t NrFlipsPerByte = 7;
     }
 }
 

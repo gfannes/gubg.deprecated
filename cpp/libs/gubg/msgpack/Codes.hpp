@@ -11,6 +11,8 @@ namespace gubg
         {
             MSS_DEFAULT_CODES,
             OutOfRange, TooLarge, ReadError, RangeIsEmpty, UnknownType, 
+            UnknownPrimitive, UnknownGroup, UnknownWidth, InvalidNr, UnsupportedWidth,
+            ParsingFinished,
         };
     }
 }
