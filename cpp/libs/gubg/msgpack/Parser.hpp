@@ -3,7 +3,6 @@
 
 #include "gubg/msgpack/Codes.hpp"
 #include "gubg/msgpack/Primitives.hpp"
-#include <vector>
 
 namespace gubg
 {
@@ -17,28 +16,23 @@ namespace gubg
 
             void clear() { type.clear(); }
         };
-        typedef std::vector<Element> Path;
 
-        template <typename ReceiverPolicy>
+        template <typename ReceiverPolicy, typename Path>
             class Parser: public ReceiverPolicy
         {
             public:
                 ReturnCode process(ubyte b)
                 {
-                    MSS_BEGIN(ReturnCode, process);
-                    LOG_M(STREAM((int)b));
+                    MSS_BEGIN(ReturnCode);
                     if (mss::isOK(el_.type.valid()))
                     {
-                        LOG_M("type is valid, " << STREAM(nrBytes_));
                         if (nrBytes_ > 0)
                             buffer_[--nrBytes_] = b;
                     }
                     else
                     {
-                        LOG_M("type is not valid");
                         //We are ready to read a new object
                         MSS(el_.type.read(b));
-                        LOG_M(STREAM((int)el_.type.width));
                         buffer_.fill(0x00);
                         switch (el_.type.width)
                         {
@@ -66,7 +60,6 @@ namespace gubg
                     }
                     if (nrBytes_ == 0)
                     {
-                        LOG_M("all bytes are read: " << (int)buffer_[1] << ", " << (int)buffer_[0]);
                         switch (el_.type.group)
                         {
                             case Group::Array:
