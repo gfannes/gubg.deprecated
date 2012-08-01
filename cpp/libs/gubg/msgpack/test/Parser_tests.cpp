@@ -10,6 +10,8 @@ using namespace gubg::testing;
 namespace 
 {
     using namespace gubg::msgpack;
+    typedef vector<Element> Path;
+
     struct Receiver
     {
         void open(Element el, const Path &path)
@@ -38,7 +40,7 @@ namespace
 int main()
 {
     TEST_TAG(main);
-    typedef msgpack::Parser<Receiver> Parser;
+    typedef msgpack::Parser<Receiver, Path> Parser;
     Parser parser;
     //0
     parser.process(0x00);
