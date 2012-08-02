@@ -33,6 +33,14 @@ namespace gubg
                     elements_[size_++] = t;
                 }
                 void clear() {size_ = 0;}
+                void resize(size_t wanted)
+                {
+                    if (wanted > Capacity)
+                        wanted = Capacity;
+                    while (size_ < wanted)
+                        elements_[size_++] = T();
+                    size_ = wanted;
+                }
 
                 T &operator[](size_t ix) {return elements_[ix];}
 

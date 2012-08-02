@@ -3,20 +3,15 @@
 == Features
 * Simple format, hence easy implementation
 * Efficient, especially if 0xd9 occurs infrequently
+* Integration with msgpack, which allows to integrate frame decoding and parsing
+** No need to store the complete frame in a buffer
 
 == Format
-=== Binary content encoding
-11011001 (0bbbbbbb)* 10bbbbbb (0xd9-free content) 11011001 11111111
-|-0xd9-| |----flip bits-----| |-----------------| |-0xd9-| |-0xff-|
-=== Control commands
-11011001 111bbbbb
-* -1: End of binary encoding
-* -2: ACK
-* -3: NACK
+11011001 (0bbbbbbb)* (0xd9-free content with MSBit == 1 (not a msgpack PosFix))
+|-0xd9-| |flip bits| |--------------------------------------------------------|
 
 == Examples
-* raw "acb":          0xd9 0x80      0x61 0x62 0x63      0xd9 0xff => 7 bytes
-* msgpack "abc":      0xd9 0x80      0xa3 0x61 0x62 0x63 0xd9 0xff => 8 bytes
-* raw "\xd9\xd8\xd9": 0xd9 0x85      0xd8 0xd8 0xd8      0xd9 0xff => 7 bytes
-* raw "\xd9"*7:       0xd9 0x7f 0x80 0xd8*7              0xd9 0xff => 11 bytes
-* raw "\xd9"*8:       0xd9 0x7f 0x81 0xd8*8              0xd9 0xff => 12 bytes
+* "abc":          0xd9           0xa3 0x61 0x62 0x63 => 5 bytes
+* "\xd9\xd8\xd9": 0xd9 0x05      0xa3 0xd8 0xd8 0xd8 => 6 bytes
+* "\xd9"*7:       0xd9 0x7f      0xa7 0xd8*7         => 10 bytes
+* "\xd9"*8:       0xd9 0x7f 0x01 0xa8 0xd8*8         => 11 bytes
