@@ -50,6 +50,7 @@ int main()
         TEST_OK(encode(enc, str_("\xa3" "abc")));
         LOG_M(toHex(enc));
 
+        //Encoding of a msgpack FixPos is not allowed as this clashes with the flip encoding
         TEST_KO(encode(enc, str_("\x00")));
 
         TEST_OK(checkEnc_({0xd9,          0xc0},                                         str_("\xc0")));
