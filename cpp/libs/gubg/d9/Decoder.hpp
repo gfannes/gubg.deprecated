@@ -8,135 +8,118 @@ namespace gubg
 {
     namespace d9
     {
-        template <typename Plain, typename Flips>
+        //CRTP decoder
+        template <typename Receiver, typename FlipsT>
             class Decoder
             {
                 public:
-                    Decoder(): plain_(0) {reset_();}
-                    Decoder(Plain &plain) {set(plain);}
-
-                    void set(Plain &plain)
-                    {
-                        plain_ = &plain;
-                        reset_();
-                    }
+                    Decoder():
+                        state_(State::WaitForD9){}
 
                     ReturnCode process(ubyte b)
                     {
                         MSS_BEGIN(ReturnCode);
 
-                        MSS(plain_, NoPlainSet);
-
-                        if (state_ == WaitForD9)
+                        if (state_ == State::WaitForD9)
                         {
-                            //We deal with WaitForD9 differently:
-                            // * reset_() is not called upon error
-                            // * plain_ should be empty
-                            MSS(plain_->size() == 0, PlainNotEmpty);
+                            //Errors that happen here are not reported to Receiver, hence no Reset_raii
                             MSS(b == Byte::D9, StartMarkerExpected);
-                            state_ = Meta;
+                            MSS(receiver_().d9_start());
+                            flips_.resize(0);
+                            state_ = State::Flips;
                         }
                         else
                         {
-                            Reset_raii resetter(*this);
-                            switch (state_)
+                            if (b == Byte::D9)
                             {
-                                case Meta:
-                                    if (b & 0xe0 == 0xe0)
-                                    {
-                                        //Control
-                                        switch (b && 0x1f)
-                                        {
-                                            case Byte::End:  MSS_L(UnexpectedEndReceived); break;
-                                            case Byte::Ack:  MSS_Q(ReturnCode::Ack); break;
-                                            case Byte::Nack: MSS_Q(ReturnCode::Nack); break;
-                                        }
-                                        MSS_L(UnknownControlReceived);
-                                    }
-                                    else
-                                    {
-                                        //Flip
-                                        const bool isLastFlip = (b & 0xc0 == 0x80);
-                                        const bool isFlip = (b & 0x80 == 0x00);
-                                        MSS(isLastFlip || isFlip, IllegalFlipFormat);
-                                        flips_.push_back(b);
-                                        if (isLastFlip)
-                                        {
-                                            flipOffset_ = 0;
-                                            flip_ = flips_.begin();
-                                            state_ = Content;
-                                        }
-                                    }
-                                    break;
-                                case Content:
-                                    switch (b)
-                                    {
-                                        case Byte::D9:
-                                            state_ = WaitForEnd;
-                                            break;
-                                        case Byte::D8:
-                                            //Make sure we don't read more that 6 flips from lastOfTheFlips
-                                            {
-                                                const bool isLastFlip = (flip_+1 == flips_.end());
-                                                MSS(!isLastFlip || flipOffset_ < 6, IllegalEncoding);
-                                            }
-                                            //Flip if necessary
-                                            if (*flip_ & (1 << flipOffset_++))
-                                                b = Byte::D9;
-                                            //Proceed flip_ when exhausted
-                                            if (flipOffset_ >= NrFlipsPerByte)
-                                            {
-                                                ++flip_;
-                                                flipOffset_ = 0;
-                                            }
-                                            plain_->push_back(b);
-                                            break;
-                                        default:
-                                            plain_->push_back(b);
-                                            break;
-                                    }
-                                    break;
-                                case WaitForEnd:
-                                    MSS(b == Byte::End, EndMarkerExpected);
-                                    break;
+                                state_ = State::WaitForD9;
+                                receiver_().d9_error(ReturnCode::UnexpectedD9Received);
+                                MSS_L(UnexpectedD9Received);
                             }
-                            //Make sure plain_ won't be reset when MSS is OK
-                            resetter.commit();
+                            if (state_ == State::Flips)
+                            {
+                                if ((b & 0x80) == 0x00)
+                                {
+                                    //This is a flip byte
+                                    const auto s = flips_.size();
+                                    flips_.push_back(b);
+                                    if (s+1 != flips_.size())
+                                    {
+                                        state_ = State::WaitForD9;
+                                        receiver_().d9_error(ReturnCode::TooManyFlips);
+                                        MSS_L(TooManyFlips);
+                                    }
+                                }
+                                else
+                                {
+                                    //This is the first content byte, we deal with it hereunder
+                                    //after we initialize necessary members
+                                    flip_ = flips_.begin();
+                                    flipOffset_ = 0;
+                                    state_ = State::Content;
+                                }
+                            }
+                            if (state_ == State::Content)
+                            {
+                                if (b == Byte::D8)
+                                {
+                                    if (flip_ == flips_.end())
+                                    {
+                                        state_ = State::WaitForD9;
+                                        receiver_().d9_error(ReturnCode::TooManyDx);
+                                        MSS_L(TooManyDx);
+                                    }
+                                    //Flip if necessary
+                                    if (*flip_ & (1 << flipOffset_++))
+                                        b = Byte::D9;
+                                    //Proceed flip when exhausted
+                                    if (flipOffset_ >= NrFlipsPerByte)
+                                    {
+                                        ++flip_;
+                                        flipOffset_ = 0;
+                                    }
+                                }
+                                switch (receiver_().d9_ubyte(b))
+                                {
+                                    case ReturnCode::OK:
+                                        break;
+                                    case ReturnCode::ContentComplete:
+                                        state_ = State::WaitForD9;
+                                        break;
+                                    default:
+                                        state_ = State::WaitForD9;
+                                        receiver_().d9_error(ReturnCode::UnexpectedReply);
+                                        MSS_L(UnexpectedReply);
+                                        break;
+                                }
+                            }
                         }
                         MSS_END();
                     }
 
                 private:
-                    //RAII that will reset the decoder upon dtor unless you call commit()
-                    class Reset_raii
-                    {
-                        public:
-                            Reset_raii(Decoder &decoder):decoder_(decoder), committed_(false){}
-                            ~Reset_raii()
-                            {
-                                if (!committed_)
-                                    decoder_.reset_();
-                            }
-                            void commit(){committed_ = true;}
-                        private:
-                            Decoder &decoder_;
-                            bool committed_;
-                    };
-                    void reset_()
-                    {
-                        state_ = WaitForD9;
-                        if (plain_)
-                            plain_->resize(0);
-                        flips_.resize(0);
-                    }
+                    Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
-                    enum State: unsigned char {WaitForD9, Meta, Content, WaitForEnd};
+                    enum class State: unsigned char {WaitForD9, Flips, Content};
                     State state_;
                     unsigned char flipOffset_;
-                    Flips flips_;
-                    typename Flips::const_iterator flip_;
-                    Plain *plain_;
+                    FlipsT flips_;
+                    typename FlipsT::const_iterator flip_;
             };
+
+        template <typename String>
+            class StringDecoder: public Decoder<StringDecoder<String>, String>
+        {
+            public:
+                ReturnCode d9_start(){str_.clear(); return ReturnCode::OK;}
+                ReturnCode d9_error(ReturnCode error){return ReturnCode::OK;}
+                ReturnCode d9_ubyte(ubyte b){str_.push_back(b); return ReturnCode::OK;}
+
+                String &str(){return str_;}
+
+            private:
+                String str_;
+        };
     }
 }
 

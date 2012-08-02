@@ -10,10 +10,10 @@ namespace gubg
         enum class ReturnCode
         {
             MSS_DEFAULT_CODES,
-            ResizeFailed, StartMarkerMissing, PlainTooShort, PlainTooLong, EndMarkerMissing, IllegalEncoding,
-            End, Ack, Nack,
-            UnknownControlReceived, NoPlainSet, StartMarkerExpected, IllegalFlipFormat, UnexpectedEndReceived,
-            EndMarkerExpected, PlainNotEmpty,
+            ResizeFailed, StartMarkerMissing, PlainTooShort, PlainTooLong, EndMarkerMissing,
+            IllegalEncoding, UnknownControlReceived, NoPlainSet, StartMarkerExpected, TooManyDx,
+            UnexpectedD9Received, EndMarkerExpected, PlainNotEmpty, FirstByteCannotBeFixPos, TooManyFlips,
+            ContentComplete, UnexpectedReply,
         };
     }
 }

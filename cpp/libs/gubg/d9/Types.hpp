@@ -11,9 +11,6 @@ namespace gubg
         {
             const static ubyte D8 =   0xd8;
             const static ubyte D9 =   0xd9;
-            const static ubyte End =  0xff;
-            const static ubyte Ack =  0xfe;
-            const static ubyte Nack = 0xfd;
         };
 
         const size_t NrFlipsPerByte = 7;
