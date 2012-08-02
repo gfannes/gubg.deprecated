@@ -13,7 +13,7 @@ namespace gubg
             ResizeFailed, StartMarkerMissing, PlainTooShort, PlainTooLong, EndMarkerMissing,
             IllegalEncoding, UnknownControlReceived, NoPlainSet, StartMarkerExpected, TooManyDx,
             UnexpectedD9Received, EndMarkerExpected, PlainNotEmpty, FirstByteCannotBeFixPos, TooManyFlips,
-            ContentComplete, UnexpectedReply,
+            ContentComplete, UnexpectedReply, PushBackFailed,
         };
     }
 }

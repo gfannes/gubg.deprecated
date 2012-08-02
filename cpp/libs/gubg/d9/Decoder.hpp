@@ -9,6 +9,11 @@ namespace gubg
     namespace d9
     {
         //CRTP decoder
+        //Receiver should provide:
+        // * ReturnCode d9_start() => OK
+        // * ReturnCode d9_ubyte(ubyte b) => ContentComplete or OK
+        // * void d9_error(ReturnCode error)
+        //FlipsT is a normal template parameter which specifies how the flip bytes are cached
         template <typename Receiver, typename FlipsT>
             class Decoder
             {
@@ -107,13 +112,20 @@ namespace gubg
                     typename FlipsT::const_iterator flip_;
             };
 
+        //A decoder example that will decode into its own instance of String by using push_back
+        //No msgpack parsing is done, so this decoder doesn't know when the received content is complete
         template <typename String>
             class StringDecoder: public Decoder<StringDecoder<String>, String>
         {
             public:
                 ReturnCode d9_start(){str_.clear(); return ReturnCode::OK;}
-                ReturnCode d9_error(ReturnCode error){return ReturnCode::OK;}
-                ReturnCode d9_ubyte(ubyte b){str_.push_back(b); return ReturnCode::OK;}
+                void d9_error(ReturnCode error){}
+                ReturnCode d9_ubyte(ubyte b)
+                {
+                    const auto s = str_.size();
+                    str_.push_back(b);
+                    return (s+1 == str_.size() ? ReturnCode::OK : ReturnCode::PushBackFailed);
+                }
 
                 String &str(){return str_;}
 
