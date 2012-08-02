@@ -1,10 +1,14 @@
 = D9 framing
 
 == Features
-* Simple format, hence easy implementation
-* Efficient, especially if 0xd9 occurs infrequently
-* Integration with msgpack, which allows to integrate frame decoding and parsing
-** No need to store the complete frame in a buffer
+* Easy to understand
+* Easy to implement
+* Efficient to implement (think e.g., arduino)
+* Low bandwith usage, especially if 0xd9/0xd8 bytes occur infrequent
+* Integration with msgpack
+** Allows integrated framing and parsing
+** No need to buffer frame before parsing
+** Benefit of msgpack type info and small binary footprint
 
 == Format
 11011001 (0bbbbbbb)* (0xd9-free content with MSBit == 1 (not a msgpack PosFix))
