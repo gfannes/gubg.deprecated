@@ -1,7 +1,9 @@
 //@#platform.target:=arduino#@
+#include "garf/Elapser.hpp"
 #include "garf/Status.hpp"
 
-garf::Status g_status;
+garf::Elapser g_elapser;
+garf::Status<100> g_status;
 
 void setup()
 {
@@ -9,5 +11,6 @@ void setup()
 
 void loop()
 {
-    g_status.process();
+    g_elapser.process();
+    g_status.process(g_elapser.elapse());
 }

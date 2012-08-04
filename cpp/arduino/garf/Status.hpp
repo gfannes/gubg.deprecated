@@ -1,32 +1,32 @@
 #ifndef garf_Status_hpp
 #define garf_Status_hpp
 
-#include "Arduino.h"
-
 namespace garf
 {
+    template <long Timeout>
     class Status
     {
         public:
             Status():
                 state_(false),
-                lastToggle_(millis())
+                toggleTimeout_(Timeout)
             {
                 pinMode(LED, OUTPUT);
             }
-            void process()
+            void process(int elapse)
             {
-                const long now = millis();
-                if (now - lastToggle_ > 500)
+                while (elapse > toggleTimeout_)
                 {
+                    elapse -= toggleTimeout_;
+                    toggleTimeout_ = Timeout;
                     state_ = !state_;
                     digitalWrite(LED, (state_ ? HIGH : LOW));
-                    lastToggle_ = now;
                 }
+                toggleTimeout_ -= elapse;
             }
         private:
             static const int LED = 13;
-            long lastToggle_;
+            long toggleTimeout_;
             bool state_;
     };
 }
