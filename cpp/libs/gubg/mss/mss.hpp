@@ -1,6 +1,10 @@
 #ifndef gubg_mss_mss_hpp
 #define gubg_mss_mss_hpp
 
+#ifdef gubg_mss_mss_nostl_hpp
+#error Yuo cannot mix normal with nostl mss
+#endif
+
 //Main success scenario: enables easy working with return codes
 //A general scope (e.g., a function body) looks like this:
 //
@@ -17,6 +21,7 @@
 //MSS_END();
 // => Ends the MSS block and returns from the function
 
+#include "gubg/mss/mss_common.hpp"
 #include "gubg/mss/info.hpp"
 #include "gubg/clock/timer.hpp"
 #include "gubg/logging/Log.hpp"
@@ -24,9 +29,6 @@
 #include <memory>
 #include <set>
 #include <iostream>
-
-#define MSS_DEFAULT_CODES_WITHOUT_OK InternalError, IllegalArgument, NotImplemented, False, NullPointer, InvalidSharedPtr, UnknownError, PimplError, LastCode = 999
-#define MSS_DEFAULT_CODES OK, MSS_DEFAULT_CODES_WITHOUT_OK
 
 template <typename T>
 struct AllowOtherCodes
@@ -87,9 +89,7 @@ namespace gubg
             }
             T v_;
         };
-        //We use this for return code storage for bools and ints
-        enum ReturnCode {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
-#define L_CASE_CODE(code) case code: return #code
+#define L_CASE_CODE(code) case ReturnCode::code: return #code
         inline const char *l_MSSCode_AsString(ReturnCode code)
         {
             switch (code)
@@ -146,22 +146,23 @@ namespace gubg
             struct ReturnCodeWrapper<int, NoOtherCodesAllowed>
             {
                 typedef ReturnCode ReturnCodeT;
-                ReturnCodeWrapper():v_(ReturnCode::OK){}
+                ReturnCodeWrapper():v_(int(ReturnCode::OK)){}
                 int get()
                 {
                     return v_;
                 }
                 bool isOK(bool b) const {return b;}
-                bool isOK(int v) const {return ReturnCode::OK == v;}
+                bool isOK(int v) const {return int(ReturnCode::OK) == v;}
+                bool isOK(ReturnCode v) const {return ReturnCode::OK == v;}
                 bool set(ReturnCode v)
                 {
                     if (isOK(v))
                     {
                         //Every allowed code becomes OK
-                        v_ = ReturnCode::OK;
+                        v_ = int(ReturnCode::OK);
                         return true;
                     }
-                    v_ = v;
+                    v_ = int(v);
                     return false;
                 }
                 template <typename OT, OT has_ok = OT::OK>
@@ -278,9 +279,6 @@ namespace gubg
         //A helper template to fix a bug in decltype (decltype can currently not be combined with a scope operator)
         template <typename TT> struct l_declfix {typedef TT T;};
 
-        template <typename RC, RC has_ok = RC::OK>
-            bool isOK(RC rc){return RC::OK == rc;}
-        inline bool isOK(bool b){return b;}
         template <typename X>
             bool isOK(boost::shared_ptr<X> p){return (bool)p;}
         template <typename X, typename X::pimpl_tag is_pimpl = X::pimpl_tag::OK>
@@ -302,8 +300,6 @@ namespace gubg
         };
     }
 }
-
-#define MSS_RC_VAR l_mss_rc_var
 
 #define MSS_BEGIN_RC_WRAPPER(...)   typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> mss_return_code_wrapper_type; \
     typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \

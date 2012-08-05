@@ -1,0 +1,9 @@
+== Arduino howto
+
+=== Setup
+* +sudo apt-get install arduino+
+* +mkdir ~/sdks+
+* +cd ~/sdks+
+* +git clone https://github.com/arduino/Arduino.git+
+* +sudo usermod -a -G dialout $USER+
+* +sudo reboot+

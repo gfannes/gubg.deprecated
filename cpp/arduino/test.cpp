@@ -17,15 +17,15 @@ void loop()
     for (char i = 0; i < Max; ++i)
     {
         digitalWrite(LED, HIGH);
-        delay(i*10);
+        delay(i*100);
         digitalWrite(LED, LOW);
-        delay(i*10);
+        delay(i*100);
     }
     for (char i = Max; i >= 0; --i)
     {
         digitalWrite(LED, HIGH);
-        delay(i*10);
+        delay(i*100);
         digitalWrite(LED, LOW);
-        delay(i*10);
+        delay(i*100);
     }
 }
