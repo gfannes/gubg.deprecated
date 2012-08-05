@@ -15,10 +15,10 @@ namespace gubg
         // * void d9_error(ReturnCode error)
         //FlipsT is a normal template parameter which specifies how the flip bytes are cached
         template <typename Receiver, typename FlipsT>
-            class Decoder
+            class Decoder_crtp
             {
                 public:
-                    Decoder():
+                    Decoder_crtp():
                         state_(State::WaitForD9){}
 
                     ReturnCode process(ubyte b)
@@ -115,7 +115,7 @@ namespace gubg
         //A decoder example that will decode into its own instance of String by using push_back
         //No msgpack parsing is done, so this decoder doesn't know when the received content is complete
         template <typename String>
-            class StringDecoder: public Decoder<StringDecoder<String>, String>
+            class StringDecoder: public Decoder_crtp<StringDecoder<String>, String>
         {
             public:
                 ReturnCode d9_start(){str_.clear(); return ReturnCode::OK;}

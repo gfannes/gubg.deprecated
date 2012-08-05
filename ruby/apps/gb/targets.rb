@@ -433,8 +433,9 @@ class Configs
             @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/cores"
             @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/variants/standard"
             @roots << "/home/gfannes/sdks/Arduino/libraries/Servo"
+            @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
             @compiler, @linker = "avr-g++", "avr-g++"
-            @compileSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
+            @compileSettings = "-std=c++0x -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @linkSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
             %w[main.cpp wiring.c wiring_digital.c WMath.cpp].each do |base|
