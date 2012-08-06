@@ -5,3 +5,6 @@
 * http://www.w3.org/Graphics/SVG/IG/resources/svgprimer.html
 * http://www.mathalicious.com/
 * http://www.khanacademy.org/
+* http://www.easysw.com/~mike/serial/serial.html
+* http://tldp.org/HOWTO/Serial-Programming-HOWTO/
+* http://tldp.org/HOWTO/Serial-HOWTO.html

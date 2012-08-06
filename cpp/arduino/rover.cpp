@@ -18,10 +18,10 @@ garf::Blinker<100> g_blinker;
 //switch to offline
 struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
-    //Online is indicated with a flat LED on
-    void oostatus_online() { g_blinker.set(false, true); }
-    //Offline is indicated with a blinking LED
-    void oostatus_offline() { g_blinker.set(true, true); }
+    //Online is indicated with a blinking LED
+    void oostatus_online() { g_blinker.set(true, true); }
+    //Offline is indicated with a flat LED on
+    void oostatus_offline() { g_blinker.set(false, true); }
 };
 OOStatus g_oostatus;
 
@@ -49,7 +49,7 @@ Decoder g_decoder;
 
 void setup()
 {
-    g_blinker.boot();
+    g_blinker.boot(20);
     Serial.begin(9600);
     g_oostatus.setup();
 }
@@ -61,9 +61,5 @@ void loop()
     g_oostatus.process(g_elapser.elapse());
 
     if (Serial.available())
-    {
-        //g_oostatus.indicateOnline();
-        while (true){}
-        //g_decoder.process(Serial.read());
-    }
+        g_decoder.process(Serial.read());
 }
