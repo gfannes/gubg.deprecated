@@ -13,6 +13,16 @@ namespace garf
             {
                 pinMode(LED, OUTPUT);
             }
+            void boot()
+            {
+                for (int i = 0; i < 30; ++i)
+                {
+                    digitalWrite(LED, HIGH);
+                    delay(50);
+                    digitalWrite(LED, LOW);
+                    delay(50);
+                }
+            }
             void process(int elapse)
             {
                 if (state_ & DoBlink)

@@ -4,6 +4,7 @@
 #include "garf/OOStatus.hpp"
 #include "gubg/d9/Decoder.hpp"
 #include "gubg/FixedVector.hpp"
+using namespace gubg;
 
 typedef unsigned char ubyte;
 
@@ -27,11 +28,29 @@ OOStatus g_oostatus;
 typedef gubg::FixedVector<ubyte, 8> Flips;
 struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
 {
+    d9::ReturnCode d9_start()
+    {
+        MSS_BEGIN(d9::ReturnCode);
+        g_oostatus.indicateOnline();
+        MSS_END();
+    }
+    d9::ReturnCode d9_error(d9::ReturnCode)
+    {
+        MSS_BEGIN(d9::ReturnCode);
+        MSS_END();
+    }
+    d9::ReturnCode d9_ubyte(ubyte)
+    {
+        MSS_BEGIN(d9::ReturnCode);
+        MSS_END();
+    }
 };
 Decoder g_decoder;
 
 void setup()
 {
+    g_blinker.boot();
+    Serial.begin(9600);
     g_oostatus.setup();
 }
 
@@ -41,9 +60,10 @@ void loop()
     g_blinker.process(g_elapser.elapse());
     g_oostatus.process(g_elapser.elapse());
 
-    //We switch a few times to online to test things
-    if (millis() == 3000)
-        g_oostatus.indicateOnline();
-    if (5000 <= millis() && millis() <= 10000)
-        g_oostatus.indicateOnline();
+    if (Serial.available())
+    {
+        //g_oostatus.indicateOnline();
+        while (true){}
+        //g_decoder.process(Serial.read());
+    }
 }
