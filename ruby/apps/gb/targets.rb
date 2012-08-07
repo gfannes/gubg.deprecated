@@ -387,6 +387,7 @@ class Configs
     end
     def breakdown_
         @roots << context.directory
+        home = homePath
         case context.targetPlatform
         when /^pc-/
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
@@ -401,14 +402,14 @@ class Configs
                 @includePaths << "/usr/include/cairomm-1.0"
                 @includePaths << "/usr/include/cairo"
                 @includePaths << "/usr/include/freetype2"
-                @includePaths << "$HOME/sdks/libsigc++"
-                @includePaths << "$HOME/sdks/SFML/include"
-                @includePaths << "$HOME/sdks/wt/src"
-                @includePaths << "$HOME/sdks/eigen"
-                @libraryPaths << "$HOME/sdks/boost/lib"
-                @libraryPaths << "$HOME/sdks/SFML/lib"
-                @libraryPaths << "$HOME/sdks/wt/build/src"
-                @libraryPaths << "$HOME/sdks/wt/build/src/http"
+                @includePaths << "#{home}/sdks/libsigc++"
+                @includePaths << "#{home}/sdks/SFML/include"
+                @includePaths << "#{home}/sdks/wt/src"
+                @includePaths << "#{home}/sdks/eigen"
+                @libraryPaths << "#{home}/sdks/boost/lib"
+                @libraryPaths << "#{home}/sdks/SFML/lib"
+                @libraryPaths << "#{home}/sdks/wt/build/src"
+                @libraryPaths << "#{home}/sdks/wt/build/src/http"
                 sdlLibs = %w[SDL]
                 cairoLibs = %w[cairomm-1.0]
                 wtLibs = %w[wt wthttp]
@@ -430,20 +431,20 @@ class Configs
                 raise("Unknown pc platform")
             end
         when "arduino"
-            @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/cores"
-            @roots << "/home/gfannes/sdks/Arduino/hardware/arduino/variants/standard"
-            @roots << "/home/gfannes/sdks/Arduino/libraries/Servo"
+            @roots << "#{home}/sdks/Arduino/hardware/arduino/cores"
+            @roots << "#{home}/sdks/Arduino/hardware/arduino/variants/standard"
+            @roots << "#{home}/sdks/Arduino/libraries/Servo"
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
             @compiler, @linker = "avr-g++", "avr-g++"
             @compileSettings = "-std=c++0x -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @linkSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
             %w[main.cpp wiring.c wiring_digital.c WMath.cpp].each do |base|
-                @extrafiles << "/home/gfannes/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
+                @extrafiles << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
             end
-            #@extrafiles << "/home/gfannes/sdks/Arduino/libraries/Servo/Servo.cpp"
-            #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/cores/arduino"
-            #            @includePaths << "$HOME/sdks/Arduino/hardware/arduino/variants/standard"
+            #@extrafiles << "#{home}/sdks/Arduino/libraries/Servo/Servo.cpp"
+            #            @includePaths << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino"
+            #            @includePaths << "#{home}/sdks/Arduino/hardware/arduino/variants/standard"
         else
             raise("Unknown targetPlatform #{context.targetPlatform}")
         end

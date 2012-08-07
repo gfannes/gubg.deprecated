@@ -29,6 +29,12 @@ end
 def mingw?
     operatingSystem == "MinGW"
 end
+def homePath
+    case operatingSystem
+    when "Linux", "Linux64" then ENV["HOME"]
+    when "Windows" then "h:/"
+    else ENV["HOME"] end
+end
 
 def emacs
     case operatingSystem
