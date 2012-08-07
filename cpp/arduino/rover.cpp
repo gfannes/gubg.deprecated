@@ -2,6 +2,7 @@
 #include "garf/Elapser.hpp"
 #include "garf/Blinker.hpp"
 #include "garf/OOStatus.hpp"
+#include "garf/BusyProcess.hpp"
 #include "gubg/d9/Decoder.hpp"
 #include "gubg/FixedVector.hpp"
 using namespace gubg;
@@ -18,20 +19,26 @@ garf::Blinker<100> g_blinker;
 //switch to offline
 struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
-    //Online is indicated with a blinking LED
-    void oostatus_online() { g_blinker.set(true, true); }
-    //Offline is indicated with a flat LED on
-    void oostatus_offline() { g_blinker.set(false, true); }
+    void oostatus_online() { g_blinker.set(garf::BlinkMode::Normal); }
+    void oostatus_offline() { g_blinker.set(garf::BlinkMode::Flat); }
 };
 OOStatus g_oostatus;
 
 typedef gubg::FixedVector<ubyte, 8> Flips;
 struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
 {
+    enum State {Idle, Receiving, Received};
+
+    State state;
+    unsigned char motorValues_[4];
+    unsigned char ix_;
+
+    Decoder():
+        state(Idle){}
     d9::ReturnCode d9_start()
     {
         MSS_BEGIN(d9::ReturnCode);
-        g_oostatus.indicateOnline();
+        state = Idle;
         MSS_END();
     }
     d9::ReturnCode d9_error(d9::ReturnCode)
@@ -39,9 +46,31 @@ struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
         MSS_BEGIN(d9::ReturnCode);
         MSS_END();
     }
-    d9::ReturnCode d9_ubyte(ubyte)
+    d9::ReturnCode d9_ubyte(ubyte b)
     {
         MSS_BEGIN(d9::ReturnCode);
+        switch (b)
+        {
+            case 0xc0:
+                //Nil => keep alive
+                MSS(state == Idle, IllegalContent);
+                //g_oostatus.indicateOnline();
+                MSS(d9::ReturnCode::ContentComplete);
+                break;
+            case 0x94:
+                //Array of length 4 => Motor values
+                MSS(state == Idle, IllegalContent);
+                state = Receiving;
+                ix_ = 0;
+                break;
+            default:
+                MSS(state == Receiving, IllegalContent);
+                MSS(ix_ < 4, IllegalContent);
+                motorValues_[ix_++];
+                if (ix_ >= 4)
+                    state = Received;
+                break;
+        }
         MSS_END();
     }
 };
@@ -49,7 +78,8 @@ Decoder g_decoder;
 
 void setup()
 {
-    g_blinker.boot(20);
+    g_blinker.set(garf::BlinkMode::Fast);
+    garf::busyProcess<1000>(g_blinker);
     Serial.begin(9600);
     g_oostatus.setup();
 }
@@ -62,4 +92,11 @@ void loop()
 
     if (Serial.available())
         g_decoder.process(Serial.read());
+
+    if (g_decoder.state == Decoder::Received)
+    {
+        g_decoder.state = Decoder::Idle;
+                g_oostatus.indicateOnline();
+        //g_blinker.set(garf::BlinkMode::Fast);
+    }
 }
