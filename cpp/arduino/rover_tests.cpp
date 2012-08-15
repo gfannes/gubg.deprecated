@@ -32,7 +32,7 @@ int main()
                 break;
             case MotorValues:
                 ch = '*';
-                of << "\x94\x01\x01\x02\x03";
+                of << "\xd9\x94\x01\x01\x02\x03";
                 break;
         }
         cout << ch;

@@ -68,7 +68,10 @@ struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
                 MSS(ix_ < 4, IllegalContent);
                 motorValues_[ix_++];
                 if (ix_ >= 4)
+                {
                     state = Received;
+                    MSS(d9::ReturnCode::ContentComplete);
+                }
                 break;
         }
         MSS_END();
@@ -96,7 +99,6 @@ void loop()
     if (g_decoder.state == Decoder::Received)
     {
         g_decoder.state = Decoder::Idle;
-                g_oostatus.indicateOnline();
-        //g_blinker.set(garf::BlinkMode::Fast);
+        g_oostatus.indicateOnline();
     }
 }
