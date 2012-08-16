@@ -15,7 +15,7 @@ end
 $verbose = options[:verbose]
 
 tmpDir = case operatingSystem
-	 when /^Linux/ then "/home/gfannes/tmp"
+	 when /^Linux/ then "#{homePath}/tmp"
 	 when /^Windows/, /^Min/ then "c:/tmp"
 	 end
 puts("I will create the filestore in \"#{tmpDir}\"")
