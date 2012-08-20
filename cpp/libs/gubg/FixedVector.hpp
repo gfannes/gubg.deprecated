@@ -8,6 +8,8 @@
 // * clear
 // * operator[]
 
+#include "gubg/cassert.hpp"
+
 namespace gubg
 {
     template <typename T, size_t Capacity>
@@ -20,17 +22,23 @@ namespace gubg
                 FixedVector():size_(0){}
 
                 size_t size() const {return size_;}
+                bool empty() const {return size() == 0;}
 
                 iterator begin() {return elements_;}
                 const_iterator begin() const {return elements_;}
-                iterator end() {return elements_ + Capacity;}
-                const_iterator end() const {return elements_ + Capacity;}
+                iterator end() {return elements_ + size_;}
+                const_iterator end() const {return elements_ + size_;}
 
                 void push_back(T t)
                 {
                     if (size_ >= Capacity)
                         return;
                     elements_[size_++] = t;
+                }
+                void pop_back()
+                {
+                    assert(!empty());
+                    --size_;
                 }
                 void clear() {size_ = 0;}
                 void resize(size_t wanted)
@@ -42,7 +50,26 @@ namespace gubg
                     size_ = wanted;
                 }
 
-                T &operator[](size_t ix) {return elements_[ix];}
+                T &operator[](size_t ix)
+                {
+                    assert(size_ > ix);
+                    return elements_[ix];
+                }
+                T &back()
+                {
+                    assert(!empty());
+                    return elements_[size_-1];
+                }
+                const T &operator[](size_t ix) const
+                {
+                    assert(size_ > ix);
+                    return elements_[ix];
+                }
+                const T &back() const
+                {
+                    assert(!empty());
+                    return elements_[size_-1];
+                }
 
             private:
                 T elements_[Capacity];

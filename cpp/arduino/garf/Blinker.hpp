@@ -14,7 +14,7 @@ namespace garf
 
         public:
             static const long NormalTimeout = NormalTimeout_;
-            static const long FastTimeout = NormalTimeout_/2;
+            static const long FastTimeout = NormalTimeout_/4;
             static const long LED = LED_;
 
             Blinker():
