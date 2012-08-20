@@ -12,27 +12,36 @@ namespace
     using namespace gubg::msgpack;
     typedef vector<Element> Path;
 
-    struct Receiver
+    struct Parser: msgpack::Parser_crtp<Parser, Path>
     {
-        void open(Element el, const Path &path)
+        ReturnCode parser_open(Element el, const Path &path)
         {
             LOG_S(open, STREAM(el.ix, el.length));
+            return ReturnCode::OK;
         }
-        void close(Element el, const Path &path)
+        ReturnCode parser_close(Element el, const Path &path)
         {
             LOG_S(close, STREAM(el.ix, el.length));
+            return ReturnCode::OK;
         }
-        void add(long v, const Path &path)
+        ReturnCode parser_add(long v, const Path &path)
         {
             LOG_S(add_l, STREAM(v));
             if (!path.empty())
                 LOG_M(STREAM(path.back().ix));
+            return ReturnCode::OK;
         }
-        void add(unsigned long v, const Path &path)
+        ReturnCode parser_add(unsigned long v, const Path &path)
         {
             LOG_S(add_ul, STREAM(v));
             if (!path.empty())
                 LOG_M(STREAM(path.back().ix));
+            return ReturnCode::OK;
+        }
+        template <typename T>
+        ReturnCode parser_add(const T &t, const Path &path)
+        {
+            return ReturnCode::IllegalArgument;
         }
     };
 }
@@ -40,7 +49,6 @@ namespace
 int main()
 {
     TEST_TAG(main);
-    typedef msgpack::Parser<Receiver, Path> Parser;
     Parser parser;
     //0
     parser.process(0x00);

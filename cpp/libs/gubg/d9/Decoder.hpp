@@ -27,7 +27,7 @@ namespace gubg
 
                         if (state_ == State::WaitForD9)
                         {
-                            //Errors that happen here are not reported to Receiver, hence no Reset_raii
+                            //Errors that happen here are not reported to Receiver
                             MSS(b == Byte::D9, StartMarkerExpected);
                             MSS(receiver_().d9_start());
                             flips_.resize(0);
@@ -100,6 +100,11 @@ namespace gubg
                             }
                         }
                         MSS_END();
+                    }
+
+                    void reset()
+                    {
+                        state_ = State::WaitForD9;
                     }
 
                 private:
