@@ -11,7 +11,7 @@ namespace gubg
         {
             MSS_DEFAULT_CODES,
             CouldNotGetSocketDescriptor, PortTooLow, PortTooHigh, CouldNotBind, UnexpectedValidSocketDescriptor,
-            UnexpectedRole, CouldNotListen,
+            UnexpectedRole, CouldNotListen, AcceptFailed, ReceiveFailure, 
         };
     }
 }
