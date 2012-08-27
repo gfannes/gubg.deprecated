@@ -3,6 +3,7 @@
 #include "garf/Blinker.hpp"
 #include "garf/OOStatus.hpp"
 #include "garf/BusyProcess.hpp"
+#include "garf/Motor.hpp"
 
 typedef unsigned char ubyte;
 
@@ -12,12 +13,23 @@ garf::Elapser g_elapser;
 //We blink 10 times per second
 garf::Blinker<200> g_blinker;
 
+garf::Motor<5, 6> g_leftMotor;
+garf::Motor<10, 11> g_rightMotor;
+
 //We we don't receive indicateOnline() within 1 second, we will
 //switch to offline
 struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
-    void oostatus_online() { g_blinker.set(garf::BlinkMode::Normal); }
-    void oostatus_offline() { g_blinker.set(garf::BlinkMode::Flat); }
+    void oostatus_online()
+    {
+        g_blinker.set(garf::BlinkMode::Normal);
+    }
+    void oostatus_offline()
+    {
+        g_leftMotor.setSpeed(0);
+        g_rightMotor.setSpeed(0);
+        g_blinker.set(garf::BlinkMode::Fast);
+    }
 };
 OOStatus g_oostatus;
 
@@ -33,7 +45,7 @@ struct Parser: gubg::msgpack::Parser_crtp<Parser, Path>
     typedef gubg::msgpack::Element Element;
     typedef gubg::msgpack::Nil_tag Nil_tag;
 
-    unsigned char motorValues_[4];
+    int motorValues_[2];
     bool freshValues;
 
     Parser():freshValues(false){}
@@ -42,15 +54,16 @@ struct Parser: gubg::msgpack::Parser_crtp<Parser, Path>
     {
         MSS_BEGIN(ReturnCode);
         MSS(path.empty());
-        MSS(element.length == 4);
+        MSS(element.length == 2);
         MSS_END();
     }
     ReturnCode parser_close(Element &element, const Path &path)
     {
         MSS_BEGIN(ReturnCode);
         MSS(path.empty());
-        MSS(element.length == 4);
+        MSS(element.length == 2);
         freshValues = true;
+        g_oostatus.indicateOnline();
         MSS_END();
     }
     ReturnCode parser_add(unsigned long &ul, const Path &path)
@@ -58,20 +71,27 @@ struct Parser: gubg::msgpack::Parser_crtp<Parser, Path>
         MSS_BEGIN(ReturnCode);
         MSS(path.size() == 1);
         auto &el = path.back();
-        MSS(el.length == 4);
-        MSS(el.ix < 4);
+        MSS(el.length == 2);
+        MSS(el.ix < 2);
         motorValues_[el.ix] = ul;
         MSS_END();
     }
     ReturnCode parser_add(long &l, const Path &path)
     {
-        return ReturnCode::OK;
+        MSS_BEGIN(ReturnCode);
+        MSS(path.size() == 1);
+        auto &el = path.back();
+        MSS(el.length == 2);
+        MSS(el.ix < 2);
+        motorValues_[el.ix] = l;
+        MSS_END();
     }
     ReturnCode parser_add(Nil_tag, const Path &path)
     {
         //Nil => keep alive
         MSS_BEGIN(ReturnCode);
         MSS(path.empty());
+        g_oostatus.indicateOnline();
         MSS_END();
     }
 };
@@ -89,6 +109,7 @@ struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
     {
         MSS_BEGIN(d9::ReturnCode);
         state = Receiving;
+        g_parser.clear();
         MSS_END();
     }
     d9::ReturnCode d9_error(d9::ReturnCode)
@@ -121,7 +142,7 @@ Decoder g_decoder;
 
 void setup()
 {
-    g_blinker.set(garf::BlinkMode::Fast);
+    g_blinker.set(garf::BlinkMode::Flat);
     garf::busyProcess<1000>(g_blinker);
     Serial.begin(9600);
     g_oostatus.setup();
@@ -144,6 +165,7 @@ void loop()
     if (g_parser.freshValues)
     {
         g_parser.freshValues = false;
-        g_oostatus.indicateOnline();
+        g_leftMotor.setSpeed(g_parser.motorValues_[0]);
+        g_rightMotor.setSpeed(g_parser.motorValues_[1]);
     }
 }

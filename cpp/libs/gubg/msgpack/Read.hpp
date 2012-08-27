@@ -22,6 +22,20 @@ namespace gubg
                         MSS(type.read(*(it_++)));
                         MSS_END();
                     }
+                    ReturnCode read(unsigned char &b)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS(it_ != end_, RangeIsEmpty);
+                        b = (unsigned char)*(it_++);
+                        MSS_END();
+                    }
+                    ReturnCode read(char &ch)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS(it_ != end_, RangeIsEmpty);
+                        ch = (char)*(it_++);
+                        MSS_END();
+                    }
 
                 private:
                     typedef typename String::const_iterator const_iterator;
@@ -43,6 +57,24 @@ namespace gubg
                         break;
                     case Primitive::NegFix:
                         v = type.nr-32;
+                        break;
+                    case Primitive::Int8:
+                        {
+                            char b;
+                            MSS(range.read(b));
+                            v = b;
+                        }
+                        break;
+                    case Primitive::Int16:
+                        {
+                            char b;
+                            MSS(range.read(b));
+                            v = b;
+                            v *= 256;
+                            unsigned char ub;
+                            MSS(range.read(ub));
+                            v |= ub;
+                        }
                         break;
                     default:
                         MSS_L(ReadError);
