@@ -1,7 +1,10 @@
+#include <iostream>
+#define L(m) std::cout<<m<<std::endl
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
 #include "gubg/testing/Testing.hpp"
 #include "gubg/msgpack/Parser.hpp"
+#include "gubg/msgpack/Write.hpp"
 #include <string>
 using namespace std;
 using namespace gubg;
@@ -58,7 +61,7 @@ int main()
     parser.process(0xcd);
     parser.process(0x12);
     parser.process(0x34);
-     //uint32 0x12345678
+    //uint32 0x12345678
     parser.process(0xce);
     parser.process(0x12);
     parser.process(0x34);
@@ -70,5 +73,14 @@ int main()
     parser.process(0x92);
     parser.process(0x00);
     parser.process(0x01);
+
+    for (int i = -1; i > -130; --i)
+    {
+        string str;
+        msgpack::write(str, i);
+        L(testing::toHex(str));
+        for (char ch: str)
+            parser.process(ch);
+    }
     return 0;
 }

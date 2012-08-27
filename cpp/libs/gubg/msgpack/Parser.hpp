@@ -99,6 +99,13 @@ namespace gubg
                                             }
                                             break;
                                         case Primitive::NegFix:
+                                            {
+                                                long l = el_.type.nr;
+                                                l -= 32;
+                                                MSS(receiver_().parser_add(l, path_));
+                                                MSS_Q(proceed_());
+                                            }
+                                            break;
                                         case Primitive::Int8:
                                         case Primitive::Int16:
                                         case Primitive::Int32:
@@ -193,38 +200,40 @@ namespace gubg
                                 case 1:
                                     switch (w)
                                     {
-                                        case Width::Four: nr = ((buffer[0] & 0x08) ? -1 : 0); break;
-                                        case Width::Five: nr = ((buffer[0] & 0x10) ? -1 : 0); break;
-                                        case Width::Seven: nr = ((buffer[0] & 0x40) ? -1 : 0); break;
-                                        case Width::Eight: nr = ((buffer[0] & 0x80) ? -1 : 0); break;
+                                        case Width::Four: nr = ((buffer[0] & 0x08) ? -16 : 0); break;
+                                        case Width::Seven: nr = ((buffer[0] & 0x40) ? -127 : 0); break;
+                                        case Width::Eight: nr = ((buffer[0] & 0x80) ? -256 : 0); break;
+                                        default: MSS_L(UnsupportedWidth); break;
                                     }
-                                    nr |= buffer[0];
+                                    nr |= (buffer[0] << 0);
                                     break;
                                 case 2:
                                     MSS(sizeof(Size) >= 2, TooLarge);
-                                    nr = ((buffer[0] & 0x80) ? -1 : 0);
-                                    nr |= buffer[0];
-                                    nr <<= 8; nr |= buffer[1];
+                                    nr = ((buffer[0] & 0x80) ? -65536 : 0);
+                                    nr |= (buffer[0] << 8);
+                                    nr |= (buffer[1] << 0);
                                     break;
                                 case 4:
                                     MSS(sizeof(Size) >= 4, TooLarge);
-                                    nr = ((buffer[0] & 0x80) ? -1 : 0);
-                                    nr |= buffer[0];
-                                    nr <<= 8; nr |= buffer[1];
-                                    nr <<= 8; nr |= buffer[2];
-                                    nr <<= 8; nr |= buffer[3];
+                                    nr = ((buffer[0] & 0x80) ? -4294967296 : 0);
+                                    nr |= (buffer[0] << 24);
+                                    nr |= (buffer[1] << 16);
+                                    nr |= (buffer[2] << 8);
+                                    nr |= (buffer[3] << 0);
                                     break;
                                 case 8:
+                                    //If this assert fails, you have to initialize nr properly to a negative number, as above
+                                    assert(sizeof(Size) == 8);
                                     MSS(sizeof(Size) >= 8, TooLarge);
-                                    nr = ((buffer[0] & 0x80) ? -1 : 0);
-                                    nr |= buffer[0];
-                                    nr <<= 8; nr |= buffer[1];
-                                    nr <<= 8; nr |= buffer[2];
-                                    nr <<= 8; nr |= buffer[3];
-                                    nr <<= 8; nr |= buffer[4];
-                                    nr <<= 8; nr |= buffer[5];
-                                    nr <<= 8; nr |= buffer[6];
-                                    nr <<= 8; nr |= buffer[7];
+                                    nr = 0;
+                                    nr |= (buffer[0] << 56);
+                                    nr |= (buffer[1] << 48);
+                                    nr |= (buffer[2] << 40);
+                                    nr |= (buffer[3] << 32);
+                                    nr |= (buffer[4] << 24);
+                                    nr |= (buffer[5] << 16);
+                                    nr |= (buffer[6] << 8);
+                                    nr |= (buffer[7] << 0);
                                     break;
                             }
                             MSS_END();
