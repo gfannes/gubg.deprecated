@@ -1,10 +1,10 @@
 #ifndef gubg_tcp_Socket_hpp
 #define gubg_tcp_Socket_hpp
 
+//This module wraps the POSIX socket API into a pimpl-based object oriented API
+//Extra checks are included to make sure the intended sequence of calls is followed (e.g., ::socket(), ::bind(), ::listen())
+
 #include "gubg/tcp/Codes.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 #include <fcntl.h>
 #include <sstream>
 #include <set>
@@ -19,7 +19,6 @@ namespace gubg
             class Socket_crtp
             {
                 private:
-                    static const int InvalidFID = -1;
                     enum State {NeedSocketDescriptor, NeedsBinding, NeedsListening, Accepting, NeedsConnect};
 
                 public:
