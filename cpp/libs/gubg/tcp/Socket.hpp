@@ -1,11 +1,13 @@
 #ifndef gubg_tcp_Socket_hpp
 #define gubg_tcp_Socket_hpp
 
+//This module wraps the POSIX socket API into a pimpl-based object oriented API
+//Extra checks are included to make sure the intended sequence of calls is followed (e.g., ::socket(), ::bind(), ::listen())
+
 #include "gubg/tcp/Codes.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
+#include <fcntl.h>
 #include <sstream>
+#include <set>
 
 namespace gubg
 {
@@ -17,7 +19,8 @@ namespace gubg
             class Socket_crtp
             {
                 private:
-                    static const int InvalidFID = -1;
+                    enum State {NeedSocketDescriptor, NeedsBinding, NeedsListening, Accepting, NeedsConnect};
+
                 public:
                     Socket_crtp():
                         fid_(InvalidFID),
@@ -39,10 +42,11 @@ namespace gubg
                                 MSS(fid_ == InvalidFID, UnexpectedValidSocketDescriptor);
                                 fid_ = ::socket(PF_INET, SOCK_STREAM, 0);
                                 MSS(fid_ != InvalidFID, CouldNotGetSocketDescriptor);
+                                ::fcntl(fid_, F_SETFL, O_NONBLOCK);
                                 switch (RoleT)
                                 {
-                                    case Role::Server: state_ = NeedsBinding; break;
-                                    case Role::Client: state_ = NeedsConnect; break;
+                                    case Role::Server: changeState_(NeedsBinding); break;
+                                    case Role::Client: changeState_(NeedsConnect); break;
                                     default: MSS_L(UnexpectedRole); break;
                                 }
                                 break;
@@ -61,19 +65,58 @@ namespace gubg
                                     ::getaddrinfo(0, oss.str().c_str(), &hints, &res);
                                     MSS(::bind(fid_, res->ai_addr, res->ai_addrlen) != -1, CouldNotBind);
                                 }
-                                state_ = NeedsListening;
+                                changeState_(NeedsListening);
                                 break;
                             case NeedsListening:
                                 {
                                     const int MaxNrWaitingConnections = 20;
                                     MSS(::listen(fid_, MaxNrWaitingConnections) != -1, CouldNotListen);
                                 }
-                                state_ = NeedsAccept;
+                                changeState_(Accepting);
                                 break;
-                            case NeedsAccept:
-                                state_ = IsConnected;
-                                break;
-                            case IsConnected:
+                            case Accepting:
+                                if (!clients_.empty())
+                                {
+                                    Clients closedConnections;
+                                    const size_t BufferSize = 256;
+                                    char buffer[BufferSize];
+                                    for (auto client: clients_)
+                                    {
+                                        size_t rlen = ::recv(client, buffer, BufferSize, 0);
+                                        if (rlen == -1)
+                                        {
+                                            MSS(errno == EWOULDBLOCK, ReceiveFailure);
+                                        }
+                                        else if (rlen == 0)
+                                        {
+                                            //Connection was closed
+                                            closedConnections.insert(client);
+                                        }
+                                        else
+                                        {
+                                            receiver_().socket_ReceivedData(std::string(buffer, rlen));
+                                        }
+                                    }
+                                    for (auto client: closedConnections)
+                                    {
+                                        receiver_().socket_closeClient(client);
+                                        ::close(client);
+                                        clients_.erase(client);
+                                    }
+                                }
+                                {
+                                    struct sockaddr_storage peer;
+                                    socklen_t peerSize = sizeof(peer);
+                                    int peerFid = ::accept(fid_, (struct sockaddr *)&peer, &peerSize);
+                                    if (peerFid == -1)
+                                    {
+                                        MSS(errno == EWOULDBLOCK, AcceptFailed);
+                                        MSS_END();
+                                    }
+                                    ::fcntl(peerFid, F_SETFL, O_NONBLOCK);
+                                    clients_.insert(peerFid);
+                                    receiver_().socket_newClient(peerFid);
+                                }
                                 break;
                         }
                         MSS_END();
@@ -81,13 +124,18 @@ namespace gubg
 
                 private:
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
-                    ReturnCode getSocketDescriptor_()
+                    void changeState_(State newState)
                     {
+                        if (newState == state_)
+                            return;
+                        LOG_S(changeState_, "Changing state from " << state_ << " to " << newState);
+                        state_ = newState;
                     }
 
                     int fid_;
-                    enum State {NeedSocketDescriptor, NeedsBinding, NeedsListening, NeedsAccept, NeedsConnect, IsListening, HasAccepted, IsConnected};
                     State state_;
+                    typedef std::set<int> Clients;
+                    Clients clients_;
             };
     }
 }
