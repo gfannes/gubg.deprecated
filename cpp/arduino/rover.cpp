@@ -3,9 +3,7 @@
 #include "garf/Blinker.hpp"
 #include "garf/OOStatus.hpp"
 #include "garf/BusyProcess.hpp"
-#include "gubg/d9/Decoder.hpp"
-#include "gubg/FixedVector.hpp"
-using namespace gubg;
+#include "garf/Motor.hpp"
 
 typedef unsigned char ubyte;
 
@@ -13,65 +11,128 @@ garf::Elapser g_elapser;
 
 //This blinker is used to show the online/offline status
 //We blink 10 times per second
-garf::Blinker<100> g_blinker;
+garf::Blinker<200> g_blinker;
+
+garf::Motor<5, 6> g_leftMotor;
+garf::Motor<10, 11> g_rightMotor;
 
 //We we don't receive indicateOnline() within 1 second, we will
 //switch to offline
 struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
-    void oostatus_online() { g_blinker.set(garf::BlinkMode::Normal); }
-    void oostatus_offline() { g_blinker.set(garf::BlinkMode::Flat); }
+    void oostatus_online()
+    {
+        g_blinker.set(garf::BlinkMode::Normal);
+    }
+    void oostatus_offline()
+    {
+        g_leftMotor.setSpeed(0);
+        g_rightMotor.setSpeed(0);
+        g_blinker.set(garf::BlinkMode::Fast);
+    }
 };
 OOStatus g_oostatus;
+
+#include "gubg/msgpack/Parser.hpp"
+#include "gubg/d9/Decoder.hpp"
+#include "gubg/FixedVector.hpp"
+using namespace gubg;
+
+typedef gubg::FixedVector<gubg::msgpack::Element, 2> Path;
+struct Parser: gubg::msgpack::Parser_crtp<Parser, Path>
+{
+    typedef gubg::msgpack::ReturnCode ReturnCode;
+    typedef gubg::msgpack::Element Element;
+    typedef gubg::msgpack::Nil_tag Nil_tag;
+
+    int motorValues_[2];
+    bool freshValues;
+
+    Parser():freshValues(false){}
+
+    ReturnCode parser_open(Element &element, const Path &path)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(path.empty());
+        MSS(element.length == 2);
+        MSS_END();
+    }
+    ReturnCode parser_close(Element &element, const Path &path)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(path.empty());
+        MSS(element.length == 2);
+        freshValues = true;
+        g_oostatus.indicateOnline();
+        MSS_END();
+    }
+    ReturnCode parser_add(unsigned long &ul, const Path &path)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(path.size() == 1);
+        auto &el = path.back();
+        MSS(el.length == 2);
+        MSS(el.ix < 2);
+        motorValues_[el.ix] = ul;
+        MSS_END();
+    }
+    ReturnCode parser_add(long &l, const Path &path)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(path.size() == 1);
+        auto &el = path.back();
+        MSS(el.length == 2);
+        MSS(el.ix < 2);
+        motorValues_[el.ix] = l;
+        MSS_END();
+    }
+    ReturnCode parser_add(Nil_tag, const Path &path)
+    {
+        //Nil => keep alive
+        MSS_BEGIN(ReturnCode);
+        MSS(path.empty());
+        g_oostatus.indicateOnline();
+        MSS_END();
+    }
+};
+Parser g_parser;
 
 typedef gubg::FixedVector<ubyte, 8> Flips;
 struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
 {
     enum State {Idle, Receiving, Received};
-
     State state;
-    unsigned char motorValues_[4];
-    unsigned char ix_;
 
-    Decoder():
-        state(Idle){}
+    Decoder():state(Idle){}
+
     d9::ReturnCode d9_start()
     {
         MSS_BEGIN(d9::ReturnCode);
-        state = Idle;
+        state = Receiving;
+        g_parser.clear();
         MSS_END();
     }
     d9::ReturnCode d9_error(d9::ReturnCode)
     {
         MSS_BEGIN(d9::ReturnCode);
+        state = Idle;
         MSS_END();
     }
     d9::ReturnCode d9_ubyte(ubyte b)
     {
         MSS_BEGIN(d9::ReturnCode);
-        switch (b)
+        MSS(state == Receiving);
+        switch (g_parser.process(b))
         {
-            case 0xc0:
-                //Nil => keep alive
-                MSS(state == Idle, IllegalContent);
-                //g_oostatus.indicateOnline();
-                MSS(d9::ReturnCode::ContentComplete);
+            case msgpack::ReturnCode::OK:
                 break;
-            case 0x94:
-                //Array of length 4 => Motor values
-                MSS(state == Idle, IllegalContent);
-                state = Receiving;
-                ix_ = 0;
+            case msgpack::ReturnCode::ParsingFinished:
+                state = Received;
+                MSS_LQ(ContentComplete);
                 break;
             default:
-                MSS(state == Receiving, IllegalContent);
-                MSS(ix_ < 4, IllegalContent);
-                motorValues_[ix_++];
-                if (ix_ >= 4)
-                {
-                    state = Received;
-                    MSS(d9::ReturnCode::ContentComplete);
-                }
+                state = Idle;
+                MSS_L(IllegalArgument);
                 break;
         }
         MSS_END();
@@ -81,7 +142,7 @@ Decoder g_decoder;
 
 void setup()
 {
-    g_blinker.set(garf::BlinkMode::Fast);
+    g_blinker.set(garf::BlinkMode::Flat);
     garf::busyProcess<1000>(g_blinker);
     Serial.begin(9600);
     g_oostatus.setup();
@@ -94,11 +155,17 @@ void loop()
     g_oostatus.process(g_elapser.elapse());
 
     if (Serial.available())
-        g_decoder.process(Serial.read());
-
-    if (g_decoder.state == Decoder::Received)
     {
-        g_decoder.state = Decoder::Idle;
-        g_oostatus.indicateOnline();
+        if (!mss::isOK(g_decoder.process(Serial.read())))
+        {
+            g_decoder.reset();
+        }
+    }
+
+    if (g_parser.freshValues)
+    {
+        g_parser.freshValues = false;
+        g_leftMotor.setSpeed(g_parser.motorValues_[0]);
+        g_rightMotor.setSpeed(g_parser.motorValues_[1]);
     }
 }

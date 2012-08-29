@@ -45,7 +45,11 @@ int main()
         {
             TEST_TAG(negatives);
             TEST_EQ(str_({0xff}), pack(-1));
+            TEST_EQ(str_({0xf0}), pack(-16));
+            TEST_EQ(str_({0xef}), pack(-17));
+            TEST_EQ(str_({0xed}), pack(-19));
             TEST_EQ(str_({0xe0}), pack(-32));
+            TEST_EQ(str_({0xd0, 0xdf}), pack(-33));
             TEST_EQ(str_({0xd0, 0x80}), pack(-128));
             TEST_EQ(str_({0xd1, 0xff, 0x7f}), pack(-129));
             TEST_EQ(str_({0xd1, 0x80, 0x00}), pack(-32768));

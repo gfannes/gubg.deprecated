@@ -27,7 +27,7 @@ namespace gubg
         };
         enum class Width: unsigned char
         {
-            Unknown,
+            Unknown = 255,
             Zero = 0, One = 1, Four = 4, Five = 5, Seven = 7, Eight = 8, Sixteen = 16, Thirtytwo = 32, Sixtyfour = 64,
         };
 
