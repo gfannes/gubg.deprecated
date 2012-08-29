@@ -14,15 +14,16 @@ namespace gubg
             {
                 public:
                     Server(int port):
-                        port_(port){}
+                        port_(port),
+                        doAccept_(false){}
 
                     ReturnCode start()
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS(socket_.bind(port));
+                        MSS(socket_.bind(port_));
                         MSS(socket_.listen());
                         {
-                            continue_ = true;
+                            doAccept_ = true;
                             std::thread thread(std::ref(*this));
                             thread_ = std::move(thread);
                         }
@@ -30,25 +31,33 @@ namespace gubg
                     }
                     ReturnCode stop()
                     {
-                        continue_ = false;
+                        MSS_BEGIN(ReturnCode, stop);
+                        MSS(doAccept_);
+                        doAccept_ = false;
+                        //Reset socket_, the dtor of Socket::Pimpl will call ::shutdown(), which will unblock the blocking accept
+                        socket_ = Socket();
+                        thread_.join();
+                        MSS_END();
                     }
 
                     void operator()()
                     {
-                        MSS_BEGIN(void);
+                        MSS_BEGIN(void, accept_thread);
                         while (true)
                         {
-                            MSS(continue_);
+                            MSS(doAccept_);
                             Socket peer;
                             MSS(socket_.accept(peer));
+                            LOG_M("Accepted a new connection");
                             new Endpoint<Handler>(peer);
                         }
                         MSS_END();
                     }
 
                 private:
+                    int port_;
+                    volatile bool doAccept_;
                     Socket socket_;
-                    bool continue_;
                     std::thread thread_;
             };
     }

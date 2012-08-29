@@ -33,6 +33,8 @@ namespace gubg
             ~Pimpl()
             {
                 assert(fid != InvalidFID);
+                //We shutdown() the socket first, making sure blocking operations are unblocked
+                ::shutdown(fid, SHUT_RDWR);
                 ::close(fid);
             }
             ReturnCode bind(int port)
@@ -114,13 +116,14 @@ namespace gubg
             {
                 MSS_BEGIN(ReturnCode);
                 MSS(state == Connected, InvalidState);
+                MSS(!buffer.full());
                 auto nrReceived = ::recv(fid, buffer.freeData(), buffer.freeSize(), 0);
                 MSS(nrReceived != -1, CouldNotReceive);
                 if (nrReceived == 0)
                 {
                     //Peer closed connection
                     changeState(Closed);
-                    MSS_L(ConnectWasClosed);
+                    MSS_L(ConnectionWasClosed);
                 }
                 else
                     MSS(buffer.scrollEnd(nrReceived));
