@@ -394,8 +394,8 @@ class Configs
             dirICUI = File.expand_path("cpp/icui", ENV["ICUI"])
             @roots << dirICUI if File.exist?(dirICUI)
             @compiler, @linker = "g++", "g++"
-            @compileSettings = "-std=c++0x -O3"
-            @linkSettings = "-std=c++0x"
+            @compileSettings = "-std=c++0x -O3 -pthread"
+            @linkSettings = "-std=c++0x -pthread"
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             case context.targetPlatform
