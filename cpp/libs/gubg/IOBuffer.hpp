@@ -23,6 +23,20 @@ namespace gubg
                     delete[] buffer_.begin;
                 }
 
+                void assign(const std::string &str)
+                {
+                    const size_t s = str.size();
+                    if (buffer_.size() != s)
+                    {
+                        delete[] buffer_.begin;
+                        buffer_.begin = new T[s];
+                        buffer_.end = buffer_.begin+s;
+                        data_.begin = buffer_.begin;
+                        data_.end = buffer_.end;
+                    }
+                    str.copy(data_.begin, s);
+                }
+
                 void clear()
                 {
                     data_.begin = data_.end = buffer_.begin;
