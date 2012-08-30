@@ -407,7 +407,9 @@ class Configs
                 @includePaths << "#{home}/sdks/SFML/include"
                 @includePaths << "#{home}/sdks/wt/src"
                 @includePaths << "#{home}/sdks/eigen"
-                @libraryPaths << "#{home}/sdks/boost/lib"
+                @includePaths << "#{home}/sdks/boost"
+                #@libraryPaths << "#{home}/sdks/boost/lib"
+                @libraryPaths << "#{home}/sdks/boost/stage/lib"
                 @libraryPaths << "#{home}/sdks/SFML/lib"
                 @libraryPaths << "#{home}/sdks/wt/build/src"
                 @libraryPaths << "#{home}/sdks/wt/build/src/http"
@@ -416,6 +418,15 @@ class Configs
                 wtLibs = %w[wt wthttp]
                 openglLibs = %w[GLU]
                 @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs + wtLibs
+                #Boost instructions
+                #tar xjvf boost_1_51_0.tar.bz2 -C ~/sdks
+                #cd ~/sdks
+                #ln -s boost_1_51_0 boost
+                #cd boost
+                #./bootstrap.sh
+                #./b2
+                # => libs are now in stage/lib
+                # => headers in boost
             when "pc-windows"
 		    boost = {major: "1_50", minor: "0"}
                 @roots << File.expand_path("g:/src/cpp")
