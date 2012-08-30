@@ -24,6 +24,7 @@ namespace gubg
                 ReturnCode connect(const std::string &ip, int port);
 
                 ReturnCode send(IOBuffer &);
+                //Returns ConnectionWasClosed if the connection was closed by the peer (receiving 0-sized data)
                 ReturnCode receive(IOBuffer &);
 
             private:
