@@ -1,7 +1,7 @@
 #ifndef gubg_Singleton_hpp
 #define gubg_Singleton_hpp
 
-#include "boost/thread/mutex.hpp"
+#include <mutex>
 
 //Insert this into the class definition to
 // * make its constructors private
@@ -25,7 +25,7 @@ namespace gubg
         public:
             static T &instance()
             {
-                boost::mutex::scoped_lock lock(instanceMutex__);
+                std::lock_guard<std::mutex> lock(instanceMutex__);
                 if (!instance__)
                     instance__ = new T;
                 return *instance__;
@@ -33,12 +33,12 @@ namespace gubg
 
         private:
             static T *instance__;
-            static boost::mutex instanceMutex__;
+            static std::mutex instanceMutex__;
     };
     template <typename T>
     T *Singleton<T>::instance__ = 0;
     template <typename T>
-    boost::mutex Singleton<T>::instanceMutex__;
+    std::mutex Singleton<T>::instanceMutex__;
 }
 
 #endif
