@@ -2,7 +2,6 @@
 #define gubg_internet_Server_hpp
 
 #include "gubg/internet/Socket.hpp"
-#include "gubg/internet/Endpoint.hpp"
 #include <thread>
 
 namespace gubg
@@ -49,7 +48,7 @@ namespace gubg
                             Socket peer;
                             MSS(socket_.accept(peer));
                             LOG_M("Accepted a new connection");
-                            new Endpoint<Handler>(peer);
+                            new Handler(peer);
                         }
                         MSS_END();
                     }
