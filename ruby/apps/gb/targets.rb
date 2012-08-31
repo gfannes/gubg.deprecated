@@ -398,27 +398,11 @@ class Configs
             @linkSettings = "-std=c++0x -pthread"
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
+            thirdParty = {}
+            usedTPs = [:boost]
             case context.targetPlatform
             when "pc-linux"
-                @includePaths << "/usr/include/cairomm-1.0"
-                @includePaths << "/usr/include/cairo"
-                @includePaths << "/usr/include/freetype2"
-                @includePaths << "#{home}/sdks/libsigc++"
-                @includePaths << "#{home}/sdks/SFML/include"
-                @includePaths << "#{home}/sdks/wt/src"
-                @includePaths << "#{home}/sdks/eigen"
-                @includePaths << "#{home}/sdks/boost"
-                #@libraryPaths << "#{home}/sdks/boost/lib"
-                @libraryPaths << "#{home}/sdks/boost/stage/lib"
-                @libraryPaths << "#{home}/sdks/SFML/lib"
-                @libraryPaths << "#{home}/sdks/wt/build/src"
-                @libraryPaths << "#{home}/sdks/wt/build/src/http"
-                sdlLibs = %w[SDL]
-                cairoLibs = %w[cairomm-1.0]
-                wtLibs = %w[wt wthttp]
-                openglLibs = %w[GLU]
-                @libraries += boostLibs + sdlLibs + cairoLibs + sfmlLibs + openglLibs + wtLibs
-                #Boost instructions
+                #Boost build instructions
                 #tar xjvf boost_1_51_0.tar.bz2 -C ~/sdks
                 #cd ~/sdks
                 #ln -s boost_1_51_0 boost
@@ -427,18 +411,24 @@ class Configs
                 #./b2
                 # => libs are now in stage/lib
                 # => headers in boost
+                thirdParty[:boost] = {includes: "#{home}/sdks/boost", libPaths: "#{home}/sdks/boost/stage/lib", libs: boostLibs}
+                thirdParty[:cairo] = {includes: ["/usr/include/cairomm-1.0", "/usr/include/cairo"], libs: "cairomm-1.0"}
+                thirdParty[:sdl] = {libs: "SDL"}
+                thirdParty[:freetype] = {includes: "/usr/include/freetype2"}
+                thirdParty[:sigc] = {includes: "#{home}/sdks/libsigc++"}
+                thirdParty[:sfml] = {includes: "#{home}/sdks/SFML/include", libPaths: "#{home}/sdks/SFML/lib", libs: sfmlLibs}
+                thirdParty[:wt] = {includes: "#{home}/sdks/wt/src", libPaths: ["#{home}/sdks/wt/build/src", "#{home}/sdks/wt/build/src/http"], libs: %w[wt wthttp]}
+                thirdParty[:eigen] = {includes: "#{home}/sdks/eigen"}
+                thirdParty[:opengl] = {libs: "GLU"}
             when "pc-windows"
-		    boost = {major: "1_50", minor: "0"}
                 @roots << File.expand_path("g:/src/cpp")
-                @includePaths << "h:/sdks/boost_#{boost[:major]}_#{boost[:minor]}"
-                @includePaths << "h:/sdks/SFML/include"
-                @libraryPaths << "h:/sdks/boost_#{boost[:major]}_#{boost[:minor]}/stage/lib"
-                @libraryPaths << "h:/sdks/SFML/lib"
                 #Boost was built like:
-		#cd boost_1_50_1
-		#bootstrap
-		#.\b2 toolset=gcc --build-type=complete stage
-                @libraries += boostLibs.map!{|l|"#{l}-mgw46-mt-#{boost[:major]}"}
+                #cd boost_1_50_1
+                #bootstrap
+                #.\b2 toolset=gcc --build-type=complete stage
+                boostVersion = {major: "1_50", minor: "0"}
+                thirdParty[:boost] = {includes: "h:/sdks/boost_#{boostVersion[:major]}_#{boostVersion[:minor]}", libPaths: "h:/sdks/boost_#{boostVersion[:major]}_#{boostVersion[:minor]}/stage/lib", libs: boostLibs.map!{|l|"#{l}-mgw46-mt-#{boostVersion[:major]}"}}
+                thirdParty[:sfml] = {includes: "h:/sdks/SFML/include", libPaths: "h:/sdks/SFML/lib"}
             else
                 raise("Unknown pc platform")
             end
@@ -460,6 +450,16 @@ class Configs
         else
             raise("Unknown targetPlatform #{context.targetPlatform}")
         end
+        thirdParty.each do |name, settings|
+            if usedTPs.include?(name)
+                @includePaths << settings[:includes] if settings.has_key?(:includes)
+                @libraryPaths << settings[:libPaths] if settings.has_key?(:libPaths)
+                @libraries << settings[:libs] if settings.has_key?(:libs)
+            end
+        end
+        @includePaths = @includePaths.flatten.uniq
+        @libraryPaths = @libraryPaths.flatten.uniq
+        @libraries = @libraries.flatten.uniq
     end
 end
 class CompileSettings
