@@ -11,7 +11,7 @@ namespace gubg
     namespace mss
     {
         //We use this for return code storage for bools and ints
-        enum class ReturnCode: char {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
+        enum class ReturnCode: int {OK = 0, StartOfCodes = -128, MSS_DEFAULT_CODES_WITHOUT_OK};
 
         template <typename RC, RC has_ok = RC::OK>
             bool isOK(RC rc){return RC::OK == rc;}
