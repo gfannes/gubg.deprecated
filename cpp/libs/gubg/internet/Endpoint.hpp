@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <memory>
 
 namespace gubg
 {
@@ -14,6 +15,8 @@ namespace gubg
             class Endpoint_crtp
             {
                 public:
+                    typedef std::shared_ptr<Receiver> Ptr;
+
                     Endpoint_crtp(Socket socket):
                         socket_(socket),
                         doReceive_(true),

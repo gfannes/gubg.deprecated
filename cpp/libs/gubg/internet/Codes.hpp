@@ -12,7 +12,7 @@ namespace gubg
             MSS_DEFAULT_CODES,
             SocketAlreadyPresent, CouldNotGetSocketDescriptor, PortTooLow, PortTooHigh, CouldNotBind,
             InvalidState, CouldNotListen, CouldNotAccept, CouldNotGetAddrInfo, CouldNotConnect,
-            CouldNotSend, CouldNotReceive, ConnectionWasClosed,
+            CouldNotSend, CouldNotReceive, ConnectionWasClosed, ClientAlreadyRunning, NoClientRunning,
         };
     }
 }

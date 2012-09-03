@@ -16,22 +16,21 @@ class EchoEndpoint: public gubg::internet::Endpoint_crtp<EchoEndpoint>
 
         bool endpoint_receive(const string &msg)
         {
-            L("Received msg: " << msg);
-            //We echo back 4 times whatever we receive
-            for (auto i = 0; i < 4; ++i)
-                send(msg);
+            LOG_S(endpoint_receive, "Received msg: " << msg);
+            send(msg);
             return true;
         }
 };
 
-typedef gubg::internet::Server<EchoEndpoint> Server;
+typedef gubg::internet::Server<EchoEndpoint> EchoServer;
 
 int main()
 {
     TEST_TAG(main);
-    Server server(1234);
+    EchoServer server(1234);
     TEST_OK(server.start());
-    this_thread::sleep_for(chrono::seconds(100));
+    while (true)
+        this_thread::sleep_for(chrono::seconds(1));
     TEST_OK(server.stop());
     return 0;
 }
