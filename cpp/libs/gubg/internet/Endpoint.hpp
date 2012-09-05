@@ -27,13 +27,14 @@ namespace gubg
                     ~Endpoint_crtp()
                     {
                         doReceive_ = false;
-                        socket_ = Socket();
+                        socket_.shutdown();
                         thread_.join();
+                        socket_ = Socket();
                     }
 
                     ReturnCode send(const std::string &msg)
                     {
-                        MSS_BEGIN(ReturnCode);
+                        MSS_BEGIN(ReturnCode, send);
                         MSS(!msg.empty());
                         mutex_.lock();
                         out_.append(msg);
@@ -54,7 +55,7 @@ namespace gubg
                     //If another send is issued while this thread is running, sendBuffer_ will send also what was scheduled
                     static ReturnCode sendBuffer_(Socket socket, volatile bool &senderIsRunning, std::string &out, std::mutex &mut)
                     {
-                        MSS_BEGIN(ReturnCode);
+                        MSS_BEGIN(ReturnCode, sendBuffer_);
                         assert(senderIsRunning);
                         assert(!out.empty());
                         while (senderIsRunning)
@@ -96,7 +97,14 @@ namespace gubg
                         {
                             MSS(doReceive_);
                             Socket::IOBuffer buffer(1024);
-                            MSS(socket_.receive(buffer));
+                            switch (auto rc = socket_.receive(buffer))
+                            {
+                                case ReturnCode::ConnectionWasClosed:
+                                    MSS(receiver_().endpoint_closed());
+                                    MSS_Q(rc);
+                                    break;
+                                default: MSS(rc); break;
+                            }
                             MSS(receiver_().endpoint_receive(buffer.str()));
                         }
                         MSS_END();
