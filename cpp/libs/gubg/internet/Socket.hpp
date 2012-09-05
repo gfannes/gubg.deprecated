@@ -27,6 +27,8 @@ namespace gubg
                 //Returns ConnectionWasClosed if the connection was closed by the peer (receiving 0-sized data)
                 ReturnCode receive(IOBuffer &);
 
+                ReturnCode shutdown();
+
             private:
                 Socket(int fid);
 

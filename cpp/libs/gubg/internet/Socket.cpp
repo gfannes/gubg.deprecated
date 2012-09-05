@@ -34,7 +34,7 @@ namespace gubg
             {
                 assert(fid != InvalidFID);
                 //We shutdown() the socket first, making sure blocking operations are unblocked
-                ::shutdown(fid, SHUT_RDWR);
+                shutdown();
                 ::close(fid);
             }
             ReturnCode bind(int port)
@@ -123,10 +123,16 @@ namespace gubg
                 {
                     //Peer closed connection
                     changeState(Closed);
-                    MSS_L(ConnectionWasClosed);
+                    MSS_Q(ReturnCode::ConnectionWasClosed);
                 }
                 else
                     MSS(buffer.scrollEnd(nrReceived));
+                MSS_END();
+            }
+            ReturnCode shutdown()
+            {
+                MSS_BEGIN(ReturnCode);
+                ::shutdown(fid, SHUT_RDWR);
                 MSS_END();
             }
             void changeState(State newState)
@@ -184,6 +190,14 @@ namespace gubg
             MSS_BEGIN(ReturnCode);
             MSS(pimpl_);
             MSS(pimpl_->receive(buffer));
+            MSS_END();
+        }
+
+        ReturnCode Socket::shutdown()
+        {
+            MSS_BEGIN(ReturnCode);
+            MSS(pimpl_);
+            MSS(pimpl_->shutdown());
             MSS_END();
         }
 
