@@ -394,8 +394,8 @@ class Configs
             dirICUI = File.expand_path("cpp/icui", ENV["ICUI"])
             @roots << dirICUI if File.exist?(dirICUI)
             @compiler, @linker = "g++", "g++"
-            @compileSettings = "-std=c++0x -O3 -pthread"
-            @linkSettings = "-std=c++0x -pthread"
+            @compileSettings = "-std=c++0x -O3 -pthread -g"
+            @linkSettings = "-std=c++0x -g -pthread"
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             thirdParty = {}
@@ -432,14 +432,24 @@ class Configs
             else
                 raise("Unknown pc platform")
             end
+            thirdParty.each do |name, settings|
+                if usedTPs.include?(name)
+                    @includePaths << settings[:includes] if settings.has_key?(:includes)
+                    @libraryPaths << settings[:libPaths] if settings.has_key?(:libPaths)
+                    @libraries << settings[:libs] if settings.has_key?(:libs)
+                end
+            end
+            @includePaths = @includePaths.flatten.uniq
+            @libraryPaths = @libraryPaths.flatten.uniq
+            @libraries = @libraries.flatten.uniq
         when "arduino"
             @roots << "#{home}/sdks/Arduino/hardware/arduino/cores"
             @roots << "#{home}/sdks/Arduino/hardware/arduino/variants/standard"
             @roots << "#{home}/sdks/Arduino/libraries/Servo"
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
             @compiler, @linker = "avr-g++", "avr-g++"
-            @compileSettings = "-std=c++0x -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
-            @linkSettings = "-g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
+            @compileSettings = "-std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
+            @linkSettings = "-Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
             %w[main.cpp wiring.c wiring_digital.c wiring_analog.c WMath.cpp].each do |base|
                 @extrafiles << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
@@ -450,16 +460,6 @@ class Configs
         else
             raise("Unknown targetPlatform #{context.targetPlatform}")
         end
-        thirdParty.each do |name, settings|
-            if usedTPs.include?(name)
-                @includePaths << settings[:includes] if settings.has_key?(:includes)
-                @libraryPaths << settings[:libPaths] if settings.has_key?(:libPaths)
-                @libraries << settings[:libs] if settings.has_key?(:libs)
-            end
-        end
-        @includePaths = @includePaths.flatten.uniq
-        @libraryPaths = @libraryPaths.flatten.uniq
-        @libraries = @libraries.flatten.uniq
     end
 end
 class CompileSettings
