@@ -20,18 +20,32 @@ namespace
                 LOG_S(endpoint_receive, "Received " << msg.size() << " bytes");
                 return true;
             }
+            bool endpoint_closed()
+            {
+                LOG_S(endpoint_closed, "Connection was closed");
+                return true;
+            }
     };
+    typedef gubg::internet::ReturnCode ReturnCode;
+}
+
+ReturnCode main_()
+{
+    MSS_BEGIN(ReturnCode);
+    gubg::internet::Client client("pi", 1234);
+    SpeedTest::Ptr speedTest;
+    MSS(client.createConnection(speedTest));
+    string onek(1024, 'a');
+    for (size_t i = 0; i < 10; ++i)
+        MSS(speedTest->send(onek));
+    this_thread::sleep_for(chrono::seconds(1));
+    MSS_END();
 }
 
 int main()
 {
     TEST_TAG(main);
-    gubg::internet::Client client("pi", 1234);
-    SpeedTest::Ptr speedTest;
-    TEST_OK(client.createConnection(speedTest));
-    string onek(1024, 'a');
-    for (size_t i = 0; i < 10; ++i)
-        TEST_OK(speedTest->send(onek));
-    this_thread::sleep_for(chrono::seconds(10));
+    if (!gubg::mss::isOK(main_()))
+        return -1;
     return 0;
 }
