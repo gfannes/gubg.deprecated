@@ -399,7 +399,7 @@ class Configs
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             thirdParty = {}
-            usedTPs = [:boost]
+            usedTPs = [:boost, :sdl]
             case context.targetPlatform
             when "pc-linux"
                 #Boost build instructions
