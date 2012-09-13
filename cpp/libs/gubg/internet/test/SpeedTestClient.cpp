@@ -32,13 +32,17 @@ namespace
 ReturnCode main_()
 {
     MSS_BEGIN(ReturnCode);
-    gubg::internet::Client client("pi", 1234);
+    string peer = "piw";
+    gubg::internet::Client client(peer, 1234);
     SpeedTest::Ptr speedTest;
     MSS(client.createConnection(speedTest));
-    string onek(1024, 'a');
-    for (size_t i = 0; i < 10; ++i)
-        MSS(speedTest->send(onek));
-    this_thread::sleep_for(chrono::seconds(1));
+    const string onek(1024, 'a');
+    while (true)
+    {
+        for (size_t i = 0; i < 10; ++i)
+            MSS(speedTest->send(onek));
+        this_thread::sleep_for(chrono::seconds(1));
+    }
     MSS_END();
 }
 
