@@ -195,6 +195,16 @@ namespace gubg
             }
 #define TEST_KO(value) gubg::testing::test_ko((value), HERE(), l_gubg_testing_test_tag_)
 
+        template<typename T>
+            void test_code(const T &e, const T &a, SourceLocation location, TestTag &testTag)
+            {
+                bool success = (e == a);
+                testTag.addResult(success ? TestResult::OK : TestResult::Failure);
+                if (!success)
+                    std::cout << location << ": I expected code " << (int)e << " but I received " << (int)a << std::endl;
+            }
+#define TEST_CODE(expected, actual) gubg::testing::test_code((expected), (actual), HERE(), l_gubg_testing_test_tag_)
+
 #define TEST_THROW(ExceptionType, expr) \
         try \
         { \
