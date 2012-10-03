@@ -394,12 +394,13 @@ class Configs
             dirICUI = File.expand_path("cpp/icui", ENV["ICUI"])
             @roots << dirICUI if File.exist?(dirICUI)
             @compiler, @linker = "g++", "g++"
-            @compileSettings = "-std=c++0x -O3 -pthread -g"
+            #@compileSettings = "-std=c++0x -O3 -pthread -g"
+            @compileSettings = "-std=c++0x -O3 -pthread"
             @linkSettings = "-std=c++0x -g -pthread"
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             thirdParty = {}
-            usedTPs = [:boost]
+            usedTPs = [:boost, :sdl]
             case context.targetPlatform
             when "pc-linux"
                 #Boost build instructions

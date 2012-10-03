@@ -1,3 +1,28 @@
 == Books
 
- * Robot builder's Bonanza
+The following books are interesting
+
+=== C++
+* Professional C++
+* Modern C++ Design: Generic Programming and Design Patterns Applied
+* The C++ Standard Library: A Tutorial and Reference (2nd Edition)
+* Effective C++: 55 Specific Ways to Improve Your Programs and Designs (3rd Edition)
+* API Design for C++
+
+=== D
+* The D Programming Language
+
+=== AI
+* On intelligence
+
+=== Robotics
+* Computational Principles of Mobile Robotics
+
+=== Arduino
+* The Arduino Cookbook
+
+=== Not yet arrived
+* C++ concurrency in action
+* The algorithm design manual, Steven Skiena
+* Introduction to Algorithms
+* Robot builder's Bonanza

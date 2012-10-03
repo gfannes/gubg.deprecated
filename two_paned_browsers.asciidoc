@@ -1,0 +1,47 @@
+== Two-paned file browsers
+
+A good file browser is one of the most important weapons a developer needs. My highly personal requirements are:
+* Keyboard-based browsing with a minimal amount of keypresses
+* Fast, even with lots of files and directories
+* Opening files in different ways:
+** Vim
+** Default registered program
+** Internal viewer is a bonus
+* Easy to access
+
+Here are some browsers that can make all the difference:
+
+=== emlFM2
+* tons of features, everything I need
+* Fast
+* http://emelfm2.net/wiki/UserGuide[User guide]
+
+=== Proto
+* Very nice concept, always available, tabbed and powerful
+* Very accessible, <Alt>-~ is very close to <Alt>-<Tab>
+* Filters files and directories that match whatever is typed, even if they match in the middle of a file
+* WARNING: Only available on Windows
+
+=== Xfe
+* Seems nice and fast
+
+=== Krusader
+* Has all the features
+* A bit slow
+* KDE, and I happen to use Gnome. It works under Gnome, but e.g., the default app for a file is not the one from Gnome
+
+=== Tux commander
+* The default ubuntu crashes
+* Needs fpc, the free pascal compiler
+* Needs fp-units-gtk2, fp-units
+
+=== Sunflower
+* Crashes
+
+=== muCommander
+* To slow to use in practice, probably because its written in java
+* Stalls from time to time, maybe due to garbage collection
+
+=== Gnome commander
+* Fails on my first requirement, merely typing does _not_ select a matching file or directory, but creates a CLI command. Or at least, I don't know how to configure it
+* Look good and seems to provide a lot of features
