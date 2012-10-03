@@ -1,5 +1,10 @@
 == Links
 
+=== Robotics
+* http://www.robotcub.org/
+* http://www.wired.com/design/2012/09/afron-winners/
+* http://iprototype.be/
+
 === SVG
 * http://alignedleft.com/tutorials/d3/an-svg-primer/
 * http://www.w3.org/Graphics/SVG/IG/resources/svgprimer.html
