@@ -43,7 +43,7 @@ autocmd BufEnter,BufNewFile,BufRead *.h source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.hpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim
-autocmd BufEnter,BufNewFile,BufRead *.asciidoc source $GUBG/vim/asciidoc.vim
+autocmd BufEnter,BufNewFile,BufRead *.asciidoc source $GUBG/vim/asciidoc2.vim
 autocmd BufEnter,BufNewFile,BufRead *.puml source $GUBG/vim/plantuml.vim
 "au! BufRead,BufNewFile *.json set filetype=json foldmethod=syntax 
 
