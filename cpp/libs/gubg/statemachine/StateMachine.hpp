@@ -9,8 +9,6 @@ namespace gubg
     namespace statemachine
     {
         using namespace std;
-#define L(m) cout<<m<<endl
-#define L(m)
 
         //Different machine types, use a typedef to indicate what machine you are implementing
         enum Leaf{};
@@ -25,7 +23,6 @@ namespace gubg
                     bool process(Event event)
                     {
                         //We forward the event to the state, and pass ourselves as StateMgr because we hold the state and know how to change it
-                        L("Forward event from SmartStateT");
                         return state->process(event, *this);
                     }
                 void changeState(State *newState)
@@ -50,7 +47,6 @@ namespace gubg
             template <typename Event>
                 bool process(Event event)
                 {
-                    L("Processing event without StateMgr");
                     return process(event, *static_cast<StatePolicy*>(this), (typename StatePolicy::MachineType*)(0));
                 }
             //We import those process methods provided by the StatePolicy, which should stop the template selection machinery
@@ -60,21 +56,18 @@ namespace gubg
             template <typename Event, typename StateMgr>
                 bool process(Event event, StateMgr &sm, Hyper *p)
                 {
-                    L("Processing event for hyper machine");
                     return sm.process(event);
                 }
             //A Leaf machine handles the event directly
             template <typename Event, typename StateMgr>
                 bool process(Event event, StateMgr &sm, Leaf *p)
                 {
-                    L("Processing event for leaf machine");
                     return process(event, sm);
                 }
             //This is a catch-all from the StateMgr, we will discard the StateMgr and try again to see if we find a match
             template <typename Event, typename StateMgr>
                 bool process(Event event, StateMgr &sm)
                 {
-                    L("Processing event for catchall");
                     return process(event);
                 }
         };
