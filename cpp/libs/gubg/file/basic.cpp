@@ -84,6 +84,19 @@ gubg::file::basic::ReturnCode gubg::file::basic::expandPath(string &pathE, const
     MSS_END();
 }
 
+namespace 
+{
+    struct Dir
+    {
+        DIR *h;
+        Dir(DIR *d):h(d){}
+        ~Dir()
+        {
+            if (h)
+                ::closedir(h);
+        }
+    };
+}
 gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories &dirs, Files &files, const string &path)
 {
     MSS_BEGIN(ReturnCode);
@@ -92,8 +105,8 @@ gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories
     string pathE;
     MSS(expandPath(pathE, path));
     //Open the directory
-    DIR *dirp = ::opendir(pathE.c_str());
-    MSS(dirp, CouldNotOpenDir);
+    Dir dir(::opendir(file.name().c_str()));
+    MSS(dir.h, CouldNotOpenDir);
     //Create enough space for the dirent struct
     string entrypBuffer(offsetof(struct dirent, d_name)+NAME_MAX+1, '0');
     struct dirent *entryp = (struct dirent *)entrypBuffer.data();
@@ -101,7 +114,7 @@ gubg::file::basic::ReturnCode gubg::file::basic::getDirectoryContent(Directories
     struct dirent *tmp;
     for (;;)
     {
-        MSS(0 == ::readdir_r(dirp, entryp, &tmp), CouldNotReadEntry);
+        MSS(0 == ::readdir_r(dir.h, entryp, &tmp), CouldNotReadEntry);
         if (!tmp)
             //If this is set to 0, we are done with iterating
             break;

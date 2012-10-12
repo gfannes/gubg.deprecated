@@ -10,13 +10,20 @@ namespace gubg
         class File
         {
             public:
-                enum Type {Unknown, Directory, Regular, Symbolic};
+                enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
 
                 File()                                   :type_(Unknown){};
                 File(const std::string & name)           :type_(Unknown), name_(name){}
                 File(      std::string &&name)           :type_(Unknown), name_(std::move(name)){}
                 File(const std::string & name, Type type):type_(type),    name_(name){}
                 File(      std::string &&name, Type type):type_(type),    name_(std::move(name)){}
+                File(const File &dir, const std::string & name, Type type):type_(type)
+                {
+                    if (dir.name().back() == '/')
+                        name_ = dir.name() + name;
+                    else
+                        name_ = dir.name() + '/' + name;
+                }
 
                 //Getters
                 std::string name() const {return name_;}

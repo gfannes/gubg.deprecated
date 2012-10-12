@@ -1,7 +1,7 @@
 #ifndef gubg_file_basic_hpp
 #define gubg_file_basic_hpp
 
-#include "gubg/mss.hpp"
+#include "gubg/file/Codes.hpp"
 #include <string>
 
 namespace gubg
