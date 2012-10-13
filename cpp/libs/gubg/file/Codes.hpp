@@ -15,6 +15,10 @@ namespace gubg
             CouldNotOpenFile,
             CouldNotOpenDir,
             CouldNotReadEntry,
+            Skip,
+            Stop,
+            FileDoesNotExist,
+            UnknownFileType,
         };
     }
 }

@@ -4,6 +4,7 @@
 #include <fstream>
 #ifdef GUBG_LINUX
 #include <dirent.h>
+#include <sys/stat.h>
 #endif
 using namespace gubg::file;
 using namespace std;
@@ -79,11 +80,27 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
                 case DT_FIFO: type = File::FIFO; break;
             }
             if (File::Unknown != type)
-                files.push_back(File(file, entryp->d_name, type));
+                files.push_back(File(file).setType(type) << entryp->d_name);
         }
     }
 #else
     MSS_L(NotImplemented);
 #endif
+    MSS_END();
+}
+
+ReturnCode gubg::file::determineType(File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    struct stat statbuf;
+    MSS(0 == ::lstat(file.name().c_str(), &statbuf), FileDoesNotExist);
+    switch (statbuf.st_mode & S_IFMT)
+    {
+        case S_IFREG: file.setType(File::Regular); break;
+        case S_IFDIR: file.setType(File::Directory); break;
+        case S_IFIFO: file.setType(File::FIFO); break;
+        case S_IFLNK: file.setType(File::Symbolic); break;
+        default: MSS_L(UnknownFileType); break;
+    }
     MSS_END();
 }

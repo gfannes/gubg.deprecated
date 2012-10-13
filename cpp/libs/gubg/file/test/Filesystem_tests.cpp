@@ -58,9 +58,13 @@ int main()
                 {
                     size_t count;
                     Counter():count(0){}
-                    void recursor_discoveredFile(const File &file)
+                    ReturnCode recursor_discoveredFile(const File &file)
                     {
+                        MSS_BEGIN(ReturnCode);
                         ++count;
+                        //MSS(count < 10, Stop);
+                        //MSS(count < 10, Skip);
+                        MSS_END();
                     }
                 };
                 Counter counter;

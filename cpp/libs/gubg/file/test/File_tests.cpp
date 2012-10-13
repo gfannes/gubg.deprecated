@@ -46,5 +46,17 @@ int main()
         TEST_EQ("ABC", file.name());
         file.setType(File::Directory);
     }
+    {
+        TEST_TAG(Append);
+        File file;
+        file << "a";
+        TEST_EQ("a", file.name());
+        file << "b";
+        TEST_EQ("a/b", file.name());
+        file << "/c";
+        TEST_EQ("a/b/c", file.name());
+        file << "";
+        TEST_EQ("a/b/c", file.name());
+    }
     return 0;
 }
