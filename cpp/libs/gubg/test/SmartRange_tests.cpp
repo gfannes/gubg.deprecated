@@ -62,6 +62,7 @@ int main()
     TEST_EQ(SR::npos, sr.find("b", 2));
     TEST_EQ(SR::npos, sr.find("B"));
 
+#if 0
     {
         TEST_TAG(breakdown);
         list<SR> tokens;
@@ -77,6 +78,7 @@ int main()
         for (auto token: tokens)
             L(string(token.data(), token.size()));
     }
+#endif
 
     return 0;
 }

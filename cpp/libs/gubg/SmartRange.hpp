@@ -68,6 +68,7 @@ namespace gubg
                     return find_(needle, pos);
                 }
 
+#if 0
                 template <typename Tokens, typename Splitter>
                 void breakdown(Tokens &tokens, Splitter splitter)
                 {
@@ -91,6 +92,7 @@ namespace gubg
                     }
                     tokens.push_back(SmartRange(data_, start, range.begin()));
                 }
+#endif
 
             private:
                 typedef std::shared_ptr<Container> Data;
