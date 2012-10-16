@@ -2,6 +2,7 @@
 #include "gubg/SmartRange.hpp"
 #include "gubg/l.hpp"
 #include <string>
+#include <list>
 using namespace gubg;
 using namespace std;
 
@@ -60,6 +61,22 @@ int main()
     TEST_EQ(1, sr.find("b", 1));
     TEST_EQ(SR::npos, sr.find("b", 2));
     TEST_EQ(SR::npos, sr.find("B"));
+
+    {
+        TEST_TAG(breakdown);
+        list<SR> tokens;
+        SR sr("a||b|ccc");
+        struct Splitter
+        {
+            bool operator()(char p, char c)
+            {
+                return p != c;
+            }
+        };
+        sr.breakdown(tokens, Splitter());
+        for (auto token: tokens)
+            L(string(token.data(), token.size()));
+    }
 
     return 0;
 }

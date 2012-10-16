@@ -3,6 +3,7 @@
 
 #include "gubg/file/File.hpp"
 #include "gubg/file/Codes.hpp"
+#include "gubg/SmartRange.hpp"
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ namespace gubg
 
         //Returns the content of a File
         ReturnCode read(std::string &content, const File &);
+        ReturnCode read(SmartRange<std::string> &range, const File &);
         ReturnCode read(std::vector<File> &, const File &);
 
         ReturnCode determineType(File &file);

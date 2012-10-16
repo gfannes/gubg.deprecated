@@ -68,7 +68,37 @@ namespace gubg
                     return find_(needle, pos);
                 }
 
+                template <typename Tokens, typename Splitter>
+                void breakdown(Tokens &tokens, Splitter splitter)
+                {
+                    tokens.clear();
+                    SmartRange range(*this);
+                    if (range.empty())
+                        return;
+                    iterator start = range.begin();
+                    while (true)
+                    {
+                        value_type &prev = range.front();
+                        range.popFront();
+                        if (range.empty())
+                            break;
+                        value_type &current = range.front();
+                        if (splitter(prev, current))
+                        {
+                            tokens.push_back(SmartRange(data_, start, range.begin()));
+                            start = range.begin();
+                        }
+                    }
+                    tokens.push_back(SmartRange(data_, start, range.begin()));
+                }
+
             private:
+                typedef std::shared_ptr<Container> Data;
+                SmartRange(Data data, iterator begin, iterator end):
+                    data_(data),
+                    begin_(begin),
+                    end_(end){}
+
                 template <typename Needle>
                 size_t find_(const Needle &needle, size_t pos) const
                 {
@@ -93,7 +123,6 @@ namespace gubg
                     return npos;
                 }
 
-                typedef std::shared_ptr<Container> Data;
                 Data data_;
                 iterator begin_;
                 iterator end_;

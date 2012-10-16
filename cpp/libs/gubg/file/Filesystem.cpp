@@ -33,6 +33,14 @@ ReturnCode gubg::file::read(string &content, const File &file)
     fi.read(&content[0], fileSize);
     MSS_END();
 }
+ReturnCode gubg::file::read(SmartRange<string> &range, const File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    string content;
+    MSS(read(content, file));
+    range = std::move(content);
+    MSS_END();
+}
 
 namespace 
 {
