@@ -13,3 +13,8 @@
 * http://www.easysw.com/~mike/serial/serial.html
 * http://tldp.org/HOWTO/Serial-Programming-HOWTO/
 * http://tldp.org/HOWTO/Serial-HOWTO.html
+
+=== Parsing C++
+* http://www.nobugs.org/developer/parsingcpp/index.html
+* http://os.inf.tu-dresden.de/vfiasco/related.html#parsing
+* http://www.antlr.org/

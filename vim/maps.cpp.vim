@@ -1,6 +1,4 @@
 " Cpp mappings
-map -p <Bslash>aoLOG_M();<Esc><Bslash>ahhi
-map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslash>ahhhi
 map -l <Bslash>aiSTREAM()<Esc><Bslash>ai
 map -y <Bslash>aa" <<  << "<Esc><Bslash>a4hi
 
@@ -17,8 +15,13 @@ map -c <Bslash>aoclass <Esc>:call ReadString("Class name")<CR>-oa{<Esc>-oapublic
 " namespace
 map -s <Bslash>aonamespace <Esc>:call ReadString("Namespace name")<CR>-oa{<Esc>-oa}<Esc><Bslash>ak$
 
+map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
+
+
 let hn = hostname()
 if hn == "riii"
+map -p <Bslash>aoLOG_M();<Esc><Bslash>ahhi
+map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslash>ahhhi
 " MSS
 map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
 map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$

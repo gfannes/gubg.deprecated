@@ -16,6 +16,9 @@ namespace gubg
                     ReturnCode parse(const file::File &);
 
                 private:
+                    ReturnCode parseNonRecursive_();
+
+                    Range range_;
             };
         }
     }
