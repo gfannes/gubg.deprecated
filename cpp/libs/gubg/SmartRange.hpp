@@ -38,6 +38,12 @@ namespace gubg
                     return *this;
                 }
 
+                void limit(iterator begin, iterator end)
+                {
+                    begin_ = begin;
+                    end_ = end;
+                }
+
                 iterator begin() const {return begin_;}
                 iterator end() const {return end_;}
                 bool empty() const {return begin_ >= end_;}

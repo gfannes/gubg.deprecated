@@ -16,7 +16,7 @@ namespace gubg
             enum class ReturnCode
             {
                 MSS_DEFAULT_CODES,
-                ParsingFailed,
+                LexingFailed, RangeIsEmpty,
             };
         }
     }
