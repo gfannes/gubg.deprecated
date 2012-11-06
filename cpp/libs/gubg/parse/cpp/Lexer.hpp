@@ -39,6 +39,9 @@ namespace gubg
                     State state_;
                     Type type_;
                     bool escaped_;
+                    //A counter indicating how many backslash-newline characters have to be skipped
+                    int bsnl_;
+                    char pch_;
                     Range range_;
                     std::string errorMsg_;
             };

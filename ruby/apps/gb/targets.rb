@@ -382,7 +382,7 @@ class Configs
         @linkSettings = nil
         @libraryPaths = []
         @libraries = []
-        @wantedFiles = /\.[ch]pp$/
+        @wantedFiles = /\.(cpp|hpp|h)$/
         @extrafiles = []
     end
     def breakdown_
@@ -393,6 +393,8 @@ class Configs
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
             dirICUI = File.expand_path("cpp/icui", ENV["ICUI"])
             @roots << dirICUI if File.exist?(dirICUI)
+            dirUPP = File.expand_path("sdks/upp/uppsrc", ENV["HOME"])
+            @roots << dirUPP if File.exist?(dirUPP)
             @compiler, @linker = "g++", "g++"
             #@compileSettings = "-std=c++0x -O3 -pthread -g"
             @compileSettings = "-std=c++0x -O3 -pthread"
@@ -400,7 +402,7 @@ class Configs
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             thirdParty = {}
-            usedTPs = [:boost, :sdl]
+            usedTPs = [:boost, :sdl, :freetype]
             case context.targetPlatform
             when "pc-linux"
                 #Boost build instructions
@@ -421,6 +423,7 @@ class Configs
                 thirdParty[:wt] = {includes: "#{home}/sdks/wt/src", libPaths: ["#{home}/sdks/wt/build/src", "#{home}/sdks/wt/build/src/http"], libs: %w[wt wthttp]}
                 thirdParty[:eigen] = {includes: "#{home}/sdks/eigen"}
                 thirdParty[:opengl] = {libs: "GLU"}
+                thirdParty[:freetype] = {includes: "/usr/include/freetype2"}
             when "pc-windows"
                 @roots << File.expand_path("g:/src/cpp")
                 #Boost was built like:
@@ -461,6 +464,7 @@ class Configs
         else
             raise("Unknown targetPlatform #{context.targetPlatform}")
         end
+        puts("root: #{@roots}")
     end
 end
 class CompileSettings

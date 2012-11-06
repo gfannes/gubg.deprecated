@@ -7,7 +7,11 @@
 using namespace gubg::parse::cpp;
 using namespace std;
 
-int main()
+int
+m\
+a\
+i\
+n()
 {
     TEST_TAG(Lexer);
     Lexer<vector<Token>> lexer;
