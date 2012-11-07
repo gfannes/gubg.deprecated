@@ -14,12 +14,7 @@ namespace gubg
     class OptionParser
     {
         public:
-            enum class ReturnCode {MSS_DEFAULT_CODES,
-                CouldNotFindExecutable, ExpectedMandatoryArgument,
-            };
-
-            typedef std::list<std::string> Args;
-            static ReturnCode createArgs(Args &, int argc, char **argv);
+            enum class ReturnCode {MSS_DEFAULT_CODES, CouldNotFindExecutable, ExpectedMandatoryArgument, };
 
             OptionParser(const std::string &caption);
 
@@ -63,6 +58,9 @@ namespace gubg
                 }
 
             std::string help() const;
+
+            typedef std::list<std::string> Args;
+            static ReturnCode createArgs(Args &, int argc, char **argv);
 
             ReturnCode parse(Args &args, bool stripExe = true);
 
