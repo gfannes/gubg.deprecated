@@ -1,2 +1,6 @@
 == Stuff
 * Novacut video software
+* Shapeoko
+* Adafruit
+* MAKEzine
+* FPGA

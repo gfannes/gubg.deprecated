@@ -1,3 +1,5 @@
+== License
+
 This software is developed by Geert Fannes and is released under the GPL. I'd appreciate it if you let me know you find it useful: geert_dot_fannes_at_gmail_dot_com
 
 No waranty is granted whatsoever.

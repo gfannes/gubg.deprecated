@@ -14,6 +14,10 @@ Dir.each('./') do |dir,fn|
   when /^gmon\.out$/
   when /^execTest/
   when /^test$/
+  when /^main$/
+  when /_tests$/
+  when /_stests$/
+  when /\.hex$/
   when /\.unit$/
   when /\.map$/
   when /((\.cpp)|(\.hpp))$/

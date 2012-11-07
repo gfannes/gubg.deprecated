@@ -1,5 +1,10 @@
 == Links
 
+=== Robotics
+* http://www.robotcub.org/
+* http://www.wired.com/design/2012/09/afron-winners/
+* http://iprototype.be/
+
 === SVG
 * http://alignedleft.com/tutorials/d3/an-svg-primer/
 * http://www.w3.org/Graphics/SVG/IG/resources/svgprimer.html
@@ -8,3 +13,8 @@
 * http://www.easysw.com/~mike/serial/serial.html
 * http://tldp.org/HOWTO/Serial-Programming-HOWTO/
 * http://tldp.org/HOWTO/Serial-HOWTO.html
+
+=== Parsing C++
+* http://www.nobugs.org/developer/parsingcpp/index.html
+* http://os.inf.tu-dresden.de/vfiasco/related.html#parsing
+* http://www.antlr.org/

@@ -2,7 +2,7 @@
 #define gubg_mss_mss_hpp
 
 #ifdef gubg_mss_mss_nostl_hpp
-#error Yuo cannot mix normal with nostl mss
+#error You cannot mix normal with nostl mss
 #endif
 
 //Main success scenario: enables easy working with return codes

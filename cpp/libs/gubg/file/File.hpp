@@ -1,98 +1,67 @@
 #ifndef gubg_file_File_hpp
 #define gubg_file_File_hpp
 
-#include "boost/shared_ptr.hpp"
 #include <string>
-#include <vector>
-#include <ostream>
 
 namespace gubg
 {
     namespace file
     {
-        class Directory;
-
         class File
         {
             public:
-                typedef boost::shared_ptr<File> Ptr;
+                enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
+                static const char Delimiter = '/';
 
-                bool isAbsolute() const;
-                bool isRelative() const;
-                bool isHidden() const;
-                bool isDirectory() const;
-                bool isRegular() const;
+                File()                                   :type_(Unknown){};
+                File(const std::string & name)           :type_(Unknown), name_(name){}
+                File(      std::string &&name)           :type_(Unknown), name_(std::move(name)){}
+                File(const std::string & name, Type type):type_(type),    name_(name){}
+                File(      std::string &&name, Type type):type_(type),    name_(std::move(name)){}
 
-                virtual bool exists() const = 0;
-
+                //Getters
                 std::string name() const {return name_;}
-                //Watch out, location() can return an empty ptr
-                typedef boost::shared_ptr<Directory> DirectoryPtr;
-                DirectoryPtr location() const {return location_;}
-                void setLocation(DirectoryPtr location) {location_ = location;}
+                Type type()        const {return type_;}
 
-            protected:
+                //Setters
+                File &setName(const std::string & name){name_ = name;            return *this;}
+                File &setName(      std::string &&name){name_ = std::move(name); return *this;}
+                File &setType(Type type)               {type_ = type;            return *this;}
+
+                //Append a part to the current File
+                File &operator<<(const std::string &name)
+                {
+                    if (name.empty())
+                        return *this;
+
+                    if (name_.empty())
+                    {
+                        name_ = name;
+                        return *this;
+                    }
+
+                    if (name_.back() == Delimiter)
+                    {
+                        if (name.front() == Delimiter)
+                            name_ += name.substr(1);
+                        else
+                            name_ += name;
+                    }
+                    else
+                    {
+                        if (name.front() == Delimiter)
+                            name_ += name;
+                        else
+                            name_ += Delimiter + name;
+                    }
+                    return *this;
+                }
+
+            private:
+                Type type_;
                 std::string name_;
-                DirectoryPtr location_;
-        };
-
-        enum class ExpandStrategy
-        {
-            Shallow,
-            Recursive,
-        };
-        class Directory: public File
-        {
-            private:
-                Directory(){}
-
-            public:
-                typedef boost::shared_ptr<Directory> Ptr;
-                //Creation from a std::string
-                static Ptr create(const std::string &path);
-                static Ptr create(const std::string &name, Directory::Ptr location);
-                //Downcast from a File::Ptr
-                static Ptr create(File::Ptr &);
-
-                //File interface
-                virtual bool exists() const;
-
-                bool isRoot() const;
-                std::string path() const;
-                static size_t expand(Ptr self, ExpandStrategy);
-                bool empty() const {return childs_.empty();}
-                typedef std::vector<File::Ptr> Childs;
-                Childs childs() const {return childs_;}
-
-            private:
-                Childs childs_;
-        };
-
-        class Regular: public File
-        {
-            private:
-                friend class Directory;
-                Regular(){}
-
-            public:
-                typedef boost::shared_ptr<Regular> Ptr;
-                static Ptr create(const std::string &filename);
-                static Ptr create(const std::string &name, Directory::Ptr location);
-                //Downcast from a File::Ptr
-                static Ptr create(File::Ptr &);
-
-                //File interface
-                virtual bool exists() const;
-
-                std::string filepath() const;
-                std::string extension() const;
-                bool load(std::string &content);
         };
     }
 }
-
-std::ostream &operator<<(std::ostream &, const gubg::file::File::Ptr &);
-std::ostream &operator<<(std::ostream &, const gubg::file::Directory::Ptr &);
-std::ostream &operator<<(std::ostream &, const gubg::file::Regular::Ptr &);
 
 #endif
