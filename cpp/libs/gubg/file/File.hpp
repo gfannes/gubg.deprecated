@@ -22,6 +22,15 @@ namespace gubg
                 //Getters
                 std::string name() const {return name_;}
                 Type type()        const {return type_;}
+                std::string extension() const
+                {
+                    if (type() != Regular)
+                        return "";
+                    auto ix = name_.rfind('.');
+                    if (ix == std::string::npos)
+                        return "";
+                    return name_.substr(ix+1);
+                }
 
                 //Setters
                 File &setName(const std::string & name){name_ = name;            return *this;}
