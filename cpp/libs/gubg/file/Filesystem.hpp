@@ -21,6 +21,13 @@ namespace gubg
 
         ReturnCode determineType(File &file);
 
+        ReturnCode getcwd(File &);
+        File getcwd();
+
+        //Calls recursor_discoveredFile(file) to indicate a new file was discovered
+        //* OK: continue
+        //* Skip: skip this file
+        //* Stop: stop recursing
         template <typename Receiver>
             class Recursor_crtp
             {

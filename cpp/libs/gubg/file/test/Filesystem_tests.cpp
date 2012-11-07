@@ -24,6 +24,10 @@ int main()
 {
     TEST_TAG(FilesystemTests);
     {
+        TEST_TAG(getcwd);
+        L(gubg::file::getcwd().name());
+    }
+    {
         TEST_TAG(read);
         {
             TEST_TAG(regular);
@@ -38,10 +42,10 @@ int main()
         {
             TEST_TAG(directory);
             const File root("/");
-            const File home("/home");
+            const File home("/home/gfannes");
             vector<File> files;
-            TEST_OK(read(files, root));
-            L("I found " << files.size() << " files in " << root.name());
+            TEST_OK(read(files, home));
+            L("I found " << files.size() << " files in " << home.name());
             for (auto f: files)
                 cout << f.name() << "(" << f.type() << "), ";
             cout << endl;

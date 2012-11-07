@@ -19,7 +19,14 @@ map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<E
 
 
 let hn = hostname()
+let athome = 0
+if hn == "rii"
+    let athome = 1
+endif
 if hn == "riii"
+    let athome = 1
+endif
+if athome
 map -p <Bslash>aoLOG_M();<Esc><Bslash>ahhi
 map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslash>ahhhi
 " MSS

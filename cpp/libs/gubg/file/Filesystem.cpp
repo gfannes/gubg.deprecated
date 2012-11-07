@@ -112,3 +112,22 @@ ReturnCode gubg::file::determineType(File &file)
     }
     MSS_END();
 }
+
+ReturnCode gubg::file::getcwd(File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    const size_t size = 4096;
+    string cwd(size, '\0');
+    MSS(0 != ::getcwd(&cwd[0], size), CouldNotGetCWD);
+    cwd.resize(strlen(&cwd[0]));
+    file.setName(cwd);
+    MSS(determineType(file));
+    MSS_END();
+}
+gubg::file::File gubg::file::getcwd()
+{
+    File file;
+    if (!mss::isOK(getcwd(file)))
+        return File();
+    return file;
+}

@@ -18,13 +18,12 @@ namespace gubg
                 CouldNotFindExecutable, ExpectedMandatoryArgument,
             };
 
-            OptionParser(const std::string &caption);
-
             typedef std::list<std::string> Args;
             static ReturnCode createArgs(Args &, int argc, char **argv);
 
-            ReturnCode parse(Args &args, bool stripExe = true);
+            OptionParser(const std::string &caption);
 
+            //shortHand example: "-h"
             template <typename Lambda>
                 void addSwitch(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
                 {
@@ -64,6 +63,8 @@ namespace gubg
                 }
 
             std::string help() const;
+
+            ReturnCode parse(Args &args, bool stripExe = true);
 
         private:
             void addHelpLine_(const std::string &shortHand, const std::string &longHand, const std::string &description);
