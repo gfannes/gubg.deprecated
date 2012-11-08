@@ -97,6 +97,17 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
     MSS_END();
 }
 
+ReturnCode gubg::file::write(const std::string &content, const File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(File::Unknown == file.type() || File::Regular ==  file.type(), ExpectedRegular);
+    ofstream fo(file.name(), ios_base::out | ios_base::binary | ios_base::trunc);
+    MSS(bool(fo), CouldNotWriteFile);
+    fo.write(content.data(), content.size());
+    MSS(bool(fo), CouldNotWriteFile);
+    MSS_END();
+}
+
 ReturnCode gubg::file::determineType(File &file)
 {
     MSS_BEGIN(ReturnCode);
@@ -111,4 +122,23 @@ ReturnCode gubg::file::determineType(File &file)
         default: MSS_L(UnknownFileType); break;
     }
     MSS_END();
+}
+
+ReturnCode gubg::file::getcwd(File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    const size_t size = 4096;
+    string cwd(size, '\0');
+    MSS(0 != ::getcwd(&cwd[0], size), CouldNotGetCWD);
+    cwd.resize(strlen(&cwd[0]));
+    file.setName(cwd);
+    MSS(determineType(file));
+    MSS_END();
+}
+gubg::file::File gubg::file::getcwd()
+{
+    File file;
+    if (!mss::isOK(getcwd(file)))
+        return File();
+    return file;
 }
