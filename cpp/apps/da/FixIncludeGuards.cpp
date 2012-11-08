@@ -38,10 +38,7 @@ namespace
                     MSS_BEGIN(ReturnCode);
                     const auto ext = file.extension();
                     if (ext == "hpp" || ext == "h")
-                    {
-                        L("This is a header: " << STREAM(file.name()));
                         MSS(fixIncludeGuards_(file));
-                    }
                     MSS_END();
                 }
 
@@ -65,7 +62,7 @@ namespace
             }
             ReturnCode fix_(const string &headerLocation)
             {
-                MSS_BEGIN(ReturnCode, fix_, headerLocation);
+                MSS_BEGIN(ReturnCode);
                 Token *m1(0), *m2(0), *mlast(0);
                 for (auto &token: lexer_.tokens())
                 {
@@ -121,12 +118,12 @@ namespace
             }
             ReturnCode fixIncludeGuards_(const File &header)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, fixIncludeGuards_, header.name());
                 MSS(tokenize_(header));
                 MSS(fix_(includeGuard_(header)));
                 if (content_() != range_.content())
                 {
-                    L("Header was modified");
+                    L("Header " << header.name() << " needs fixing");
                     if (options_.doFix)
                         MSS(write(content_(), header));
                 }
