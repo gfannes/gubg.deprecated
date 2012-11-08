@@ -3,7 +3,7 @@
 #include <sstream>
 using namespace std;
 
-#define L_DEBUG
+//#define L_DEBUG
 
 namespace 
 {
@@ -199,6 +199,7 @@ namespace gubg
             bool LexerState::detectedA_(Type t)
             {
                 printToken_('<', '>');
+                type_ = t;
                 state_ = Detected;
                 return true;
             }

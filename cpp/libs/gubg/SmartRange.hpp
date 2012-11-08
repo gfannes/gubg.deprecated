@@ -49,6 +49,12 @@ namespace gubg
                 bool empty() const {return begin_ >= end_;}
                 size_t size() const {return end_ - begin_;}
                 value_type *data() const {return &*begin_;};
+                Container content() const
+                {
+                    if (!data_)
+                        return Container();
+                    return Container(begin_, end_);
+                }
 
                 void popFront() {++begin_;}
                 value_type &front() {return *begin_;}

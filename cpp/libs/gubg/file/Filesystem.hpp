@@ -14,13 +14,23 @@ namespace gubg
         //Returns the size of File
         ReturnCode size(size_t &, const File &);
 
-        //Returns the content of a File
+        //Reads the content of a File
         ReturnCode read(std::string &content, const File &);
         ReturnCode read(SmartRange<std::string> &range, const File &);
         ReturnCode read(std::vector<File> &, const File &);
 
+        //Write a file
+        ReturnCode write(const std::string &content, const File &);
+
         ReturnCode determineType(File &file);
 
+        ReturnCode getcwd(File &);
+        File getcwd();
+
+        //Calls recursor_discoveredFile(file) to indicate a new file was discovered
+        //* OK: continue
+        //* Skip: skip this file
+        //* Stop: stop recursing
         template <typename Receiver>
             class Recursor_crtp
             {
