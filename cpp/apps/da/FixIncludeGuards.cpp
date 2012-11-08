@@ -98,7 +98,7 @@ namespace
 
                 {
                     ostringstream oss;
-                    oss << "#ifdnef " << headerLocation;
+                    oss << "#ifndef " << headerLocation;
                     m1->range = oss.str();
                     oss.str("");
                     oss << "#define " << headerLocation;

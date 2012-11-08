@@ -1,5 +1,5 @@
-#ifndef da_IncludeGuards_hpp
-#define da_IncludeGuards_hpp
+#ifndef HEADER_da_FixIncludeGuards_hpp_ALREADY_INCLUDED
+#define HEADER_da_FixIncludeGuards_hpp_ALREADY_INCLUDED
 
 #include "da/Tasks.hpp"
 

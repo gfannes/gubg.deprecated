@@ -1,5 +1,5 @@
-#ifndef asdf
-#define asdf
+#ifndef HEADER_da_Codes_hpp_ALREADY_INCLUDED
+#define HEADER_da_Codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

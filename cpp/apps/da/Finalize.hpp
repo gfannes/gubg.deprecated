@@ -1,5 +1,5 @@
-#ifndef da_finalize_hpp
-#define da_finalize_hpp
+#ifndef HEADER_da_Finalize_hpp_ALREADY_INCLUDED
+#define HEADER_da_Finalize_hpp_ALREADY_INCLUDED
 
 #include "gubg/l.hpp"
 #include <cstdlib>
