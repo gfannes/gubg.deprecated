@@ -118,7 +118,7 @@ namespace
             }
             ReturnCode fixIncludeGuards_(const File &header)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, fixIncludeGuards_, header.name());
                 MSS(tokenize_(header));
                 MSS(fix_(includeGuard_(header)));
                 if (content_() != range_.content())
