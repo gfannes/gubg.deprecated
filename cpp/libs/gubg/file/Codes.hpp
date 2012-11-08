@@ -15,6 +15,7 @@ namespace gubg
             CouldNotOpenFile,
             CouldNotOpenDir,
             CouldNotReadEntry,
+            CouldNotWriteFile,
             CouldNotGetCWD,
             Skip,
             Stop,

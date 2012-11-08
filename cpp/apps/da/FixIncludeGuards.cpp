@@ -128,8 +128,7 @@ namespace
                 {
                     L("Header was modified");
                     if (options_.doFix)
-                    {
-                    }
+                        MSS(write(content_(), header));
                 }
                 MSS_END();
             }

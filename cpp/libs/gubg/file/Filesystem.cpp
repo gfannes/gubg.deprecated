@@ -97,6 +97,17 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
     MSS_END();
 }
 
+ReturnCode gubg::file::write(const std::string &content, const File &file)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(File::Unknown == file.type() || File::Regular ==  file.type(), ExpectedRegular);
+    ofstream fo(file.name(), ios_base::out | ios_base::binary | ios_base::trunc);
+    MSS(bool(fo), CouldNotWriteFile);
+    fo.write(content.data(), content.size());
+    MSS(bool(fo), CouldNotWriteFile);
+    MSS_END();
+}
+
 ReturnCode gubg::file::determineType(File &file)
 {
     MSS_BEGIN(ReturnCode);
