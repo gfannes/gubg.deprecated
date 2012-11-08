@@ -21,10 +21,12 @@ namespace
         MSS_BEGIN(ReturnCode);
 
         Tasks tasks;
+        Options options;
         {
             OptionParser optionParser("Develop assistent");
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){DA_FINALIZE_OK(optionParser.help());});
             optionParser.addMandatory("-f", "--fix TYPE", "Fix something (e.g., guards)", [&tasks](string v){addFixTask(tasks, v);});
+            optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));
@@ -32,7 +34,7 @@ namespace
         }
 
         for (auto task: tasks)
-            MSS(task->execute());
+            MSS(task->execute(options));
 
         MSS_END();
     }

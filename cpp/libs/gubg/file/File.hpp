@@ -1,7 +1,9 @@
 #ifndef gubg_file_File_hpp
 #define gubg_file_File_hpp
 
+#include "gubg/string_algo.hpp"
 #include <string>
+#include <vector>
 
 namespace gubg
 {
@@ -30,6 +32,11 @@ namespace gubg
                     if (ix == std::string::npos)
                         return "";
                     return name_.substr(ix+1);
+                }
+                std::string basename() const
+                {
+                    auto ix = name_.rfind(Delimiter);
+                    return name_.substr((ix == std::string::npos ? 0 : ix+1));
                 }
 
                 //Setters
@@ -64,6 +71,29 @@ namespace gubg
                             name_ += Delimiter + name;
                     }
                     return *this;
+                }
+
+                File relative(const File &wd) const
+                {
+                    const auto nameParts = string_algo::split<std::vector>(name(), Delimiter);
+                    const auto wdParts = string_algo::split<std::vector>(wd.name(), Delimiter);
+                    auto nameIt = nameParts.begin();
+                    auto wdIt = wdParts.begin();
+                    File file;
+                    while (nameIt != nameParts.end() && wdIt != wdParts.end())
+                    {
+                        if (*nameIt != *wdIt)
+                            break;
+                        ++nameIt;
+                        ++wdIt;
+                    }
+                    //Step up the required levels, if any
+                    for (; wdIt != wdParts.end(); ++wdIt)
+                        file << "..";
+                    //Step down, if any
+                    for (; nameIt != nameParts.end(); ++nameIt)
+                        file << *nameIt;
+                    return file;
                 }
 
             private:

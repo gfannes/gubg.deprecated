@@ -9,7 +9,7 @@ namespace da
     {
         public:
             static Ptr create(){return Ptr(new FixIncludeGuards);}
-            virtual ReturnCode execute();
+            virtual ReturnCode execute(const Options &);
     };
 }
 

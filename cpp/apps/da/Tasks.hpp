@@ -7,11 +7,18 @@
 
 namespace da
 {
+    struct Options
+    {
+        bool doFix;
+
+        Options():
+            doFix(false){}
+    };
     class ITask
     {
         public:
             typedef std::shared_ptr<ITask> Ptr;
-            virtual ReturnCode execute() = 0;
+            virtual ReturnCode execute(const Options &) = 0;
     };
     typedef std::list<ITask::Ptr> Tasks;
 }
