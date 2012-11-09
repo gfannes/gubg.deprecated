@@ -1,5 +1,5 @@
-#ifndef force_h
-#define force_h
+#ifndef HEADER_gubg_physics_force_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_physics_force_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

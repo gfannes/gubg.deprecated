@@ -1,5 +1,5 @@
-#ifndef message_h
-#define message_h
+#ifndef HEADER_gubg_communication_message_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_communication_message_hpp_ALREADY_INCLUDED
 
 // The message to be sent to a ComPoint via a ComStation
 

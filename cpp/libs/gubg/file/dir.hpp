@@ -1,5 +1,5 @@
-#ifndef dir_h
-#define dir_h
+#ifndef HEADER_gubg_file_dir_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_dir_hpp_ALREADY_INCLUDED
 
 #include <dirent.h>
 #ifdef MINGW32

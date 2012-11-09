@@ -1,5 +1,5 @@
-#ifndef gubg_IOBuffer_hpp
-#define gubg_IOBuffer_hpp
+#ifndef HEADER_gubg_IOBuffer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_IOBuffer_hpp_ALREADY_INCLUDED
 
 #include <string>
 

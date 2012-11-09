@@ -1,5 +1,5 @@
-#ifndef physicsVisu_h
-#define physicsVisu_h
+#ifndef HEADER_gubg_physics_physicsVisu_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_physics_physicsVisu_hpp_ALREADY_INCLUDED
 
 #include "physics.hpp"
 #include "visualization.hpp"

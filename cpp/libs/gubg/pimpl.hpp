@@ -1,5 +1,5 @@
-#ifndef gubg_pimpl_hpp
-#define gubg_pimpl_hpp
+#ifndef HEADER_gubg_pimpl_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pimpl_hpp_ALREADY_INCLUDED
 
 //PIMPL macro helpers
 //See mss/test/pimpl_test.cpp for usage

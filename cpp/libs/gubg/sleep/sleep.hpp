@@ -1,5 +1,5 @@
-#ifndef gubg_sleep_hpp
-#define gubg_sleep_hpp
+#ifndef HEADER_gubg_sleep_sleep_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_sleep_sleep_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

@@ -1,5 +1,5 @@
-#ifndef gubg_distribution_Gaussian_hpp
-#define gubg_distribution_Gaussian_hpp
+#ifndef HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

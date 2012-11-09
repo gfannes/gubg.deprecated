@@ -1,5 +1,5 @@
-#ifndef sequence_h
-#define sequence_h
+#ifndef HEADER_gubg_sequence_sequence_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_sequence_sequence_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <iostream>

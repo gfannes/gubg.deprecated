@@ -1,5 +1,5 @@
-#ifndef network_h
-#define network_h
+#ifndef HEADER_gubg_network_network_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_network_network_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <string>

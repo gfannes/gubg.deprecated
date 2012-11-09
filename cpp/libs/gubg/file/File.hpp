@@ -1,5 +1,5 @@
-#ifndef gubg_file_File_hpp
-#define gubg_file_File_hpp
+#ifndef HEADER_gubg_file_File_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_File_hpp_ALREADY_INCLUDED
 
 #include "gubg/string_algo.hpp"
 #include <string>

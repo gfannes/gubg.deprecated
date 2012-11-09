@@ -1,5 +1,5 @@
-#ifndef gubg_tcp_Socket_hpp
-#define gubg_tcp_Socket_hpp
+#ifndef HEADER_gubg_tcp_Socket_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tcp_Socket_hpp_ALREADY_INCLUDED
 
 //This module wraps the POSIX socket API into a pimpl-based object oriented API
 //Extra checks are included to make sure the intended sequence of calls is followed (e.g., ::socket(), ::bind(), ::listen())

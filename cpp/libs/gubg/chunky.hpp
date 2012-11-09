@@ -1,5 +1,5 @@
-#ifndef gubg_chunky_hpp
-#define gubg_chunky_hpp
+#ifndef HEADER_gubg_chunky_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_chunky_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <string>

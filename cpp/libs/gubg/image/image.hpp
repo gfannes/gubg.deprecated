@@ -1,5 +1,5 @@
-#ifndef image_h
-#define image_h
+#ifndef HEADER_gubg_image_image_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_image_image_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <string>

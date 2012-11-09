@@ -1,5 +1,5 @@
-#ifndef gubg_logging_Log_hpp
-#define gubg_logging_Log_hpp
+#ifndef HEADER_gubg_logging_old_Log_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_logging_old_Log_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <vector>

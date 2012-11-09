@@ -1,5 +1,5 @@
-#ifndef vectorMask_hpp
-#define vectorMask_hpp
+#ifndef HEADER_gubg_mask_vectorMask_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mask_vectorMask_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <iostream>

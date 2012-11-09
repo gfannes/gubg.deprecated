@@ -1,5 +1,5 @@
-#ifndef gubg_function_optimalization_hpp
-#define gubg_function_optimalization_hpp
+#ifndef HEADER_gubg_function_optimalization_optimalization_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_optimalization_optimalization_hpp_ALREADY_INCLUDED
 
 #include <cmath>
 

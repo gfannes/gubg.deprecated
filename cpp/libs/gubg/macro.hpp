@@ -1,5 +1,5 @@
-#ifndef gubg_macro_hpp
-#define gubg_macro_hpp
+#ifndef HEADER_gubg_macro_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_macro_hpp_ALREADY_INCLUDED
 
 //Macro dispatching
 //Example usage:

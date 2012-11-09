@@ -1,5 +1,5 @@
-#ifndef gubg_OnlyOnce_hpp
-#define gubg_OnlyOnce_hpp
+#ifndef HEADER_gubg_OnlyOnce_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_OnlyOnce_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

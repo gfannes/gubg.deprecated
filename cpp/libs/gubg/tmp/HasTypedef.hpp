@@ -1,5 +1,5 @@
-#ifndef gubg_tmp_HasTypedef_hpp
-#define gubg_tmp_HasTypedef_hpp
+#ifndef HEADER_gubg_tmp_HasTypedef_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tmp_HasTypedef_hpp_ALREADY_INCLUDED
 
 #include "gubg/tmp/Types.hpp"
 

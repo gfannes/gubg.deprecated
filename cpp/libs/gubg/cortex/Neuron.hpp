@@ -1,5 +1,5 @@
-#ifndef gubg_cortex_Neuron_hpp
-#define gubg_cortex_Neuron_hpp
+#ifndef HEADER_gubg_cortex_Neuron_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cortex_Neuron_hpp_ALREADY_INCLUDED
 
 #include "gubg/cortex/ReturnCodes.hpp"
 #include <vector>

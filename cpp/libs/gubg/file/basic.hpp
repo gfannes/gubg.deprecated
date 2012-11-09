@@ -1,5 +1,5 @@
-#ifndef gubg_file_basic_hpp
-#define gubg_file_basic_hpp
+#ifndef HEADER_gubg_file_basic_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_basic_hpp_ALREADY_INCLUDED
 
 #include "gubg/file/Codes.hpp"
 #include <string>

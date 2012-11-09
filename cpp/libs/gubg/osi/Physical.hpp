@@ -1,5 +1,5 @@
-#ifndef gubg_osi_Physical_hpp
-#define gubg_osi_Physical_hpp
+#ifndef HEADER_gubg_osi_Physical_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_osi_Physical_hpp_ALREADY_INCLUDED
 
 #include "gubg/osi/Codes.hpp"
 #include <iostream>

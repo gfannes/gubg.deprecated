@@ -1,5 +1,5 @@
-#ifndef gubg_FixedVector_hpp
-#define gubg_FixedVector_hpp
+#ifndef HEADER_gubg_FixedVector_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_FixedVector_hpp_ALREADY_INCLUDED
 
 //This module provides part of the std::vector API without relying on new and delete to be available (think e.g., arduino)
 // * size()

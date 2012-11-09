@@ -1,5 +1,5 @@
-#ifndef gubg_distribution_Kernel_hpp
-#define gubg_distribution_Kernel_hpp
+#ifndef HEADER_gubg_distribution_Kernel_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_distribution_Kernel_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include "gubg/Location.hpp"

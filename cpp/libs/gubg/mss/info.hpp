@@ -1,5 +1,5 @@
-#ifndef gubg_mss_info_h
-#define gubg_mss_info_h
+#ifndef HEADER_gubg_mss_info_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mss_info_hpp_ALREADY_INCLUDED
 
 #include "gubg/Singleton.hpp"
 #include "gubg/Location.hpp"

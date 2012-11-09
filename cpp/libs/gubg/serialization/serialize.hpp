@@ -1,5 +1,5 @@
-#ifndef serialize_h
-#define serialize_h
+#ifndef HEADER_gubg_serialization_serialize_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_serialization_serialize_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <vector>

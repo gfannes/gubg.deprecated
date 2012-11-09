@@ -1,5 +1,5 @@
-#ifndef gubg_mss_mss_nostl_hpp
-#define gubg_mss_mss_nostl_hpp
+#ifndef HEADER_gubg_mss_mss_nostl_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mss_mss_nostl_hpp_ALREADY_INCLUDED
 
 #ifdef gubg_mss_mss_hpp
 #error You cannot mix normal with nostl mss

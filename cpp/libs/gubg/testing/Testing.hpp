@@ -1,5 +1,5 @@
-#ifndef gubg_testing_Testing_hpp
-#define gubg_testing_Testing_hpp
+#ifndef HEADER_gubg_testing_Testing_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_testing_Testing_hpp_ALREADY_INCLUDED
 
 #include "gubg/testing/TestMgr.hpp"
 #include "gubg/mss.hpp"

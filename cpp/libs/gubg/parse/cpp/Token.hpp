@@ -1,5 +1,5 @@
-#ifndef gubg_parse_cpp_Token_hpp
-#define gubg_parse_cpp_Token_hpp
+#ifndef HEADER_gubg_parse_cpp_Token_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_Token_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/cpp/Types.hpp"
 #include <ostream>
@@ -12,7 +12,7 @@ namespace gubg
         {
             struct Token
             {
-                enum Type {Macro, String, Character, Alphas, Digits, Blanks, Newline, CarriageReturn, Symbol, LineComment, BlockComment};
+                enum Type {Macro, String, Character, Alphas, Digits, Blanks, Newline, CarriageReturn, Symbol, LineComment, BlockComment, StandaloneBackslashNewline};
 
                 Type type;
                 Range range;

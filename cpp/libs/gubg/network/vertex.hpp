@@ -1,5 +1,5 @@
-#ifndef vertex_h
-#define vertex_h
+#ifndef HEADER_gubg_network_vertex_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_network_vertex_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <sstream>

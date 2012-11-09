@@ -1,5 +1,5 @@
-#ifndef gubg_tree_test_data_hpp
-#define gubg_tree_test_data_hpp
+#ifndef HEADER_gubg_tree_test_data_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tree_test_data_hpp_ALREADY_INCLUDED
 
 #include "gubg/tree/raw.hpp"
 #include "gubg/file/basic.hpp"

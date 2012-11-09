@@ -1,5 +1,5 @@
-#ifndef treeview_hpp
-#define treeview_hpp
+#ifndef HEADER_gubg_visualization_treeview_treeview_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_treeview_treeview_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

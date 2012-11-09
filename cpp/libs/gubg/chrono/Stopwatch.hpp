@@ -1,5 +1,5 @@
-#ifndef gubg_chrono_Stopwatch_hpp
-#define gubg_chrono_Stopwatch_hpp
+#ifndef HEADER_gubg_chrono_Stopwatch_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_chrono_Stopwatch_hpp_ALREADY_INCLUDED
 
 #include <chrono>
 

@@ -1,5 +1,5 @@
-#ifndef gubg_msgpack_Read_hpp
-#define gubg_msgpack_Read_hpp
+#ifndef HEADER_gubg_msgpack_Read_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_msgpack_Read_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/msgpack/Codes.hpp"

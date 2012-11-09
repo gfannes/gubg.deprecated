@@ -1,5 +1,5 @@
-#ifndef posteriorLogProb_h
-#define posteriorLogProb_h
+#ifndef HEADER_gubg_bayesian_posteriorLogProb_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_bayesian_posteriorLogProb_hpp_ALREADY_INCLUDED
 
 #include <cmath>
 

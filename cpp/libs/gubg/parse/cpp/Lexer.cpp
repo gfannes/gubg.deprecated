@@ -56,8 +56,18 @@ namespace gubg
     {
         namespace cpp
         {
-            LexerState::LexerState():
-                state_(Idle), escaped_(false), bsnl_(0), pch_('\0'){}
+            LexerState::LexerState()
+            {
+                clear();
+            }
+            void LexerState::clear()
+            {
+                state_ = Idle;
+                escaped_ = false;
+                bsnl_ = 0;
+                pch_ = '\0';
+                line_ = 1;
+            }
 
             bool LexerState::findToken(It s, It m, It e)
             {
@@ -66,6 +76,10 @@ namespace gubg
                 if (state_ == Detected)
                     //You have to call getToken() to get out of the Detected state
                     return false;
+
+                const auto lch = *(m-1);
+                if (lch == '\n')
+                    ++line_;
 
                 if (bsnl_ > 0)
                 {
@@ -77,7 +91,6 @@ namespace gubg
                     --bsnl_;
                     return false;
                 }
-                const auto lch = *(m-1);
                 Prev_raii prev_raii(pch_, lch);
 
                 range_.limit(s, m);
@@ -103,6 +116,7 @@ namespace gubg
                                        case '*': return detectingA_(Type::BlockComment);
                                    }
                                    return detectedA_(Type::Symbol);
+                        case '\\': return detectedA_(Type::StandaloneBackslashNewline);
                     }
                     static const char symbols[] = ":.;,(){}[]<>=-+*|&^%!?~";
                     if (memchr(symbols, sch, sizeof(symbols)))
@@ -117,7 +131,7 @@ namespace gubg
                     else
                     {
                         ostringstream oss;
-                        oss << "Unknown character encountered in Idle state: \"" << sch << "\" (" << (int)sch << ")";
+                        oss << "Unknown character encountered in Idle state on line " << line_ << ": \"" << sch << "\" (" << (int)sch << ")";
                         return error(oss.str());
                     }
                 }

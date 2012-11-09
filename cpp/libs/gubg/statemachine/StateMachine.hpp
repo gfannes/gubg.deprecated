@@ -1,5 +1,5 @@
-#ifndef gubg_statemachine_Statemachine_hpp
-#define gubg_statemachine_Statemachine_hpp
+#ifndef HEADER_gubg_statemachine_StateMachine_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_statemachine_StateMachine_hpp_ALREADY_INCLUDED
 
 #include <memory>
 #include <iostream>

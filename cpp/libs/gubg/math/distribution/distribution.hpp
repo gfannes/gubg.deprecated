@@ -1,5 +1,5 @@
-#ifndef distribution_h
-#define distribution_h
+#ifndef HEADER_gubg_math_distribution_distribution_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_distribution_distribution_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

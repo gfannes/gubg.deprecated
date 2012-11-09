@@ -1,5 +1,5 @@
-#ifndef kernel_hpp
-#define kernel_hpp
+#ifndef HEADER_gubg_math_distribution_kernel_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_distribution_kernel_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <cmath>

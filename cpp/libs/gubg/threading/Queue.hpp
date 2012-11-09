@@ -1,5 +1,5 @@
-#ifndef gubg_threading_Queue_hpp
-#define gubg_threading_Queue_hpp
+#ifndef HEADER_gubg_threading_Queue_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_threading_Queue_hpp_ALREADY_INCLUDED
 
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"

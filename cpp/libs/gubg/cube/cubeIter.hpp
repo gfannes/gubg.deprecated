@@ -1,5 +1,5 @@
-#ifndef cubeIter_h
-#define cubeIter_h
+#ifndef HEADER_gubg_cube_cubeIter_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cube_cubeIter_hpp_ALREADY_INCLUDED
 
 // Iteration over cubes
 

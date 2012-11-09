@@ -1,5 +1,5 @@
-#ifndef cubeFunction_h
-#define cubeFunction_h
+#ifndef HEADER_gubg_matrix_matrixFunction_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_matrix_matrixFunction_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef gubg_range_hpp
-#define gubg_range_hpp
+#ifndef HEADER_gubg_range_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_range_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

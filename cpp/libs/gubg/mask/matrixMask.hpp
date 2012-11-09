@@ -1,5 +1,5 @@
-#ifndef matrixMask_hpp
-#define matrixMask_hpp
+#ifndef HEADER_gubg_mask_matrixMask_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mask_matrixMask_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

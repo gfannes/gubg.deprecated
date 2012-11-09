@@ -1,5 +1,5 @@
-#ifndef gubg_draw_Shape_hpp
-#define gubg_draw_Shape_hpp
+#ifndef HEADER_gubg_draw_Shape_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_draw_Shape_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

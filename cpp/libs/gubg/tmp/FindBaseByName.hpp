@@ -1,5 +1,5 @@
-#ifndef gubg_tmp_FindBaseByName_hpp
-#define gubg_tmp_FindBaseByName_hpp
+#ifndef HEADER_gubg_tmp_FindBaseByName_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tmp_FindBaseByName_hpp_ALREADY_INCLUDED
 
 #include "gubg/tmp/NameType.hpp"
 #include "gubg/tmp/TypeList.hpp"

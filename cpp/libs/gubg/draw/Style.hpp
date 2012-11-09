@@ -1,5 +1,5 @@
-#ifndef gubg_draw_Style_hpp
-#define gubg_draw_Style_hpp
+#ifndef HEADER_gubg_draw_Style_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_draw_Style_hpp_ALREADY_INCLUDED
 
 #include "gubg/draw/Color.hpp"
 #include <memory>

@@ -1,5 +1,5 @@
-#ifndef gubg_tree_codes_hpp
-#define gubg_tree_codes_hpp
+#ifndef HEADER_gubg_tree_codes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tree_codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

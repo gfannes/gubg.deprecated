@@ -1,5 +1,5 @@
-#ifndef mlp_h
-#define mlp_h
+#ifndef HEADER_gubg_neural_mlp_mlp_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_neural_mlp_mlp_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

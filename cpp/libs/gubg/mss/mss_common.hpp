@@ -1,5 +1,5 @@
-#ifndef gubg_mss_mss_common_hpp
-#define gubg_mss_mss_common_hpp
+#ifndef HEADER_gubg_mss_mss_common_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mss_mss_common_hpp_ALREADY_INCLUDED
 
 #define MSS_RC_VAR l_mss_rc_var
 
