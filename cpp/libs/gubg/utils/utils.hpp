@@ -1,5 +1,5 @@
-#ifndef utils_h
-#define utils_h
+#ifndef HEADER_gubg_utils_utils_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_utils_utils_hpp_ALREADY_INCLUDED
 
 #include <sstream>
 

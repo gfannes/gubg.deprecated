@@ -1,5 +1,5 @@
-#ifndef bernoulli_h
-#define bernoulli_h
+#ifndef HEADER_gubg_math_distribution_bernoulli_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_distribution_bernoulli_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <cmath>

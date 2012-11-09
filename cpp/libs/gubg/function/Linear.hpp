@@ -1,5 +1,5 @@
-#ifndef gubg_function_Linear_hpp
-#define gubg_function_Linear_hpp
+#ifndef HEADER_gubg_function_Linear_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_Linear_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

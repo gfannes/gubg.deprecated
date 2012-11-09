@@ -1,5 +1,5 @@
-#ifndef gubg_asn1_Error_hpp
-#define gubg_asn1_Error_hpp
+#ifndef HEADER_gubg_asn1_Error_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_asn1_Error_hpp_ALREADY_INCLUDED
 
 #include "Exception.hpp"
 

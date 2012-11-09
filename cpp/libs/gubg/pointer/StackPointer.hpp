@@ -1,5 +1,5 @@
-#ifndef gubg_pointer_StackPointer_hpp
-#define gubg_pointer_StackPointer_hpp
+#ifndef HEADER_gubg_pointer_StackPointer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pointer_StackPointer_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

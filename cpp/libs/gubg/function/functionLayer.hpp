@@ -1,5 +1,5 @@
-#ifndef functionLayer_h
-#define functionLayer_h
+#ifndef HEADER_gubg_function_functionLayer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_functionLayer_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

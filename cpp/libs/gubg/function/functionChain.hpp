@@ -1,5 +1,5 @@
-#ifndef functionChain_h
-#define functionChain_h
+#ifndef HEADER_gubg_function_functionChain_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_functionChain_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

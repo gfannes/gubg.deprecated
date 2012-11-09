@@ -1,5 +1,5 @@
-#ifndef clock_hpp
-#define clock_hpp
+#ifndef HEADER_gubg_clock_clock_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_clock_clock_hpp_ALREADY_INCLUDED
 
 #include "timestamp.hpp"
 #include <sys/time.h>

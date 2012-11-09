@@ -1,5 +1,5 @@
-#ifndef gubg_tree_managed_hpp
-#define gubg_tree_managed_hpp
+#ifndef HEADER_gubg_tree_managed_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tree_managed_hpp_ALREADY_INCLUDED
 
 //Provides a basic, policy-based type hierarchy typical for the composite pattern
 //These base classes have memory management

@@ -1,5 +1,5 @@
-#ifndef gubg_graphics_sdl_hpp
-#define gubg_graphics_sdl_hpp
+#ifndef HEADER_gubg_graphics_sdl_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_graphics_sdl_hpp_ALREADY_INCLUDED
 
 #include <memory>
 

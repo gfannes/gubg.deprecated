@@ -1,5 +1,5 @@
-#ifndef gubg_point_point_hpp
-#define gubg_point_point_hpp
+#ifndef HEADER_gubg_point_point_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_point_point_hpp_ALREADY_INCLUDED
 
 #include <ostream>
 

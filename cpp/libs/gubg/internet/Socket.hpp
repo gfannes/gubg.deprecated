@@ -1,5 +1,5 @@
-#ifndef gubg_internet_Socket_hpp
-#define gubg_internet_Socket_hpp
+#ifndef HEADER_gubg_internet_Socket_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_internet_Socket_hpp_ALREADY_INCLUDED
 
 #include "gubg/internet/Codes.hpp"
 #include "gubg/IOBuffer.hpp"

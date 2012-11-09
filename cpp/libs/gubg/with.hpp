@@ -1,5 +1,5 @@
-#ifndef gubg_with_hpp
-#define gubg_with_hpp
+#ifndef HEADER_gubg_with_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_with_hpp_ALREADY_INCLUDED
 
 //Usage:
 //

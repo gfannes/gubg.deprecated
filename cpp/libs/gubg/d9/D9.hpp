@@ -1,5 +1,5 @@
-#ifndef gubg_D9_hpp
-#define gubg_D9_hpp
+#ifndef HEADER_gubg_d9_D9_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_d9_D9_hpp_ALREADY_INCLUDED
 
 #include "gubg/d9/Codes.hpp"
 #include "gubg/d9/Helper.hpp"

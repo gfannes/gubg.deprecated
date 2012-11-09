@@ -1,5 +1,5 @@
-#ifndef node_h
-#define node_h
+#ifndef HEADER_gubg_physics_node_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_physics_node_hpp_ALREADY_INCLUDED
 
 #include <list>
 #include <vector>

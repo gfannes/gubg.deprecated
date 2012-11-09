@@ -1,5 +1,5 @@
-#ifndef drawable_h
-#define drawable_h
+#ifndef HEADER_gubg_visualization_drawable_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_drawable_hpp_ALREADY_INCLUDED
 
 #include "canvas.hpp"
 #include "function.hpp"

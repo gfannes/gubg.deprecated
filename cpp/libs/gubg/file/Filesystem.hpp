@@ -1,5 +1,5 @@
-#ifndef gubg_file_Filesystem_hpp
-#define gubg_file_Filesystem_hpp
+#ifndef HEADER_gubg_file_Filesystem_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_Filesystem_hpp_ALREADY_INCLUDED
 
 #include "gubg/file/File.hpp"
 #include "gubg/file/Codes.hpp"

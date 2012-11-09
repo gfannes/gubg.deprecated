@@ -1,5 +1,5 @@
-#ifndef gubg_threading_Suicider_hpp
-#define gubg_threading_Suicider_hpp
+#ifndef HEADER_gubg_threading_Suicider_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_threading_Suicider_hpp_ALREADY_INCLUDED
 
 //Make sure you put this RAII at the beginning of the thread function
 

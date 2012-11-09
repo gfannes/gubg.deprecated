@@ -1,5 +1,5 @@
-#ifndef gubg_logging_Xml_hpp
-#define gubg_logging_Xml_hpp
+#ifndef HEADER_gubg_logging_old_Xml_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_logging_old_Xml_hpp_ALREADY_INCLUDED
 
 #include "logging/Log.hpp"
 

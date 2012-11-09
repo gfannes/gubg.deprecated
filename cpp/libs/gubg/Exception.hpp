@@ -1,5 +1,5 @@
-#ifndef gubg_Exception_hpp
-#define gubg_Exception_hpp
+#ifndef HEADER_gubg_Exception_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Exception_hpp_ALREADY_INCLUDED
 
 #include <stdexcept>
 #include <ostream>

@@ -1,5 +1,5 @@
-#ifndef gubg_graphics_style_hpp
-#define gubg_graphics_style_hpp
+#ifndef HEADER_gubg_graphics_style_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_graphics_style_hpp_ALREADY_INCLUDED
 
 #include <ostream>
 #include <array>

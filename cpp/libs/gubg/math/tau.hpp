@@ -1,5 +1,5 @@
-#ifndef gubg_math_tau_hpp
-#define gubg_math_tau_hpp
+#ifndef HEADER_gubg_math_tau_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_tau_hpp_ALREADY_INCLUDED
 
 #include <cmath>
 

@@ -1,5 +1,5 @@
-#ifndef datavisu_h
-#define datavisu_h
+#ifndef HEADER_gubg_visualization_datavisu_datavisu_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_datavisu_datavisu_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

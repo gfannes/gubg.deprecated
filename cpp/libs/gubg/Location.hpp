@@ -1,5 +1,5 @@
-#ifndef gubg_Location_hpp
-#define gubg_Location_hpp
+#ifndef HEADER_gubg_Location_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Location_hpp_ALREADY_INCLUDED
 
 #include <ostream>
 

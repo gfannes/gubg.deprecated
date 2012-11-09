@@ -1,5 +1,5 @@
-#ifndef gubg_msgpack_Parser_hpp
-#define gubg_msgpack_Parser_hpp
+#ifndef HEADER_gubg_msgpack_Parser_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_msgpack_Parser_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Codes.hpp"
 #include "gubg/msgpack/Primitives.hpp"

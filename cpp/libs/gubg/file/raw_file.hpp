@@ -1,5 +1,5 @@
-#ifndef gubg_file_raw_file_hpp
-#define gubg_file_raw_file_hpp
+#ifndef HEADER_gubg_file_raw_file_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_raw_file_hpp_ALREADY_INCLUDED
 
 #include "gubg/tree/raw.hpp"
 #include <string>

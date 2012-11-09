@@ -1,5 +1,5 @@
-#ifndef matrix_h
-#define matrix_h
+#ifndef HEADER_gubg_matrix_matrix_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_matrix_matrix_hpp_ALREADY_INCLUDED
 
 #include <vector>
 #include <iostream>

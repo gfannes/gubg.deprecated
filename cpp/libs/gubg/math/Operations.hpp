@@ -1,5 +1,5 @@
-#ifndef gubg_math_Operations_hpp
-#define gubg_math_Operations_hpp
+#ifndef HEADER_gubg_math_Operations_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_Operations_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/Codes.hpp"
 

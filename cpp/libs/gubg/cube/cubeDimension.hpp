@@ -1,5 +1,5 @@
-#ifndef cubeDimension_h
-#define cubeDimension_h
+#ifndef HEADER_gubg_cube_cubeDimension_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cube_cubeDimension_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef gubg_SmartRange_hpp
-#define gubg_SmartRange_hpp
+#ifndef HEADER_gubg_SmartRange_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_SmartRange_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

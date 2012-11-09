@@ -1,5 +1,5 @@
-#ifndef gubg_logging_Tree_hpp
-#define gubg_logging_Tree_hpp
+#ifndef HEADER_gubg_logging_old_Tree_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_logging_old_Tree_hpp_ALREADY_INCLUDED
 
 #include "logging/Log.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef color_h
-#define color_h
+#ifndef HEADER_gubg_visualization_color_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_color_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

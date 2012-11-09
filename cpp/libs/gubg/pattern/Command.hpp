@@ -1,5 +1,5 @@
-#ifndef gubg_pattern_Command_hpp
-#define gubg_pattern_Command_hpp
+#ifndef HEADER_gubg_pattern_Command_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pattern_Command_hpp_ALREADY_INCLUDED
 
 #include "gubg/Exception.hpp"
 #include "boost/shared_ptr.hpp"

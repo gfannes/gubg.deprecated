@@ -1,5 +1,5 @@
-#ifndef regex_h
-#define regex_h
+#ifndef HEADER_gubg_regex_regex_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_regex_regex_hpp_ALREADY_INCLUDED
 
 #include <tre/regex.h>
 #include <string>

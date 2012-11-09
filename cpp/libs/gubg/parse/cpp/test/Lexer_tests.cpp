@@ -11,7 +11,9 @@ int
 m\
 a\
 i\
-n()
+n\
+
+()
 {
     TEST_TAG(Lexer);
     Lexer<vector<Token>> lexer;

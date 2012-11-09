@@ -1,5 +1,5 @@
-#ifndef gubg_osi_Datalink_hpp
-#define gubg_osi_Datalink_hpp
+#ifndef HEADER_gubg_osi_Datalink_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_osi_Datalink_hpp_ALREADY_INCLUDED
 
 #include "gubg/osi/Codes.hpp"
 #include "gubg/osi/Framer.hpp"

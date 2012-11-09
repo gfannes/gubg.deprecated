@@ -1,5 +1,5 @@
-#ifndef gubg_parse_cpp_Parser_hpp
-#define gubg_parse_cpp_Parser_hpp
+#ifndef HEADER_gubg_parse_cpp_Parser_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_Parser_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/cpp/Types.hpp"
 #include "gubg/file/File.hpp"

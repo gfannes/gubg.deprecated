@@ -1,5 +1,5 @@
-#ifndef vectar_h
-#define vectar_h
+#ifndef HEADER_gubg_vectar_vectar_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_vectar_vectar_hpp_ALREADY_INCLUDED
 
 // A class that transforms something into a vector
 

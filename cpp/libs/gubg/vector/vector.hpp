@@ -1,5 +1,5 @@
-#ifndef gubg_vector_vector_hpp
-#define gubg_vector_vector_hpp
+#ifndef HEADER_gubg_vector_vector_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_vector_vector_hpp_ALREADY_INCLUDED
 
 #include "random.hpp"
 #include "math.hpp"

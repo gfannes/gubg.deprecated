@@ -1,5 +1,5 @@
-#ifndef canvas_h
-#define canvas_h
+#ifndef HEADER_gubg_visualization_canvas_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_canvas_hpp_ALREADY_INCLUDED
 
 #include <SDL/SDL.h>
 #include <cairomm/context.h>

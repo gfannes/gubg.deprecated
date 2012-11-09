@@ -1,5 +1,5 @@
-#ifndef gubg_bitmagic_hpp
-#define gubg_bitmagic_hpp
+#ifndef HEADER_gubg_bitmagic_bitmagic_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_bitmagic_bitmagic_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

@@ -1,5 +1,5 @@
-#ifndef gubg_nullptr_hpp
-#define gubg_nullptr_hpp
+#ifndef HEADER_gubg_nullptr_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_nullptr_hpp_ALREADY_INCLUDED
 
 #include "gubg/Platform.hpp"
 

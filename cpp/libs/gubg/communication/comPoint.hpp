@@ -1,5 +1,5 @@
-#ifndef comPoint_h
-#define comPoint_h
+#ifndef HEADER_gubg_communication_comPoint_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_communication_comPoint_hpp_ALREADY_INCLUDED
 
 // The description of a ComStation, used to specify where messages should be sent to
 

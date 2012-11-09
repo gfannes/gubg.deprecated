@@ -1,5 +1,5 @@
-#ifndef gubg_draw_SVG_hpp
-#define gubg_draw_SVG_hpp
+#ifndef HEADER_gubg_draw_SVG_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_draw_SVG_hpp_ALREADY_INCLUDED
 
 #include "gubg/draw/Shape.hpp"
 #include "gubg/draw/Style.hpp"

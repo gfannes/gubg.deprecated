@@ -1,5 +1,5 @@
-#ifndef gubg_neural_neuron_h
-#define gubg_neural_neuron_h
+#ifndef HEADER_gubg_neural_neuron_neuron_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_neural_neuron_neuron_hpp_ALREADY_INCLUDED
 
 #include <cmath>
 #include <cassert>

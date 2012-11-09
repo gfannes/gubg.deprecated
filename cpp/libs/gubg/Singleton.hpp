@@ -1,5 +1,5 @@
-#ifndef gubg_Singleton_hpp
-#define gubg_Singleton_hpp
+#ifndef HEADER_gubg_Singleton_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Singleton_hpp_ALREADY_INCLUDED
 
 #include <mutex>
 

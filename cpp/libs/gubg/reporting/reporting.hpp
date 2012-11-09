@@ -1,5 +1,5 @@
-#ifndef reporting_hpp
-#define reporting_hpp
+#ifndef HEADER_gubg_reporting_reporting_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_reporting_reporting_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <vector>
