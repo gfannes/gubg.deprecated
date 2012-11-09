@@ -1,5 +1,5 @@
-#ifndef gubg_coding_d9_types_hpp
-#define gubg_coding_d9_types_hpp
+#ifndef HEADER_gubg_coding_d9_types_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_coding_d9_types_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <vector>

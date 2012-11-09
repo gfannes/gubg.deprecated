@@ -1,5 +1,5 @@
-#ifndef gubg_bayesian_Table_hpp
-#define gubg_bayesian_Table_hpp
+#ifndef HEADER_gubg_bayesian_Table_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_bayesian_Table_hpp_ALREADY_INCLUDED
 
 #define GUBG_LOG
 #include "logging/Log.hpp"

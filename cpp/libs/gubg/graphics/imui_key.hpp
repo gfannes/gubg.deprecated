@@ -1,5 +1,5 @@
-#ifndef gubg_graphics_imui_key_hpp
-#define gubg_graphics_imui_key_hpp
+#ifndef HEADER_gubg_graphics_imui_key_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_graphics_imui_key_hpp_ALREADY_INCLUDED
 
 #include "SDL/SDL_keysym.h"
 #include <cassert>

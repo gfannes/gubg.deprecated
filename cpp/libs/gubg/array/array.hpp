@@ -1,5 +1,5 @@
-#ifndef array_h
-#define array_h
+#ifndef HEADER_gubg_array_array_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_array_array_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef typeids_h
-#define typeids_h
+#ifndef HEADER_gubg_global_typeIDs_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_global_typeIDs_hpp_ALREADY_INCLUDED
 
 // This file contains the serialization type ids for this project
 

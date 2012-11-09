@@ -1,5 +1,5 @@
-#ifndef gubg_graphics_sdl_canvas_hpp
-#define gubg_graphics_sdl_canvas_hpp
+#ifndef HEADER_gubg_graphics_sdl_canvas_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_graphics_sdl_canvas_hpp_ALREADY_INCLUDED
 
 #include "graphics/canvas.hpp"
 #include "graphics/sdl.hpp"

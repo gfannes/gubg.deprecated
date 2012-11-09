@@ -1,5 +1,5 @@
-#ifndef gubg_file_File_hpp
-#define gubg_file_File_hpp
+#ifndef HEADER_gubg_file_File_old_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_File_old_hpp_ALREADY_INCLUDED
 
 #include "boost/shared_ptr.hpp"
 #include <string>

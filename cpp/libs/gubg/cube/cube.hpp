@@ -1,5 +1,5 @@
-#ifndef cube_h
-#define cube_h
+#ifndef HEADER_gubg_cube_cube_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cube_cube_hpp_ALREADY_INCLUDED
 
 #include <cmath>
 #include <vector>

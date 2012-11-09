@@ -1,5 +1,5 @@
-#ifndef random_h
-#define random_h
+#ifndef HEADER_gubg_math_distribution_random_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_distribution_random_hpp_ALREADY_INCLUDED
 
 #include <cstdlib>
 #include <ctime>

@@ -1,5 +1,5 @@
-#ifndef gubg_xml_hpp
-#define gubg_xml_hpp
+#ifndef HEADER_gubg_xml_xml_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_xml_xml_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <ostream>

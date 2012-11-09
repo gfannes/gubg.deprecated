@@ -1,5 +1,5 @@
-#ifndef math_h
-#define math_h
+#ifndef HEADER_gubg_math_math_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_math_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

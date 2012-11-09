@@ -1,5 +1,5 @@
-#ifndef gubg_parse_cpp_Token_hpp
-#define gubg_parse_cpp_Token_hpp
+#ifndef HEADER_gubg_parse_cpp_Token_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_Token_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/cpp/Types.hpp"
 #include <ostream>

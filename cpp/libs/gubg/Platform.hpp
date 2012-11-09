@@ -1,5 +1,5 @@
-#ifndef gubg_Platform_hpp
-#define gubg_Platform_hpp
+#ifndef HEADER_gubg_Platform_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Platform_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <sstream>

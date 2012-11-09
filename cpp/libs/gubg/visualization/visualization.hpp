@@ -1,5 +1,5 @@
-#ifndef visualization_h
-#define visualization_h
+#ifndef HEADER_gubg_visualization_visualization_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_visualization_hpp_ALREADY_INCLUDED
 
 //This needs some serious rework
 

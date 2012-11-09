@@ -1,5 +1,5 @@
-#ifndef edge_h
-#define edge_h
+#ifndef HEADER_gubg_network_edge_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_network_edge_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <sstream>

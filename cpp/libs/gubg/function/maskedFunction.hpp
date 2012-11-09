@@ -1,5 +1,5 @@
-#ifndef maskedFunction_h
-#define maskedFunction_h
+#ifndef HEADER_gubg_function_maskedFunction_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_maskedFunction_hpp_ALREADY_INCLUDED
 
 #include "function.hpp"
 #include "matrix.hpp"

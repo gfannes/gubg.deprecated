@@ -1,5 +1,5 @@
-#ifndef gubg_pointer_Locked_hpp
-#define gubg_pointer_Locked_hpp
+#ifndef HEADER_gubg_pointer_Locked_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pointer_Locked_hpp_ALREADY_INCLUDED
 
 //This needs some serious rework:
 // * Naming is not ok, change unlock to lock

@@ -1,5 +1,5 @@
-#ifndef thread_h
-#define thread_h
+#ifndef HEADER_gubg_threading_thread_old_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_threading_thread_old_hpp_ALREADY_INCLUDED
 
 #include "pthread.h"
 

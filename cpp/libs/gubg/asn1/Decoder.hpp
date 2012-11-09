@@ -1,5 +1,5 @@
-#ifndef gubg_asn1_Decoder_hpp
-#define gubg_asn1_Decoder_hpp
+#ifndef HEADER_gubg_asn1_Decoder_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_asn1_Decoder_hpp_ALREADY_INCLUDED
 
 #include "asn1/Types.hpp"
 #include "Exception.hpp"

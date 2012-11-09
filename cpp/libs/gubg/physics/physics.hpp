@@ -1,5 +1,5 @@
-#ifndef physics_h
-#define physics_h
+#ifndef HEADER_gubg_physics_physics_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_physics_physics_hpp_ALREADY_INCLUDED
 
 #include <sstream>
 

@@ -1,5 +1,5 @@
-#ifndef gubg_mss_hpp
-#define gubg_mss_hpp
+#ifndef HEADER_gubg_mss_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mss_hpp_ALREADY_INCLUDED
 
 #ifdef ARDUINO
 #include "gubg/mss/mss_nostl.hpp"

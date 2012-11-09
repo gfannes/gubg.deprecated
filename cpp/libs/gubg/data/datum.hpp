@@ -1,5 +1,5 @@
-#ifndef datum_h
-#define datum_h
+#ifndef HEADER_gubg_data_datum_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_data_datum_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <vector>

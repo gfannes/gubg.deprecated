@@ -1,5 +1,5 @@
-#ifndef gubg_mss_test_Sum_hpp
-#define gubg_mss_test_Sum_hpp
+#ifndef HEADER_gubg_mss_test_Sum_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mss_test_Sum_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss/mss_nostl.hpp"
 

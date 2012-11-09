@@ -1,5 +1,5 @@
-#ifndef gubg_OptionParser_h
-#define gubg_OptionParser_h
+#ifndef HEADER_gubg_OptionParser_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_OptionParser_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 #include <string>

@@ -1,5 +1,5 @@
-#ifndef gubg_l_hpp
-#define gubg_l_hpp
+#ifndef HEADER_gubg_l_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_l_hpp_ALREADY_INCLUDED
 
 #ifdef L
 #error L is already defined...

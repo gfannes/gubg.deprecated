@@ -1,5 +1,5 @@
-#ifndef link_h
-#define link_h
+#ifndef HEADER_gubg_physics_link_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_physics_link_hpp_ALREADY_INCLUDED
 
 using namespace std;
 

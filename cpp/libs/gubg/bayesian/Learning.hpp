@@ -1,5 +1,5 @@
-#ifndef gubg_bayesian_Learning_hpp
-#define gubg_bayesian_Learning_hpp
+#ifndef HEADER_gubg_bayesian_Learning_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_bayesian_Learning_hpp_ALREADY_INCLUDED
 
 #include "gubg/bayesian/Codes.hpp"
 

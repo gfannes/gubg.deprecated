@@ -1,5 +1,5 @@
-#ifndef data_h
-#define data_h
+#ifndef HEADER_gubg_data_data_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_data_data_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <vector>

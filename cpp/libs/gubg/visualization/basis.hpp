@@ -1,5 +1,5 @@
-#ifndef basis_h
-#define basis_h
+#ifndef HEADER_gubg_visualization_basis_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_visualization_basis_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

@@ -1,5 +1,5 @@
-#ifndef metropolis_h
-#define metropolis_h
+#ifndef HEADER_gubg_math_sampling_metropolis_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_sampling_metropolis_hpp_ALREADY_INCLUDED
 
 #include "distribution.hpp"
 #include "bernoulli.hpp"

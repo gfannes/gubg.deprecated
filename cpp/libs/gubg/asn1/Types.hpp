@@ -1,5 +1,5 @@
-#ifndef gubg_asn1_Types_hpp
-#define gubg_asn1_Types_hpp
+#ifndef HEADER_gubg_asn1_Types_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_asn1_Types_hpp_ALREADY_INCLUDED
 
 #include <string>
 

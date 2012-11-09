@@ -1,5 +1,5 @@
-#ifndef gubg_coding_d9_rle_hpp
-#define gubg_coding_d9_rle_hpp
+#ifndef HEADER_gubg_coding_d9_rle_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_coding_d9_rle_hpp_ALREADY_INCLUDED
 
 //Runlength encoding/decoding of:
 // * Numbers

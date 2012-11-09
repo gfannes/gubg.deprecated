@@ -1,5 +1,5 @@
-#ifndef linear_h
-#define linear_h
+#ifndef HEADER_gubg_linear_linear_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_linear_linear_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

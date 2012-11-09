@@ -1,5 +1,5 @@
-#ifndef gubg_distribution_Estimation_hpp
-#define gubg_distribution_Estimation_hpp
+#ifndef HEADER_gubg_distribution_Estimation_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_distribution_Estimation_hpp_ALREADY_INCLUDED
 
 #include "gubg/distribution/Codes.hpp"
 

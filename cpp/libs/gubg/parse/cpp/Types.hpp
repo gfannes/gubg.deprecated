@@ -1,5 +1,5 @@
-#ifndef gubg_parse_cpp_Types_hpp
-#define gubg_parse_cpp_Types_hpp
+#ifndef HEADER_gubg_parse_cpp_Types_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_Types_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 #include "gubg/SmartRange.hpp"

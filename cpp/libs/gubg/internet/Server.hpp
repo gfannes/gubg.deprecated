@@ -1,5 +1,5 @@
-#ifndef gubg_internet_Server_hpp
-#define gubg_internet_Server_hpp
+#ifndef HEADER_gubg_internet_Server_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_internet_Server_hpp_ALREADY_INCLUDED
 
 #include "gubg/internet/Socket.hpp"
 #include <thread>

@@ -1,5 +1,5 @@
-#ifndef gubg_parse_BreakUp_hpp
-#define gubg_parse_BreakUp_hpp
+#ifndef HEADER_gubg_parse_BreakUp_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_BreakUp_hpp_ALREADY_INCLUDED
 
 //breakUp() implements a O(n) algorithm for breaking-up a range (start, end)
 //Consumer.operator()(s, m, e) will be called repeatedly, if it returns true

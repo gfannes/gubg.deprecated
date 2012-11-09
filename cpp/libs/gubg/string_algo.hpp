@@ -1,5 +1,5 @@
-#ifndef gubg_string_hpp
-#define gubg_string_hpp
+#ifndef HEADER_gubg_string_algo_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_string_algo_hpp_ALREADY_INCLUDED
 
 #include "gubg/OnlyOnce.hpp"
 #include <sstream>

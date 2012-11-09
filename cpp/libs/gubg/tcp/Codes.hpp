@@ -1,5 +1,5 @@
-#ifndef gubg_tcp_Codes_hpp
-#define gubg_tcp_Codes_hpp
+#ifndef HEADER_gubg_tcp_Codes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tcp_Codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

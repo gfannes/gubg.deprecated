@@ -1,5 +1,5 @@
-#ifndef gubg_clock_timer_hpp
-#define gubg_clock_timer_hpp
+#ifndef HEADER_gubg_clock_timer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_clock_timer_hpp_ALREADY_INCLUDED
 
 #include <sys/time.h>
 #include <iostream>

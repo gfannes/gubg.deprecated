@@ -1,5 +1,5 @@
-#ifndef function_h
-#define function_h
+#ifndef HEADER_gubg_function_function_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_function_function_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 
