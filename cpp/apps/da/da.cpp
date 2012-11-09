@@ -43,7 +43,7 @@ namespace
 int main(int argc, char **argv)
 {
     if (!gubg::mss::isOK(main_(argc, argv)))
-        DA_FINALIZE_ERROR("");
+        DA_FINALIZE_ERROR("Problems were encountered...");
     DA_FINALIZE_OK("Everything went OK");
     return 0;
 }

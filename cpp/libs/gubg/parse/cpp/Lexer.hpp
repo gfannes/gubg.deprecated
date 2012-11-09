@@ -20,11 +20,16 @@ namespace gubg
                     enum State {Error, Idle, Detecting, Detected};
 
                     LexerState();
+                    void clear();
 
                     bool findToken(It s, It m, It e);
 
                     ReturnCode getToken(Token &);
-                    void setRange(Range range){range_ = range;}
+                    void setRange(Range range)
+                    {
+                        clear();
+                        range_ = range;
+                    }
 
                     bool error(const std::string &msg);
 
@@ -44,6 +49,7 @@ namespace gubg
                     char pch_;
                     Range range_;
                     std::string errorMsg_;
+                    size_t line_;
             };
 
             template <typename Tokens>
@@ -54,7 +60,7 @@ namespace gubg
 
                         ReturnCode tokenize(Range range)
                         {
-                            MSS_BEGIN(ReturnCode);
+                            MSS_BEGIN(ReturnCode, tokenize);
                             MSS(!range.empty(), RangeIsEmpty);
                             tokens_.clear();
                             lexerState_.setRange(range);

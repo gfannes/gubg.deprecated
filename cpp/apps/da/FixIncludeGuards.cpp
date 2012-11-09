@@ -45,7 +45,7 @@ namespace
         private:
             ReturnCode tokenize_(const File &header)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, tokenize_);
                 MSS(read(range_, header));
                 MSS(lexer_.tokenize(range_));
                 MSS_END();
@@ -62,7 +62,7 @@ namespace
             }
             ReturnCode fix_(const string &headerLocation)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, fix_);
                 Token *m1(0), *m2(0), *mlast(0);
                 for (auto &token: lexer_.tokens())
                 {
@@ -140,6 +140,6 @@ da::ReturnCode FixIncludeGuards::execute(const Options &options)
 {
     MSS_BEGIN(ReturnCode);
     Recursor recursor(options, gubg::file::getcwd());
-    recursor();
+    MSS(recursor());
     MSS_END();
 }
