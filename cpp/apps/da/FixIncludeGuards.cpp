@@ -45,7 +45,7 @@ namespace
         private:
             ReturnCode tokenize_(const File &header)
             {
-                MSS_BEGIN(ReturnCode, tokenize_);
+                MSS_BEGIN(ReturnCode);
                 MSS(read(range_, header));
                 MSS(lexer_.tokenize(range_));
                 MSS_END();
@@ -62,7 +62,7 @@ namespace
             }
             ReturnCode fix_(const string &headerLocation)
             {
-                MSS_BEGIN(ReturnCode, fix_);
+                MSS_BEGIN(ReturnCode);
                 Token *m1(0), *m2(0), *mlast(0);
                 for (auto &token: lexer_.tokens())
                 {
@@ -118,7 +118,7 @@ namespace
             }
             ReturnCode fixIncludeGuards_(const File &header)
             {
-                MSS_BEGIN(ReturnCode, fixIncludeGuards_, header.name());
+                MSS_BEGIN(ReturnCode);
                 MSS(tokenize_(header));
                 MSS(fix_(includeGuard_(header)));
                 if (content_() != range_.content())
