@@ -1,7 +1,7 @@
 #ifndef HEADER_gubg_Singleton_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_Singleton_hpp_ALREADY_INCLUDED
 
-#include <mutex>
+#include "gubg/mutex.hpp"
 
 //Insert this into the class definition to
 // * make its constructors private

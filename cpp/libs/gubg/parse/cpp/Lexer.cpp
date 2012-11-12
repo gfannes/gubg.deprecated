@@ -1,9 +1,20 @@
 #include "gubg/parse/cpp/Lexer.hpp"
+#include "gubg/Platform.hpp"
 #include "gubg/l.hpp"
 #include <sstream>
 using namespace std;
 
 //#define L_DEBUG
+
+#ifndef GUBG_LINUX
+namespace std
+{
+	bool isblank(char ch)
+	{
+		return ' ' == ch || '\t' == ch;
+	}
+}
+#endif
 
 namespace 
 {
