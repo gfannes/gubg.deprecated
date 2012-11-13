@@ -56,20 +56,6 @@ namespace
             {
                 return gubg::string_algo::join(lexer_.tokens(), "");
             }
-            static bool isCommentBlankOrNewline_(const Token &token)
-            {
-                switch (token.type)
-                {
-                        case Token::LineComment:
-                        case Token::BlockComment:
-                        case Token::Blanks:
-                        case Token::Newline:
-                        case Token::CarriageReturn:
-                            return true;
-                            break;
-                }
-                return false;
-            }
             ReturnCode fix_(const string &headerLocation)
             {
                 MSS_BEGIN(ReturnCode);
@@ -79,7 +65,7 @@ namespace
                 State state = Start;
                 for (auto &token: lexer_.tokens())
                 {
-                    if (isCommentBlankOrNewline_(token))
+                    if (token.isWhitespace())
                         continue;
 
                     switch (state)

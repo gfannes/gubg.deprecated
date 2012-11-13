@@ -20,6 +20,20 @@ namespace gubg
                     Range range;
 
                     std::string toString() const {return std::string(range.begin(), range.end());}
+                    bool isWhitespace() const
+                    {
+                        switch (type)
+                        {
+                            case Token::LineComment:
+                            case Token::BlockComment:
+                            case Token::Blanks:
+                            case Token::Newline:
+                            case Token::CarriageReturn:
+                                return true;
+                                break;
+                        }
+                        return false;
+                    }
                 };
             }
         }
