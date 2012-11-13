@@ -3,7 +3,7 @@
 #include <sstream>
 using namespace std;
 
-//#define L_DEBUG
+#define L_DEBUG
 
 namespace 
 {
@@ -106,7 +106,9 @@ namespace gubg
                             case '\n': return detectedA_(Type::Newline);
                             case '\r': return detectedA_(Type::CarriageReturn);
                                        //These tokens cannot be ended by themselves, we can dirrectly return
-                            case '#': return detectingA_(Type::Macro);
+                            case '#': if (!isalpha_(nextChar_(m, e)))
+                                          return error("Empty macro detected");
+                                      return detectingA_(Type::Macro);
                             case '"': return detectingA_(Type::String);
                             case '\'': return detectingA_(Type::Character);
                             case '/':
@@ -145,8 +147,6 @@ namespace gubg
                             switch (type_)
                             {
                                 case Type::Macro:
-                                    if (escaped_)
-                                        return error("Macro linending is still escaped, unexpected EOF");
                                 case Type::Alphas:
                                 case Type::Blanks:
                                 case Type::Digits:
@@ -161,13 +161,6 @@ namespace gubg
                         const auto nch = nextChar_(m, e);
                         switch (type_)
                         {
-                            case Type::Macro:
-                                switch (nch)
-                                {
-                                    case '\n': if (!escaped_) return detected_(); escaped_ = false; break;
-                                    case '\\': escaped_ = !escaped_; return false; break;
-                                }
-                                break;
                             case Type::String:
                                 switch (lch)
                                 {
@@ -184,6 +177,7 @@ namespace gubg
                                 }
                                 escaped_ = false;
                                 break;
+                            case Type::Macro: if (!isalpha_(nch)) return detected_(); break;
                             case Type::Alphas: if (!isalpha_(nch)) return detected_(); break;
                             case Type::Blanks: if (!isblank(nch)) return detected_(); break;
                             case Type::Digits: if (!isdigit(nch)) return detected_(); break;
