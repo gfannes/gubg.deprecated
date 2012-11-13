@@ -1,5 +1,5 @@
-#ifndef asdf
-#define asdf
+#ifndef HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/File.hpp"

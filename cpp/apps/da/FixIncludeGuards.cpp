@@ -131,6 +131,8 @@ namespace
                 if (content_() != range_.content())
                 {
                     L("Header " << header.name() << " needs fixing");
+//                    L("Orig content:\n" << range_.content());
+//                    L("New content:\n" << content_());
                     if (options_.doFix)
                         MSS(write(content_(), header));
                 }
