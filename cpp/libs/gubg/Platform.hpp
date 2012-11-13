@@ -6,6 +6,11 @@
 
 #ifdef __linux
 #define GUBG_LINUX
+#define GUBG_POSIX
+#endif
+#ifdef __MINGW32__
+#define GUBG_MINGW
+#define GUBG_POSIX
 #endif
 #ifdef _WIN32
 #define GUBG_WIN32

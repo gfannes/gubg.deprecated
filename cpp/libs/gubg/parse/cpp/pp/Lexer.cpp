@@ -4,7 +4,7 @@
 #include <sstream>
 using namespace std;
 
-#define L_DEBUG
+//#define L_DEBUG
 
 #ifndef GUBG_LINUX
 namespace std
@@ -18,9 +18,9 @@ namespace std
 
 namespace 
 {
-    bool isalpha_(char ch)
+    bool isIdentifier_(char ch)
     {
-        return isalpha(ch) || '_' == ch;
+        return isalpha(ch) || '_' == ch || isdigit(ch);
     }
     template <typename It>
         size_t backslashNewline_(It b, It e)
@@ -77,6 +77,7 @@ namespace gubg
                 {
                     state_ = Idle;
                     escaped_ = false;
+                    macro_ = false;
                     bsnl_ = 0;
                     pch_ = '\0';
                     line_ = 1;
@@ -91,6 +92,7 @@ namespace gubg
                         return false;
 
                     const auto lch = *(m-1);
+                    //Keep track of the line number
                     if (lch == '\n')
                         ++line_;
 
@@ -114,11 +116,17 @@ namespace gubg
                         //Single-character stuff
                         switch (sch)
                         {
-                            case '\n': return detectedA_(Type::Newline);
+                            case '\n': macro_ = false;//Any macro is ended with a newline, at least after we deal with backslash-newlines
+                                       return detectedA_(Type::Newline);
                             case '\r': return detectedA_(Type::CarriageReturn);
                                        //These tokens cannot be ended by themselves, we can dirrectly return
-                            case '#': if (!isalpha_(nextChar_(m, e)))
+                            case '#': if (macro_)
+                                          //Inside a macro, "#" and "##" are legitimate symbols
+                                          return detectedA_(Type::Symbol);
+                                      //If we are not inside a macro, we expect an alpha to follow the '#'-character
+                                      if (!isalpha(nextChar_(m, e)))
                                           return error("Empty macro detected");
+                                      macro_ = true;
                                       return detectingA_(Type::Macro);
                             case '"': return detectingA_(Type::String);
                             case '\'': return detectingA_(Type::Character);
@@ -137,12 +145,10 @@ namespace gubg
                         if (memchr(symbols, sch, sizeof(symbols)))
                             return detectedA_(Type::Symbol);
                         //These tokens might be ended immediately, we do not return, but will also execute the Detecting part
-                        if (isalpha_(sch))
-                            detectingA_(Type::Alphas);
+                        if (isIdentifier_(sch))
+                            detectingA_(Type::Identifier);
                         else if (isblank(sch))
                             detectingA_(Type::Blanks);
-                        else if (isdigit(sch))
-                            detectingA_(Type::Digits);
                         else
                         {
                             ostringstream oss;
@@ -155,12 +161,15 @@ namespace gubg
                     {
                         if (m == e)
                         {
+                            //This means we are at the end of file
                             switch (type_)
                             {
                                 case Type::Macro:
-                                case Type::Alphas:
+                                    if (macro_)
+                                        //We allow a macro to be ended via an EOF
+                                        macro_ = false;
+                                case Type::Identifier:
                                 case Type::Blanks:
-                                case Type::Digits:
                                 case Type::LineComment:
                                     return detected_();
                                 case Type::String: return error("String is not closed");
@@ -188,10 +197,9 @@ namespace gubg
                                 }
                                 escaped_ = false;
                                 break;
-                            case Type::Macro: if (!isalpha_(nch)) return detected_(); break;
-                            case Type::Alphas: if (!isalpha_(nch)) return detected_(); break;
+                            case Type::Macro: if (!isalpha(nch)) return detected_(); break;
+                            case Type::Identifier: if (!isIdentifier_(nch)) return detected_(); break;
                             case Type::Blanks: if (!isblank(nch)) return detected_(); break;
-                            case Type::Digits: if (!isdigit(nch)) return detected_(); break;
                             case Type::LineComment: if (nch == '\n') return detected_(); break;
                             case Type::BlockComment: if (lch == '/' && pch_ == '*' && range_.size() >= 4) return detected_(); break;
                         }

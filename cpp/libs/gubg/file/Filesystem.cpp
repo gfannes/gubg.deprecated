@@ -2,7 +2,6 @@
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 #include <fstream>
-#define GUBG_POSIX
 #ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
@@ -101,7 +100,7 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 
         {
             File::Type type = File::Unknown;
-#if GUBG_LINUX
+#ifdef GUBG_LINUX
             switch (entryp->d_type)
             {
                 case DT_DIR: type = File::Directory; break;

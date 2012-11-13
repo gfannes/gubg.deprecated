@@ -37,6 +37,13 @@ namespace gubg
                     end_ = data_->end();
                     return *this;
                 }
+                SmartRange &operator=(const Container &container)
+                {
+                    data_.reset(new Container(container));
+                    begin_ = data_->begin();
+                    end_ = data_->end();
+                    return *this;
+                }
 
                 void limit(iterator begin, iterator end)
                 {

@@ -46,6 +46,8 @@ namespace gubg
                         State state_;
                         Type type_;
                         bool escaped_;
+                        //Is true if we are inside a macro, i.e., between a # and the closing newline
+                        bool macro_;
                         //A counter indicating how many backslash-newline characters have to be skipped
                         int bsnl_;
                         char pch_;

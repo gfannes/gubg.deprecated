@@ -3,12 +3,14 @@
 #include "da/FixIncludeGuards.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/l.hpp"
-#include "gubg/parse/cpp/Lexer.hpp"
+#include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/string_algo.hpp"
 #include <vector>
+#include <cassert>
 using namespace da;
 using namespace gubg::file;
 using namespace gubg::parse::cpp;
+using namespace gubg::parse::cpp::pp;
 using namespace std;
 
 namespace 
@@ -54,53 +56,72 @@ namespace
             {
                 return gubg::string_algo::join(lexer_.tokens(), "");
             }
-            static ReturnCode startsWith_(const Token &token, const string &start)
+            static bool isCommentBlankOrNewline_(const Token &token)
             {
-                MSS_BEGIN(ReturnCode);
-                MSS(token.range.content().substr(0, start.size()) == start);
-                MSS_END();
-            }
-            ReturnCode fix_(const string &headerLocation)
-            {
-                MSS_BEGIN(ReturnCode);
-                Token *m1(0), *m2(0), *mlast(0);
-                for (auto &token: lexer_.tokens())
+                switch (token.type)
                 {
-                    switch (token.type)
-                    {
                         case Token::LineComment:
                         case Token::BlockComment:
                         case Token::Blanks:
                         case Token::Newline:
+                        case Token::CarriageReturn:
+                            return true;
                             break;
-                        case Token::Macro:
-                            if (!m1)
-                                m1 = &token;
-                            else if (!m2)
-                                m2 = &token;
-                            else
-                                //We keep track of the last macro we see
-                                mlast = &token;
+                }
+                return false;
+            }
+            ReturnCode fix_(const string &headerLocation)
+            {
+                MSS_BEGIN(ReturnCode);
+
+                Token *ident1(0), *ident2(0), *lastMacro(0);
+                enum State {Start, IfndefDetected, Ident1Detected, DefineDetected, Ident2Detected, LastMacroDetected, Error};
+                State state = Start;
+                for (auto &token: lexer_.tokens())
+                {
+                    if (isCommentBlankOrNewline_(token))
+                        continue;
+
+                    switch (state)
+                    {
+                        case Start:
+                            MSS(token.type == Token::Macro);
+                            MSS(token.range.content() == "#ifndef");
+                            state = IfndefDetected;
                             break;
-                        default:
-                            //We expect the first non blank or newline or macro token _after_ the ifndef/define of the include guard
-                            MSS(m1 != 0 && m2 != 0);
+                        case IfndefDetected:
+                            MSS(token.type == Token::Identifier);
+                            ident1 = &token;
+                            state = Ident1Detected;
+                            break;
+                        case Ident1Detected:
+                            MSS(token.type == Token::Macro);
+                            MSS(token.range.content() == "#define");
+                            state = DefineDetected;
+                            break;
+                        case DefineDetected:
+                            MSS(token.type == Token::Identifier);
+                            ident2 = &token;
+                            state = Ident2Detected;
+                            break;
+                        case Ident2Detected:
+                        case LastMacroDetected:
+                            if (token.type == Token::Macro)
+                            {
+                                lastMacro = &token;
+                                state = LastMacroDetected;
+                            }
                             break;
                     }
                 }
-                MSS(m1 != 0 && m2 != 0 && mlast != 0);
-                MSS(startsWith_(*m1, "#ifndef "));
-                MSS(startsWith_(*m2, "#define "));
-                MSS(startsWith_(*mlast, "#endif"));
 
-                {
-                    ostringstream oss;
-                    oss << "#ifndef " << headerLocation;
-                    m1->range = oss.str();
-                    oss.str("");
-                    oss << "#define " << headerLocation;
-                    m2->range = oss.str();
-                }
+                MSS(state == LastMacroDetected);
+                assert(ident1 != 0 && ident2 != 0 && lastMacro != 0);
+                MSS(lastMacro->range.content() == "#endif");
+
+                ident1->range = headerLocation;
+                ident2->range = headerLocation;
+
                 MSS_END();
             }
             string includeGuard_(const File &header)

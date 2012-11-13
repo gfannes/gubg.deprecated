@@ -14,7 +14,7 @@ namespace gubg
             {
                 struct Token
                 {
-                    enum Type {Macro, String, Character, Alphas, Digits, Blanks, Newline, CarriageReturn, Symbol, LineComment, BlockComment, StandaloneBackslashNewline};
+                    enum Type {Macro, String, Character, Identifier, Blanks, Newline, CarriageReturn, Symbol, LineComment, BlockComment, StandaloneBackslashNewline};
 
                     Type type;
                     Range range;
