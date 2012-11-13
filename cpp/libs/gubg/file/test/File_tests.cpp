@@ -58,5 +58,16 @@ int main()
         file << "";
         TEST_EQ("a/b/c", file.name());
     }
+    {
+        TEST_TAG(extension);
+        File f("a/b/c");
+        TEST_EQ("a/b/c", f.name());
+        f.setExtension("obj");
+        TEST_EQ("a/b/c.obj", f.name());
+        f.setExtension("obj");
+        TEST_EQ("a/b/c.obj", f.name());
+        f.setExtension("obj2");
+        TEST_EQ("a/b/c.obj2", f.name());
+    }
     return 0;
 }

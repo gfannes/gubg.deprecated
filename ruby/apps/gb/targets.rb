@@ -397,14 +397,16 @@ class Configs
             @roots << dirUPP if File.exist?(dirUPP)
             @compiler, @linker = "g++", "g++"
             #@compileSettings = "-std=c++0x -O3 -pthread -g"
-            @compileSettings = "-std=c++0x -O3 -pthread"
-            @linkSettings = "-std=c++0x -g -pthread"
+            @compileSettings = "-std=c++0x -O3"
+            @linkSettings = "-std=c++0x -g"
             sfmlLibs = %w[sfml-graphics sfml-window sfml-audio sfml-system]
             boostLibs = %w[boost_thread boost_system boost_filesystem boost_regex boost_signals]
             thirdParty = {}
             usedTPs = [:boost, :sdl, :freetype]
             case context.targetPlatform
             when "pc-linux"
+		@compileSettings << " -pthread"
+		@linkSettings << " -pthread"
                 #Boost build instructions
                 #tar xjvf boost_1_51_0.tar.bz2 -C ~/sdks
                 #cd ~/sdks

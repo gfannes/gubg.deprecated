@@ -27,6 +27,7 @@ namespace
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){DA_FINALIZE_OK(optionParser.help());});
             optionParser.addMandatory("-f", "--fix TYPE", "Fix something (e.g., guards)", [&tasks](string v){addFixTask(tasks, v);});
             optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
+            optionParser.addMandatory("-e", "--exe SOURCE", "Compile SOURCE into an executable", [&tasks](string source){tasks.push_back(CompileExe::create(source));});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));

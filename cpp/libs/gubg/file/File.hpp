@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "gubg/l.hpp"
+
 namespace gubg
 {
     namespace file
@@ -26,12 +28,15 @@ namespace gubg
                 Type type()        const {return type_;}
                 std::string extension() const
                 {
-                    if (type() != Regular)
+                    if (type() != Regular && type() != Unknown)
                         return "";
-                    auto ix = name_.rfind('.');
-                    if (ix == std::string::npos)
+                    auto ixdot = name_.rfind('.');
+                    if (ixdot == std::string::npos)
                         return "";
-                    return name_.substr(ix+1);
+                    auto ixdelim = name_.rfind(Delimiter);
+                    if (ixdelim != std::string::npos && ixdot < ixdelim)
+                        return "";
+                    return name_.substr(ixdot+1);
                 }
                 std::string basename() const
                 {
@@ -43,6 +48,18 @@ namespace gubg
                 File &setName(const std::string & name){name_ = name;            return *this;}
                 File &setName(      std::string &&name){name_ = std::move(name); return *this;}
                 File &setType(Type type)               {type_ = type;            return *this;}
+                File &setExtension(const std::string &ext)
+                {
+                    if (type() == Regular || type() == Unknown)
+                    {
+                        const auto oldExt = extension();
+                        name_.resize(name_.size() - oldExt.size());
+                        if (name_.empty() || name_.back() != '.')
+                            name_ += '.';
+                        name_ += ext;
+                    }
+                    return *this;
+                }
 
                 //Append a part to the current File
                 File &operator<<(const std::string &name)

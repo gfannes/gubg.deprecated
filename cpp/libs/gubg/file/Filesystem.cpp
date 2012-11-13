@@ -2,7 +2,8 @@
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 #include <fstream>
-#ifdef GUBG_LINUX
+#define GUBG_POSIX
+#ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
 #endif
@@ -42,6 +43,7 @@ ReturnCode gubg::file::read(SmartRange<string> &range, const File &file)
     MSS_END();
 }
 
+#ifdef GUBG_POSIX
 namespace 
 {
     struct Dir
@@ -55,11 +57,30 @@ namespace
         }
     };
 }
+#endif
+#ifndef GUBG_LINUX
+//Some things are missing for MinGW
+#define NAME_MAX FILENAME_MAX
+int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)
+{
+	std::mutex m;
+	std::lock_guard<std::mutex> lock(m);
+	struct dirent *p;
+	if (!(p = ::readdir(dirp)))
+	{
+		*result = 0;
+		return 0;
+	}
+	*entry = *p;
+	*result = entry;
+	return 0;
+}
+#endif
 ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 {
     MSS_BEGIN(ReturnCode, read, file.name());
     MSS(File::Unknown == file.type() || File::Directory ==  file.type(), ExpectedDirectory);
-#ifdef GUBG_LINUX
+#ifdef GUBG_POSIX
     //Open the directory in a RAII
     Dir dir(::opendir(file.name().c_str()));
     MSS(dir.h, CouldNotOpenDir);
@@ -80,6 +101,7 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 
         {
             File::Type type = File::Unknown;
+#if GUBG_LINUX
             switch (entryp->d_type)
             {
                 case DT_DIR: type = File::Directory; break;
@@ -89,6 +111,15 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
             }
             if (File::Unknown != type)
                 files.push_back(File(file).setType(type) << entryp->d_name);
+#else
+	    //MinGW does not have the dirent.d_type data member
+	    {
+		    File f(file);
+		    f << entryp->d_name;
+		    if (mss::isOK(determineType(f)))
+			    files.push_back(f);
+	    }
+#endif
         }
     }
 #else
@@ -112,13 +143,19 @@ ReturnCode gubg::file::determineType(File &file)
 {
     MSS_BEGIN(ReturnCode);
     struct stat statbuf;
+#ifdef GUBG_LINUX
     MSS(0 == ::lstat(file.name().c_str(), &statbuf), FileDoesNotExist);
+#else
+    MSS(0 == ::stat(file.name().c_str(), &statbuf), FileDoesNotExist);
+#endif
     switch (statbuf.st_mode & S_IFMT)
     {
         case S_IFREG: file.setType(File::Regular); break;
         case S_IFDIR: file.setType(File::Directory); break;
         case S_IFIFO: file.setType(File::FIFO); break;
+#ifdef GUBG_LINUX
         case S_IFLNK: file.setType(File::Symbolic); break;
+#endif
         default: MSS_L(UnknownFileType); break;
     }
     MSS_END();

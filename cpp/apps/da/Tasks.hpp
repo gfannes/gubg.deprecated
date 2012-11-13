@@ -24,5 +24,6 @@ namespace da
 }
 
 #include "da/FixIncludeGuards.hpp"
+#include "da/CompileExe.hpp"
 
 #endif

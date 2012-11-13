@@ -62,7 +62,7 @@ namespace gubg
 
                             ReturnCode tokenize(Range range)
                             {
-                                MSS_BEGIN(ReturnCode, tokenize);
+                                MSS_BEGIN(ReturnCode);
                                 MSS(!range.empty(), RangeIsEmpty);
                                 tokens_.clear();
                                 lexerState_.setRange(range);

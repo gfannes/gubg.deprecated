@@ -43,6 +43,7 @@ int main()
             TEST_TAG(directory);
             const File root("/");
             const File home("/home/gfannes");
+            const File gubg("/home/gfannes/gubg");
             vector<File> files;
             TEST_OK(read(files, home));
             L("I found " << files.size() << " files in " << home.name());
@@ -53,8 +54,8 @@ int main()
             {
                 TEST_TAG(countNrFiles);
                 size_t nrFiles = 0;
-                countNrFiles(nrFiles, home);
-                L("I found " << nrFiles << " files and dirs in " << home.name());
+                countNrFiles(nrFiles, gubg);
+                L("I found " << nrFiles << " files and dirs in " << gubg.name());
             }
             {
                 TEST_TAG(Recursor_crtp);
@@ -72,7 +73,7 @@ int main()
                     }
                 };
                 Counter counter;
-                counter(home);
+                counter(gubg);
                 L("Filecount: " << counter.count);
             }
         }
