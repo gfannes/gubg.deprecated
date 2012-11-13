@@ -1,5 +1,5 @@
-#ifndef gubg_mutex_hpp
-#define gubg_mutex_hpp
+#ifndef HEADER_gubg_mutex_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_mutex_hpp_ALREADY_INCLUDED
 
 #include "gubg/Platform.hpp"
 
