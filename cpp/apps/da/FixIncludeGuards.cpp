@@ -58,7 +58,7 @@ namespace
             }
             ReturnCode fix_(const string &headerLocation)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, fix_);
 
                 Token *ident1(0), *ident2(0), *lastMacro(0);
                 enum State {Start, IfndefDetected, Ident1Detected, DefineDetected, Ident2Detected, LastMacroDetected, Error};
@@ -71,8 +71,10 @@ namespace
                     switch (state)
                     {
                         case Start:
+                            if (token.type == Token::MacroHash)
+                                continue;
                             MSS(token.type == Token::Macro);
-                            MSS(token.range.content() == "#ifndef");
+                            MSS(token.range.content() == "ifndef");
                             state = IfndefDetected;
                             break;
                         case IfndefDetected:
@@ -81,8 +83,10 @@ namespace
                             state = Ident1Detected;
                             break;
                         case Ident1Detected:
+                            if (token.type == Token::MacroHash)
+                                continue;
                             MSS(token.type == Token::Macro);
-                            MSS(token.range.content() == "#define");
+                            MSS(token.range.content() == "define");
                             state = DefineDetected;
                             break;
                         case DefineDetected:
@@ -103,7 +107,7 @@ namespace
 
                 MSS(state == LastMacroDetected);
                 assert(ident1 != 0 && ident2 != 0 && lastMacro != 0);
-                MSS(lastMacro->range.content() == "#endif");
+                MSS(lastMacro->range.content() == "endif");
 
                 ident1->range = headerLocation;
                 ident2->range = headerLocation;
@@ -118,6 +122,8 @@ namespace
                     {
                         case '.':
                         case '/':
+                        case ':':
+                        case '\\':
                             ch = '_';
                             break;
                     }
@@ -125,7 +131,7 @@ namespace
             }
             ReturnCode fixIncludeGuards_(const File &header)
             {
-                MSS_BEGIN(ReturnCode);
+                MSS_BEGIN(ReturnCode, fixIncludeGuards_, STREAM(header.name()));
                 MSS(tokenize_(header));
                 MSS(fix_(includeGuard_(header)));
                 if (content_() != range_.content())

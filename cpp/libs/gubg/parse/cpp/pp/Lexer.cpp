@@ -81,6 +81,7 @@ namespace gubg
                     bsnl_ = 0;
                     pch_ = '\0';
                     line_ = 1;
+		    prevType_ = type_ = Type::Unknown;
                 }
 
                 bool LexerState::findToken(It s, It m, It e)
@@ -117,17 +118,18 @@ namespace gubg
                         switch (sch)
                         {
                             case '\n': macro_ = false;//Any macro is ended with a newline, at least after we deal with backslash-newlines
-                                       return detectedA_(Type::Newline);
+                                       return detectedA_(Type::LineFeed);
                             case '\r': return detectedA_(Type::CarriageReturn);
                                        //These tokens cannot be ended by themselves, we can dirrectly return
                             case '#': if (macro_)
                                           //Inside a macro, "#" and "##" are legitimate symbols
                                           return detectedA_(Type::Symbol);
-                                      //If we are not inside a macro, we expect an alpha to follow the '#'-character
-                                      if (!isalpha(nextChar_(m, e)))
-                                          return error("Empty macro detected");
                                       macro_ = true;
-                                      return detectingA_(Type::Macro);
+				      if (m == e)
+					      return error("Unfinished macro");
+				      if (isIdentifier_(nextChar_(m, e)))
+					      return detectedA_(Type::MacroHash);
+				      return detectingA_(Type::MacroHash);
                             case '"': return detectingA_(Type::String);
                             case '\'': return detectingA_(Type::Character);
                             case '/':
@@ -146,7 +148,12 @@ namespace gubg
                             return detectedA_(Type::Symbol);
                         //These tokens might be ended immediately, we do not return, but will also execute the Detecting part
                         if (isIdentifier_(sch))
-                            detectingA_(Type::Identifier);
+			{
+				if (prevType_ == Type::MacroHash)
+					detectingA_(Type::Macro);
+				else
+					detectingA_(Type::Identifier);
+			}
                         else if (isblank(sch))
                             detectingA_(Type::Blanks);
                         else
@@ -164,99 +171,102 @@ namespace gubg
                             //This means we are at the end of file
                             switch (type_)
                             {
-                                case Type::Macro:
-                                    if (macro_)
-                                        //We allow a macro to be ended via an EOF
-                                        macro_ = false;
-                                case Type::Identifier:
-                                case Type::Blanks:
-                                case Type::LineComment:
-                                    return detected_();
-                                case Type::String: return error("String is not closed");
-                                case Type::Character: return error("Character is not closed");
-                                case Type::BlockComment: return error("BlockComment is not closed");
-                            }
-                            return error("Unexpected end of file");
-                        }
-                        const auto nch = nextChar_(m, e);
-                        switch (type_)
-                        {
-                            case Type::String:
-                                switch (lch)
-                                {
-                                    case '\"': if (!escaped_) return detected_(); break;
-                                    case '\\': escaped_ = !escaped_; return false; break;
-                                }
-                                escaped_ = false;
-                                break;
-                            case Type::Character:
-                                switch (lch)
-                                {
-                                    case '\'': if (!escaped_) return detected_(); break;
-                                    case '\\': escaped_ = !escaped_; return false; break;
-                                }
-                                escaped_ = false;
-                                break;
-                            case Type::Macro: if (!isalpha(nch)) return detected_(); break;
-                            case Type::Identifier: if (!isIdentifier_(nch)) return detected_(); break;
-                            case Type::Blanks: if (!isblank(nch)) return detected_(); break;
-                            case Type::LineComment: if (nch == '\n') return detected_(); break;
-                            case Type::BlockComment: if (lch == '/' && pch_ == '*' && range_.size() >= 4) return detected_(); break;
-                        }
-                        //We have to wait some more
-                        return false;
-                    }
-                    assert(false);
-                    return false;
-                }
-                ReturnCode LexerState::getToken(Token &token)
-                {
-                    MSS_BEGIN(ReturnCode);
-                    MSS(state_ == Detected);
-                    token.type = type_;
-                    token.range = range_;
-                    state_ = Idle;
-                    MSS_END();
-                }
+				    case Type::Unknown: assert(false); break;
+				    case Type::MacroHash: return error("Incomplete macro");
+				    case Type::Macro:
+				    case Type::Identifier:
+				    case Type::Blanks:
+				    case Type::LineComment:
+							  return detected_();
+				    case Type::String: return error("String is not closed");
+				    case Type::Character: return error("Character is not closed");
+				    case Type::BlockComment: return error("BlockComment is not closed");
+			    }
+			    return error("Unexpected end of file");
+			}
+			const auto nch = nextChar_(m, e);
+			switch (type_)
+			{
+				case Type::Unknown: assert(false); break;
+				case Type::String:
+					      switch (lch)
+					      {
+						      case '\"': if (!escaped_) return detected_(); break;
+						      case '\\': escaped_ = !escaped_; return false; break;
+					      }
+					      escaped_ = false;
+					      break;
+				case Type::Character:
+					      switch (lch)
+					      {
+						      case '\'': if (!escaped_) return detected_(); break;
+						      case '\\': escaped_ = !escaped_; return false; break;
+					      }
+					      escaped_ = false;
+					      break;
+				case Type::MacroHash: if (isalpha(nch)) return detected_(); break;
+				case Type::Macro: if (!isalpha(nch)) return detected_(); break;
+				case Type::Identifier: if (!isIdentifier_(nch)) return detected_(); break;
+				case Type::Blanks: if (!isblank(nch)) return detected_(); break;
+				case Type::LineComment: if (nch == '\n') return detected_(); break;
+				case Type::BlockComment: if (lch == '/' && pch_ == '*' && range_.size() >= 4) return detected_(); break;
+			}
+			//We have to wait some more
+			return false;
+		    }
+		    assert(false);
+		    return false;
+		}
+		ReturnCode LexerState::getToken(Token &token)
+		{
+			MSS_BEGIN(ReturnCode);
+			MSS(state_ == Detected);
+			token.type = type_;
+			prevType_ = type_;
+			type_ = Type::Unknown;
+			token.range = range_;
+			state_ = Idle;
+			MSS_END();
+		}
 
-                bool LexerState::detectingA_(Type t)
-                {
-                    type_ = t;
-                    state_ = Detecting;
-                    return false;
-                }
-                bool LexerState::detectedA_(Type t)
-                {
-                    printToken_('<', '>');
-                    type_ = t;
-                    state_ = Detected;
-                    return true;
-                }
-                bool LexerState::detected_()
-                {
-                    printToken_('(', ')');
-                    state_ = Detected;
-                    return true;
-                }
-                bool LexerState::error(const string &msg)
-                {
-                    L("ERROR: " << msg);
-                    state_ = Error;
-                    errorMsg_ = msg;
-                    return false;
-                }
+		bool LexerState::detectingA_(Type t)
+		{
+			type_ = t;
+			state_ = Detecting;
+			return false;
+		}
+		bool LexerState::detectedA_(Type t)
+		{
+			printToken_('<', '>');
+			type_ = t;
+			state_ = Detected;
+			return true;
+		}
+		bool LexerState::detected_()
+		{
+			printToken_('(', ')');
+			state_ = Detected;
+			return true;
+		}
+		bool LexerState::error(const string &msg)
+		{
+			L("ERROR \"" << msg << "\" on line " << line_);
+			state_ = Error;
+			errorMsg_ = msg;
+			return false;
+		}
 
-                void LexerState::printToken_(char cho, char chc)
-                {
+		void LexerState::printToken_(char cho, char chc)
+		{
 #ifdef L_DEBUG
-                    cout << cho << string(range_.begin(), range_.end()) << chc;
+			cout << cho << string(range_.begin(), range_.end()) << chc;
 #endif
-                }
-                void LexerState::printToken_(char ch)
-                {
-                    printToken_(ch, ch);
-                }
-            };
-        }
+		}
+		void LexerState::printToken_(char ch)
+		{
+			printToken_(ch, ch);
+		}
+	    };
+	}
     }
 }

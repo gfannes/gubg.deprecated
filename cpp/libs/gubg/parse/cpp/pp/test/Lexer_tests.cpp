@@ -1,4 +1,4 @@
-#define GUBG_LOG
+# define GUBG_LOG
 //#include "blabla.hpp"
 #include "gubg/testing/Testing.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"

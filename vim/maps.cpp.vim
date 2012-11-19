@@ -32,14 +32,14 @@ map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_
 map -m <Bslash>ajOMSS();<Esc><Bslash>ahi
 map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
 else
-""" MSS
-""map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
-""map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
-""map -m <Bslash>ajOMSS();<Esc><Bslash>ahi
-""map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
-" INDEP_MSS
-map -n <Bslash>ajOINDEP_MSS_BEGIN(ReturnCode);<Esc>oINDEP_MSS_END();<Esc><Bslash>ak$
-map -N <Bslash>ajOINDEP_MSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oINDEP_MSS_END();<Esc><Bslash>ak$
-map -m <Bslash>ajOINDEP_MSS();<Esc><Bslash>ahi
-map -v <Bslash>aoReturnCode<Esc>o{<Esc>oINDEP_MSS_BEGIN(ReturnCode);<Esc>oINDEP_MSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
+" MSS
+map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
+map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$
+map -m <Bslash>ajOMSS();<Esc><Bslash>ahi
+map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
+""" INDEP_MSS
+""map -n <Bslash>ajOINDEP_MSS_BEGIN(ReturnCode);<Esc>oINDEP_MSS_END();<Esc><Bslash>ak$
+""map -N <Bslash>ajOINDEP_MSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oINDEP_MSS_END();<Esc><Bslash>ak$
+""map -m <Bslash>ajOINDEP_MSS();<Esc><Bslash>ahi
+""map -v <Bslash>aoReturnCode<Esc>o{<Esc>oINDEP_MSS_BEGIN(ReturnCode);<Esc>oINDEP_MSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
 endif

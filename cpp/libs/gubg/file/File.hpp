@@ -18,10 +18,16 @@ namespace gubg
                 static const char Delimiter = '/';
 
                 File()                                   :type_(Unknown){};
-                File(const std::string & name)           :type_(Unknown), name_(name){}
-                File(      std::string &&name)           :type_(Unknown), name_(std::move(name)){}
-                File(const std::string & name, Type type):type_(type),    name_(name){}
-                File(      std::string &&name, Type type):type_(type),    name_(std::move(name)){}
+                File(const std::string & name)           :type_(Unknown), name_(name)           {canonicalize_();}
+                File(      std::string &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
+                File(const std::string & name, Type type):type_(type),    name_(name)           {canonicalize_();}
+                File(      std::string &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
+
+		void clear()
+		{
+			type_ = Unknown;
+			name_.clear();
+		}
 
                 //Getters
                 std::string name() const {return name_;}
@@ -45,8 +51,8 @@ namespace gubg
                 }
 
                 //Setters
-                File &setName(const std::string & name){name_ = name;            return *this;}
-                File &setName(      std::string &&name){name_ = std::move(name); return *this;}
+                File &setName(const std::string & name){name_ = name;            canonicalize_(); return *this;}
+                File &setName(      std::string &&name){name_ = std::move(name); canonicalize_(); return *this;}
                 File &setType(Type type)               {type_ = type;            return *this;}
                 File &setExtension(const std::string &ext)
                 {
@@ -114,6 +120,13 @@ namespace gubg
                 }
 
             private:
+		void canonicalize_()
+		{
+			for (auto &ch: name_)
+				if (ch == '\\')
+					ch = '/';
+		}
+
                 Type type_;
                 std::string name_;
         };

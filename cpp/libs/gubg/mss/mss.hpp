@@ -246,12 +246,17 @@ namespace gubg
                 template <typename X>
                     bool set(std::shared_ptr<X> p, ReturnCode v = ReturnCode::InvalidSharedPtr){return set((bool)p ? ReturnCode::OK : v);}
                 bool set(bool b, ReturnCode v = ReturnCode::False) { return set(b ? ReturnCode::OK : v); }
-                Level level() const {return gubg::mss::Level::Error;}
-                std::string toString() const
-                {
-                    return l_MSSCode_AsString(v_);
-                }
-                ReturnCodeT v_;
+
+		//Used in MSS_SET_PTR()
+		void set_ptr(ReturnCodeT p) { v_ = p; }
+		void set_ptr(T *p) { v_.reset(p); }
+
+		Level level() const {return gubg::mss::Level::Error;}
+		std::string toString() const
+		{
+			return l_MSSCode_AsString(v_);
+		}
+		ReturnCodeT v_;
             };
         template <typename ReturnCodeWrapper>
             struct SuccessChecker
@@ -415,6 +420,20 @@ MSS_BEGIN(t)
 //Direct return of a hardcoded value, c should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_L_(level, c, msg) MSS_DIRECT(level, mss_return_code_type::c, msg)
 #define MSS_L(c) MSS_L_(Unknown, c, "")
+
+#define MSS_IS_OK(v) gubg::mss::isOK(v)
+
+//Support for setting the internal shared_ptr (when MSS_BEGIN(shared_ptr<>) is used)
+#define MSS_SET_PTR(ptr) \
+	do { \
+		MSS(ptr); \
+		MSS_RC_VAR.set_ptr(ptr); \
+	} while (false)
+#define MSS_SET_PTR_Q(ptr) \
+	do { \
+		MSS_Q(ptr); \
+		MSS_RC_VAR.set_ptr(ptr); \
+	} while (false)
 
 //Allows you to test for one specific failure value, which is typically something like "NotFound"
 //If v == c, the block under this macro will be skipped

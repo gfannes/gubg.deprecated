@@ -15,8 +15,11 @@ namespace gubg
         {
             //Local: #include "a/b/c.hpp"
             //System: #include <a/b/c.hpp>
-            enum class IncludeType {Local, System};
+            enum class IncludeType {Local, System, Macro};
 
+	    //Produces following events:
+	    //includes_detected(const std::string &, IncludeType)
+	    //includes_error(const std::string &msg) if needed
             template <typename Receiver>
                 class Includes_crtp
                 {
@@ -28,22 +31,39 @@ namespace gubg
                             MSS(gubg::file::read(range, file));
                             pp::Lexer<std::vector<pp::Token>> lexer;
                             MSS(lexer.tokenize(range));
-                            enum State {Idle, IncludeDetected, BeginBracketInclude};
+                            enum State {Idle, IncludeDetected, BeginBracketInclude, MacroInclude};
                             State state = Idle;
-                            std::ostringstream oss;
-                            for (auto &token: lexer.tokens())
+                            std::ostringstream incl;
+			    auto &tokens = lexer.tokens();
+			    for (auto it = tokens.begin(); it != tokens.end(); ++it)
                             {
+				auto &token = *it;
                                 typedef pp::Token Token;
+
+				if (state == MacroInclude)
+				{
+					if (isLineFeed(token) || isCarriageReturn(token))
+					{
+						receiver_().includes_detected(incl.str(), IncludeType::Macro);
+						incl.str("");
+						state = Idle;
+					}
+					else
+						incl << token.range.content();
+					continue;
+				}
+
                                 if (token.isWhitespace())
                                     continue;
+
                                 switch (state)
                                 {
                                     case Idle:
-                                        if (token.type == Token::Macro && token.range.content() == "#include")
+                                        if (isMacro(token) && token.range.content() == "include")
                                             state = IncludeDetected;
                                         break;
                                     case IncludeDetected:
-                                        if (token.type == Token::String)
+                                        if (isString(token))
                                         {
                                             const auto content = token.range.content();
                                             MSS(content.front() == '"' && content.back() == '"', IllegalInclude);
@@ -51,15 +71,23 @@ namespace gubg
                                             receiver_().includes_detected(content.substr(1, content.size()-2), IncludeType::Local);
                                             state = Idle;
                                         }
-                                        else if (token.type == Token::Symbol)
+                                        else if (isSymbol(token))
                                         {
                                             MSS(token.range.content() == "<");
-                                            oss.str("");
+                                            incl.str("");
                                             state = BeginBracketInclude;
                                         }
+					else if (isIdentifier(token))
+					{
+                                            incl.str("");
+					    incl << token.range.content();
+					    state = MacroInclude;
+					}
                                         else
                                         {
-                                            receiver_().includes_error();
+					    std::ostringstream oss;
+					    oss << "I expected either a Symbol or a String, but I got a " << toString(token.type);
+                                            receiver_().includes_error(oss.str());
                                             MSS_L(UnexpectedToken);
                                         }
                                         break;
@@ -67,7 +95,7 @@ namespace gubg
                                         switch (token.type)
                                         {
                                             case Token::Identifier:
-                                                oss << token.range.content();
+                                                incl << token.range.content();
                                                 break;
                                             case Token::Symbol:
                                                 {
@@ -77,11 +105,11 @@ namespace gubg
                                                     {
                                                         case '.':
                                                         case '/':
-                                                            oss << symbol;
+                                                            incl << symbol;
                                                             break;
                                                         case '>':
-                                                            receiver_().includes_detected(oss.str(), IncludeType::System);
-                                                            oss.str("");
+                                                            receiver_().includes_detected(incl.str(), IncludeType::System);
+                                                            incl.str("");
                                                             state = Idle;
                                                             break;
                                                         default:
@@ -97,11 +125,17 @@ namespace gubg
                                         break;
                                 }
                             }
+			    if (state == MacroInclude)
+			    {
+				    receiver_().includes_detected(incl.str(), IncludeType::Macro);
+				    incl.str("");
+				    state = Idle;
+			    }
                             MSS_END();
                         }
 
                         //Default implementation
-                        void includes_error(){}
+                        void includes_error(const std::string &){}
 
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}

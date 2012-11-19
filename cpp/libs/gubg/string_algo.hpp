@@ -3,6 +3,7 @@
 
 #include "gubg/OnlyOnce.hpp"
 #include <sstream>
+#include <cctype>
 
 namespace gubg
 {
@@ -58,6 +59,39 @@ namespace gubg
                 parts.push_back(str.substr(pos));
                 return parts;
             }
+        template <template <typename T, typename Allocator> class Container, typename Allocator = std::allocator<std::string>>
+            Container<std::string, Allocator> splitLines(const std::string &str)
+            {
+                Container<std::string, Allocator> parts;
+		const auto s = str.size();
+                size_t pos = 0, ix;
+                while (std::string::npos != (ix = str.find_first_of("\n\r", pos, 2)))
+                {
+			if (str[ix] == '\n')
+			{
+				//Single line-feed found
+				parts.push_back(str.substr(pos, ix-pos));
+				pos = ix+1;
+			}
+			else if (str[ix] == '\r' && ix+1 < s && str[ix+1] == '\n')
+			{
+				//Carriage-return/Line-feed is found
+				parts.push_back(str.substr(pos, ix-pos));
+				pos = ix+2;
+			}
+			else
+				pos = ix+1;
+                }
+                parts.push_back(str.substr(pos));
+                return parts;
+            }
+
+	template <typename String>
+		void upcase(String &str)
+		{
+			for (auto &ch: str)
+				ch = std::toupper(ch);
+		}
     }
 }
 

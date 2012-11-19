@@ -45,6 +45,7 @@ namespace gubg
 
                         State state_;
                         Type type_;
+                        Type prevType_;
                         bool escaped_;
                         //Is true if we are inside a macro, i.e., between a # and the closing newline
                         bool macro_;

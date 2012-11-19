@@ -1,7 +1,8 @@
 #include "gubg/testing/Testing.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include "gubg/l.hpp"
-#include <string>
+#define STRING() <string>
+#include STRING()
 
 namespace 
 {
