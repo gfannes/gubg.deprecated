@@ -30,8 +30,9 @@ int main()
     c->Many<A>::addRelation(a);
     c->Many<B>::addRelation(b);
     c->Many<B>::addRelation(b);
+    relate(c, b);
     TEST_EQ(1, b->Many<A>::nrRelations());
     TEST_EQ(1, c->Many<A>::nrRelations());
-    TEST_EQ(2, c->Many<B>::nrRelations());
+    TEST_EQ(3, c->Many<B>::nrRelations());
     return 0;
 }

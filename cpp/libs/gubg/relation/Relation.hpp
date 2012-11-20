@@ -22,10 +22,11 @@ namespace gubg
                     size_t nrRelations() const {return ary.size();}
             };
 
-        template <typename T, typename... Rest>
-            struct M
+        template <typename From, typename To>
+            void relate(std::shared_ptr<From> from, std::shared_ptr<To> to)
             {
-            };
+                from->Many<To>::addRelation(to);
+            }
     }
 }
 
