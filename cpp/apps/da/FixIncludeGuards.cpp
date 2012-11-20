@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "gubg/logging/Log.hpp"
 #include "da/FixIncludeGuards.hpp"
 #include "gubg/file/Filesystem.hpp"
