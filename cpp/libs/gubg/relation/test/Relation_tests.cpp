@@ -34,5 +34,6 @@ int main()
     TEST_EQ(1, b->Many<A>::nrRelations());
     TEST_EQ(1, c->Many<A>::nrRelations());
     TEST_EQ(3, c->Many<B>::nrRelations());
+    TEST_EQ(3, nrRelations<B>(c));
     return 0;
 }

@@ -27,6 +27,12 @@ namespace gubg
             {
                 from->Many<To>::addRelation(to);
             }
+
+        template <typename To, typename From>
+            size_t nrRelations(std::shared_ptr<From> from)
+            {
+                return from->Many<To>::nrRelations();
+            }
     }
 }
 
