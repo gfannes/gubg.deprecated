@@ -39,4 +39,5 @@ infoPerPage.each do |page, info|
         end
     end
     content.export(info[:html])
+    content.export(File.expand_path("index.html", options[:output])) if page == "home"
 end
