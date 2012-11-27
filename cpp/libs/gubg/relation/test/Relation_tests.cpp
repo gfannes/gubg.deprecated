@@ -44,6 +44,7 @@ int main()
 {
     TEST_TAG(main);
     A::Ptr a(new A);
+    A::Ptr aa(new A);
     B::Ptr b(new B);
     C::Ptr c(new C);
     b->addRelation(a);
@@ -67,6 +68,7 @@ int main()
 
     DFS2 dfs2;
     dfs2.Many<A>::addRelation(a);
+    dfs2.Many<A>::addRelation(aa);
     dfs2.Many<B>::addRelation(b);
     dfs2.iterate();
     return 0;
