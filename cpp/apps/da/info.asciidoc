@@ -1,0 +1,10 @@
+== Develop assistent
+
+=== High-level processes
+
+* Build a dependency graph from the source file
+   * Recursive headers
+   * Brother sources of headers
+   * Use config info like trees
+* Build a build graph from the dependency graph
+   * Objects, Exes, LinkSettings, CompileSettings, ...

@@ -391,6 +391,7 @@ class Configs
         case context.targetPlatform
         when /^pc-/
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
+            @roots << File.expand_path("robobuddy/src", ENV["HOME"])
             dirICUI = File.expand_path("cpp/icui", ENV["ICUI"])
             @roots << dirICUI if File.exist?(dirICUI)
             dirUPP = File.expand_path("sdks/upp/uppsrc", ENV["HOME"])
