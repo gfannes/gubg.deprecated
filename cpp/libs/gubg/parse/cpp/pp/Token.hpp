@@ -45,6 +45,24 @@ namespace gubg
 		template <typename Token>
 			bool isSymbol(const Token &token){return token.type == Token::Symbol;}
 		template <typename Token>
+			bool isSymbol(const Token &token, const char wantedCh)
+			{
+				if (token.type != Token::Symbol)
+					return false;
+				if (token.range.content()[0] != wantedCh)
+					return false;
+				return true;
+			}
+		template <typename Token>
+			bool isSymbolFrom(const Token &token, const std::string &wantedChars)
+			{
+				if (token.type != Token::Symbol)
+					return false;
+				if (std::string::npos == wantedChars.find_first_of(token.range.content()[0]))
+					return false;
+				return true;
+			}
+		template <typename Token>
 			bool isComment(const Token &token){return token.type == Token::Comment;}
 		template <typename Token>
 			bool isLineFeed(const Token &token){return token.type == Token::LineFeed;}
