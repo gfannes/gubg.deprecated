@@ -18,6 +18,8 @@ namespace da
             };
             Compiler compiler;
 
+            Configuration();
+
         private:
     };
 }

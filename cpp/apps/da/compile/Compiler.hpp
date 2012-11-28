@@ -3,6 +3,7 @@
 
 #include "da/Codes.hpp"
 #include "gubg/file/File.hpp"
+#include "gubg/Verbose.hpp"
 #include <string>
 #include <mutex>
 
@@ -10,7 +11,7 @@ namespace da
 {
     namespace compile
     {
-        class Compiler
+        class Compiler: public gubg::Verbose<true>
         {
             public:
                 typedef std::string Define;

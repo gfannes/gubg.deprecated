@@ -36,6 +36,7 @@ ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
     }
 
     //Execute the compilation command
+    verbose(cmd.str());
     MSS(::system(cmd.str().c_str()) == 0, CompilationFailed);
 
     //Append the object file to objectFiles_
