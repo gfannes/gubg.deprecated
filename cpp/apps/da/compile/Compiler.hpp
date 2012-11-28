@@ -24,7 +24,7 @@ namespace da
 
                 typedef gubg::file::File SourceFile;
                 typedef gubg::file::File ObjectFile;
-                ReturnCode operator()(const SourceFile &, const ObjectFile &);
+                ReturnCode operator()(const ObjectFile &, const SourceFile &);
 
                 typedef std::list<ObjectFile> ObjectFiles;
                 const ObjectFiles &objectFiles() const {return objectFiles_;}

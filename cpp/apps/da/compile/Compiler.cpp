@@ -18,7 +18,7 @@ void Compiler::addIncludePath(const IncludePath &includePath)
     includePaths_.push_back(includePath);
 }
 
-ReturnCode Compiler::operator()(const SourceFile &src, const ObjectFile &obj)
+ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
 {
     MSS_BEGIN(ReturnCode);
 
