@@ -13,10 +13,12 @@ infoPerPage = {}
 Dir.each("./") do |dir, fn|
     case fn
     when /\.asciidoc$/
-        page = fn.gsub(/\.asciidoc$/, "")
-        html = File.expand_path(fn, options[:output])
+        fp = "#{dir}/#{fn}"
+        puts("Processing #{fp}")
+        page = Dir.relative(fp.gsub(/\.asciidoc$/, ""))
+        html = File.expand_path(page.gsub("/", "_"), options[:output])
         html.setExtension!("html")
-        system("asciidoc -b html5 -o #{html} #{fn}")
+        system("asciidoc -b html5 -o #{html} #{fp}")
         infoPerPage[page] = {html: html}
     else
     end
@@ -30,7 +32,7 @@ infoPerPage.each do |page, info|
     content.gsub!(reLink) do |link|
         if md = reLink.match(link)
             if infoPerPage.has_key?(md[1])
-                "<a href=\"#{md[1]}.html\">"
+                "<a href=\"#{md[1].gsub("/", "_")}.html\">"
             else
                 link
             end

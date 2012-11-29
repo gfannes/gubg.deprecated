@@ -3,7 +3,7 @@
 pull:
 	git pull
 commit: pull
-	git commit -a
+	-git commit -a
 push: pull commit
 	git push
 upload: push
