@@ -17,6 +17,7 @@ namespace da
             const File &file() const {return file_;}
 
         private:
+            Header(File);
             const File file_;
     };
 }

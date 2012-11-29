@@ -21,6 +21,9 @@ namespace gubg
             Stop,
             FileDoesNotExist,
             UnknownFileType,
+            WrongExtension,
+            TreeAlreadyAdded,
+            CouldNotResolve,
         };
     }
 }

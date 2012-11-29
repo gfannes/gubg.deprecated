@@ -26,7 +26,7 @@ ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
     ostringstream cmd;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        cmd << "g++ -std=c++0x -c " << src.name() << " -o " << obj.name();
+        cmd << "g++ -std=c++0x -O3 -pthread -c " << src.name() << " -o " << obj.name();
         for (const auto &setting: settings_)
             cmd << " " << setting;
         for (const auto &def: defines_)

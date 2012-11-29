@@ -21,6 +21,9 @@ namespace da
                 typedef gubg::file::File LibraryPath;
                 void addLibraryPath(const LibraryPath &);
 
+                typedef std::string Library;
+                void addLibrary(const Library &);
+
                 typedef gubg::file::File ExeFile;
                 typedef gubg::file::File ObjectFile;
                 typedef std::list<ObjectFile> ObjectFiles;
@@ -31,6 +34,8 @@ namespace da
                 Settings settings_;
                 typedef std::list<gubg::file::File> LibraryPaths;
                 LibraryPaths libraryPaths_;
+                typedef std::list<Library> Libraries;
+                Libraries libraries_;
 
                 std::mutex mutex_;
         };

@@ -1,9 +1,11 @@
+//#define GUBG_LOG
 #include "da/build/Source.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <queue>
 #include <set>
 using namespace da;
 using gubg::file::File;
+using gubg::file::Forest;
 using namespace std;
 
 Source::Ptr Source::create(File file)
@@ -25,31 +27,37 @@ namespace
         template <typename String, typename Type>
             void includes_detected(const String &str, Type type)
             {
-                verbose("\tDetected header", str);
                 staging.push(File(str));
             }
     };
 }
-ReturnCode Source::searchForHeaders(Headers &headers)
+ReturnCode Source::searchForHeaders(Headers &headers, const Forest &forest)
 {
-    MSS_BEGIN(ReturnCode);
+    MSS_BEGIN(ReturnCode, searchForHeaders);
 
     queue<File> staging;
-    staging.push(file());
-    set<File::Name> processed;
-
     IncludePusher includePusher(staging);
+    verbose("Processing top-level", file().name());
+    MSS(includePusher.process(file()));
+
+    set<File::Name> processed;
 
     while (!staging.empty())
     {
-        auto f = staging.front();
-        staging.pop();
-        if (processed.count(f.name()))
-            continue;
-        verbose("Processing", f.name());
-        processed.insert(f.name());
+        File hdr;
+        {
+            const auto f = staging.front();
+            staging.pop();
+            if (!gubg::mss::isOK(forest.resolve(hdr, f, 1)))
+                continue;
+        }
 
-        includePusher.process(f);
+        if (processed.count(hdr.name()))
+            continue;
+        processed.insert(hdr.name());
+        headers.add(hdr);
+
+        MSS(includePusher.process(hdr));
     }
 
     MSS_END();

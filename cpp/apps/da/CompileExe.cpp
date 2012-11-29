@@ -31,11 +31,20 @@ ReturnCode CompileExe::execute(const Options &options)
     for (auto source: builder.sources())
     {
         gubg::file::File object(source->file());
-        object.setExtension("obj");
+        object.setExtension("o");
         MSS(compiler(object, source->file()));
     }
 
     Linker linker;
+    {
+        const auto &config = configuration.linker;
+        for (auto setting: config.settings)
+            linker.addSetting(setting);
+        for (auto lib: config.libraries)
+            linker.addLibrary(lib);
+        for (auto path: config.libraryPaths)
+            linker.addLibraryPath(path);
+    }
     gubg::file::File executable(source_);
     executable.setExtension("exe");
     MSS(linker(executable, compiler.objectFiles()));

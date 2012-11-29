@@ -7,7 +7,7 @@
 
 namespace da
 {
-    class Sources: gubg::Verbose<true>
+    class Sources: gubg::Verbose<false>
     {
         public:
             void clear() {sources_.clear();}

@@ -12,6 +12,7 @@ namespace da
     {
         public:
             ReturnCode add(Header::Ptr);
+            Header::Ptr add(Header::File);
 
             typedef std::vector<Header::Ptr> Headers_;
             typedef Headers_::const_iterator const_iterator;

@@ -68,6 +68,16 @@ namespace gubg
                     return *this;
                 }
 
+                bool popBasename(std::string &bn)
+                {
+                    auto ix = name_.rfind(Delimiter);
+                    if (ix == std::string::npos)
+                        return false;
+                    bn = name_.substr(ix+1);
+                    name_.resize(ix);
+                    return true;
+                }
+
                 //Append a part to the current File
                 File &operator<<(const std::string &name)
                 {

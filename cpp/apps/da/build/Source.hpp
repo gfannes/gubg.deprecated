@@ -3,13 +3,14 @@
 
 #include "da/Codes.hpp"
 #include "da/build/Headers.hpp"
+#include "gubg/file/Forest.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/Verbose.hpp"
 #include <memory>
 
 namespace da
 {
-    class Source: gubg::Verbose<true>
+    class Source: gubg::Verbose<false>
     {
         public:
             typedef gubg::file::File File;
@@ -19,7 +20,7 @@ namespace da
 
             const File &file() const {return file_;}
 
-            ReturnCode searchForHeaders(Headers &);
+            ReturnCode searchForHeaders(Headers &, const gubg::file::Forest &);
 
         private:
             Source(File);

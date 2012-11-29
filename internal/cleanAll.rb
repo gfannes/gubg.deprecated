@@ -7,6 +7,7 @@ system("ce")
 Dir.each('./') do |dir,fn|
   case fn
   when /\.o$/
+  when /\.obj$/
   when /\.s$/
   when /\.exec$/
   when /\.exe$/
