@@ -30,9 +30,9 @@ ReturnCode CompileExe::execute(const Options &options)
     }
     for (auto source: builder.sources())
     {
-        gubg::file::File object(source);
+        gubg::file::File object(source->file());
         object.setExtension("obj");
-        MSS(compiler(object, source));
+        MSS(compiler(object, source->file()));
     }
 
     Linker linker;

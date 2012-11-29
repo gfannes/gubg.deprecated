@@ -25,7 +25,7 @@ namespace gubg
                     {
                         if (verbose_)
                             std::cout << arg1 << " ";
-                        return verbose(arg1, args...);
+                        return verbose(arg2, args...);
                     }
 
             private:

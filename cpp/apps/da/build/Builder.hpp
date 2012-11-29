@@ -3,6 +3,8 @@
 
 #include "da/Codes.hpp"
 #include "da/build/Configuration.hpp"
+#include "da/build/Sources.hpp"
+#include "da/build/Headers.hpp"
 
 namespace da
 {
@@ -15,12 +17,12 @@ namespace da
             typedef gubg::file::File SourceFile;
             ReturnCode process(const SourceFile &);
 
-            typedef std::vector<SourceFile> SourceFiles;
-            const SourceFiles &sources() const;
+            const Sources &sources() const {return sources_;}
 
         private:
             const Configuration configuration_;
-            SourceFiles sourceFiles_;
+            Sources sources_;
+            Headers headers_;
     };
 }
 

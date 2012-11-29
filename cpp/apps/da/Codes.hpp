@@ -8,7 +8,7 @@ namespace da
     enum class ReturnCode
     {
         MSS_DEFAULT_CODES,
-        Skip, Stop, CompilationFailed, LinkingFailed,
+        Skip, Stop, CompilationFailed, LinkingFailed, HeaderAlreadyKnown,
     };
 }
 

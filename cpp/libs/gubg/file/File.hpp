@@ -15,13 +15,14 @@ namespace gubg
         {
             public:
                 enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
+                typedef std::string Name;
                 static const char Delimiter = '/';
 
                 File()                                   :type_(Unknown){};
-                File(const std::string & name)           :type_(Unknown), name_(name)           {canonicalize_();}
-                File(      std::string &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
-                File(const std::string & name, Type type):type_(type),    name_(name)           {canonicalize_();}
-                File(      std::string &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
+                File(const Name & name)           :type_(Unknown), name_(name)           {canonicalize_();}
+                File(      Name &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
+                File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
+                File(      Name &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
 
 		void clear()
 		{
@@ -30,7 +31,7 @@ namespace gubg
 		}
 
                 //Getters
-                std::string name() const {return name_;}
+                Name name() const {return name_;}
                 Type type()        const {return type_;}
                 std::string extension() const
                 {
@@ -44,15 +45,15 @@ namespace gubg
                         return "";
                     return name_.substr(ixdot+1);
                 }
-                std::string basename() const
+                Name basename() const
                 {
                     auto ix = name_.rfind(Delimiter);
                     return name_.substr((ix == std::string::npos ? 0 : ix+1));
                 }
 
                 //Setters
-                File &setName(const std::string & name){name_ = name;            canonicalize_(); return *this;}
-                File &setName(      std::string &&name){name_ = std::move(name); canonicalize_(); return *this;}
+                File &setName(const Name & name){name_ = name;            canonicalize_(); return *this;}
+                File &setName(      Name &&name){name_ = std::move(name); canonicalize_(); return *this;}
                 File &setType(Type type)               {type_ = type;            return *this;}
                 File &setExtension(const std::string &ext)
                 {
@@ -128,7 +129,7 @@ namespace gubg
 		}
 
                 Type type_;
-                std::string name_;
+                Name name_;
         };
     }
 }
