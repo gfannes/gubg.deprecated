@@ -26,7 +26,7 @@ Dir.each("./") do |dir, fn|
 end
 
 #Fix all internal links
-reLink = /<a href=\"([a-zA-Z\d-_]+)\">/
+reLink = /<a href=\"([a-zA-Z\d\-_]+)\">/
 infoPerPage.each do |page, info|
     content = String.load(info[:html])
     content.gsub!(reLink) do |link|
