@@ -2,6 +2,7 @@
 #define HEADER_gubg_relation_Vertices_hpp_ALREADY_INCLUDED
 
 #include "gubg/relation/Relation.hpp"
+#include "gubg/tmp/If.hpp"
 
 namespace gubg
 {
@@ -31,11 +32,6 @@ namespace gubg
                 Receiver &receiver_(){return static_cast<Receiver&>(*this);}
             };
 
-        template <bool Condition, typename Then, typename Else>
-            struct If { typedef Else Type; };
-        template <typename Then, typename Else> 
-            struct If<true, Then, Else> { typedef Then Type; };
-
         struct Iterate_tag{};
         struct Skip_tag{};
 
@@ -48,7 +44,7 @@ namespace gubg
                 template <typename V>
                 void each(V &v)
                 {
-                    each_(v, typename If<Traits<V, T>::CanRelate, Iterate_tag, Skip_tag>::Type());
+                    each_(v, typename tmp::If<Traits<V, T>::CanRelate, Iterate_tag, Skip_tag>::Type());
                     ChildsBase::each(v);
                 }
                 template <typename V>
