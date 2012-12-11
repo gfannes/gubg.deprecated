@@ -4,7 +4,10 @@ class Output
         @fo = fo
     end
     def puts(str)
-        @fo.puts(str) if @fo
+	    if @fo
+		    @fo.puts(str)
+		    @fo.flush
+	    end
         Kernel.puts(str)
     end
     def Output.create(fileName)

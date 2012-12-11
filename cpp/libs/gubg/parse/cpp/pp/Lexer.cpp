@@ -143,7 +143,7 @@ namespace gubg
                                        return detectedA_(Type::Symbol);
                             case '\\': return detectedA_(Type::StandaloneBackslashNewline);
                         }
-                        static const char symbols[] = ":.;,(){}[]<>=-+*|&^%!?~";
+                        static const char symbols[] = ":.;,(){}[]<>=-+*|&^%!?~$";
                         if (memchr(symbols, sch, sizeof(symbols)))
                             return detectedA_(Type::Symbol);
                         //These tokens might be ended immediately, we do not return, but will also execute the Detecting part
