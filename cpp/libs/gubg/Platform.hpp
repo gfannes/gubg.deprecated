@@ -4,6 +4,9 @@
 #include <string>
 #include <sstream>
 
+//For now, gubg is only supported on little endian platforms
+#define GUBG_LITTLE_ENDIAN
+
 #ifdef __linux
 #define GUBG_LINUX
 #define GUBG_POSIX
