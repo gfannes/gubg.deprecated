@@ -1,5 +1,5 @@
 #include "d9/io.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 using namespace gubg::coding::d9;
 
 int main()

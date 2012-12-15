@@ -1,6 +1,6 @@
 #include "gubg/pointer/Locked.hpp"
 #include "gubg/pointer/StackPointer.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/threading/InstanceCounter.hpp"
 #include "gubg/sleep/sleep.hpp"
 #include "boost/thread.hpp"

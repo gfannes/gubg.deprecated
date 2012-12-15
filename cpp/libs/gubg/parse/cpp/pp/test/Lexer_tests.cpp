@@ -1,6 +1,6 @@
 # define GUBG_LOG
 //#include "blabla.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/l.hpp"

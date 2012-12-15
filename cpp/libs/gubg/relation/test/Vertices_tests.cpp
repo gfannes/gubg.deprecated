@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #define GUBG_LOG
 #include "gubg/relation/Vertices.hpp"
 #include "gubg/l.hpp"

@@ -1,6 +1,6 @@
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/tcp/Socket.hpp"
 #include <thread>
 #include <chrono>

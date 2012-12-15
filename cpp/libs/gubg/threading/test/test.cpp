@@ -1,6 +1,6 @@
 #include "threading/InstanceCounter.hpp"
 #include "threading/Queue.hpp"
-#include "testing/Testing.hpp"
+#include "Testing.hpp"
 #define GUBG_LOG
 #include "logging/Log.hpp"
 #include <iostream>

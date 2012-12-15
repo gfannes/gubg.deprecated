@@ -1,6 +1,6 @@
 #include "pattern/Command.hpp"
 
-#include "testing/Testing.hpp"
+#include "Testing.hpp"
 #define GUBG_LOG
 #define LOG_LEVEL Info
 #include "logging/Log.hpp"

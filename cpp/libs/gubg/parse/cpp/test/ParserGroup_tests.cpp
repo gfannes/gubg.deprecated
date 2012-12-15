@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/ParserGroup.hpp"
 #include "gubg/l.hpp"
 
@@ -20,4 +20,4 @@ int main()
     Parser parser;
     parser(gubg::file::File(__FILE__));
     return 0;
-}
+}

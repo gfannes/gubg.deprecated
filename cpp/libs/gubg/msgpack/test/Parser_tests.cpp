@@ -2,7 +2,7 @@
 #define L(m) std::cout<<m<<std::endl
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/msgpack/Parser.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include <string>

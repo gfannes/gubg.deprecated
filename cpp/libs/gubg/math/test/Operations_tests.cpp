@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/math/Operations.hpp"
 #include <iostream>
 using namespace std;

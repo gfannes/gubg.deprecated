@@ -1,5 +1,5 @@
 //#define GUBG_LOG
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/l.hpp"
 using namespace gubg::file;

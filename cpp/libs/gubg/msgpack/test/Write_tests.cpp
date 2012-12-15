@@ -1,6 +1,6 @@
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include <string>
 using namespace std;
@@ -82,4 +82,4 @@ int main()
         TEST_EQ(str_({0xa3, 0x31, 0x32, 0x33}), pack(std::string("123")));
     }
     return 0;
-}
+}

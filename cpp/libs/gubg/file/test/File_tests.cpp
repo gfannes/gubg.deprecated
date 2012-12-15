@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/file/File.hpp"
 using namespace gubg::file;
 using namespace std;

@@ -1,6 +1,6 @@
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/msgpack/Read.hpp"
 #include <string>
 #include <vector>
@@ -48,4 +48,4 @@ int main()
         TEST_EQ(-129, i);
     }
     return 0;
-}
+}

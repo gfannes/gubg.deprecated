@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/tmp/FindBaseByName.hpp"
 #include "gubg/l.hpp"
 #include <string>
@@ -46,4 +46,3 @@ int main()
     FindBaseByName<WTF_tag, LL::Pubs>::Type wtf;
     return 0;
 }
-

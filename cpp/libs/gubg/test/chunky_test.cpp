@@ -1,5 +1,5 @@
 #include "gubg/chunky.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/mss.hpp"
 #include <iostream>
 using namespace gubg;

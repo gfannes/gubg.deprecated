@@ -1,6 +1,6 @@
 #include "gubg/pimpl.hpp"
 #include "gubg/mss.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
 #include <memory>

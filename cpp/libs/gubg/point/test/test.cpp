@@ -1,5 +1,5 @@
 #include "gubg/point/point.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include <iostream>
 using namespace gubg;
 using namespace std;

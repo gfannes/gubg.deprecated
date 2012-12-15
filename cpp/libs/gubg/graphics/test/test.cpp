@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/graphics/style.hpp"
 #include "gubg/graphics/sdl.hpp"
 #include "gubg/graphics/canvas.hpp"

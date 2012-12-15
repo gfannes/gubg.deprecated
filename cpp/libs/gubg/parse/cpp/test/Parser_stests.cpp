@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/Parser.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/l.hpp"

@@ -1,6 +1,6 @@
 #define GUBG_LOG
 #include "gubg/logging/Log.hpp"
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/d9/Decoder.hpp"
 #include <string>
 #include <sstream>
@@ -51,4 +51,3 @@ int main()
     }
     return 0;
 }
-

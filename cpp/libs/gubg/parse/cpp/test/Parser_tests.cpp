@@ -1,4 +1,4 @@
-#include "gubg/testing/Testing.hpp"
+#include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/Parser.hpp"
 using namespace gubg::parse::cpp;
 using namespace gubg::file;
