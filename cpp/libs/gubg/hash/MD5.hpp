@@ -2,6 +2,7 @@
 #define gubg_hash_MD5_hpp
 
 #include <array>
+#include <string>
 #include <cstdint>
 
 namespace gubg
@@ -11,17 +12,24 @@ namespace gubg
         class MD5
         {
             public:
-                typedef std::uint32_t Word;
-                typedef std::array<Word, 4> Hash;
-
                 MD5();
 
                 void clear();
 
-            private:
-                void processBlock_(const Word *);
+                MD5 &operator<<(const std::string &);
 
-                Hash hash_;
+                typedef std::array<uint8_t, 16> Hash;
+                Hash hash() const;
+                std::string hash_hex() const;
+
+                static std::string to_hex(const Hash &);
+
+            private:
+                typedef std::array<uint32_t, 4> HashWords;
+                HashWords hash_;
+                std::string remainder_;
+                typedef std::uint64_t Length;
+                Length length_;
         };
     }
 }
