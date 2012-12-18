@@ -18,11 +18,14 @@ namespace da
             ReturnCode process(const SourceFile &);
 
             const Sources &sources() const {return sources_;}
+            Headers headers(Source::Ptr) const;
 
         private:
             const Configuration configuration_;
             Sources sources_;
             Headers headers_;
+            typedef std::map<Source::Ptr, Headers> HeadersPerSource;
+            HeadersPerSource headersPerSource_;
     };
 }
 

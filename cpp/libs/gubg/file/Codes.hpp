@@ -24,6 +24,7 @@ namespace gubg
             WrongExtension,
             TreeAlreadyAdded,
             CouldNotResolve,
+            CouldNotRemove,
         };
     }
 }

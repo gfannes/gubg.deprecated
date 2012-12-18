@@ -22,7 +22,15 @@ namespace gubg
         //Write a file
         ReturnCode write(const std::string &content, const File &);
 
+        //Remove a file
+        ReturnCode remove(const File &);
+
+        //Copy a file
+        ReturnCode copy(const File &from, const File &to);
+
         ReturnCode determineType(File &file);
+
+        bool isRegular(const File &);
 
         ReturnCode getcwd(File &);
         File getcwd();

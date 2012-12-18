@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <ostream>
 
 namespace gubg
 {
@@ -65,6 +66,24 @@ namespace gubg
                     return true;
                 }
 
+                void stream(std::ostream &os) const
+                {
+                    for (auto it = infoPerKey_->begin(); it != infoPerKey_->end(); ++it)
+                    {
+                        auto info = it->second;
+                        os << (int)it->first << "|";
+                        switch (info->type_)
+                        {
+                            case Internal: info->settings_.stream(os); break;
+                            case String_: os << info->string_; break;
+                            case Strings_:
+                                          for (auto str: info->strings_)
+                                              os << str;
+                                          break;
+                        }
+                    }
+                }
+
             private:
                 enum Type {Internal, String_, Strings_};
                 struct Info
@@ -82,6 +101,12 @@ namespace gubg
                 typedef std::map<Key, std::shared_ptr<Info>> InfoPerKey;
                 std::shared_ptr<InfoPerKey> infoPerKey_;
         };
+}
+template <typename Key>
+std::ostream &operator<<(std::ostream &os, const gubg::Settings<Key> &settings)
+{
+    settings.stream(os);
+    return os;
 }
 
 #endif

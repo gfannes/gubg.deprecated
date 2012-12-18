@@ -18,10 +18,8 @@ void Compiler::addIncludePath(const IncludePath &includePath)
     includePaths_.push_back(includePath);
 }
 
-ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
+Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src)
 {
-    MSS_BEGIN(ReturnCode);
-
     //Prepare the command to be executed
     ostringstream cmd;
     {
@@ -34,16 +32,24 @@ ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
         for (const auto &includePath: includePaths_)
             cmd << " -I" << includePath.name();
     }
+    return cmd.str();
+}
+ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src)
+{
+    MSS_BEGIN(ReturnCode);
 
     //Execute the compilation command
-    verbose(cmd.str());
-    MSS(::system(cmd.str().c_str()) == 0, CompilationFailed);
+    auto cmd = command(obj, src);
+    verbose(cmd);
+    MSS(::system(cmd.c_str()) == 0, CompilationFailed);
 
     //Append the object file to objectFiles_
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        objectFiles_.push_back(obj);
-    }
+    addObject(obj);
 
     MSS_END();
+}
+void Compiler::addObject(const ObjectFile &obj)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    objectFiles_.push_back(obj);
 }

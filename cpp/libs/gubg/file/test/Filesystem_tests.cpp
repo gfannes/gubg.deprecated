@@ -78,5 +78,21 @@ int main()
             }
         }
     }
+    {
+        TEST_TAG(remove);
+        File file("remove_me.txt");
+        TEST_OK(write("abc", file));
+        TEST_OK(remove(file));
+        TEST_KO(remove(file));
+    }
+    {
+        TEST_TAG(copy);
+        File file("remove_me.txt");
+        TEST_OK(write("abc", file));
+        File file2("remove_me_2.txt");
+        TEST_OK(copy(file, file2));
+        TEST_OK(remove(file));
+        TEST_OK(remove(file2));
+    }
     return 0;
 }

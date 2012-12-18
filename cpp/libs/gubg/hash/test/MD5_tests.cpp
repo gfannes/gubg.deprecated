@@ -35,6 +35,11 @@ int main()
     md5 << "a" << "a" << "a";
     auto h2 = md5.hash();
     TEST_TRUE(h1 == h2);
+
+    //Copying the MD5 state
+    MD5 md5_1(md5);
+    auto h3 = md5_1.hash();
+    TEST_TRUE(h1 == h3);
         
     return 0;
 }

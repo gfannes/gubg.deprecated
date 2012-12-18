@@ -1,4 +1,4 @@
-//#define GUBG_LOG
+#define GUBG_LOG
 #include "da/build/Source.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <queue>
@@ -33,7 +33,7 @@ namespace
 }
 ReturnCode Source::searchForHeaders(Headers &headers, const Forest &forest)
 {
-    MSS_BEGIN(ReturnCode, searchForHeaders);
+    MSS_BEGIN(ReturnCode, searchForHeaders, file().name());
 
     queue<File> staging;
     IncludePusher includePusher(staging);

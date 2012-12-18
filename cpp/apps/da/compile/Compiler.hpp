@@ -25,7 +25,11 @@ namespace da
 
                 typedef gubg::file::File SourceFile;
                 typedef gubg::file::File ObjectFile;
+                typedef std::string Command;
+                Command command(const ObjectFile &, const SourceFile &);
                 ReturnCode operator()(const ObjectFile &, const SourceFile &);
+
+                void addObject(const ObjectFile &);
 
                 typedef std::list<ObjectFile> ObjectFiles;
                 const ObjectFiles &objectFiles() const {return objectFiles_;}

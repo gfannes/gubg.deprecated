@@ -23,7 +23,7 @@ r[48..63] := {6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21}
 
 //Use binary integer part of the sines of integers (Radians) as constants:
 for i from 0 to 63
-    k[i] := floor(abs(sin(i + 1)) × (2 pow 32))
+    k[i] := floor(abs(sin(i + 1)) * (2 pow 32))
 end for
 //(Or just use the following table):
 k[ 0.. 3] := { 0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee }
@@ -56,13 +56,13 @@ append "1" bit to message
   
 
 //Pre-processing: padding with zeros
-append "0" bit until message length in bit ≡ 448 (mod 512)
+append "0" bit until message length in bit == 448 (mod 512)
 append length mod (2 pow 64) to message
 
 
 //Process the message in successive 512-bit chunks:
 for each 512-bit chunk of message
-    break chunk into sixteen 32-bit words w[j], 0 ≤ j ≤ 15
+    break chunk into sixteen 32-bit words w[j], 0 <= j <= 15
 //Initialize hash value for this chunk:
     var int a := h0
     var int b := h1
@@ -70,18 +70,18 @@ for each 512-bit chunk of message
     var int d := h3
 //Main loop:
     for i from 0 to 63
-        if 0 ≤ i ≤ 15 then
+        if 0 <= i <= 15 then
             f := (b and c) or ((not b) and d)
             g := i
-        else if 16 ≤ i ≤ 31
+        else if 16 <= i <= 31
             f := (d and b) or ((not d) and c)
-            g := (5×i + 1) mod 16
-        else if 32 ≤ i ≤ 47
+            g := (5*i + 1) mod 16
+        else if 32 <= i <= 47
             f := b xor c xor d
-            g := (3×i + 5) mod 16
-        else if 48 ≤ i ≤ 63
+            g := (3*i + 5) mod 16
+        else if 48 <= i <= 63
             f := c xor (b or (not d))
-            g := (7×i) mod 16
+            g := (7*i) mod 16
         temp := d
         d := c
         c := b

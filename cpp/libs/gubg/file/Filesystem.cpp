@@ -1,7 +1,8 @@
-//#define GUBG_LOG
+#define GUBG_LOG
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 #include <fstream>
+#include <cstdio>
 #ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
@@ -129,12 +130,26 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 
 ReturnCode gubg::file::write(const std::string &content, const File &file)
 {
-    MSS_BEGIN(ReturnCode);
+    MSS_BEGIN(ReturnCode, write);
     MSS(File::Unknown == file.type() || File::Regular ==  file.type(), ExpectedRegular);
     ofstream fo(file.name(), ios_base::out | ios_base::binary | ios_base::trunc);
     MSS(bool(fo), CouldNotWriteFile);
     fo.write(content.data(), content.size());
     MSS(bool(fo), CouldNotWriteFile);
+    MSS_END();
+}
+
+ReturnCode gubg::file::remove(const File &file)
+{
+    return (::remove(file.name().c_str()) == 0 ? ReturnCode::OK : ReturnCode::CouldNotRemove);
+}
+
+ReturnCode gubg::file::copy(const File &from, const File &to)
+{
+    MSS_BEGIN(ReturnCode, copy);
+    string content;
+    MSS(read(content, from));
+    MSS(write(content, to));
     MSS_END();
 }
 
@@ -158,6 +173,19 @@ ReturnCode gubg::file::determineType(File &file)
         default: MSS_L(UnknownFileType); break;
     }
     MSS_END();
+}
+
+bool gubg::file::isRegular(const File &file)
+{
+    struct stat statbuf;
+#ifdef GUBG_LINUX
+    if (0 != ::lstat(file.name().c_str(), &statbuf))
+        return false;
+#else
+    if (0 != ::stat(file.name().c_str(), &statbuf))
+        return false;
+#endif
+    return (statbuf.st_mode & S_IFMT) == S_IFREG;
 }
 
 ReturnCode gubg::file::getcwd(File &file)

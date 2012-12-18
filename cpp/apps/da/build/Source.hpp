@@ -20,6 +20,7 @@ namespace da
 
             const File &file() const {return file_;}
 
+            //Returns all headers accessed (recursively) from this source file which could be found in the forest
             ReturnCode searchForHeaders(Headers &, const gubg::file::Forest &);
 
         private:

@@ -24,11 +24,11 @@ namespace gubg
                 File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
                 File(      Name &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
 
-		void clear()
-		{
-			type_ = Unknown;
-			name_.clear();
-		}
+                void clear()
+                {
+                    type_ = Unknown;
+                    name_.clear();
+                }
 
                 //Getters
                 Name name() const {return name_;}
@@ -131,12 +131,12 @@ namespace gubg
                 }
 
             private:
-		void canonicalize_()
-		{
-			for (auto &ch: name_)
-				if (ch == '\\')
-					ch = '/';
-		}
+                void canonicalize_()
+                {
+                    for (auto &ch: name_)
+                        if (ch == '\\')
+                            ch = '/';
+                }
 
                 Type type_;
                 Name name_;
