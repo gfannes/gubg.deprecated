@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "da/CompileExe.hpp"
 #include "da/build/Builder.hpp"
 #include "da/build/Configuration.hpp"
@@ -25,7 +25,7 @@ namespace
         public:
             CachedCompiler()
             {
-                setCache(File("/tmp"));
+                setCache(File("/home/gfannes/tmp/da"));
             }
 
             template <typename Files>
@@ -73,7 +73,8 @@ da::ReturnCode CompileExe::execute(const Options &options)
             auto headers = builder.headers(source);
             for (auto h: headers)
             {
-                L(h->file().name());
+                if (configuration.verbose)
+                    L(h->file().name());
                 MSS(read(content, h->file()));
                 md5 << content;
             }

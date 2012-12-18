@@ -11,6 +11,8 @@ namespace da
     class Configuration
     {
         public:
+            bool verbose;
+
             struct Compiler
             {
                 std::vector<std::string> defines;

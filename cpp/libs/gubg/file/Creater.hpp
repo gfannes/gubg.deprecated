@@ -33,7 +33,6 @@ namespace gubg
                         Files cachedFiles;
                         if (cache_)
                         {
-                            L("Checking cache");
                             std::ostringstream oss;
                             oss << si;
                             using hash::MD5;
@@ -62,7 +61,7 @@ namespace gubg
                                 size_t i = 0;
                                 for (auto &cf: cachedFiles)
                                 {
-                                    L("Copying from cache " << cf.name() << " to " << files[i].name());
+                                    receiver_().creater_copyFromCache(cf, files[i]);
                                     MSS(copy(cf, files[i]));
                                     ++i;
                                 }
@@ -80,13 +79,16 @@ namespace gubg
                             size_t i = 0;
                             for (auto &cf: cachedFiles)
                             {
-                                L("Copying to cache " << cf.name() << " to " << files[i].name());
+                                receiver_().creater_copyToCache(files[i], cf);
                                 MSS(copy(files[i], cf));
                                 ++i;
                             }
                         }
                         MSS_END();
                     }
+
+                    void creater_copyFromCache(const File &cached, const File &real) const {}
+                    void creater_copyToCache(const File &real, const File &cached) const {}
 
                 private:
                     typedef std::unique_ptr<File> Cache;

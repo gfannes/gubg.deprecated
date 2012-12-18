@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 #include <fstream>

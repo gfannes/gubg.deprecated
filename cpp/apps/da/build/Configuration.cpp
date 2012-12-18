@@ -3,7 +3,8 @@
 using namespace da;
 using namespace gubg::file;
 
-Configuration::Configuration()
+Configuration::Configuration():
+    verbose(false)
 {
     compiler.includePaths.push_back(File("/home/gfannes/gubg/cpp/libs"));
     compiler.includePaths.push_back(File("/home/gfannes/gubg/cpp/apps"));

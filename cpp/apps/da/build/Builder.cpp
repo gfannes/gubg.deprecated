@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "da/build/Builder.hpp"
 #include <queue>
 using namespace da;
