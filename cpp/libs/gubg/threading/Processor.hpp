@@ -19,7 +19,7 @@ namespace gubg
 
                     Processor(size_t maxJobs):
                         maxJobs_(maxJobs),
-                        nrJobs_(0),
+                        nrRunningJobs_(0),
                         state_(Stopped){}
 
                     void operator<<(JobPtr job)
@@ -66,7 +66,7 @@ namespace gubg
                             switch (state_)
                             {
                                 case Stopping:
-                                    if (nrJobs_ == 0)
+                                    if (nrRunningJobs_ == 0 && queue_.empty())
                                         state_ = Stopped;
                                     break;
                                 case Stopped: ok = false; break;
@@ -76,7 +76,7 @@ namespace gubg
                             }
                             if (state_ != Running && state_ != Stopping)
                                 continue;
-                            if (nrJobs_ > maxJobs_)
+                            if (nrRunningJobs_ >= maxJobs_)
                             {
                                 LOG_M("Maximum number of jobs reached, waiting for an event...");
                                 event_.wait(lock);
@@ -90,8 +90,8 @@ namespace gubg
                                 LOG_M("Received an event, I will recheck");
                                 continue;
                             }
-                            LOG_M("About to start job " << nrJobs_);
-                            ++nrJobs_;
+                            LOG_M("About to start job " << nrRunningJobs_);
+                            ++nrRunningJobs_;
                             new Job_(queue_.front(), *this);
                             queue_.pop();
                         }
@@ -111,14 +111,14 @@ namespace gubg
                             MSS_BEGIN(void, jobThread);
                             job_->execute();
                             Lock lock(outer_.mutex_);
-                            --outer_.nrJobs_;
+                            --outer_.nrRunningJobs_;
                             outer_.event_.notify_one();
                             MSS_END();
                         }
                     };
 
                     size_t maxJobs_;
-                    volatile size_t nrJobs_;
+                    volatile size_t nrRunningJobs_;
 
                     typedef std::queue<JobPtr> Queue;
                     typedef std::mutex Mutex;

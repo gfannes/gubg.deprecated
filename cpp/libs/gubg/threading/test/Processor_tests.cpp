@@ -38,7 +38,7 @@ int main()
     TEST_TAG(Processor);
     Processor processor(5);
     for (auto i = 0; i < 20; ++i)
-        processor << Job::create(milliseconds(100*i));
+        processor << Job::create(milliseconds(10*(i+1)));
     TEST_KO(processor.stop());
     TEST_OK(processor.start());
     TEST_KO(processor.start());
