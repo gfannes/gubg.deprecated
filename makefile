@@ -1,5 +1,12 @@
-.PHONY: pull commit push upload
+.PHONY: help
+help:
+	@echo "Help"
 
+da:
+	make clean -C cpp/apps/da
+	make build -C cpp/apps/da -j
+
+.PHONY: pull commit push upload
 pull:
 	git pull
 commit: pull
