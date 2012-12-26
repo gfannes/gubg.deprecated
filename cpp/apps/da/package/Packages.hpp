@@ -1,5 +1,5 @@
-#ifndef da_package_Packages_hpp
-#define da_package_Packages_hpp
+#ifndef HEADER_da_package_Packages_hpp_ALREADY_INCLUDED
+#define HEADER_da_package_Packages_hpp_ALREADY_INCLUDED
 
 #include "da/package/Package.hpp"
 #include "da/package/Boost.hpp"

@@ -1,5 +1,5 @@
-#ifndef da_package_Package_hpp
-#define da_package_Package_hpp
+#ifndef HEADER_da_package_Package_hpp_ALREADY_INCLUDED
+#define HEADER_da_package_Package_hpp_ALREADY_INCLUDED
 
 #include <string>
 
