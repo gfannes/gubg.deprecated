@@ -1,8 +1,6 @@
-#include "graphics/imui_button.hpp"
+#include "gubg/graphics/imui_button.hpp"
+#include "gubg/l.hpp"
 using namespace gubg;
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 Button::Button(const TwoPoint<> &dimensions, const std::string &label, Alignment alignment, SDLCanvas &canvas):
     StateHolder(WidgetState::Emerging),
@@ -12,11 +10,11 @@ Button::Button(const TwoPoint<> &dimensions, const std::string &label, Alignment
     canvas_(canvas),
     imui_(canvas.getIMUI())
 {
-    DEBUG_PRINT("Button ctor: " << std::hex << this);
+    L("Button ctor: " << std::hex << this);
 }
 Button::~Button()
 {
-    DEBUG_PRINT("Button dtor: " << std::hex << this);
+    L("Button dtor: " << std::hex << this);
 }
 
 Button &Button::setLabel(const std::string &label)

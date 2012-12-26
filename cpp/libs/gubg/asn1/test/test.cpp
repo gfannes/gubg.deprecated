@@ -6,9 +6,6 @@ using namespace gubg;
 using namespace gubg::testing;
 using namespace std;
 
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
-
 int main(int argc, char **argv)
 {
     TEST_TAG(asn1);

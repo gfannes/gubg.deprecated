@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "da/compile/Compiler.hpp"
 #include <sstream>
 #include <stdlib.h>

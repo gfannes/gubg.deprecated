@@ -3,6 +3,7 @@
 
 #include "da/package/Package.hpp"
 #include "da/package/Boost.hpp"
+#include <list>
 
 namespace da
 {
@@ -11,7 +12,21 @@ namespace da
         class Packages
         {
             public:
+                template <typename Pkg>
+                Packages &operator<<(const Pkg &pkg)
+                {
+                    packages_.push_back(Package::Ptr(new Pkg(pkg)));
+                    return *this;
+                }
+
+                //Removes unexisting packages, and selects the first one if duplicates are present
+                void prune();
+
+                size_t size() const {return packages_.size();}
+
             private:
+                typedef std::list<Package::Ptr> Packages_;
+                Packages_ packages_;
         };
     }
 }

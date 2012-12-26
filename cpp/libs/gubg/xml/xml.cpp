@@ -1,8 +1,6 @@
 #include "xml.hpp"
+#include "gubg/l.hpp"
 #include <array>
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 std::ostream &operator<<(std::ostream &os, const gubg::xml::IChild &child)
 {
@@ -28,9 +26,9 @@ namespace
             size_t pos = 0;
             while (std::string::npos != (pos = escaped.find(specialCharacters[i], pos)))
             {
-                DEBUG_PRINT("before: " << escaped);
+                L("before: " << escaped);
                 escaped.replace(pos, 1, escapes[i]);
-                DEBUG_PRINT("after : " << escaped);
+                L("after : " << escaped);
                 ++pos;
             }
         }

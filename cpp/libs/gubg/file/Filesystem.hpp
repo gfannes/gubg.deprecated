@@ -30,7 +30,9 @@ namespace gubg
 
         ReturnCode determineType(File &file);
 
+        bool exists(const File &);
         bool isRegular(const File &);
+        bool isDirectory(const File &);
 
         ReturnCode getcwd(File &);
         File getcwd();

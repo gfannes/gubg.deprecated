@@ -16,6 +16,7 @@ namespace da
 
                 //Package API
                 virtual std::string name() const {return "boost";}
+                virtual bool exists() const;
 
             private:
                 gubg::file::File base_;

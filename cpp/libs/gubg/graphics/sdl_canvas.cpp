@@ -1,12 +1,10 @@
-#include "graphics/sdl_canvas.hpp"
-#include "graphics/imui_key.hpp"
+#include "gubg/graphics/sdl_canvas.hpp"
+#include "gubg/graphics/imui_key.hpp"
+#include "gubg/l.hpp"
 #include "cairomm/enums.h"
 #include <exception>
 #include <iostream>
 using namespace std;
-
-#define L_ENABLE_DEBUG
-#include "debug/debug.hpp"
 
 namespace
 {
@@ -142,7 +140,7 @@ namespace gubg
 
         cairoSurface_ = Cairo::ImageSurface::create((unsigned char *)SDLSurface_->pixels, Cairo::FORMAT_ARGB32, width_, height_, width_*4);
         cairoContext_ = Cairo::Context::create(cairoSurface_);
-        DEBUG_PRINT("SDLCanvas is constructed");
+        L("SDLCanvas is constructed");
     }
 
     bool SDLCanvas::initializeDraw()

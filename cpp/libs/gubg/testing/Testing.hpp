@@ -10,10 +10,7 @@
 #include <vector>
 #include <cstring>
 #include <iomanip>
-
 #include <sstream>
-
-#include "nullptr.hpp"
 
 namespace gubg
 {

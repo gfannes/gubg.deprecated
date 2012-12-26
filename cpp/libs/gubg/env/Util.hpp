@@ -7,7 +7,7 @@ namespace gubg
 {
     namespace env
     {
-        std::string expand(const std::string &);
+        bool expand(std::string &, const std::string &);
     }
 }
 

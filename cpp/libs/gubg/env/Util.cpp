@@ -16,9 +16,9 @@ namespace
 {
     regex re("^([^\\$]*)\\$([a-zA-z_]+)");
 }
-string gubg::env::expand(const string &str)
+bool gubg::env::expand(string &res, const string &str)
 {
-    string res;
+    res.clear();
     auto it = str.begin();
     auto end = str.end();
     auto vars = gubg::env::Variables::shell();
@@ -28,19 +28,17 @@ string gubg::env::expand(const string &str)
         if (!regex_search(it, end, md, re))
         {
             res.append(it, end);
-            return res;
+            return true;
         }
         it += md.length();
 
         string v;
-        if (vars.get(v, md.str(2)))
-        {
-            if (md.length(1) > 0)
-                res.append(md.str(1));
-            res.append(v);
-        }
-        else
-            res.append(md.str());
+        if (!vars.get(v, md.str(2)))
+            //Could not get env var
+            return false;
+        if (md.length(1) > 0)
+            res.append(md.str(1));
+        res.append(v);
     }
-    return res;
+    return true;
 }

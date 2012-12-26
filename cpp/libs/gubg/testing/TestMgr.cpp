@@ -1,15 +1,13 @@
-#include "testing/TestMgr.hpp"
-#include "OnlyOnce.hpp"
+#include "gubg/testing/TestMgr.hpp"
+#include "gubg/OnlyOnce.hpp"
+#include "gubg/l.hpp"
 #include "boost/thread/tss.hpp"
 #include "boost/thread/mutex.hpp"
 #include <memory>
-#include "nullptr.hpp"
+#include "gubg/nullptr.hpp"
 using namespace gubg::testing;
 using namespace std;
 using namespace boost;
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 namespace
 {
@@ -49,10 +47,10 @@ TestTag::TestTag(const string &tag):
     tag_(tag),
     root_(nullptr)
 {
-    DEBUG_PRINT("ctor " << tag_);
+    L("ctor " << tag_);
     if (nullptr == rootTag.get())
     {
-        DEBUG_PRINT("We are the root tag");
+        L("We are the root tag");
         rootTag.reset(this);
         root_ = new ThreadStats;
     }
@@ -64,11 +62,11 @@ TestTag::TestTag(const string &tag):
 }
 TestTag::~TestTag()
 {
-    DEBUG_PRINT("dtor " << tag_);
+    L("dtor " << tag_);
     root_->popTag();
     if (this == rootTag.get())
     {
-        DEBUG_PRINT("We were the root tag");
+        L("We were the root tag");
         TestMaster::instance().report(*(const ThreadStats *)root_);
         delete root_;
         rootTag.reset(nullptr);
@@ -112,7 +110,7 @@ TestMaster &TestMaster::instance()
 }
 void TestMaster::report(const TestTag::ThreadStats &threadStats)
 {
-    DEBUG_PRINT("Someone is reporting thread statistics");
+    L("Someone is reporting thread statistics");
     lock_guard<mutex> lock(testMasterMutex);
     threadStatss_.push_back(threadStats);
 }

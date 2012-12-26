@@ -1,13 +1,11 @@
-#include "graphics/imui.hpp"
-#include "timer.hpp"
-#include "sleep.hpp"
-#include "bitmagic.hpp"
+#include "gubg/graphics/imui.hpp"
+#include "gubg/timer.hpp"
+#include "gubg/sleep.hpp"
+#include "gubg/bitmagic.hpp"
+#include "gubg/l.hpp"
 using namespace gubg;
 
 #define nullptr ((void*)0)
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 bool IMUI::processInput()
 {
@@ -90,20 +88,20 @@ bool IMUI::checkMouseButton(MouseButton button, ButtonState cmpState)
 
 WidgetProxy::WidgetProxy()
 {
-    DEBUG_PRINT("ctor: " << std::hex << this);
+    L("ctor: " << std::hex << this);
 }
 WidgetProxy::WidgetProxy(const WidgetProxy &rhs):
     widget_(rhs.widget_)
 {
-    DEBUG_PRINT("copy ctor: " << std::hex << this);
+    L("copy ctor: " << std::hex << this);
 }
 WidgetProxy::~WidgetProxy()
 {
-    DEBUG_PRINT("dtor: " << std::hex << this);
+    L("dtor: " << std::hex << this);
 }
 WidgetProxy &WidgetProxy::operator=(const WidgetProxy &rhs)
 {
-    DEBUG_PRINT("operator=");
+    L("operator=");
     widget_ = rhs.widget_;
     return *this;
 }
@@ -111,7 +109,7 @@ WidgetProxy &WidgetProxy::operator=(const WidgetProxy &rhs)
 void WidgetProxy::set(std::auto_ptr<IWidget> widget)
 {
     //Internally, we keep the object in a shared_ptr since WidgetProxy has to be storable in an STL container
-    DEBUG_PRINT("widget: " << widget.get());
+    L("widget: " << widget.get());
     widget_.reset(widget.release());
 }
 

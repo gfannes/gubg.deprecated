@@ -1,26 +1,24 @@
 #include "asn1/Decoder.hpp"
 #include "asn1/Error.hpp"
+#include "gubg/l.hpp"
 using namespace gubg::asn1;
 using namespace std;
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 Decoder::Decoder():
     parent_(nullptr),
     isBlocked_(false),
     decodingStatus_(DecodingStatus::Unknown)
 {
-    DEBUG_PRINT("Decoder default ctor: " << this);
+    L("Decoder default ctor: " << this);
 }
 Decoder::Decoder(const string &der)
 {
-    DEBUG_PRINT("Decoder ctor from string: " << this);
+    L("Decoder ctor from string: " << this);
     reset(der);
 }
 Decoder::Decoder(const Octets &der)
 {
-    DEBUG_PRINT("Decoder ctor from Octets: " << this);
+    L("Decoder ctor from Octets: " << this);
     reset(der);
 }
 Decoder::~Decoder()
@@ -33,7 +31,7 @@ Decoder::~Decoder()
                 proceedToEnd_(parent_->range_, range_.end());
                 //Fall-through is intentional
             case DecodingStatus::Failure:
-                DEBUG_PRINT("Unblocking decoder " << parent_ << " in dtor " << this);
+                L("Unblocking decoder " << parent_ << " in dtor " << this);
                 parent_->isBlocked_ = false;
                 break;
             default:
@@ -51,7 +49,7 @@ void Decoder::createSubDecoder_(Decoder &subdecoder, Range &subRange)
     subdecoder.parent_ = this;
     subdecoder.isBlocked_ = false;
     subdecoder.decodingStatus_ = DecodingStatus::Unknown;
-    DEBUG_PRINT("Blocking decoder " << this);
+    L("Blocking decoder " << this);
     isBlocked_ = true;
 }
 
@@ -60,7 +58,7 @@ void Decoder::reset(const Octets &der)
     der_.reset(new Octets(der));
     range_ = Range(*der_);
     parent_ = nullptr;
-    DEBUG_PRINT("Unblocking decoder in reset " << this);
+    L("Unblocking decoder in reset " << this);
     isBlocked_ = false;
     decodingStatus_ = DecodingStatus::Unknown;
 }
@@ -69,7 +67,7 @@ void Decoder::reset(const string &der)
     der_.reset(new Octets((const unsigned char *)der.data(), der.size()));
     range_ = Range(*der_);
     parent_ = nullptr;
-    DEBUG_PRINT("Unblocking decoder in reset " << this);
+    L("Unblocking decoder in reset " << this);
     isBlocked_ = false;
     decodingStatus_ = DecodingStatus::Unknown;
 }
@@ -77,7 +75,7 @@ void Decoder::reset(const string &der)
 template <>
 bool Decoder::extract<int>(int &res)
 {
-    DEBUG_PRINT("Extracting an int");
+    L("Extracting an int");
     checkNotBlocked_();
     ValueInfo vi;
     if (!decompose_(vi, range_))
@@ -170,7 +168,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
 {
     if (range.empty())
     {
-        DEBUG_PRINT("Decoder::decompose_(): range is empty");
+        L("Decoder::decompose_(): range is empty");
         return false;
     }
     //We will further alter the content range to be correct at the end
@@ -193,7 +191,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
     {
         if (content.empty())
         {
-            DEBUG_PRINT("Decoder::decompose_(): content is empty");
+            L("Decoder::decompose_(): content is empty");
             return false;
         }
         unsigned char octet = content[0];
@@ -209,7 +207,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
                 unsigned int contentLength = content.size();
                 if (contentLength < octet+1)
                 {
-                    DEBUG_PRINT("Decoder::decompose_(): contentLength is too small: " << contentLength << " (should be at least " << octet+1 << ")");
+                    L("Decoder::decompose_(): contentLength is too small: " << contentLength << " (should be at least " << octet+1 << ")");
                     return false;
                 }
                 unsigned int length = 0;
@@ -217,7 +215,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
                     length = (length << 8) + content[i+1];
                 if (contentLength < octet+1+length)
                 {
-                    DEBUG_PRINT("Decoder::decompose_(): contentLength is too small: " << contentLength << " (should be at least " << octet+1+length << ")");
+                    L("Decoder::decompose_(): contentLength is too small: " << contentLength << " (should be at least " << octet+1+length << ")");
                     return false;
                 }
                 auto start = content.begin() + octet+1;
@@ -235,7 +233,7 @@ bool Decoder::decompose_(ValueInfo &vi, Range &range)
             octet &= 0x7f;
             if (content.size() < octet+1)
             {
-                DEBUG_PRINT("Decoder::decompose_(): not enough content, I expected " << octet+1 << " bytes, but I have only " << content.size());
+                L("Decoder::decompose_(): not enough content, I expected " << octet+1 << " bytes, but I have only " << content.size());
                 return false;
             }
             auto start = content.begin()+1;
@@ -250,10 +248,10 @@ void Decoder::proceedToEnd_(Range &range, const Iterator &end)
 }
 void Decoder::checkNotBlocked_() const throw (Decoder::Blocked)
 {
-    DEBUG_PRINT("checkNotBlocked_: " << isBlocked_);
+    L("checkNotBlocked_: " << isBlocked_);
     if (isBlocked_)
     {
-        DEBUG_PRINT("Decoder is blocked, I will throw Decoder::Blocked");
+        L("Decoder is blocked, I will throw Decoder::Blocked");
         Exception::raise(Blocked());
     }
 }

@@ -1,12 +1,9 @@
-#include "Testing.hpp"
-#include "Exception.hpp"
-#include "OnlyOnce.hpp"
+#include "gubg/testing/Testing.hpp"
+#include "gubg/Exception.hpp"
+#include "gubg/OnlyOnce.hpp"
 #include <iostream>
 #include <sstream>
 using namespace std;
-
-//#define L_ENABLE_DEBUG
-#include "debug.hpp"
 
 std::ostream &operator<<(std::ostream &os, const gubg::testing::SourceLocation &location)
 {

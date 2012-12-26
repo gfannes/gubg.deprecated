@@ -175,6 +175,18 @@ ReturnCode gubg::file::determineType(File &file)
     MSS_END();
 }
 
+bool gubg::file::exists(const File &file)
+{
+    struct stat statbuf;
+#ifdef GUBG_LINUX
+    if (0 != ::lstat(file.name().c_str(), &statbuf))
+        return false;
+#else
+    if (0 != ::stat(file.name().c_str(), &statbuf))
+        return false;
+#endif
+    return true;
+}
 bool gubg::file::isRegular(const File &file)
 {
     struct stat statbuf;
@@ -186,6 +198,18 @@ bool gubg::file::isRegular(const File &file)
         return false;
 #endif
     return (statbuf.st_mode & S_IFMT) == S_IFREG;
+}
+bool gubg::file::isDirectory(const File &file)
+{
+    struct stat statbuf;
+#ifdef GUBG_LINUX
+    if (0 != ::lstat(file.name().c_str(), &statbuf))
+        return false;
+#else
+    if (0 != ::stat(file.name().c_str(), &statbuf))
+        return false;
+#endif
+    return (statbuf.st_mode & S_IFMT) == S_IFDIR;
 }
 
 ReturnCode gubg::file::getcwd(File &file)
