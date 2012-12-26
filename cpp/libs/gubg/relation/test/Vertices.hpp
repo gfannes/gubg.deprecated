@@ -1,5 +1,5 @@
-#ifndef test_Vertices_hpp
-#define test_Vertices_hpp
+#ifndef HEADER_gubg_relation_test_Vertices_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_relation_test_Vertices_hpp_ALREADY_INCLUDED
 
 #include "gubg/relation/Relation.hpp"
 

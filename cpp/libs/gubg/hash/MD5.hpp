@@ -1,5 +1,5 @@
-#ifndef gubg_hash_MD5_hpp
-#define gubg_hash_MD5_hpp
+#ifndef HEADER_gubg_hash_MD5_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_hash_MD5_hpp_ALREADY_INCLUDED
 
 #include <array>
 #include <string>

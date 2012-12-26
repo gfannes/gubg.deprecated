@@ -1,5 +1,5 @@
-#ifndef asdf
-#define asdf
+#ifndef HEADER_gubg_file_Forest_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_Forest_hpp_ALREADY_INCLUDED
 
 #include "gubg/file/Codes.hpp"
 #include "gubg/file/File.hpp"

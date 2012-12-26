@@ -1,5 +1,5 @@
-#ifndef gubg_env_Environment_hpp
-#define gubg_env_Environment_hpp
+#ifndef HEADER_gubg_env_Variables_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_env_Variables_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <map>

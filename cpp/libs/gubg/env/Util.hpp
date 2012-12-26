@@ -1,5 +1,5 @@
-#ifndef gubg_env_Util_hpp
-#define gubg_env_Util_hpp
+#ifndef HEADER_gubg_env_Util_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_env_Util_hpp_ALREADY_INCLUDED
 
 #include <string>
 

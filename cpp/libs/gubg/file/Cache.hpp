@@ -1,5 +1,5 @@
-#ifndef sdf
-#define sdf
+#ifndef HEADER_gubg_file_Cache_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_file_Cache_hpp_ALREADY_INCLUDED
 
 #include "gubg/file/File.hpp"
 

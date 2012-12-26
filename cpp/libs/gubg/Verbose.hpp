@@ -1,5 +1,5 @@
-#ifndef gubg_Verbose_hpp
-#define gubg_Verbose_hpp
+#ifndef HEADER_gubg_Verbose_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Verbose_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 

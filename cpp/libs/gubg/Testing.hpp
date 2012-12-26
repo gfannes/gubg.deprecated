@@ -1,5 +1,5 @@
-#ifndef gubg_Testing_hpp
-#define gubg_Testing_hpp
+#ifndef HEADER_gubg_Testing_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Testing_hpp_ALREADY_INCLUDED
 
 #include "gubg/testing/Testing.hpp"
 

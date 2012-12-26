@@ -1,5 +1,5 @@
-#ifndef gubg_threading_Codes_hpp
-#define gubg_threading_Codes_hpp
+#ifndef HEADER_gubg_threading_Codes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_threading_Codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

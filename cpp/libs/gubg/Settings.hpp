@@ -1,5 +1,5 @@
-#ifndef gubg_Settings_hpp
-#define gubg_Settings_hpp
+#ifndef HEADER_gubg_Settings_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Settings_hpp_ALREADY_INCLUDED
 
 #include <memory>
 #include <vector>

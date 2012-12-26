@@ -1,5 +1,5 @@
-#ifndef gubg_tmp_SFINAE_hpp
-#define gubg_tmp_SFINAE_hpp
+#ifndef HEADER_gubg_tmp_SFINAE_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tmp_SFINAE_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {

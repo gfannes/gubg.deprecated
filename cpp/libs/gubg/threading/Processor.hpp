@@ -1,5 +1,5 @@
-#ifndef gubg_threading_Processor_hpp
-#define gubg_threading_Processor_hpp
+#ifndef HEADER_gubg_threading_Processor_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_threading_Processor_hpp_ALREADY_INCLUDED
 
 #include "gubg/threading/Codes.hpp"
 #include <memory>

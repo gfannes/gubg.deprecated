@@ -1,5 +1,5 @@
-#ifndef gubg_parse_cpp_ParserGroup_hpp
-#define gubg_parse_cpp_ParserGroup_hpp
+#ifndef HEADER_gubg_parse_cpp_ParserGroup_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_cpp_ParserGroup_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/File.hpp"
