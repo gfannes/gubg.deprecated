@@ -3,6 +3,7 @@
 
 #include "da/package/Package.hpp"
 #include "da/package/Boost.hpp"
+#include "da/package/GUBG.hpp"
 #include <list>
 
 namespace da
@@ -21,6 +22,12 @@ namespace da
 
                 //Removes unexisting packages, and selects the first one if duplicates are present
                 void prune();
+                void appendIncludePaths(Package::IncludePaths &) const;
+                void appendLibraryPaths(Package::LibraryPaths &) const;
+                void appendLibraries(Package::Libraries &) const;
+                void expandForest(Package::Forest &) const;
+
+                std::vector<std::string> names() const;
 
                 size_t size() const {return packages_.size();}
 

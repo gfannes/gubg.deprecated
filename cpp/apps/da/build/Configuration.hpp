@@ -1,6 +1,7 @@
 #ifndef HEADER_da_build_Configuration_hpp_ALREADY_INCLUDED
 #define HEADER_da_build_Configuration_hpp_ALREADY_INCLUDED
 
+#include "da/package/Packages.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Forest.hpp"
 #include <vector>
@@ -35,6 +36,7 @@ namespace da
 
         private:
             gubg::file::Forest forest_;
+            da::package::Packages packages_;
     };
 }
 

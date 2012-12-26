@@ -1,22 +1,29 @@
 #include "da/build/Configuration.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/env/Util.hpp"
+#include "gubg/string_algo.hpp"
 using namespace da;
+using namespace da::package;
 using namespace gubg::file;
+using namespace gubg;
 
 Configuration::Configuration():
     verbose(false)
 {
-    compiler.includePaths.push_back(File("/home/gfannes/gubg/cpp/libs"));
-    compiler.includePaths.push_back(File("/home/gfannes/gubg/cpp/apps"));
-    compiler.includePaths.push_back(File("/home/gfannes/sdks/boost"));
-    
-    linker.libraryPaths.push_back(File("/home/gfannes/sdks/boost/stage/lib"));
-    linker.libraries.push_back("boost_thread");
-    linker.libraries.push_back("boost_system");
-    linker.libraries.push_back("boost_filesystem");
-    linker.libraries.push_back("boost_regex");
-    linker.libraries.push_back("boost_signals");
-
     forest_.add(getcwd(), {"cpp", "hpp"});
-    forest_.add(File("/home/gfannes/gubg/cpp/libs/gubg"), {"cpp", "hpp"});
+
+    {
+        std::string str;
+        if (env::expand(str, "$GUBG"))
+            packages_ << GUBG(File(str));
+        if (env::expand(str, "$HOME/sdks/boost"))
+            packages_ << Boost(File(str));
+        packages_.prune();
+    }
+    L("I found following packages: " << string_algo::join(packages_.names(), ", "));
+
+    packages_.appendIncludePaths(compiler.includePaths);
+    packages_.appendLibraryPaths(linker.libraryPaths);
+    packages_.appendLibraries(linker.libraries);
+    packages_.expandForest(forest_);
 }

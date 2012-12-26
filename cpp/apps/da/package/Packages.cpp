@@ -34,3 +34,37 @@ void Packages::prune()
     if (newEnd != packages_.end())
         packages_.erase(newEnd, packages_.end());
 }
+
+void Packages::appendIncludePaths(Package::IncludePaths &ips) const
+{
+    for (auto pkg: packages_)
+        if (pkg)
+            pkg->appendIncludePaths(ips);
+}
+void Packages::appendLibraryPaths(Package::LibraryPaths &lps) const
+{
+    for (auto pkg: packages_)
+        if (pkg)
+            pkg->appendLibraryPaths(lps);
+}
+void Packages::appendLibraries(Package::Libraries &libs) const
+{
+    for (auto pkg: packages_)
+        if (pkg)
+            pkg->appendLibraries(libs);
+}
+void Packages::expandForest(Package::Forest &forest) const
+{
+    for (auto pkg: packages_)
+        if (pkg)
+            pkg->expandForest(forest);
+}
+
+vector<string> Packages::names() const
+{
+    vector<string> res;
+    for (auto pkg: packages_)
+        if (pkg)
+            res.push_back(pkg->name());
+    return res;
+}

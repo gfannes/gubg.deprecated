@@ -17,9 +17,13 @@ namespace da
                 //Package API
                 virtual std::string name() const {return "boost";}
                 virtual bool exists() const;
+                virtual void appendIncludePaths(IncludePaths &) const;
+                virtual void appendLibraryPaths(LibraryPaths &) const;
+                virtual void appendLibraries(Libraries &) const;
 
             private:
                 gubg::file::File base_;
+                gubg::file::File libDir_;
         };
     }
 }

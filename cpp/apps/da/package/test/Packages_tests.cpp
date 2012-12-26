@@ -18,10 +18,11 @@ int main()
     {
         pks << Boost(File(str));
         pks << Boost(File(str));
-        pks << Boost(File(str));
     }
+    if (env::expand(str, "$GUBG"))
+        pks << GUBG(File(str));
     TEST_EQ(4, pks.size());
     pks.prune();
-    TEST_EQ(1, pks.size());
+    TEST_EQ(2, pks.size());
     return 0;
 }
