@@ -2,8 +2,12 @@
 help:
 	@echo "Help"
 
-da:
+.PHONY: clean
+clean: 
+	ruby internal/cleanAll.rb
 	make clean -C cpp/apps/da
+
+da:
 	make build -C cpp/apps/da -j
 
 .PHONY: pull commit push upload
