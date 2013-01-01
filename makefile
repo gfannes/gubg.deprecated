@@ -10,13 +10,14 @@ clean:
 da:
 	make build -C cpp/apps/da -j
 
-.PHONY: pull commit push upload
+.PHONY: pull commit publish upload
 pull:
 	git pull
 commit: pull
 	-git commit -a
-push: pull commit
+publish: pull commit
 	git push
+	cd ../Dropbox/gubg && git pull ../../gubg
 upload: push
 	r smeagol
 	cd smeagol && scp *.html web-gfannes@fannes.com:fannes.com/www/gubg
