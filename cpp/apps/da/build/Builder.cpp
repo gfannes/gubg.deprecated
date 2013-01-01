@@ -23,9 +23,13 @@ ReturnCode Builder::process(const SourceFile &source)
         auto src = sources_.add(srcfile);
 
         Headers headers;
+        IncludePaths includePaths;
         const auto &forest = configuration_.forest();
-        MSS(src->searchForHeaders(headers, forest));
+        MSS(src->searchForHeaders(headers, includePaths, forest));
         headersPerSource_[src] = headers;
+        //Add the include paths
+        for (auto ip: includePaths)
+            includePaths_.insert(ip);
 
         for (auto hdr: headers)
         {

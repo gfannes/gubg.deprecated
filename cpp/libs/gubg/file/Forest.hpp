@@ -41,7 +41,8 @@ namespace gubg
                 Files allFiles() const;
                 Files allRoots() const;
 
-                ReturnCode resolve(File &resolved, const File &partial, const size_t overlap = 1) const;
+                ReturnCode resolve(File &resolved,             const File &partial, const size_t overlap = 1) const;
+                ReturnCode resolve(File &resolved, File &root, const File &partial, const size_t overlap = 1) const;
                 bool contains(const File &) const;
 
             private:

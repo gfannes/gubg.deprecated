@@ -17,11 +17,6 @@ bool GUBG::exists() const
 {
     return gubg::file::exists(libsDir_) && gubg::file::exists(appsDir_);
 }
-void GUBG::appendIncludePaths(IncludePaths &ips) const
-{
-    ips.push_back(libsDir_);
-    ips.push_back(appsDir_);
-}
 void GUBG::expandForest(Forest &forest) const
 {
     File gubg(libsDir_);

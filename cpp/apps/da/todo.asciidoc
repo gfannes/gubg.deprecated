@@ -1,0 +1,11 @@
+== Todo
+
+=== Logging
+
+* Check if cache exists and log this
+* Provide a verbose option
+* Log about the different packages and why they are not found etc.
+
+=== General
+
+* Don't link if compilation failed

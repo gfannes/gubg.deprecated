@@ -77,6 +77,11 @@ Forest::Files Forest::allRoots() const
 }
 ReturnCode Forest::resolve(File &resolved, const File &partial, const size_t overlap) const
 {
+    File root;
+    return resolve(resolved, root, partial, overlap);
+}
+ReturnCode Forest::resolve(File &resolved, File &root, const File &partial, const size_t overlap) const
+{
     for (auto tree: trees_)
     {
         assert((bool)tree);
@@ -94,6 +99,7 @@ ReturnCode Forest::resolve(File &resolved, const File &partial, const size_t ove
             if (wanted.name() == f.name())
             {
                 resolved = f;
+                root = tree->root();
                 return ReturnCode::OK;
             }
         }

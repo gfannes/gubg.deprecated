@@ -24,6 +24,15 @@ namespace gubg
                 File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
                 File(      Name &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
 
+                bool operator==(const File &rhs) const
+                {
+                    return type_ == rhs.type_ && name_ == rhs.name_;
+                }
+                bool operator<(const File &rhs) const
+                {
+                    return std::make_pair(name_, type_) < std::make_pair(rhs.name_, rhs.type_);
+                }
+
                 void clear()
                 {
                     type_ = Unknown;
@@ -74,6 +83,14 @@ namespace gubg
                     if (ix == std::string::npos)
                         return false;
                     bn = name_.substr(ix+1);
+                    name_.resize(ix);
+                    return true;
+                }
+                bool popBasename()
+                {
+                    auto ix = name_.rfind(Delimiter);
+                    if (ix == std::string::npos)
+                        return false;
                     name_.resize(ix);
                     return true;
                 }

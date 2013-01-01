@@ -20,6 +20,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
 
     const Configuration configuration;
     Builder builder(configuration);
+    //Detect all header and source dependencies starting from source_
     MSS(builder.process(source_));
 
     //Setup the compiler
@@ -33,8 +34,11 @@ da::ReturnCode CompileExe::execute(const Options &options)
             compiler.addSetting(setting);
         for (auto path: config.includePaths)
             compiler.addIncludePath(path);
+        for (auto path: builder.includePaths())
+            compiler.addIncludePath(path);
     }
 
+    //Compile all source files into object files
     for (auto source: builder.sources())
     {
         gubg::file::File object(source->file());
@@ -42,6 +46,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
         MSS(compiler(object, source->file(), builder.headers(source)));
     }
 
+    //Setup the linker
     Linker linker;
     {
         const auto &config = configuration.linker;
@@ -52,6 +57,8 @@ da::ReturnCode CompileExe::execute(const Options &options)
         for (auto path: config.libraryPaths)
             linker.addLibraryPath(path);
     }
+
+    //Link the object files into an exe
     gubg::file::File executable(source_);
     executable.setExtension("exe");
     MSS(linker(executable, compiler.objectFiles()));

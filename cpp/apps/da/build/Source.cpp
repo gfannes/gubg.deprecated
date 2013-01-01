@@ -31,11 +31,12 @@ namespace
             }
     };
 }
-ReturnCode Source::searchForHeaders(Headers &headers, const Forest &forest)
+ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths, const Forest &forest)
 {
     MSS_BEGIN(ReturnCode, searchForHeaders, file().name());
 
     queue<File> staging;
+    //Add the direct includes from file() to staging using IncludePusher
     IncludePusher includePusher(staging);
     verbose("Processing top-level", file().name());
     MSS(includePusher.process(file()));
@@ -44,11 +45,12 @@ ReturnCode Source::searchForHeaders(Headers &headers, const Forest &forest)
 
     while (!staging.empty())
     {
-        File hdr;
+        File hdr, root;
         {
             const auto f = staging.front();
             staging.pop();
-            if (!gubg::mss::isOK(forest.resolve(hdr, f, 1)))
+            if (!gubg::mss::isOK(forest.resolve(hdr, root, f, 1)))
+                //This header could not be found in the forest
                 continue;
         }
 
@@ -56,6 +58,8 @@ ReturnCode Source::searchForHeaders(Headers &headers, const Forest &forest)
             continue;
         processed.insert(hdr.name());
         headers.add(hdr);
+        root.popBasename();
+        includePaths.insert(root);
 
         MSS(includePusher.process(hdr));
     }
