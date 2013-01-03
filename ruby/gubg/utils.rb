@@ -646,6 +646,7 @@ def tempDir(dir = '/tmp', subdir = nil)
         end while File.exist?(tmpDir)
     end
     FileUtils.mkdir_p(tmpDir)
+    raise("Could not create tempDir #{tmpDir}") unless File.exist?(tmpDir)
     if block_given?
 	    cwd = Dir.pwd
 	    begin
