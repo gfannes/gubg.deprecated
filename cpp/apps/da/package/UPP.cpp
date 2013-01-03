@@ -1,7 +1,10 @@
 #include "da/package/UPP.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include <vector>
+#include <string>
 using namespace da::package;
 using namespace gubg::file;
+using namespace std;
 
 UPP::UPP(){}
 UPP::UPP(const File &base):
@@ -15,9 +18,14 @@ bool UPP::exists() const
 }
 void UPP::expandForest(Forest &forest) const
 {
-    File uppsrc(base_);
-    uppsrc << "uppsrc/CtrlLib";
-    forest.add(uppsrc, {"cpp", "h"});
+    vector<string> subs = {"CtrlLib", "CtrlCore"};
+    for (auto sub: subs)
+    {
+        File dir(base_);
+        dir << "uppsrc";
+        dir << sub;
+        forest.add(dir, {"cpp", "h"});
+    }
 }
 void UPP::appendIncludePaths(IncludePaths &ips) const
 {
