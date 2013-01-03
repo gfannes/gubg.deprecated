@@ -4,6 +4,7 @@
 #include "da/package/Package.hpp"
 #include "da/package/Boost.hpp"
 #include "da/package/GUBG.hpp"
+#include "da/package/UPP.hpp"
 #include <list>
 
 namespace da
