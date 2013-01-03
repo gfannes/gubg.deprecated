@@ -11,7 +11,7 @@ DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe \
 	build/Configuration build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Boost package/GUBG \
+	package/Packages package/Boost package/GUBG package/UPP \
 	compile/Compiler \
 	link/Linker \
 
