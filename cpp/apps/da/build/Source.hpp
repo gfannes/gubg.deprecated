@@ -4,7 +4,7 @@
 #include "da/Codes.hpp"
 #include "da/Types.hpp"
 #include "da/build/Headers.hpp"
-#include "gubg/file/Forest.hpp"
+#include "da/package/Packages.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/Verbose.hpp"
 #include <memory>
@@ -24,7 +24,7 @@ namespace da
 
             //Returns all headers accessed (recursively) from this source file which could be found in the forest
             //and the corresponding include paths
-            ReturnCode searchForHeaders(Headers &, IncludePaths &, const gubg::file::Forest &);
+            ReturnCode searchForHeaders(Headers &, IncludePaths &, SourceFiles &sisterFiles, const packages::Packages &);
 
         private:
             Source(File);

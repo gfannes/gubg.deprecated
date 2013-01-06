@@ -18,7 +18,7 @@ namespace da
             {
                 std::vector<std::string> defines;
                 std::vector<std::string> settings;
-                std::vector<gubg::file::File> includePaths;
+                IncludePaths includePaths;
             };
             Compiler compiler;
 

@@ -7,6 +7,7 @@
 namespace da
 {
     typedef gubg::OrderedSet<gubg::file::File> IncludePaths;
+    typedef gubg::OrderedSet<gubg::file::File> SourceFiles;
 }
 
 #endif

@@ -35,7 +35,15 @@ void Packages::prune()
         packages_.erase(newEnd, packages_.end());
 }
 
-void Packages::appendIncludePaths(Package::IncludePaths &ips) const
+bool Packages::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
+{
+    for (auto pkg: packages_)
+        if (pkg.resolveHeader(resolveHeader, includePath, sisterFiles, partial))
+            return true;
+    return false;
+}
+
+void Packages::appendIncludePaths(IncludePaths &ips) const
 {
     for (auto pkg: packages_)
         if (pkg)

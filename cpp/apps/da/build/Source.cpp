@@ -31,7 +31,7 @@ namespace
             }
     };
 }
-ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths, const Forest &forest)
+ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths, SourceFiles &sisterFiles, const Packages &packages)
 {
     MSS_BEGIN(ReturnCode, searchForHeaders, file().name());
 
@@ -43,23 +43,27 @@ ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths
 
     set<File::Name> processed;
 
+    sisterFiles.clear();
     while (!staging.empty())
     {
-        File hdr, root;
+        File hdr, includePath;
+        SourceFiles sfs;
         {
             const auto f = staging.front();
             staging.pop();
-            if (!gubg::mss::isOK(forest.resolve(hdr, root, f, 1)))
-                //This header could not be found in the forest
+            if (!gubg::mss::isOK(packages.resolve(hdr, includePath, sfs, f, 1)))
+                //This header could not be found in the packages
                 continue;
         }
 
         if (processed.count(hdr.name()))
+            //This header is already processed
             continue;
         processed.insert(hdr.name());
+
         headers.add(hdr);
-        root.popBasename();
-        includePaths.insert(root);
+        includePaths.insert(includePath);
+        sisterFiles.insert(sfs);
 
         MSS(includePusher.process(hdr));
     }

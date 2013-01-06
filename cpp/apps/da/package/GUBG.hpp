@@ -3,6 +3,7 @@
 
 #include "da/package/Package.hpp"
 #include "gubg/file/File.hpp"
+#include "gubg/file/Forest.hpp"
 
 namespace da
 {
@@ -17,12 +18,13 @@ namespace da
                 //Package API
                 virtual std::string name() const {return "gubg";}
                 virtual bool exists() const;
-                virtual void expandForest(Forest &) const;
+                virtual bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const;
 
             private:
                 gubg::file::File base_;
                 gubg::file::File libsDir_;
                 gubg::file::File appsDir_;
+                gubg::file::Forest forest_;
         };
     }
 }

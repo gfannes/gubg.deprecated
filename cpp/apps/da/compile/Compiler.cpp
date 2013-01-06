@@ -45,7 +45,7 @@ void Compiler::addSetting(const Setting &setting)
 }
 void Compiler::addIncludePath(const IncludePath &includePath)
 {
-    includePaths_.push_back(includePath);
+    includePaths_.insert(includePath);
 }
 
 Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src)

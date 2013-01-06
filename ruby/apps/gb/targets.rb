@@ -459,7 +459,7 @@ class Configs
             @compileSettings = "-std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @linkSettings = "-Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
-            %w[main.cpp wiring.c wiring_digital.c wiring_analog.c WMath.cpp].each do |base|
+            %w[main.cpp wiring.c wiring_digital.c wiring_analog.c wiring_pulse.c WMath.cpp].each do |base|
                 @extrafiles << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
             end
             #@extrafiles << "#{home}/sdks/Arduino/libraries/Servo/Servo.cpp"

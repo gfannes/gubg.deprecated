@@ -17,7 +17,7 @@ bool Boost::exists() const
 }
 void Boost::appendIncludePaths(IncludePaths &ips) const
 {
-    ips.push_back(base_);
+    ips.insert(base_);
 }
 void Boost::appendLibraryPaths(LibraryPaths &lps) const
 {

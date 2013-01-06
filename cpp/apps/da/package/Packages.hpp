@@ -1,6 +1,7 @@
 #ifndef HEADER_da_package_Packages_hpp_ALREADY_INCLUDED
 #define HEADER_da_package_Packages_hpp_ALREADY_INCLUDED
 
+#include "da/Types.hpp"
 #include "da/package/Package.hpp"
 #include "da/package/Boost.hpp"
 #include "da/package/GUBG.hpp"
@@ -14,6 +15,7 @@ namespace da
         class Packages
         {
             public:
+                //Adding packages
                 template <typename Pkg>
                 Packages &operator<<(const Pkg &pkg)
                 {
@@ -23,7 +25,10 @@ namespace da
 
                 //Removes unexisting packages, and selects the first one if duplicates are present
                 void prune();
-                void appendIncludePaths(Package::IncludePaths &) const;
+
+                bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const;
+                
+                void appendIncludePaths(IncludePaths &) const;
                 void appendLibraryPaths(Package::LibraryPaths &) const;
                 void appendLibraries(Package::Libraries &) const;
                 void expandForest(Package::Forest &) const;

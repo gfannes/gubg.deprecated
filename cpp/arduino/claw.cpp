@@ -5,23 +5,33 @@
 namespace 
 {
     Servo claw;
-    const int StartAngle = 60;
-    const int StopAngle = 150;
+    const int StartAngle = 0;
+    const int StopAngle = 180;
     const int AngleStep = 1;
-    int angle = StartAngle;
+    int angle;
+    int display;
 }
 
 void setup()
 {
+    pinMode(13, OUTPUT);
     claw.attach(9);
+    angle = StartAngle;
+    display = 0;
 }
 
 void loop()
 {
+    if (display)
+        digitalWrite(13, HIGH);
+    else
+        digitalWrite(13, LOW);
+    display = 1-display;
+
     for (; angle < StopAngle; angle += AngleStep)
     {
         claw.write(angle);
-        delay(20);
+        delay(8);
     }
     for (; angle > StartAngle; angle -= AngleStep)
     {
