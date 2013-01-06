@@ -1,8 +1,8 @@
 #ifndef HEADER_da_package_Package_hpp_ALREADY_INCLUDED
 #define HEADER_da_package_Package_hpp_ALREADY_INCLUDED
 
+#include "da/Types.hpp"
 #include "gubg/file/File.hpp"
-#include "gubg/file/Forest.hpp"
 #include <string>
 #include <memory>
 #include <vector>
@@ -15,10 +15,12 @@ namespace da
         {
             public:
                 typedef std::shared_ptr<Package> Ptr;
-                typedef std::vector<gubg::file::File> IncludePaths;
                 typedef std::vector<gubg::file::File> LibraryPaths;
                 typedef std::vector<std::string>      Libraries;
-                typedef gubg::file::Forest            Forest;
+                typedef gubg::file::File File;
+
+                //Searches the packages for a header
+                virtual bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const {return false;}
 
                 virtual std::string name() const = 0;
                 virtual bool exists() const = 0;
@@ -26,7 +28,6 @@ namespace da
                 virtual void appendIncludePaths(IncludePaths &) const {};
                 virtual void appendLibraryPaths(LibraryPaths &) const {};
                 virtual void appendLibraries(Libraries &) const {};
-                virtual void expandForest(Forest &) const {}
         };
     }
 }

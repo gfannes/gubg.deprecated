@@ -2,6 +2,7 @@
 #define HEADER_da_compile_Compiler_hpp_ALREADY_INCLUDED
 
 #include "da/Codes.hpp"
+#include "da/Types.hpp"
 #include "da/build/Headers.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Creater.hpp"
@@ -71,7 +72,6 @@ namespace da
                 Defines defines_;
                 typedef std::list<Setting> Settings;
                 Settings settings_;
-                typedef std::list<gubg::file::File> IncludePaths;
                 IncludePaths includePaths_;
                 ObjectFiles objectFiles_;
                 typedef gubg::threading::Processor<Job> Processor;

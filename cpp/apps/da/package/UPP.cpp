@@ -29,5 +29,5 @@ void UPP::expandForest(Forest &forest) const
 }
 void UPP::appendIncludePaths(IncludePaths &ips) const
 {
-    ips.push_back(File("/usr/include/freetype2"));
+    ips.insert(File("/usr/include/freetype2"));
 }
