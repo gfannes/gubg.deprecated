@@ -24,12 +24,12 @@ ReturnCode Builder::process(const SourceFile &source)
 
         Headers headers;
         IncludePaths includePaths;
-        const auto &forest = configuration_.forest();
-        MSS(src->searchForHeaders(headers, includePaths, forest));
+        SourceFiles sisterFiles;
+        MSS(src->searchForHeaders(headers, includePaths, sisterFiles, configuration_.packages()));
         headersPerSource_[src] = headers;
-        //Add the include paths
-        for (auto ip: includePaths)
-            includePaths_.insert(ip);
+        includePaths_.insert(includePaths);
+        for (auto ip: includePaths_)
+            LOG_M(ip.name());
 
         for (auto hdr: headers)
         {
@@ -40,11 +40,8 @@ ReturnCode Builder::process(const SourceFile &source)
                     break;
                 default: MSS(rc); break;
             }
-            auto sisterSource = hdr->file();
-            sisterSource.setExtension("cpp");
-            LOG_M(STREAM(sisterSource.name()));
-            if (forest.contains(sisterSource))
-                staging.push(sisterSource);
+            for (auto sisterFile: sisterFiles)
+                staging.push(sisterFile);
         }
     }
 

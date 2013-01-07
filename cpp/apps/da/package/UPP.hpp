@@ -17,7 +17,6 @@ namespace da
                 //Package API
                 virtual std::string name() const {return "upp";}
                 virtual bool exists() const;
-                virtual void expandForest(Forest &) const;
                 virtual void appendIncludePaths(IncludePaths &) const;
 
             private:

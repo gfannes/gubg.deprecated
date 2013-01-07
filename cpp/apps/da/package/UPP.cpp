@@ -16,6 +16,7 @@ bool UPP::exists() const
 {
     return gubg::file::exists(base_);
 }
+#if 0
 void UPP::expandForest(Forest &forest) const
 {
     vector<string> subs = {"CtrlLib", "CtrlCore"};
@@ -27,6 +28,7 @@ void UPP::expandForest(Forest &forest) const
         forest.add(dir, {"cpp", "h"});
     }
 }
+#endif
 void UPP::appendIncludePaths(IncludePaths &ips) const
 {
     ips.insert(File("/usr/include/freetype2"));

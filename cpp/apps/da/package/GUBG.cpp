@@ -1,3 +1,4 @@
+//#define GUBG_LOG
 #include "da/package/GUBG.hpp"
 #include "gubg/file/Filesystem.hpp"
 using namespace da::package;
@@ -27,10 +28,12 @@ bool GUBG::exists() const
 }
 bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
 {
+    LOG_S(resolveHeader, partial.name());
     File root;
-    if (ReturnCode::OK != resolve(resolvedHeader, root, partial, 1))
+    if (ReturnCode::OK != forest_.resolve(resolvedHeader, root, partial, 1))
         return false;
 
+    LOG_M(resolvedHeader.name());
     {
         std::string bn;
         if (!root.popBasename(bn))
@@ -42,12 +45,16 @@ bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &s
         else
             return false;
     }
+    LOG_M(includePath.name());
 
     {
         auto sisterFile = resolvedHeader;
         sisterFile.setExtension("cpp");
         if (forest_.contains(sisterFile))
+        {
+            LOG_M(sisterFile.name());
             sisterFiles.insert(sisterFile);
+        }
     }
     return true;
 }

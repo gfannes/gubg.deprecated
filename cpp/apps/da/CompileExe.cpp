@@ -35,7 +35,10 @@ da::ReturnCode CompileExe::execute(const Options &options)
         for (auto path: config.includePaths)
             compiler.addIncludePath(path);
         for (auto path: builder.includePaths())
+        {
+            LOG_M(path.name());
             compiler.addIncludePath(path);
+        }
     }
 
     //Compile all source files into object files
