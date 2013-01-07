@@ -14,12 +14,23 @@ namespace gubg
                 typedef std::list<typename Set_::const_iterator> List_;
 
             public:
+                void clear()
+                {
+                    set_.clear();
+                    list_.clear();
+                }
+
                 void insert(const T &e)
                 {
                     auto p = set_.insert(e);
                     if (!p.second)
                         return;
                     list_.push_back(p.first);
+                }
+                void insert(const OrderedSet &os)
+                {
+                    for (auto e: os.list_)
+                        insert(*e);
                 }
 
                 class const_iterator

@@ -24,11 +24,13 @@ n\
     Lexer<vector<Token>> lexer;
     Range range;
     TEST_OK(gubg::file::read(range, gubg::file::File(__FILE__)));
+    TEST_OK(gubg::file::read(range, gubg::file::File("/home/gfannes/sdks/upp/uppsrc/CtrlCore/GtkDrawText.cpp")));
     TEST_OK(lexer.tokenize(range));
     L(STREAM(lexer.tokens().size()));
     for (auto token: lexer.tokens())
         cout << token;
     int strAng3_identifier;
     int hex = 0x1234;
+    int __;
     return 0;
 }

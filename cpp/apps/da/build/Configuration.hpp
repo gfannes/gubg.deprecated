@@ -33,6 +33,7 @@ namespace da
             Configuration();
 
             const gubg::file::Forest &forest() const {return forest_;}
+            const da::package::Packages &packages() const {return packages_;}
 
         private:
             gubg::file::Forest forest_;

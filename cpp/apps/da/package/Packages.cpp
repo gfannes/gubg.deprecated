@@ -38,7 +38,7 @@ void Packages::prune()
 bool Packages::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
 {
     for (auto pkg: packages_)
-        if (pkg.resolveHeader(resolveHeader, includePath, sisterFiles, partial))
+        if (pkg->resolveHeader(resolvedHeader, includePath, sisterFiles, partial))
             return true;
     return false;
 }
@@ -61,12 +61,14 @@ void Packages::appendLibraries(Package::Libraries &libs) const
         if (pkg)
             pkg->appendLibraries(libs);
 }
+#if 0
 void Packages::expandForest(Package::Forest &forest) const
 {
     for (auto pkg: packages_)
         if (pkg)
             pkg->expandForest(forest);
 }
+#endif
 
 vector<string> Packages::names() const
 {

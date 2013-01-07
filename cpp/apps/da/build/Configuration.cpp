@@ -27,5 +27,4 @@ Configuration::Configuration():
     packages_.appendIncludePaths(compiler.includePaths);
     packages_.appendLibraryPaths(linker.libraryPaths);
     packages_.appendLibraries(linker.libraries);
-    packages_.expandForest(forest_);
 }

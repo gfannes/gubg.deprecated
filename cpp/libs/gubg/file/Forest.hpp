@@ -39,6 +39,7 @@ namespace gubg
 
                 typedef std::vector<File> Files;
                 Files allFiles() const;
+                Files allFiles(const Tree::Extensions &) const;
                 Files allRoots() const;
 
                 ReturnCode resolve(File &resolved,             const File &partial, const size_t overlap = 1) const;

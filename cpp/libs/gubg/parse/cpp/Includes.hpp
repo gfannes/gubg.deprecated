@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
 
+#define GUBG_LOG
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -26,7 +27,7 @@ namespace gubg
                     public:
                         ReturnCode process(const gubg::file::File &file)
                         {
-                            MSS_BEGIN(ReturnCode);
+                            MSS_BEGIN(ReturnCode, process);
                             Range range;
                             MSS(gubg::file::read(range, file));
                             pp::Lexer<std::vector<pp::Token>> lexer;
@@ -34,24 +35,24 @@ namespace gubg
                             enum State {Idle, IncludeDetected, BeginBracketInclude, MacroInclude};
                             State state = Idle;
                             std::ostringstream incl;
-			    auto &tokens = lexer.tokens();
-			    for (auto it = tokens.begin(); it != tokens.end(); ++it)
+                            auto &tokens = lexer.tokens();
+                            for (auto it = tokens.begin(); it != tokens.end(); ++it)
                             {
-				auto &token = *it;
+                                auto &token = *it;
                                 typedef pp::Token Token;
 
-				if (state == MacroInclude)
-				{
-					if (isLineFeed(token) || isCarriageReturn(token))
-					{
-						receiver_().includes_detected(incl.str(), IncludeType::Macro);
-						incl.str("");
-						state = Idle;
-					}
-					else
-						incl << token.range.content();
-					continue;
-				}
+                                if (state == MacroInclude)
+                                {
+                                    if (isLineFeed(token) || isCarriageReturn(token))
+                                    {
+                                        receiver_().includes_detected(incl.str(), IncludeType::Macro);
+                                        incl.str("");
+                                        state = Idle;
+                                    }
+                                    else
+                                        incl << token.range.content();
+                                    continue;
+                                }
 
                                 if (token.isWhitespace())
                                     continue;
@@ -77,16 +78,16 @@ namespace gubg
                                             incl.str("");
                                             state = BeginBracketInclude;
                                         }
-					else if (isIdentifier(token))
-					{
+                                        else if (isIdentifier(token))
+                                        {
                                             incl.str("");
-					    incl << token.range.content();
-					    state = MacroInclude;
-					}
+                                            incl << token.range.content();
+                                            state = MacroInclude;
+                                        }
                                         else
                                         {
-					    std::ostringstream oss;
-					    oss << "I expected either a Symbol or a String, but I got a " << toString(token.type);
+                                            std::ostringstream oss;
+                                            oss << "I expected either a Symbol or a String, but I got a " << toString(token.type);
                                             receiver_().includes_error(oss.str());
                                             MSS_L(UnexpectedToken);
                                         }
@@ -105,6 +106,7 @@ namespace gubg
                                                     {
                                                         case '.':
                                                         case '/':
+                                                        case '-':
                                                             incl << symbol;
                                                             break;
                                                         case '>':
@@ -125,12 +127,12 @@ namespace gubg
                                         break;
                                 }
                             }
-			    if (state == MacroInclude)
-			    {
-				    receiver_().includes_detected(incl.str(), IncludeType::Macro);
-				    incl.str("");
-				    state = Idle;
-			    }
+                            if (state == MacroInclude)
+                            {
+                                receiver_().includes_detected(incl.str(), IncludeType::Macro);
+                                incl.str("");
+                                state = Idle;
+                            }
                             MSS_END();
                         }
 

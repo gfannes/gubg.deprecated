@@ -1,5 +1,6 @@
 #include "gubg/file/Forest.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include <set>
 using namespace gubg::file;
 using namespace std;
 
@@ -62,6 +63,25 @@ Forest::Files Forest::allFiles() const
         assert((bool)tree);
         for (const auto &f: tree->files())
             files.push_back(f);
+    }
+    return files;
+}
+Forest::Files Forest::allFiles(const Tree::Extensions &exts) const
+{
+    //Setup a lookup set
+    set<string> extensions;
+    for (auto e: exts)
+        extensions.insert(e);
+
+    Files files;
+    for (auto tree: trees_)
+    {
+        assert((bool)tree);
+        for (const auto &f: tree->files())
+        {
+            if (extensions.count(f.extension()))
+                files.push_back(f);
+        }
     }
     return files;
 }
