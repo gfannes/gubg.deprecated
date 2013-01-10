@@ -14,7 +14,12 @@ Job::Job(Compiler &compiler):
 void Job::execute()
 {
     MSS_BEGIN(void);
-    MSS(operator()({object}, settings));
+    auto rc = operator()({object}, settings);
+    if (!gubg::mss::isOK(rc))
+    {
+        compiler_.addFailure();
+        MSS(rc);
+    }
     compiler_.addObject_(object);
     MSS_END();
 }
@@ -30,7 +35,8 @@ ReturnCode Job::creater_create(const Files &files, const Settings &settings) con
 }
 
 Compiler::Compiler():
-    processor_(4)
+    processor_(4),
+    nrFailures_(0)
 {
     processor_.start();
 }
@@ -102,6 +108,16 @@ ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src, He
     }
 
     MSS_END();
+}
+void Compiler::addFailure()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    ++nrFailures_;
+}
+size_t Compiler::nrFailures()
+{
+    processor_.stop();
+    return nrFailures_;
 }
 void Compiler::addObject_(const ObjectFile &obj)
 {

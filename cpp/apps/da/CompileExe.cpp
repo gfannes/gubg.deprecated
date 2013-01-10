@@ -48,6 +48,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
         object.setExtension("o");
         MSS(compiler(object, source->file(), builder.headers(source)));
     }
+    MSS(compiler.nrFailures() == 0);
 
     //Setup the linker
     Linker linker;
