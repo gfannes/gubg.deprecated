@@ -6,6 +6,7 @@ require("gubg/output")
 
 options = parseOptions(name: "Searches recursively in files: fr <options> <pattern>", author: "Geert Fannes") do |parser, options|
 	parser.on("-i", "--case-insensitive", "Case insensitive search"){options[:ci] = true}
+	parser.on("-a", "--all", "Search all files"){options[:all] = true}
 	parser.on("-e", "--export FILE", "Export matches to FILE"){|filename|options[:export] = filename}
 	options[:operation] = :show
 	parser.on("-o", "--open", "Open files in editor"){options[:open] = true; options[:operation] = :open}
@@ -55,7 +56,7 @@ Dir.each("./",recursor) do |dir, fn|
 	when /^Makefile/
 	else
 		doCheck = false
-	end
+	end unless options[:all]
 	if doCheck
 		str = String.load(File.expand_path(fn, dir))
 		if str.nil?
