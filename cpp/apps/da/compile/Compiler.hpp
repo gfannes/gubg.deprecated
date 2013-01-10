@@ -60,6 +60,9 @@ namespace da
                 Command command(const ObjectFile &, const SourceFile &);
                 ReturnCode operator()(const ObjectFile &, const SourceFile &, Headers headers);
 
+                size_t nrFailures();
+                void addFailure();
+
                 const ObjectFiles &objectFiles();
 
                 void setCache(gubg::file::File cache){cache_ = cache;}
@@ -77,6 +80,7 @@ namespace da
                 typedef gubg::threading::Processor<Job> Processor;
                 Processor processor_;
                 gubg::file::File cache_;
+                size_t nrFailures_;
 
                 std::mutex mutex_;
         };

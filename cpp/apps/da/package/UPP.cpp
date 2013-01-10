@@ -1,5 +1,6 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "da/package/UPP.hpp"
+#include "da/package/PkgConfig.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <vector>
 #include <string>
@@ -25,6 +26,7 @@ UPP::UPP(const File &base):
     uppsrc_ << "uppsrc";
     add_(forest_, uppsrc_, "CtrlLib");
     add_(forest_, uppsrc_, "CtrlCore");
+    add_(forest_, uppsrc_, "Core");
 }
 
 bool UPP::exists() const
@@ -35,13 +37,14 @@ void UPP::appendIncludePaths(IncludePaths &ips) const
 {
     ips.insert(File("/usr/include/freetype2"));
     ips.insert(File("/usr/include/gtk-3.0"));
-    ips.insert(File("/usr/include/glib-2.0"));
+    getIncludePathsForPackage(ips, "glib-2.0");
+    //ips.insert(File("/usr/include/glib-2.0"));
 }
 bool UPP::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
 {
     LOG_S(resolveHeader, partial.name());
     File root;
-    if (ReturnCode::OK != forest_.resolve(resolvedHeader, root, partial, 1))
+    if (!gubg::mss::isOK(forest_.resolve(resolvedHeader, root, partial, 1)))
         return false;
 
     includePath = uppsrc_;
