@@ -19,6 +19,8 @@ namespace da
                 virtual std::string name() const {return "upp";}
                 virtual bool exists() const;
                 virtual void appendIncludePaths(IncludePaths &) const;
+                virtual void appendDefines(Defines &) const;
+                virtual void appendLibraries(Libraries &) const;
                 virtual bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const;
 
             private:

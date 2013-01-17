@@ -32,8 +32,9 @@ namespace da
                 bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const;
                 
                 void appendIncludePaths(IncludePaths &) const;
-                void appendLibraryPaths(Package::LibraryPaths &) const;
-                void appendLibraries(Package::Libraries &) const;
+                void appendDefines(Defines &) const;
+                void appendLibraryPaths(LibraryPaths &) const;
+                void appendLibraries(Libraries &) const;
 
                 std::vector<std::string> names() const;
 

@@ -16,7 +16,7 @@ namespace da
 
             struct Compiler
             {
-                std::vector<std::string> defines;
+                Defines defines;
                 std::vector<std::string> settings;
                 IncludePaths includePaths;
             };
@@ -25,8 +25,8 @@ namespace da
             struct Linker
             {
                 std::vector<std::string> settings;
-                std::vector<std::string> libraries;
-                std::vector<gubg::file::File> libraryPaths;
+                Libraries libraries;
+                LibraryPaths libraryPaths;
             };
             Linker linker;
 

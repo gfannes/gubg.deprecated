@@ -21,13 +21,13 @@ void Boost::appendIncludePaths(IncludePaths &ips) const
 }
 void Boost::appendLibraryPaths(LibraryPaths &lps) const
 {
-    lps.push_back(libDir_);
+    lps.insert(libDir_);
 }
 void Boost::appendLibraries(Libraries &libs) const
 {
-    libs.push_back("boost_thread");
-    libs.push_back("boost_system");
-    libs.push_back("boost_filesystem");
-    libs.push_back("boost_regex");
-    libs.push_back("boost_signals");
+    libs.insert("boost_thread");
+    libs.insert("boost_system");
+    libs.insert("boost_filesystem");
+    libs.insert("boost_regex");
+    libs.insert("boost_signals");
 }

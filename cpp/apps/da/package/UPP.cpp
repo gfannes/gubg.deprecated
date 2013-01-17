@@ -27,6 +27,11 @@ UPP::UPP(const File &base):
     add_(forest_, uppsrc_, "CtrlLib");
     add_(forest_, uppsrc_, "CtrlCore");
     add_(forest_, uppsrc_, "Core");
+    add_(forest_, uppsrc_, "Draw");
+    add_(forest_, uppsrc_, "RichText");
+    add_(forest_, uppsrc_, "PdfDraw");
+    add_(forest_, uppsrc_, "plugin/png");
+    //add_(forest_, uppsrc_, "plugin");
 }
 
 bool UPP::exists() const
@@ -35,10 +40,24 @@ bool UPP::exists() const
 }
 void UPP::appendIncludePaths(IncludePaths &ips) const
 {
-    ips.insert(File("/usr/include/freetype2"));
-    ips.insert(File("/usr/include/gtk-3.0"));
-    getIncludePathsForPackage(ips, "glib-2.0");
-    //ips.insert(File("/usr/include/glib-2.0"));
+    insertIncludePathsForPackage(ips, "glib-2.0");
+    insertIncludePathsForPackage(ips, "pango");
+    insertIncludePathsForPackage(ips, "cairo");
+    insertIncludePathsForPackage(ips, "gtk+-3.0");
+    insertIncludePathsForPackage(ips, "libssl");
+}
+void UPP::appendDefines(Defines &defines) const
+{
+    defines.insert("flagNOGTK");
+}
+void UPP::appendLibraries(Libraries &libraries) const
+{
+    insertLibrariesForPackage(libraries, "libssl");
+    insertLibrariesForPackage(libraries, "x11");
+    insertLibrariesForPackage(libraries, "libpng");
+    libraries.insert("rt");
+    libraries.insert("Xrender");
+    libraries.insert("Xft");
 }
 bool UPP::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
 {

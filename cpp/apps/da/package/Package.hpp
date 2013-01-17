@@ -15,8 +15,6 @@ namespace da
         {
             public:
                 typedef std::shared_ptr<Package> Ptr;
-                typedef std::vector<gubg::file::File> LibraryPaths;
-                typedef std::vector<std::string>      Libraries;
                 typedef gubg::file::File File;
 
                 //Searches the packages for a header
@@ -26,6 +24,7 @@ namespace da
                 virtual bool exists() const = 0;
 
                 virtual void appendIncludePaths(IncludePaths &) const {};
+                virtual void appendDefines(Defines &) const {};
                 virtual void appendLibraryPaths(LibraryPaths &) const {};
                 virtual void appendLibraries(Libraries &) const {};
         };

@@ -25,6 +25,7 @@ Configuration::Configuration():
     L("I found following packages: " << string_algo::join(packages_.names(), ", "));
 
     packages_.appendIncludePaths(compiler.includePaths);
+    packages_.appendDefines(compiler.defines);
     packages_.appendLibraryPaths(linker.libraryPaths);
     packages_.appendLibraries(linker.libraries);
 }

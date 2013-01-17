@@ -49,13 +49,19 @@ void Packages::appendIncludePaths(IncludePaths &ips) const
         if (pkg)
             pkg->appendIncludePaths(ips);
 }
-void Packages::appendLibraryPaths(Package::LibraryPaths &lps) const
+void Packages::appendDefines(Defines &defines) const
+{
+    for (auto pkg: packages_)
+        if (pkg)
+            pkg->appendDefines(defines);
+}
+void Packages::appendLibraryPaths(LibraryPaths &lps) const
 {
     for (auto pkg: packages_)
         if (pkg)
             pkg->appendLibraryPaths(lps);
 }
-void Packages::appendLibraries(Package::Libraries &libs) const
+void Packages::appendLibraries(Libraries &libs) const
 {
     for (auto pkg: packages_)
         if (pkg)

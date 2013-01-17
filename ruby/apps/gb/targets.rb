@@ -210,7 +210,7 @@ class ObjectFile
     def to_s; @source.to_s end
 end
 class FullMetaInfo
-    @@verbose = false
+    @@verbose = true
     def initialize(source)
         @source = source
     end
@@ -295,7 +295,7 @@ class FullMetaInfo
     end
 end
 class MetaInfo
-    @@verbose = false
+    @@verbose = true
     @@reInclude = /^\#include\s+["<](.+)[">]\s*/
         attr_reader :file, :refs
     def initialize(file, trees)
@@ -309,6 +309,9 @@ class MetaInfo
         @headerPerRef = {}
         @refs.each do |ref|
             log("Searching for a match for include ref #{ref}") if @@verbose
+            next if ref["mss_common"]
+            next if ref["Singleton"]
+            next if ref["mutex"]
             matches = @trees.map{|tree|tree.find(ref, :approx)}.flatten
             log("I found #{matches.length} matches: #{matches.map{|m|[m.name, m.class]}}") if @@verbose
             unless matches.empty?

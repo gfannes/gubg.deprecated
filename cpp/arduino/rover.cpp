@@ -165,7 +165,7 @@ void loop()
     if (g_parser.freshValues)
     {
         g_parser.freshValues = false;
-        g_leftMotor.setSpeed(g_parser.motorValues_[0]);
-        g_rightMotor.setSpeed(g_parser.motorValues_[1]);
+        g_leftMotor.setSpeed(4*g_parser.motorValues_[0]);
+        g_rightMotor.setSpeed(4*g_parser.motorValues_[1]);
     }
 }

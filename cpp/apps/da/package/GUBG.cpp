@@ -17,6 +17,10 @@ GUBG::GUBG(const File &base):
     gubg << "gubg";
     forest_.add(gubg, {"cpp", "hpp"});
 
+    File iup(libsDir_);
+    iup << "iup";
+    forest_.add(iup, {"cpp", "hpp"});
+
     File da(appsDir_);
     da << "da";
     forest_.add(da, {"cpp", "hpp"});
@@ -25,6 +29,26 @@ GUBG::GUBG(const File &base):
 bool GUBG::exists() const
 {
     return gubg::file::exists(libsDir_) && gubg::file::exists(appsDir_);
+}
+void GUBG::appendIncludePaths(IncludePaths &ips) const
+{
+    ips.insert(File("/home/gfannes/sdks/iup/include"));
+    ips.insert(File("/home/gfannes/sdks/cd/include"));
+}
+void GUBG::appendDefines(Defines &defines) const
+{
+}
+void GUBG::appendLibraryPaths(LibraryPaths &lps) const
+{
+    lps.insert(File("/home/gfannes/sdks/iup/lib/Linux35_64"));
+    lps.insert(File("/home/gfannes/sdks/cd/lib/Linux35_64"));
+}
+void GUBG::appendLibraries(Libraries &libraries) const
+{
+    libraries.insert("iup");
+    libraries.insert("iup_pplot");
+    libraries.insert("iupcontrols");
+    libraries.insert("cd");
 }
 bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
 {
@@ -38,7 +62,7 @@ bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &s
         std::string bn;
         if (!root.popBasename(bn))
             return false;
-        if (bn == "gubg")
+        if (bn == "gubg" || bn == "iup")
             includePath = libsDir_;
         else if (bn == "da")
             includePath = appsDir_;

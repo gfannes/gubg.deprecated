@@ -10,7 +10,8 @@ namespace da
 {
     namespace package
     {
-        ReturnCode getIncludePathsForPackage(IncludePaths &, const std::string &pkg);
+        ReturnCode insertIncludePathsForPackage(IncludePaths &, const std::string &pkg);
+        ReturnCode insertLibrariesForPackage(Libraries &, const std::string &pkg);
     }
 }
 
