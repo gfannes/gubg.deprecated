@@ -30,10 +30,3 @@ webserver: pull
 	gollum --config config.rb
 	git pull
 	git push
-
-GIT := $(shell which git)
-
-install-gubg: $(GIT)
-	$(GIT) clone brol
-
-install-boost:
