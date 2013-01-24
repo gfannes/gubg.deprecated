@@ -14,5 +14,5 @@ $(info "GUBG_TMP: $(GUBG_TMP)")
 .PHONY: env
 env: $(GUBG_SDKS) $(GUBG_TMP)
 
-$(GUBG_SDKS):;mkdir $@
-$(GUBG_TMP):;mkdir $@
+$(GUBG_SDKS):;mkdir -p $@
+$(GUBG_TMP):;mkdir -p $@

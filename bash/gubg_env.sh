@@ -7,7 +7,7 @@ if [ ! $GUBG_SDKS ];then
     echo "* Setting GUBG_SDKS to $GUBG_SDKS"
 fi
 if [ ! $GUBG_TMP ];then
-    export GUBG_TMP=$HOME/tmp
+    export GUBG_TMP=$HOME/tmp/gubg
     echo "* Setting GUBG_TMP to $GUBG_TMP"
 fi
 export GUBG_BASH=$GUBG/bash
