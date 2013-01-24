@@ -2,6 +2,8 @@
 help:
 	@echo "Help"
 
+include make/gubg_env.makefile
+
 .PHONY: clean
 clean: 
 	ruby internal/cleanAll.rb
