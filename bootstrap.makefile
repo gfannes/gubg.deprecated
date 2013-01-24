@@ -1,6 +1,6 @@
 #This is the gubg bootstrap file
 
-GUBG := $(HOME)/aaa/gubg
+GUBG := $(HOME)/gubg
 BASHRC := $(HOME)/.bashrc
 
 .PHONY: help
@@ -19,9 +19,10 @@ install-gubg: $(GUBG) adjust-bashrc
 
 #Installs loading the bash.cfg from gubg into .bashrc
 .PHONY: adjust-bashrc
-ifeq ($(shell grep "$(GUBG)" $(BASHRC)),)
+ifeq ($(shell grep "export GUBG=" $(BASHRC)),)
 adjust-bashrc:
-	echo ". $(GUBG)/bash/bash.cfg" >> $(BASHRC)
+	echo "export GUBG=$(GUBG)" >> $(BASHRC)
+	echo ". $(GUBG)/bash/bash.sh" >> $(BASHRC)
 else
 adjust-bashrc:
 	@echo "GUBG is already installed into $(BASHRC)"
