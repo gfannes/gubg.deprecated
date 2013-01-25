@@ -16,10 +16,8 @@ Configuration::Configuration():
         std::string str;
         if (env::expand(str, "$GUBG"))
             packages_ << GUBG(File(str));
-        if (env::expand(str, "$HOME/sdks/boost"))
+        if (env::expand(str, "$GUBG_BOOST"))
             packages_ << Boost(File(str));
-        if (env::expand(str, "$HOME/sdks/upp"))
-            packages_ << UPP(File(str));
         packages_.prune();
     }
     L("I found following packages: " << string_algo::join(packages_.names(), ", "));

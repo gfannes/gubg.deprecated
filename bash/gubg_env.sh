@@ -10,6 +10,10 @@ if [ ! $GUBG_TMP ];then
     export GUBG_TMP=$HOME/tmp/gubg
     echo "* Setting GUBG_TMP to $GUBG_TMP"
 fi
+if [ ! $GUBG_BIN ];then
+    export GUBG_BIN=$HOME/bin
+    echo "* Setting GUBG_BIN to $GUBG_BIN"
+fi
 export GUBG_BASH=$GUBG/bash
 export RUBYLIB=$GUBG/ruby
-export PATH=$PATH:$GUBG/bin
+export PATH=$PATH:$GUBG_BIN:$GUBG/bin

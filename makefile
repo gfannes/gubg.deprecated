@@ -10,7 +10,7 @@ include make/iup.makefile
 .PHONY: clean
 clean: 
 	ruby internal/cleanAll.rb
-	make clean -C cpp/apps/da
+	make da-clean -C cpp/apps/da
 
 da:
 	make build -C cpp/apps/da -j

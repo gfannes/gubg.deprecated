@@ -43,7 +43,7 @@ im: $(GUBG_IM) lua
 cd: $(GUBG_CD) im lua
 	cd $(GUBG_CD)/src && make
 iup: $(GUBG_IUP) cd im lua
-	cd $(GUBG_IUP)/src && make
+	cd $(GUBG_IUP)/src && make USE_GTK3=Yes
 iup-clean:
 #	rm -f $(lua51_tgz) $(lua52_tgz) $(im_tgz) $(cd_tgz) $(iup_tgz)
 	rm -rf $(GUBG_LUA_51)
