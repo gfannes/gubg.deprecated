@@ -1,6 +1,8 @@
 #ifndef HEADER_gubg_SmartRange_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_SmartRange_hpp_ALREADY_INCLUDED
 
+#include <memory>
+
 namespace gubg
 {
     template <typename Container>

@@ -1,5 +1,6 @@
 #include "da/package/Boost.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/logging/Log.hpp"
 using namespace da::package;
 using namespace gubg::file;
 
@@ -13,6 +14,7 @@ Boost::Boost(const File &base):
 
 bool Boost::exists() const
 {
+    LOG_S(exists, base_.name());
     return gubg::file::exists(base_);
 }
 void Boost::appendIncludePaths(IncludePaths &ips) const

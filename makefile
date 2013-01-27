@@ -6,14 +6,11 @@ include make/gubg_env.makefile
 include make/dev_env.makefile
 include make/boost.makefile
 include make/iup.makefile
+include make/da.makefile
 
 .PHONY: clean
-clean: 
+clean: da-clean
 	ruby internal/cleanAll.rb
-	make da-clean -C cpp/apps/da
-
-da:
-	make build -C cpp/apps/da -j
 
 .PHONY: pull commit publish upload
 pull:
