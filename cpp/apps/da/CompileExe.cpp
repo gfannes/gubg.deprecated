@@ -4,7 +4,7 @@
 #include "da/build/Configuration.hpp"
 #include "da/compile/Compiler.hpp"
 #include "da/link/Linker.hpp"
-#include "gubg/env/Util.hpp"
+#include "da/FileCache.hpp"
 using namespace da;
 using namespace da::compile;
 using namespace gubg::file;
@@ -25,11 +25,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
 
     //Setup the compiler
     Compiler compiler;
-    {
-        string str;
-        if (gubg::env::expand(str, "$GUBG_TMP/da"))
-            compiler.setCache(File(str));
-    }
+    compiler.setCache(FileCache().dir());
     builder.extractCompileSettings(compiler.settings);
 
     //Compile all source files into object files

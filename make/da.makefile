@@ -6,9 +6,9 @@ da-help:
 
 DA_CPP_FILES := \
 	da \
-	FixIncludeGuards CompileExe \
+	FixIncludeGuards CompileExe FileCache \
 	build/Configuration build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Boost package/GUBG \
+	package/Packages package/Local package/Boost package/GUBG \
 	compile/Compiler \
 	link/Linker \
 
@@ -39,6 +39,7 @@ da-clean:
 da: $(OBJECT_FILES)
 	g++ $(LDFLAGS) -o da $(OBJECT_FILES) $(LINK_LIBS)
 	cp da $(GUBG_BIN)
+	mkdir $(GUBG_TMP)/da
 
 %.o: %.cpp $(GUBG_BOOST)
 	g++ $(CPPFLAGS) -c $< -o $@
