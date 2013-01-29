@@ -1,3 +1,4 @@
+//#define GUBG_LOG
 #include "da/build/Configuration.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Util.hpp"
@@ -7,23 +8,18 @@ using namespace da::package;
 using namespace gubg::file;
 using namespace gubg;
 
-Configuration::Configuration():
-    verbose(false)
+Configuration::Configuration()
 {
-    forest_.add(getcwd(), {"cpp", "hpp"});
+    LOG_S(Configuration);
+    packages_ << Local::create(File(getcwd()));
 
     {
         std::string str;
         if (env::expand(str, "$GUBG"))
-            packages_ << GUBG(File(str));
+            packages_ << GUBG::create(File(str));
         if (env::expand(str, "$GUBG_BOOST"))
-            packages_ << Boost(File(str));
+            packages_ << Boost::create(File(str));
         packages_.prune();
     }
     L("I found following packages: " << string_algo::join(packages_.names(), ", "));
-
-    packages_.appendIncludePaths(compiler.includePaths);
-    packages_.appendDefines(compiler.defines);
-    packages_.appendLibraryPaths(linker.libraryPaths);
-    packages_.appendLibraries(linker.libraries);
 }

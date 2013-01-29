@@ -1,5 +1,5 @@
-#ifndef HEADER_da_package_GUBG_hpp_ALREADY_INCLUDED
-#define HEADER_da_package_GUBG_hpp_ALREADY_INCLUDED
+#ifndef HEADER_da_package_Local_hpp_ALREADY_INCLUDED
+#define HEADER_da_package_Local_hpp_ALREADY_INCLUDED
 
 #include "da/package/Package.hpp"
 #include "gubg/file/File.hpp"
@@ -9,23 +9,22 @@ namespace da
 {
     namespace package
     {
-        class GUBG: public Package
+        class Local: public Package
         {
             public:
                 template <typename T>
-                static Ptr create(T t){return Ptr(new GUBG(t));}
+                static Ptr create(T t){return Ptr(new Local(t));}
 
                 //Package API
-                virtual std::string name() const {return "gubg";}
+                virtual std::string name() const;
                 virtual bool exists() const;
                 virtual bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
 
             private:
-                GUBG(const gubg::file::File &base);
+                Local(const gubg::file::File &base);
 
-                gubg::file::File base_;
-                gubg::file::File libsDir_;
-                gubg::file::File appsDir_;
+                gubg::file::File dir_;
+                std::string basename_;
                 gubg::file::Forest forest_;
         };
     }

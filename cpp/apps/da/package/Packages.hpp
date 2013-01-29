@@ -3,9 +3,9 @@
 
 #include "da/Types.hpp"
 #include "da/package/Package.hpp"
-#include "da/package/Boost.hpp"
+#include "da/package/Local.hpp"
 #include "da/package/GUBG.hpp"
-#include "da/package/UPP.hpp"
+#include "da/package/Boost.hpp"
 #include "gubg/file/File.hpp"
 #include <list>
 
@@ -22,19 +22,17 @@ namespace da
                 template <typename Pkg>
                 Packages &operator<<(const Pkg &pkg)
                 {
-                    packages_.push_back(Package::Ptr(new Pkg(pkg)));
+                    packages_.push_back(pkg);
                     return *this;
                 }
 
                 //Removes unexisting packages, and selects the first one if duplicates are present
                 void prune();
 
-                bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const;
+                bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
                 
-                void appendIncludePaths(IncludePaths &) const;
-                void appendDefines(Defines &) const;
-                void appendLibraryPaths(LibraryPaths &) const;
-                void appendLibraries(Libraries &) const;
+                void extractCompileSettings(CompileSettings &cs) const;
+                void extractLinkSettings(LinkSettings &ls) const;
 
                 std::vector<std::string> names() const;
 

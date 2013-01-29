@@ -47,14 +47,7 @@ namespace da
             public:
                 Compiler();
 
-                typedef std::string Define;
-                void addDefine(const Define &);
-
-                typedef std::string Setting;
-                void addSetting(const Setting &);
-
-                typedef gubg::file::File IncludePath;
-                void addIncludePath(const IncludePath &);
+                CompileSettings settings;
 
                 typedef std::string Command;
                 Command command(const ObjectFile &, const SourceFile &);
@@ -71,11 +64,6 @@ namespace da
                 friend class Job;
                 void addObject_(const ObjectFile &);
 
-                typedef std::list<Define> Defines;
-                Defines defines_;
-                typedef std::list<Setting> Settings;
-                Settings settings_;
-                IncludePaths includePaths_;
                 ObjectFiles objectFiles_;
                 typedef gubg::threading::Processor<Job> Processor;
                 Processor processor_;

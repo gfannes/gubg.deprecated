@@ -11,17 +11,16 @@ namespace da
         class Boost: public Package
         {
             public:
-                Boost();
-                Boost(const gubg::file::File &base);
+                template <typename T>
+                static Ptr create(T t){return Ptr(new Boost(t));}
 
                 //Package API
                 virtual std::string name() const {return "boost";}
                 virtual bool exists() const;
-                virtual void appendIncludePaths(IncludePaths &) const;
-                virtual void appendLibraryPaths(LibraryPaths &) const;
-                virtual void appendLibraries(Libraries &) const;
 
             private:
+                Boost(const gubg::file::File &base);
+
                 gubg::file::File base_;
                 gubg::file::File libDir_;
         };

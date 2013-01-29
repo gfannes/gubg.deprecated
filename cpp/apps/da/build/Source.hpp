@@ -24,7 +24,7 @@ namespace da
 
             //Returns all headers accessed (recursively) from this source file which could be found in the forest
             //and the corresponding include paths
-            ReturnCode searchForHeaders(Headers &, IncludePaths &, SourceFiles &sisterFiles, const package::Packages &);
+            ReturnCode searchForHeaders(Headers &, SourceFiles &sisterFiles, package::Packages &);
 
         private:
             Source(File);

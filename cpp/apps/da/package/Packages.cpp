@@ -1,3 +1,4 @@
+//#define GUBG_LOG
 #include "da/package/Packages.hpp"
 #include "gubg/l.hpp"
 #include <algorithm>
@@ -7,6 +8,7 @@ using namespace std;
 
 void Packages::prune()
 {
+    LOG_S(prune);
     //Invalidate unexisting or duplicate packages
     set<string> names;
     for (auto &pkg: packages_)
@@ -35,46 +37,26 @@ void Packages::prune()
         packages_.erase(newEnd, packages_.end());
 }
 
-bool Packages::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
+bool Packages::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
     for (auto pkg: packages_)
-        if (pkg->resolveHeader(resolvedHeader, includePath, sisterFiles, partial))
+        if (pkg->resolveHeader(resolvedHeader, sisterFiles, partial))
             return true;
     return false;
 }
 
-void Packages::appendIncludePaths(IncludePaths &ips) const
+void Packages::extractCompileSettings(CompileSettings &cs) const
 {
     for (auto pkg: packages_)
         if (pkg)
-            pkg->appendIncludePaths(ips);
+            pkg->extractCompileSettings(cs);
 }
-void Packages::appendDefines(Defines &defines) const
+void Packages::extractLinkSettings(LinkSettings &ls) const
 {
     for (auto pkg: packages_)
         if (pkg)
-            pkg->appendDefines(defines);
+            pkg->extractLinkSettings(ls);
 }
-void Packages::appendLibraryPaths(LibraryPaths &lps) const
-{
-    for (auto pkg: packages_)
-        if (pkg)
-            pkg->appendLibraryPaths(lps);
-}
-void Packages::appendLibraries(Libraries &libs) const
-{
-    for (auto pkg: packages_)
-        if (pkg)
-            pkg->appendLibraries(libs);
-}
-#if 0
-void Packages::expandForest(Package::Forest &forest) const
-{
-    for (auto pkg: packages_)
-        if (pkg)
-            pkg->expandForest(forest);
-}
-#endif
 
 vector<string> Packages::names() const
 {

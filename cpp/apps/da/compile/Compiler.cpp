@@ -41,19 +41,6 @@ Compiler::Compiler():
     processor_.start();
 }
 
-void Compiler::addDefine(const Define &def)
-{
-    defines_.push_back(def);
-}
-void Compiler::addSetting(const Setting &setting)
-{
-    settings_.push_back(setting);
-}
-void Compiler::addIncludePath(const IncludePath &includePath)
-{
-    includePaths_.insert(includePath);
-}
-
 Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src)
 {
     //Prepare the command to be executed
@@ -61,11 +48,11 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
     {
         std::lock_guard<std::mutex> lock(mutex_);
         cmd << "g++ -std=c++0x -O3 -pthread -c " << src.name() << " -o " << obj.name();
-        for (const auto &setting: settings_)
-            cmd << " " << setting;
-        for (const auto &def: defines_)
+        for (const auto &option: settings.compileOptions)
+            cmd << " " << option;
+        for (const auto &def: settings.defines)
             cmd << " -D" << def;
-        for (const auto &includePath: includePaths_)
+        for (const auto &includePath: settings.includePaths)
             cmd << " -I" << includePath.name();
     }
     return cmd.str();

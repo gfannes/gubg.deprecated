@@ -23,13 +23,10 @@ ReturnCode Builder::process(const SourceFile &source)
         auto src = sources_.add(srcfile);
 
         Headers headers;
-        IncludePaths includePaths;
         SourceFiles sisterFiles;
-        MSS(src->searchForHeaders(headers, includePaths, sisterFiles, configuration_.packages()));
+        MSS(src->searchForHeaders(headers, sisterFiles, configuration_.packages()));
         headersPerSource_[src] = headers;
-        includePaths_.insert(includePaths);
-        for (auto ip: includePaths_)
-            LOG_M(ip.name());
+        configuration_.packages().extractCompileSettings(compileSettings_);
 
         for (auto hdr: headers)
         {

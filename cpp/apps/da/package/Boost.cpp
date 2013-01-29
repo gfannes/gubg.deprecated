@@ -4,32 +4,20 @@
 using namespace da::package;
 using namespace gubg::file;
 
-Boost::Boost(){}
 Boost::Boost(const File &base):
     base_(base),
     libDir_(base)
 {
     libDir_ << "stage/lib";
+    linkSettings_.libraries.insert("boost_thread");
+    linkSettings_.libraries.insert("boost_system");
+    linkSettings_.libraries.insert("boost_filesystem");
+    linkSettings_.libraries.insert("boost_regex");
+    linkSettings_.libraries.insert("boost_signals");
 }
 
 bool Boost::exists() const
 {
     LOG_S(exists, base_.name());
     return gubg::file::exists(base_);
-}
-void Boost::appendIncludePaths(IncludePaths &ips) const
-{
-    ips.insert(base_);
-}
-void Boost::appendLibraryPaths(LibraryPaths &lps) const
-{
-    lps.insert(libDir_);
-}
-void Boost::appendLibraries(Libraries &libs) const
-{
-    libs.insert("boost_thread");
-    libs.insert("boost_system");
-    libs.insert("boost_filesystem");
-    libs.insert("boost_regex");
-    libs.insert("boost_signals");
 }

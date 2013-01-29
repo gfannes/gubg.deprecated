@@ -4,7 +4,6 @@
 using namespace da::package;
 using namespace gubg::file;
 
-GUBG::GUBG(){}
 GUBG::GUBG(const File &base):
     base_(base),
     libsDir_(base),
@@ -24,33 +23,22 @@ GUBG::GUBG(const File &base):
     File da(appsDir_);
     da << "da";
     forest_.add(da, {"cpp", "hpp"});
+
+    compileSettings_.includePaths.insert(File("/home/gfannes/sdks/iup/include"));
+    compileSettings_.includePaths.insert(File("/home/gfannes/sdks/cd/include"));
+    linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/iup/lib/Linux35_64"));
+    linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/cd/lib/Linux35_64"));
+    linkSettings_.libraries.insert("iup");
+    linkSettings_.libraries.insert("iup_pplot");
+    linkSettings_.libraries.insert("iupcontrols");
+    linkSettings_.libraries.insert("cd");
 }
 
 bool GUBG::exists() const
 {
     return gubg::file::exists(libsDir_) && gubg::file::exists(appsDir_);
 }
-void GUBG::appendIncludePaths(IncludePaths &ips) const
-{
-    ips.insert(File("/home/gfannes/sdks/iup/include"));
-    ips.insert(File("/home/gfannes/sdks/cd/include"));
-}
-void GUBG::appendDefines(Defines &defines) const
-{
-}
-void GUBG::appendLibraryPaths(LibraryPaths &lps) const
-{
-    lps.insert(File("/home/gfannes/sdks/iup/lib/Linux35_64"));
-    lps.insert(File("/home/gfannes/sdks/cd/lib/Linux35_64"));
-}
-void GUBG::appendLibraries(Libraries &libraries) const
-{
-    libraries.insert("iup");
-    libraries.insert("iup_pplot");
-    libraries.insert("iupcontrols");
-    libraries.insert("cd");
-}
-bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const
+bool GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
     LOG_S(resolveHeader, partial.name());
     File root;
@@ -63,13 +51,12 @@ bool GUBG::resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &s
         if (!root.popBasename(bn))
             return false;
         if (bn == "gubg" || bn == "iup")
-            includePath = libsDir_;
+            compileSettings_.includePaths.insert(libsDir_);
         else if (bn == "da")
-            includePath = appsDir_;
+            compileSettings_.includePaths.insert(appsDir_);
         else
             return false;
     }
-    LOG_M(includePath.name());
 
     {
         auto sisterFile = resolvedHeader;

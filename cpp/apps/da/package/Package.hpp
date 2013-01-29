@@ -17,16 +17,28 @@ namespace da
                 typedef std::shared_ptr<Package> Ptr;
                 typedef gubg::file::File File;
 
-                //Searches the packages for a header
-                virtual bool resolveHeader(File &resolvedHeader, File &includePath, SourceFiles &sisterFiles, const File &partial) const {return false;}
+                void clearCompileSettings(){compileSettings_.clear();}
+                void clearLinkSettings(){linkSettings_.clear();}
+
+                void extractCompileSettings(CompileSettings &cs) const {cs.insert(compileSettings_);}
+                void extractLinkSettings(LinkSettings &ls) const {ls.insert(linkSettings_);}
 
                 virtual std::string name() const = 0;
                 virtual bool exists() const = 0;
+
+                //Searches the packages for a header
+                virtual bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial) {return false;}
 
                 virtual void appendIncludePaths(IncludePaths &) const {};
                 virtual void appendDefines(Defines &) const {};
                 virtual void appendLibraryPaths(LibraryPaths &) const {};
                 virtual void appendLibraries(Libraries &) const {};
+
+            protected:
+                virtual ~Package(){}
+
+                CompileSettings compileSettings_;
+                LinkSettings    linkSettings_;
         };
     }
 }

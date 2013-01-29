@@ -12,23 +12,23 @@ namespace da
     class Builder
     {
         public:
-            Builder(const Configuration &configuration):
-                configuration_(configuration){}
-
             typedef gubg::file::File SourceFile;
             ReturnCode process(const SourceFile &);
 
+            void extractCompileSettings(CompileSettings &cs) const {configuration_.packages().extractCompileSettings(cs);}
+            void extractLinkSettings(LinkSettings &ls) const {configuration_.packages().extractLinkSettings(ls);}
+
             const Sources &sources() const {return sources_;}
             Headers headers(Source::Ptr) const;
-            const IncludePaths &includePaths() const {return includePaths_;}
+            const IncludePaths &includePaths() const {return compileSettings_.includePaths;}
 
         private:
-            const Configuration configuration_;
+            Configuration configuration_;
             Sources sources_;
             Headers headers_;
             typedef std::map<Source::Ptr, Headers> HeadersPerSource;
             HeadersPerSource headersPerSource_;
-            IncludePaths includePaths_;
+            CompileSettings compileSettings_;
     };
 }
 

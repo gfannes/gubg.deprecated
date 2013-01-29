@@ -5,19 +5,6 @@ using namespace da;
 using namespace da::compile;
 using namespace std;
 
-void Linker::addSetting(const Setting &setting)
-{
-    settings_.push_back(setting);
-}
-void Linker::addLibraryPath(const LibraryPath &libraryPath)
-{
-    libraryPaths_.push_back(libraryPath);
-}
-void Linker::addLibrary(const Library &lib)
-{
-    libraries_.push_back(lib);
-}
-
 ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
 {
     MSS_BEGIN(ReturnCode);
@@ -29,11 +16,11 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         cmd << "g++ -std=c++0x -g -pthread -o " << exe.name();
         for (const auto &obj: objects)
             cmd << " " << obj.name();
-        for (const auto &setting: settings_)
-            cmd << " " << setting;
-        for (const auto &libraryPath: libraryPaths_)
+        for (const auto &option: settings.linkOptions)
+            cmd << " " << option;
+        for (const auto &libraryPath: settings.libraryPaths)
             cmd << " -L" << libraryPath.name();
-        for (const auto &lib: libraries_)
+        for (const auto &lib: settings.libraries)
             cmd << " -l" << lib;
     }
 

@@ -31,7 +31,7 @@ namespace
             }
     };
 }
-ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths, SourceFiles &sisterFiles, const package::Packages &packages)
+ReturnCode Source::searchForHeaders(Headers &headers, SourceFiles &sisterFiles, package::Packages &packages)
 {
     MSS_BEGIN(ReturnCode, searchForHeaders, file().name());
 
@@ -46,12 +46,12 @@ ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths
     sisterFiles.clear();
     while (!staging.empty())
     {
-        File hdr, includePath;
+        File hdr;
         SourceFiles sfs;
         {
             const auto f = staging.front();
             staging.pop();
-            if (!gubg::mss::isOK(packages.resolveHeader(hdr, includePath, sfs, f)))
+            if (!gubg::mss::isOK(packages.resolveHeader(hdr, sfs, f)))
                 //This header could not be found in the packages
                 continue;
         }
@@ -62,7 +62,6 @@ ReturnCode Source::searchForHeaders(Headers &headers, IncludePaths &includePaths
         processed.insert(hdr.name());
 
         headers.add(hdr);
-        includePaths.insert(includePath);
         sisterFiles.insert(sfs);
 
         MSS(includePusher.process(hdr));

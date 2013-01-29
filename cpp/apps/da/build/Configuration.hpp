@@ -12,31 +12,12 @@ namespace da
     class Configuration
     {
         public:
-            bool verbose;
-
-            struct Compiler
-            {
-                Defines defines;
-                std::vector<std::string> settings;
-                IncludePaths includePaths;
-            };
-            Compiler compiler;
-
-            struct Linker
-            {
-                std::vector<std::string> settings;
-                Libraries libraries;
-                LibraryPaths libraryPaths;
-            };
-            Linker linker;
-
             Configuration();
 
-            const gubg::file::Forest &forest() const {return forest_;}
+            da::package::Packages &packages() {return packages_;}
             const da::package::Packages &packages() const {return packages_;}
 
         private:
-            gubg::file::Forest forest_;
             da::package::Packages packages_;
     };
 }
