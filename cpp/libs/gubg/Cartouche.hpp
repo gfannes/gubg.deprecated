@@ -1,5 +1,5 @@
-#ifndef gubg_Cartouche_hpp
-#define gubg_Cartouche_hpp
+#ifndef HEADER_gubg_Cartouche_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Cartouche_hpp_ALREADY_INCLUDED
 
 #include <string>
 #include <map>

@@ -1,5 +1,5 @@
-#ifndef gubg_OrderedSet_hpp
-#define gubg_OrderedSet_hpp
+#ifndef HEADER_gubg_OrderedSet_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_OrderedSet_hpp_ALREADY_INCLUDED
 
 #include <set>
 #include <list>
