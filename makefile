@@ -6,6 +6,7 @@ include make/gubg_env.makefile
 include make/dev_env.makefile
 include make/boost.makefile
 include make/iup.makefile
+include make/arduino.makefile
 include make/da.makefile
 
 .PHONY: clean

@@ -3,6 +3,7 @@ echo "== Setting environment variables"
 echo "== Configuring packages"
 . $GUBG_BASH/boost.sh
 . $GUBG_BASH/iup.sh
+. $GUBG_BASH/arduino.sh
 echo "== Loading personal settings"
 . $GUBG_BASH/personal.$USER.sh
 #alias g="gvim -u $GUBG/vim/config.linux.vim --remote-tab-silent "

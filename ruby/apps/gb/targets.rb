@@ -454,20 +454,21 @@ class Configs
             @libraryPaths = @libraryPaths.flatten.uniq
             @libraries = @libraries.flatten.uniq
         when "arduino"
-            @roots << "#{home}/sdks/Arduino/hardware/arduino/cores"
-            @roots << "#{home}/sdks/Arduino/hardware/arduino/variants/standard"
-            @roots << "#{home}/sdks/Arduino/libraries/Servo"
+            dirArduino = ENV["GUBG_ARDUINO"]
+            @roots << "#{dirArduino}/hardware/arduino/cores"
+            @roots << "#{dirArduino}/hardware/arduino/variants/standard"
+            @roots << "#{dirArduino}/libraries/Servo"
             @roots << File.expand_path("cpp/libs/gubg", ENV["GUBG"])
             @compiler, @linker = "avr-g++", "avr-g++"
             @compileSettings = "-std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @linkSettings = "-Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=22"
             @wantedFiles = /\.[ch](pp)?$/
             %w[main.cpp wiring.c wiring_digital.c wiring_analog.c wiring_pulse.c WMath.cpp].each do |base|
-                @extrafiles << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino/#{base}"
+                @extrafiles << "#{dirArduino}/hardware/arduino/cores/arduino/#{base}"
             end
-            #@extrafiles << "#{home}/sdks/Arduino/libraries/Servo/Servo.cpp"
-            #            @includePaths << "#{home}/sdks/Arduino/hardware/arduino/cores/arduino"
-            #            @includePaths << "#{home}/sdks/Arduino/hardware/arduino/variants/standard"
+            #@extrafiles << "#{dirArduino}/libraries/Servo/Servo.cpp"
+            #            @includePaths << "#{dirArduino}/hardware/arduino/cores/arduino"
+            #            @includePaths << "#{dirArduino}/hardware/arduino/variants/standard"
         else
             raise("Unknown targetPlatform #{context.targetPlatform}")
         end

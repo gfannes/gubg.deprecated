@@ -34,7 +34,7 @@ $(iup_tgz): | env
 $(GUBG_IUP): $(iup_tgz)
 	tar xzf $(iup_tgz) -C $(GUBG_SDKS)
 
-.PHONY: lua im cd iup clean_iup
+.PHONY: lua im cd iup clean-iup
 lua: $(GUBG_LUA_51) $(GUBG_LUA_52)
 	cd $(GUBG_LUA_51)/src && make
 	cd $(GUBG_LUA_52)/src && make
