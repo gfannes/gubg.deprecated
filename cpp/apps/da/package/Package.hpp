@@ -2,6 +2,7 @@
 #define HEADER_da_package_Package_hpp_ALREADY_INCLUDED
 
 #include "da/Types.hpp"
+#include "da/Codes.hpp"
 #include "gubg/file/File.hpp"
 #include <string>
 #include <memory>
@@ -27,7 +28,7 @@ namespace da
                 virtual bool exists() const = 0;
 
                 //Searches the packages for a header
-                virtual bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial) {return false;}
+                virtual ReturnCode resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial) {return ReturnCode::UnknownHeader;}
 
                 virtual void appendIncludePaths(IncludePaths &) const {};
                 virtual void appendDefines(Defines &) const {};

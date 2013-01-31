@@ -37,12 +37,15 @@ void Packages::prune()
         packages_.erase(newEnd, packages_.end());
 }
 
-bool Packages::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
+da::ReturnCode Packages::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
     for (auto pkg: packages_)
-        if (pkg->resolveHeader(resolvedHeader, sisterFiles, partial))
-            return true;
-    return false;
+    {
+        auto rc = pkg->resolveHeader(resolvedHeader, sisterFiles, partial); 
+        if (rc != ReturnCode::UnknownHeader)
+            return rc;
+    }
+    return ReturnCode::UnknownHeader;
 }
 
 void Packages::extractCompileSettings(CompileSettings &cs) const

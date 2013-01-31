@@ -1,5 +1,6 @@
 //#define GUBG_LOG
 #include "da/compile/Compiler.hpp"
+#include "da/Arduino.hpp"
 #include <sstream>
 #include <stdlib.h>
 using namespace da;
@@ -47,7 +48,23 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
     ostringstream cmd;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        cmd << "g++ -std=c++0x -O3 -pthread -c " << src.name() << " -o " << obj.name();
+        switch (settings.targetPlatform)
+        {
+            case Any:
+            case Host:
+                cmd << "g++ -std=c++0x -O3 -pthread -c ";
+                break;
+            case Arduino:
+                if (arduino::isUno())
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -c ";
+                else if (arduino::isMega())
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -c ";
+                break;
+            default:
+                cmd << "UNKNOWN TARGET PLATFORM ";
+                break;
+        }
+        cmd << src.name() << " -o " << obj.name();
         for (const auto &option: settings.compileOptions)
             cmd << " " << option;
         for (const auto &def: settings.defines)

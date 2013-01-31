@@ -18,13 +18,14 @@ namespace da
                 //Package API
                 virtual std::string name() const {return "gubg";}
                 virtual bool exists() const;
-                virtual bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
+                virtual ReturnCode resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
 
             private:
                 GUBG(const gubg::file::File &base);
 
                 gubg::file::File base_;
                 gubg::file::File libsDir_;
+                gubg::file::File arduinoDir_;
                 gubg::file::File appsDir_;
                 gubg::file::Forest forest_;
         };

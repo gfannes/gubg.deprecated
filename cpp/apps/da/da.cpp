@@ -1,6 +1,7 @@
 #include "da/Codes.hpp"
 #include "da/Tasks.hpp"
 #include "da/Finalize.hpp"
+#include "da/Arduino.hpp"
 #include "gubg/OptionParser.hpp"
 using namespace da;
 using gubg::OptionParser;
@@ -28,6 +29,7 @@ namespace
             optionParser.addMandatory("-f", "--fix TYPE", "Fix something (e.g., guards)", [&tasks](string v){addFixTask(tasks, v);});
             optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
             optionParser.addMandatory("-e", "--exe SOURCE", "Compile SOURCE into an executable", [&tasks](string source){tasks.push_back(CompileExe::create(source));});
+            optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));

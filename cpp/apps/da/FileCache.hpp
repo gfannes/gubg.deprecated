@@ -1,5 +1,5 @@
-#ifndef aoeu
-#define aoeu
+#ifndef HEADER_da_FileCache_hpp_ALREADY_INCLUDED
+#define HEADER_da_FileCache_hpp_ALREADY_INCLUDED
 
 #include "gubg/file/File.hpp"
 

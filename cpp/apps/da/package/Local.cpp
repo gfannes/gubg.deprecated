@@ -24,32 +24,27 @@ bool Local::exists() const
 {
     return gubg::file::exists(dir_);
 }
-bool Local::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
-{
-    LOG_S(resolveHeader, partial.name());
-    File root;
-    if (ReturnCode::OK != forest_.resolve(resolvedHeader, root, partial, 1))
-        return false;
 
-    LOG_M(resolvedHeader.name());
+da::ReturnCode Local::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
+{
+    MSS_BEGIN(ReturnCode);
+
+    File root;
+    MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);
+
     {
         std::string bn;
-        if (!root.popBasename(bn))
-            return false;
-        if (bn == basename_)
-            compileSettings_.includePaths.insert(root);
-        else
-            return false;
+        MSS_Q(root.popBasename(bn), UnknownHeader);
+        MSS_Q(bn == basename_, UnknownHeader);
+        compileSettings_.includePaths.insert(root);
     }
 
     {
         auto sisterFile = resolvedHeader;
         sisterFile.setExtension("cpp");
         if (forest_.contains(sisterFile))
-        {
-            LOG_M(sisterFile.name());
             sisterFiles.insert(sisterFile);
-        }
     }
-    return true;
+
+    MSS_END();
 }

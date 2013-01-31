@@ -1,15 +1,21 @@
 //#define GUBG_LOG
 #include "da/package/GUBG.hpp"
+#include "da/Arduino.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/env/Util.hpp"
+#include <string>
 using namespace da::package;
 using namespace gubg::file;
+using namespace std;
 
 GUBG::GUBG(const File &base):
     base_(base),
     libsDir_(base),
+    arduinoDir_(base),
     appsDir_(base)
 {
     libsDir_ << "cpp/libs";
+    arduinoDir_ << "cpp/arduino";
     appsDir_ << "cpp/apps";
 
     File gubg(libsDir_);
@@ -20,52 +26,97 @@ GUBG::GUBG(const File &base):
     iup << "iup";
     forest_.add(iup, {"cpp", "hpp"});
 
+    File garf(arduinoDir_);
+    garf << "garf";
+    forest_.add(garf, {"cpp", "hpp"});
+
     File da(appsDir_);
     da << "da";
     forest_.add(da, {"cpp", "hpp"});
-
-    compileSettings_.includePaths.insert(File("/home/gfannes/sdks/iup/include"));
-    compileSettings_.includePaths.insert(File("/home/gfannes/sdks/cd/include"));
-    linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/iup/lib/Linux35_64"));
-    linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/cd/lib/Linux35_64"));
-    linkSettings_.libraries.insert("iup");
-    linkSettings_.libraries.insert("iup_pplot");
-    linkSettings_.libraries.insert("iupcontrols");
-    linkSettings_.libraries.insert("cd");
 }
 
 bool GUBG::exists() const
 {
-    return gubg::file::exists(libsDir_) && gubg::file::exists(appsDir_);
+    return gubg::file::exists(libsDir_) && gubg::file::exists(arduinoDir_) && gubg::file::exists(appsDir_);
 }
-bool GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
-{
-    LOG_S(resolveHeader, partial.name());
-    File root;
-    if (ReturnCode::OK != forest_.resolve(resolvedHeader, root, partial, 1))
-        return false;
 
-    LOG_M(resolvedHeader.name());
+da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
+{
+    MSS_BEGIN(ReturnCode);
+
+    File root;
+    MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);
+
     {
-        std::string bn;
-        if (!root.popBasename(bn))
-            return false;
-        if (bn == "gubg" || bn == "iup")
+        string bn;
+        MSS_Q(root.popBasename(bn), UnknownHeader);
+        if (bn == "gubg")
+        {
             compileSettings_.includePaths.insert(libsDir_);
+        }
+        else if (bn == "iup")
+        {
+            compileSettings_.includePaths.insert(libsDir_);
+            compileSettings_.includePaths.insert(File("/home/gfannes/sdks/iup/include"));
+            compileSettings_.includePaths.insert(File("/home/gfannes/sdks/cd/include"));
+            linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/iup/lib/Linux35_64"));
+            linkSettings_.libraryPaths.insert(File("/home/gfannes/sdks/cd/lib/Linux35_64"));
+            linkSettings_.libraries.insert("iup");
+            linkSettings_.libraries.insert("iup_pplot");
+            linkSettings_.libraries.insert("iupcontrols");
+            linkSettings_.libraries.insert("cd");
+        }
+        else if (bn == "garf")
+        {
+            compileSettings_.includePaths.insert(arduinoDir_);
+            string str;
+            if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
+                compileSettings_.includePaths.insert(File(str));
+            if (arduino::isUno())
+            {
+                if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/variants/standard"))
+                    compileSettings_.includePaths.insert(File(str));
+            }
+            if (arduino::isMega())
+            {
+                if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/variants/mega"))
+                    compileSettings_.includePaths.insert(File(str));
+            }
+            compileSettings_.targetPlatform = Arduino;
+            if (linkSettings_.targetPlatform != Arduino)
+            {
+                string arduinoBase;
+                if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
+                    for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp"})
+                    {
+                        File f(arduinoBase);
+                        f << base;
+                        sisterFiles.insert(f);
+                    }
+            }
+            linkSettings_.targetPlatform = Arduino;
+        }
         else if (bn == "da")
             compileSettings_.includePaths.insert(appsDir_);
         else
-            return false;
+            MSS_QL(UnknownHeader);
     }
 
+    auto sisterFile = resolvedHeader;
+    sisterFile.setExtension("cpp");
+    if (forest_.contains(sisterFile))
     {
-        auto sisterFile = resolvedHeader;
-        sisterFile.setExtension("cpp");
-        if (forest_.contains(sisterFile))
+        switch (compileSettings_.targetPlatform)
         {
-            LOG_M(sisterFile.name());
-            sisterFiles.insert(sisterFile);
+            case Any:
+                sisterFiles.insert(sisterFile);
+                break;
+            case Arduino:
+                if (sisterFile.name().find("msgpack") != string::npos)
+                    sisterFiles.insert(sisterFile);
+                break;
         }
     }
-    return true;
+
+    MSS_END();
 }

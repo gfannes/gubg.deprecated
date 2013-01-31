@@ -6,9 +6,9 @@ da-help:
 
 DA_CPP_FILES := \
 	da \
-	FixIncludeGuards CompileExe FileCache \
+	FixIncludeGuards CompileExe FileCache Arduino \
 	build/Configuration build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Local package/Boost package/GUBG \
+	package/Packages package/Local package/Boost package/GUBG package/SDL \
 	compile/Compiler \
 	link/Linker \
 
@@ -18,12 +18,6 @@ OBJECT_FILES := $(patsubst %.cpp,%.o,$(CPP_FILES))
 
 BOOST_HEADERS := $(GUBG_BOOST)
 BOOST_LIBS := $(GUBG_BOOST)/stage/lib
-.PHONY: boost
-boost: $(BOOST_HEADERS) $(BOOST_LIBS)
-$(BOOST_HEADERS):
-	$(error You have to specify where the boost headers can be found)
-$(BOOST_LIBS):
-	$(error You have to specify where the boost libraries can be found)
 BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
 
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
@@ -36,10 +30,12 @@ da-clean:
 	rm -f $(OBJECT_FILES)
 	rm -f da
 
-da: $(OBJECT_FILES)
+DA_CACHE := $(GUBG_TMP)/da
+$(DA_CACHE):
+	mkdir $@
+da: $(OBJECT_FILES) $(DA_CACHE)
 	g++ $(LDFLAGS) -o da $(OBJECT_FILES) $(LINK_LIBS)
 	cp da $(GUBG_BIN)
-	mkdir $(GUBG_TMP)/da
 
 %.o: %.cpp $(GUBG_BOOST)
 	g++ $(CPPFLAGS) -c $< -o $@

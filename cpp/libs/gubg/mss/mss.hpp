@@ -421,6 +421,8 @@ MSS_BEGIN(t)
 #define MSS_L_(level, c, msg) MSS_DIRECT(level, mss_return_code_type::c, msg)
 #define MSS_L(c) MSS_L_(Unknown, c, "")
 
+#define MSS_QL(c) MSS_DIRECT_Q(mss_return_code_type::c)
+
 #define MSS_IS_OK(v) gubg::mss::isOK(v)
 
 //Support for setting the internal shared_ptr (when MSS_BEGIN(shared_ptr<>) is used)

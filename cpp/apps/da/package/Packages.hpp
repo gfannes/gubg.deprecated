@@ -6,6 +6,7 @@
 #include "da/package/Local.hpp"
 #include "da/package/GUBG.hpp"
 #include "da/package/Boost.hpp"
+#include "da/package/SDL.hpp"
 #include "gubg/file/File.hpp"
 #include <list>
 
@@ -29,7 +30,7 @@ namespace da
                 //Removes unexisting packages, and selects the first one if duplicates are present
                 void prune();
 
-                bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
+                ReturnCode resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
                 
                 void extractCompileSettings(CompileSettings &cs) const;
                 void extractLinkSettings(LinkSettings &ls) const;

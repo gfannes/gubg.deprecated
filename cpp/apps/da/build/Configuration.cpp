@@ -19,7 +19,11 @@ Configuration::Configuration()
             packages_ << GUBG::create(File(str));
         if (env::expand(str, "$GUBG_BOOST"))
             packages_ << Boost::create(File(str));
-        packages_.prune();
     }
+
+    packages_ << SDL::create(File(""));
+
+    packages_.prune();
+
     L("I found following packages: " << string_algo::join(packages_.names(), ", "));
 }

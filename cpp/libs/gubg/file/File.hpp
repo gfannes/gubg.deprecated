@@ -95,6 +95,24 @@ namespace gubg
                     return true;
                 }
 
+                bool popRoot(std::string &root)
+                {
+                    auto ix = name_.find(Delimiter);
+                    if (ix == std::string::npos)
+                        return false;
+                    root = name_.substr(0, ix);
+                    name_ = name_.substr(ix+1);
+                    return true;
+                }
+                bool popRoot()
+                {
+                    auto ix = name_.find(Delimiter);
+                    if (ix == std::string::npos)
+                        return false;
+                    name_ = name_.substr(ix+1);
+                    return true;
+                }
+
                 //Append a part to the current File
                 File &operator<<(const std::string &name)
                 {

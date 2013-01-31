@@ -18,7 +18,7 @@ namespace da
                 //Package API
                 virtual std::string name() const;
                 virtual bool exists() const;
-                virtual bool resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
+                virtual ReturnCode resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial);
 
             private:
                 Local(const gubg::file::File &base);
