@@ -44,6 +44,15 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
 {
     MSS_BEGIN(ReturnCode);
 
+    //We eat the boost headers when we are building for arduino
+    if (compileSettings_.targetPlatform == Arduino)
+    {
+        File p = partial;
+        string root;
+        if (p.popRoot(root))
+            MSS_Q(root != "boost", RecognisedHeader);
+    }
+
     File root;
     MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);
 

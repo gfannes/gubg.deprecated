@@ -1,4 +1,4 @@
-#define GUBG_LOG
+//#define GUBG_LOG
 #include "da/package/Boost.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/logging/Log.hpp"
@@ -22,13 +22,14 @@ bool Boost::exists() const
 
 da::ReturnCode Boost::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
-    MSS_BEGIN(ReturnCode);
+    MSS_BEGIN(ReturnCode, resolveHeader);
 
     File p = partial;
     string root;
     MSS_Q(p.popRoot(root), UnknownHeader);
     MSS_Q(root == "boost", UnknownHeader);
 
+    LOG_M(partial.name());
     linkSettings_.libraries.insert("boost_thread");
     linkSettings_.libraries.insert("boost_system");
     linkSettings_.libraries.insert("boost_filesystem");
