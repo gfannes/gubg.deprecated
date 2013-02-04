@@ -8,9 +8,16 @@ namespace
     class A: public Async_crtp<A, int>
     {
         public:
+            A(): Async_crtp(3){}
+            ~A()
+            {
+                //clearJobs();
+                join();
+            }
         void async_process(int i)
         {
             L("i: " << i);
+            this_thread::sleep_for(chrono::milliseconds(100));
         }
     };
 }
@@ -18,8 +25,8 @@ namespace
 int main()
 {
     A a;
-    a.setWorkerCount(3);
-    a.addJob(123);
-    this_thread::sleep_for(chrono::seconds(5));
+    for (int i = 0; i < 100; ++i)
+        a.addJob(i);
+    this_thread::sleep_for(chrono::seconds(1));
     return 0;
 }
