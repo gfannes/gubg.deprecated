@@ -73,6 +73,7 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
             linkSettings_.libraries.insert("iup");
             linkSettings_.libraries.insert("iup_pplot");
             linkSettings_.libraries.insert("iupcontrols");
+            linkSettings_.libraries.insert("iupcd");
             linkSettings_.libraries.insert("cd");
         }
         else if (bn == "garf")

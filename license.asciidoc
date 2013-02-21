@@ -1,6 +1,8 @@
 == License
 
-This software is developed by Geert Fannes and is released under the GPL. I'd appreciate it if you let me know you find it useful: geert_dot_fannes_at_gmail_dot_com
+This software is developed by Geert Fannes and is released under the LGPL. This basically means you are allowed to use it for any purpose, even in combination with proprietary software. The main obligation for the user is to give back any changes you make to the gubg software itself.
+
+Apart from this, I'd appreciate it if you let me know whether you find it useful: geert_dot_fannes_at_gmail_dot_com
 
 No waranty is granted whatsoever.
 

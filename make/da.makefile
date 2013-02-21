@@ -7,7 +7,7 @@ da-help:
 DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe FileCache Arduino \
-	build/Configuration build/Builder build/Header build/Headers build/Source build/Sources \
+	build/Builder build/Header build/Headers build/Source build/Sources \
 	package/Packages package/Local package/Boost package/GUBG package/SDL \
 	compile/Compiler \
 	link/Linker \
