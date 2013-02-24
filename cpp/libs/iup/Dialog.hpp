@@ -14,7 +14,7 @@ namespace iup
             public:
                 Dialog()
                 {
-                    addChild(childWidget_);
+                    add(childWidget_);
                 }
                 ~Dialog()
                 {

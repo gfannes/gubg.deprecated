@@ -18,7 +18,7 @@ namespace iup
             template <typename K, typename V>
                 void setAttribute(const K &k, const V &v) { attributes_[k] = v; }
 
-            void addChild(Widget &w) { widgets_.push_back(&w); }
+            void add(Widget &w) { widgets_.push_back(&w); }
 
             bool create()
             {

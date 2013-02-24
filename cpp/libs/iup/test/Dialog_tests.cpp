@@ -1,6 +1,9 @@
 #include "iup/Dialog.hpp"
 #include "iup/Callback.hpp"
 #include "iup/Canvas.hpp"
+#include "iup/Box.hpp"
+#include "iup/Button.hpp"
+#include "iup/Label.hpp"
 #include "gubg/l.hpp"
 
 namespace 
@@ -8,6 +11,10 @@ namespace
     class Canvas: public iup::Canvas_crtp<Canvas>
     {
         public:
+            Canvas()
+            {
+                setAttribute("SIZE", "100x200");
+            }
             void canvas_repaint()
             {
                 L("Canvas repaint");
@@ -18,34 +25,36 @@ namespace
                 cdCanvasLineStyle(canvas_, CD_DASHED);
                 cdCanvasLine(canvas_, 0, 0, 100, 100);
             }
-        private:
     };
-
-    class Main: public iup::Widget
+    class Button: public iup::Button_crtp<Button>
     {
         public:
-            Main()
+            Button()
             {
-                canvas.setAttribute("SIZE", "100x200");
-                addChild(canvas);
+                setLabel("Hello button");
             }
-        protected:
-            virtual Ihandle *create_()
+            void button_clicked()
             {
-                L("Main create_");
-                /*
-                   Ihandle *lbl, *vb, *dlg;
+                L("I you click me again, I will explode");
+            }
+    };
 
-                   lbl=IupLabel("oeuao aouaoeu");
+    class Main: public iup::VBox
+    {
+        public:
+            Main():label("Let's label")
+            {
+                add(label);
+                add(button);
+                add(canvas);
 
-                   vb=IupVbox(lbl, cnv_, 0);
-                   IupSetAttribute(vb, "GAP", "10");
-                   IupSetAttribute(vb, "MARGIN", "10x10");
-                   IupSetAttribute(vb, "ALIGNMENT", "ACENTER");
-                   */
-                return canvas;
+                setAttribute("GAP", "10");
+                setAttribute("MARGIN", "10x10");
+                setAttribute("ALIGNMENT", "ACENTER");
             }
         private:
+            iup::Label label;
+            Button button;
             Canvas canvas;
     };
 }

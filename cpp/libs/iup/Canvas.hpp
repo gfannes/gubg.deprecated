@@ -17,6 +17,7 @@ namespace iup
             virtual Ihandle *create_()
             {
                 Ihandle *cnv = IupCanvas(0);
+                L("Canvas create_ " << cnv);
                 iup::Callback<Canvas_crtp>::create(cnv, "ACTION", this, &Canvas_crtp::repaint_);
                 return cnv;
             }
