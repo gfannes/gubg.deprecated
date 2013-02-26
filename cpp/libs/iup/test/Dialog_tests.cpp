@@ -29,20 +29,23 @@ namespace
     class Button: public iup::Button_crtp<Button>
     {
         public:
-            Button()
+            Button(Widget &w):widget(w)
             {
                 setLabel("Hello button");
             }
             void button_clicked()
             {
                 L("I you click me again, I will explode");
+                IupRedraw(widget, 1);
             }
+        private:
+            Widget &widget;
     };
 
     class Main: public iup::VBox
     {
         public:
-            Main():label("Let's label")
+            Main():label("Let's label"), button(canvas)
             {
                 add(label);
                 add(button);
@@ -54,8 +57,8 @@ namespace
             }
         private:
             iup::Label label;
-            Button button;
             Canvas canvas;
+            Button button;
     };
 }
 

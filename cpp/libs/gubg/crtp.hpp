@@ -1,5 +1,5 @@
-#ifndef aoeuaoeuaoeu
-#define aoeuaoeuaoeu
+#ifndef HEADER_gubg_crtp_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_crtp_hpp_ALREADY_INCLUDED
 
 namespace gubg
 {
