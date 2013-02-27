@@ -97,7 +97,7 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
             {
                 string arduinoBase;
                 if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
-                    for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp"})
+                    for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp", "WInterrupts.c"})
                     {
                         File f(arduinoBase);
                         f << base;
