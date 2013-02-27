@@ -11,7 +11,7 @@ namespace
             Arduino():
                 i(0),
                 Endpoint_crtp("/dev/ttyACM0"){}
-            void endpoint_received(int ch)
+            void endpoint_received(unsigned char ch)
             {
                 std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)ch << '|';
                 std::cout.flush();

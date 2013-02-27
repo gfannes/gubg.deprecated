@@ -53,7 +53,8 @@ namespace gubg
                         const auto baudRate = 9600;
                         std::ostringstream cmd;
                         cmd << "stty -F " << devName_ << " " << baudRate << " raw";
-                        system(cmd.str().c_str());
+                        if (system(cmd.str().c_str()))
+                            return false;
 
                         return fi_ != 0;
                     }
@@ -71,7 +72,7 @@ namespace gubg
                             if (::write(fi_, &sendQueue_.front()[ix_++], 1) != 1)
                                 break;
                         }
-                        char ch;
+                        unsigned char ch;
                         switch (::read(fi_, &ch, 1))
                         {
                             case InvalidFD: break;
