@@ -125,6 +125,7 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         switch (compileSettings_.targetPlatform)
         {
             case Any:
+            case Host:
                 sisterFiles.insert(sisterFile);
                 break;
             case Arduino:

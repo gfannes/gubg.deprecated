@@ -8,58 +8,91 @@ namespace gubg
     namespace msgpack
     {
         template <typename Buffer>
-            class Array
+            class Builder
             {
                 public:
-                    Array(Buffer &buffer, size_t nr):
-                        buffer_(buffer), nr_(nr), ix_(0)
-                {
-                    write(buffer_, nr_, ArrayTL_tag());
-                }
+                    Builder(Buffer &buffer):
+                        buffer_(buffer), ok_(true), nrMA_(0) { }
 
-                    bool isComplete() const { return ix_ == nr_; }
+                    bool valid() const { return ok_ && (nrMA_ == 0); }
 
-                    bool push(long l)
+                    class Array
                     {
-                        if (ix_ >= nr_)
-                            return false;
-                        write(buffer_, l);
-                        ++ix_;
-                        return true;
+                        public:
+                            Array(Builder &builder, size_t nr):
+                                outer_(builder), nr_(nr), ix_(0)
+                        {
+                            ++outer_.nrMA_;
+                            write(buffer_(), nr_, ArrayTL_tag());
+                        }
+                            ~Array()
+                            {
+                                --outer_.nrMA_;
+                                if (ix_ != nr_)
+                                    outer_.ok_ = false;
+                            }
+
+                            Array &add(long l)
+                            {
+                                if (ix_ >= nr_)
+                                    outer_.ok_ = false;
+                                else
+                                {
+                                    write(buffer_(), l);
+                                    ++ix_;
+                                }
+                                return *this;
+                            }
+                            Buffer &buffer_(){return outer_.buffer_;}
+                            Builder &outer_;
+                            const size_t nr_;
+                            size_t ix_;
+                    };
+
+                    class Map
+                    {
+                        public:
+                            Map(Builder &builder, size_t nr):
+                                outer_(builder), nr_(nr), ix_(0)
+                        {
+                            ++outer_.nrMA_;
+                            write(buffer_(), nr_, MapTL_tag());
+                        }
+                            ~Map()
+                            {
+                                --outer_.nrMA_;
+                                if (ix_ != nr_)
+                                    outer_.ok_ = false;
+                            }
+
+                            bool add(long id, long l)
+                            {
+                                if (ix_ >= nr_)
+                                    return false;
+                                write(buffer_(), id);
+                                write(buffer_(), l);
+                                ++ix_;
+                                return true;
+                            }
+                            Buffer &buffer_(){return outer_.buffer_;}
+                            Builder &outer_;
+                            const size_t nr_;
+                            size_t ix_;
+                    };
+
+                    Array createArray(size_t nr)
+                    {
+                        return Array(*this, nr);
+                    }
+                    Map createMap(size_t nr)
+                    {
+                        return Map(*this, nr);
                     }
 
                 private:
                     Buffer &buffer_;
-                    const size_t nr_;
-                    size_t ix_;
-            };
-
-        template <typename Buffer>
-            class Map
-            {
-                public:
-                    Map(Buffer &buffer, size_t nr):
-                        buffer_(buffer), nr_(nr), ix_(0)
-                {
-                    write(buffer_, nr_, MapTL_tag());
-                }
-
-                    bool isComplete() const { return ix_ == nr_; }
-
-                    bool push(long id, long l)
-                    {
-                        if (ix_ >= nr_)
-                            return false;
-                        write(buffer_, id);
-                        write(buffer_, l);
-                        ++ix_;
-                        return true;
-                    }
-
-                private:
-                    Buffer &buffer_;
-                    const size_t nr_;
-                    size_t ix_;
+                    bool ok_;
+                    size_t nrMA_;
             };
     }
 }
