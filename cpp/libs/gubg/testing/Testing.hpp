@@ -26,13 +26,13 @@ namespace gubg
 {
     namespace testing
     {
-        template <typename T>
-            std::string toHex(const std::basic_string<T> &binary)
+        template <typename String>
+            std::string toHex(const String &binary)
             {
                 std::ostringstream res;
                 res << std::hex;
-                for (auto byte = binary.begin(); byte != binary.end(); ++byte)
-                    res << "0x" << std::setw(2) << std::setfill('0') << (int)(0xff & (*byte)) << ", ";
+                for (size_t i = 0; i < binary.size(); ++i)
+                    res << "0x" << std::setw(2) << std::setfill('0') << (int)(0xff & binary[i]) << ", ";
                 return res.str();
             }
         template <typename T1, typename T2>

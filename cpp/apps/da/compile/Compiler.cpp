@@ -55,20 +55,10 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
                 cmd << "g++ -std=c++0x -O3 -pthread -c ";
                 break;
             case Arduino:
-                 if (true || src.extension() == "cpp")
-                 {
-                     if (arduino::isUno())
-                         cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -c ";
-                     else if (arduino::isMega())
-                         cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -c ";
-                 }
-                 else
-                 {
-                     if (arduino::isUno())
-                         cmd << "avr-gcc -Os -w -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -c ";
-                     else if (arduino::isMega())
-                         cmd << "avr-gcc -Os -w -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -c ";
-                 }
+                if (arduino::isUno())
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -c ";
+                else if (arduino::isMega())
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -c ";
                 break;
             default:
                 cmd << "UNKNOWN TARGET PLATFORM ";
