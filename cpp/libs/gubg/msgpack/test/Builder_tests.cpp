@@ -4,6 +4,18 @@
 #include "gubg/Testing.hpp"
 using namespace gubg;
 
+namespace 
+{
+    struct A
+    {
+        enum {Id = 1};
+        template <typename Builder>
+            void serialize(Builder &builder) const
+            {
+                builder.createArray(3).add(1).add(2).add(3);
+            }
+    };
+}
 int main()
 {
     TEST_TAG(main);
@@ -15,7 +27,7 @@ int main()
     {
         auto ary = builder.createArray(4);
         ary.add(12);
-        ary.add(34);
+        ary.add(A());
         ary.add(123456);
         ary.add(0);
         L(testing::toHex(buffer));
@@ -23,7 +35,7 @@ int main()
     {
         auto map = builder.createMap(2);
         map.add(1, 2);
-        map.add(4, 24);
+        map.add(A());
         L(testing::toHex(buffer));
     }
     TEST_TRUE(builder.valid());

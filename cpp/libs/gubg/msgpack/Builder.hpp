@@ -32,7 +32,9 @@ namespace gubg
                                     outer_.ok_ = false;
                             }
 
-                            Array &add(long l)
+                            Array &add(long l){return add_(l);}
+                            Array &add(int l){return add_(l);}
+                            Array &add_(long l)
                             {
                                 if (ix_ >= nr_)
                                     outer_.ok_ = false;
@@ -43,6 +45,19 @@ namespace gubg
                                 }
                                 return *this;
                             }
+                            template <typename T>
+                                Array &add(const T &t)
+                                {
+                                    if (ix_ >= nr_)
+                                        outer_.ok_ = false;
+                                    else
+                                    {
+                                        outer_.createMap(1).add(t);
+                                        ++ix_;
+                                    }
+                                    return *this;
+                                }
+
                             Buffer &buffer_(){return outer_.buffer_;}
                             Builder &outer_;
                             const size_t nr_;
@@ -65,15 +80,32 @@ namespace gubg
                                     outer_.ok_ = false;
                             }
 
-                            bool add(long id, long l)
+                            Map &add(long id, long l)
                             {
                                 if (ix_ >= nr_)
-                                    return false;
-                                write(buffer_(), id);
-                                write(buffer_(), l);
-                                ++ix_;
-                                return true;
+                                    outer_.ok_ = false;
+                                else
+                                {
+                                    write(buffer_(), id);
+                                    write(buffer_(), l);
+                                    ++ix_;
+                                }
+                                return *this;
                             }
+                            template <typename T>
+                                Map &add(const T &t)
+                                {
+                                    if (ix_ >= nr_)
+                                        outer_.ok_ = false;
+                                    else
+                                    {
+                                        write(buffer_(), T::Id);
+                                        t.serialize(outer_);
+                                        ++ix_;
+                                    }
+                                    return *this;
+                                }
+
                             Buffer &buffer_(){return outer_.buffer_;}
                             Builder &outer_;
                             const size_t nr_;
