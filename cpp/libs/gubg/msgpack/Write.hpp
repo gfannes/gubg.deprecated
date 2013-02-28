@@ -165,7 +165,6 @@ namespace gubg
             }
 
         //Array
-
         template <typename Buffer>
             ReturnCode write(Buffer &buffer, const size_t nr, ArrayTL_tag)
             {
@@ -309,6 +308,30 @@ namespace gubg
                 if (ReturnCode::OK == write(buffer, str, Raw32_tag()))
                     return ReturnCode::OK;
                 return ReturnCode::TooLarge;
+            }
+
+        //Map
+        template <typename Buffer>
+            ReturnCode write(Buffer &buffer, const size_t nr, MapTL_tag)
+            {
+                MSS_BEGIN(ReturnCode);
+                if (nr <= 15)
+                    buffer.push_back(0x80 | nr);
+                else if (nr <= 65535)
+                {
+                    buffer.push_back(0xde);
+                    buffer.push_back((char)((nr >> 8) & 0xff));
+                    buffer.push_back((char)(nr & 0xff));
+                }
+                else
+                {
+                    buffer.push_back(0xdf);
+                    buffer.push_back((char)((nr >> 24) & 0xff));
+                    buffer.push_back((char)((nr >> 16) & 0xff));
+                    buffer.push_back((char)((nr >> 8) & 0xff));
+                    buffer.push_back((char)(nr & 0xff));
+                }
+                MSS_END();
             }
     }
 }
