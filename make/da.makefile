@@ -12,7 +12,7 @@ DA_CPP_FILES := \
 	compile/Compiler \
 	link/Linker \
 
-GUBG_CPP_FILES := OptionParser file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token
+GUBG_CPP_FILES := OptionParser file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token
 CPP_FILES := $(patsubst %,cpp/apps/da/%.cpp,$(DA_CPP_FILES)) $(patsubst %,cpp/libs/gubg/%.cpp,$(GUBG_CPP_FILES))
 OBJECT_FILES := $(patsubst %.cpp,%.o,$(CPP_FILES))
 
