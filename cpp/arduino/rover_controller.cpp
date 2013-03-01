@@ -31,6 +31,7 @@ namespace
             KeepAlive(Arduino &arduino):arduino_(arduino){}
             void timer_expired()
             {
+                //L("Stay awake man");
                 arduino_.send("\xd9\xc0");
                 reset();
             }
@@ -94,8 +95,8 @@ ReturnCode poll()
                         directions[1] = event.jaxis.value;
                         break;
                 }
-                motors[0] = (-directions[0]-directions[1])/256;
-                motors[1] = (+directions[0]-directions[1])/256;
+                motors[0] = (-directions[0]-directions[1])/456;
+                motors[1] = (+directions[0]-directions[1])/456;
                 string motors_msgpack;
                 msgpack::write(motors_msgpack, motors);
                 ostringstream oss;

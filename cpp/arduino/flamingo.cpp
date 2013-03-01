@@ -3,10 +3,12 @@
 #include "garf/OOStatus.hpp"
 #include "garf/BusyProcess.hpp"
 #include "garf/Motor.hpp"
+//#include "garf/Sonar.hpp"
 
 typedef unsigned char ubyte;
 
 garf::Elapser g_elapser;
+//garf::Sonar   g_sonar;
 
 //This blinker is used to show the online/offline status
 //We blink 10 times per second
@@ -156,6 +158,7 @@ void loop()
     g_elapser.process();
     g_blinker.process(g_elapser.elapse());
     g_oostatus.process(g_elapser.elapse());
+//    g_sonar.process(g_elapser.elapse());
 
     if (Serial.available())
     {
