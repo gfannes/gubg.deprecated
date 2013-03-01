@@ -14,8 +14,8 @@ garf::Elapser g_elapser;
 //We blink 10 times per second
 garf::Blinker<200> g_blinker;
 
-garf::Motor<5, 6> g_leftMotor;
-garf::Motor<10, 11> g_rightMotor;
+garf::Motor<6, 5> g_leftMotor;
+garf::Motor<10, 9> g_rightMotor;
 
 //We we don't receive indicateOnline() within 1 second, we will
 //switch to offline
