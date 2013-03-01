@@ -16,7 +16,7 @@ namespace gubg
             public:
                 enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
                 typedef std::string Name;
-                static const char Delimiter = '/';
+                static const char Delimiter;// = '/';
 
                 File()                                   :type_(Unknown){};
                 File(const Name & name)           :type_(Unknown), name_(name)           {canonicalize_();}

@@ -4,5 +4,6 @@ namespace gubg
 {
     namespace file
     {
+        const char File::Delimiter = '/';
     }
 }
