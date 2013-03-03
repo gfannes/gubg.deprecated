@@ -63,6 +63,12 @@ namespace gubg
         L_MSGPACK_DEFINE_TAG(FixRaw);
         L_MSGPACK_DEFINE_TAG(Raw16);
         L_MSGPACK_DEFINE_TAG(Raw32);
+        L_MSGPACK_DEFINE_TAG(FixMap);
+        L_MSGPACK_DEFINE_TAG(Map16);
+        L_MSGPACK_DEFINE_TAG(Map32);
+
+        struct ArrayTL_tag {};//Array type and length
+        struct MapTL_tag {};//Array type and length
 
         //Group tags
         struct Integer_tag {};

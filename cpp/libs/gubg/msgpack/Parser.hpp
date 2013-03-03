@@ -78,6 +78,7 @@ namespace gubg
                                     break;
                                 case Group::Map:
                                     MSS(convertUInt_(el_.length, buffer_));
+                                    el_.length += el_.length;
                                     el_.ix = 0;
                                     MSS(receiver_().parser_open(el_, path_));
                                     path_.push_back(el_);

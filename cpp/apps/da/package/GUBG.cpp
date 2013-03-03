@@ -42,7 +42,7 @@ bool GUBG::exists() const
 
 da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
-    MSS_BEGIN(ReturnCode);
+    MSS_BEGIN(ReturnCode, resolveHeader, partial.name());
 
     //We eat the boost headers when we are building for arduino
     if (compileSettings_.targetPlatform == Arduino)
@@ -61,6 +61,11 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         MSS_Q(root.popBasename(bn), UnknownHeader);
         if (bn == "gubg")
         {
+            if (compileSettings_.targetPlatform == Any)
+            {
+                compileSettings_.targetPlatform = Host;
+                linkSettings_.targetPlatform = Host;
+            }
             compileSettings_.includePaths.insert(libsDir_);
         }
         else if (bn == "iup")
@@ -73,10 +78,13 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
             linkSettings_.libraries.insert("iup");
             linkSettings_.libraries.insert("iup_pplot");
             linkSettings_.libraries.insert("iupcontrols");
+            linkSettings_.libraries.insert("iupcd");
             linkSettings_.libraries.insert("cd");
         }
         else if (bn == "garf")
         {
+            MSS_Q(compileSettings_.targetPlatform == Any, UnknownHeader);
+            compileSettings_.targetPlatform = Arduino;
             compileSettings_.includePaths.insert(arduinoDir_);
             string str;
             if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
@@ -91,12 +99,11 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
                 if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/variants/mega"))
                     compileSettings_.includePaths.insert(File(str));
             }
-            compileSettings_.targetPlatform = Arduino;
             if (linkSettings_.targetPlatform != Arduino)
             {
                 string arduinoBase;
                 if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
-                    for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp"})
+                    for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp", "WInterrupts.c"})
                     {
                         File f(arduinoBase);
                         f << base;
@@ -118,6 +125,7 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         switch (compileSettings_.targetPlatform)
         {
             case Any:
+            case Host:
                 sisterFiles.insert(sisterFile);
                 break;
             case Arduino:

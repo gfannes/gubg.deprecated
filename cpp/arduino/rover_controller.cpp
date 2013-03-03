@@ -1,12 +1,13 @@
 #include "gubg/mss.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include "gubg/testing/Testing.hpp"
+#include "gubg/tty/Endpoint.hpp"
+#include "gubg/Timer.hpp"
+#include "gubg/l.hpp"
 #include "SDL/SDL.h"
 #include <iostream>
-#include <fstream>
 using namespace gubg;
 using namespace std;
-#define L(m) cout<<m<<endl
 
 enum class ReturnCode {MSS_DEFAULT_CODES, NoJoystickFound, CouldNotOpenJoystick};
 
@@ -14,6 +15,29 @@ namespace
 {
     int nrJoysticks;
     SDL_Joystick *joystick = 0;
+    class Arduino: public gubg::tty::Endpoint_crtp<Arduino>
+    {
+        public:
+            Arduino():Endpoint_crtp("/dev/ttyACM0"){}
+            void endpoint_received(unsigned char ch)
+            {
+                std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)ch << '|';
+                std::cout.flush();
+            }
+    };
+    class KeepAlive: public gubg::Timer_crtp<KeepAlive>
+    {
+        public:
+            KeepAlive(Arduino &arduino):arduino_(arduino){}
+            void timer_expired()
+            {
+                //L("Stay awake man");
+                arduino_.send("\xd9\xc0");
+                reset();
+            }
+        private:
+            Arduino &arduino_;
+    };
 }
 
 ReturnCode setup()
@@ -37,42 +61,48 @@ ReturnCode poll()
     MSS_BEGIN(ReturnCode);
     bool quit = false;
 
-    ofstream of("/dev/ttyACM0");
+    Arduino arduino;
+    KeepAlive keepAlive(arduino);
+    keepAlive.setTimeout(std::chrono::milliseconds(500));
 
     vector<int> directions(2);
     vector<int> motors(2);
 
     while (!quit)
     {
+        arduino.process();
+        keepAlive.process();
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
             {
                 quit = true;
+                break;
             }
-            else if (event.type == SDL_JOYAXISMOTION)
+
+            if (event.type == SDL_JOYAXISMOTION)
             {
                 switch (event.jaxis.axis)
                 {
                     case 0:
-                        L("X " << event.jaxis.value);
+                        //L("X " << event.jaxis.value);
                         directions[0] = event.jaxis.value;
                         break;
                     case 1:
-                        L("Y " << event.jaxis.value);
+                        //L("Y " << event.jaxis.value);
                         directions[1] = event.jaxis.value;
                         break;
                 }
-                motors[0] = (-directions[0]-directions[1])/256;
-                motors[1] = (+directions[0]-directions[1])/256;
+                motors[0] = (-directions[0]-directions[1])/1200;
+                motors[1] = (+directions[0]-directions[1])/1200;
                 string motors_msgpack;
                 msgpack::write(motors_msgpack, motors);
                 ostringstream oss;
                 oss << "\xd9" << motors_msgpack;
-                cout << testing::toHex(oss.str()) << endl;
-                of << oss.str();;
-                of.flush();
+                //L(testing::toHex(oss.str()));
+                arduino.send(oss.str());
             }
         }
     }

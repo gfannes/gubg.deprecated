@@ -22,7 +22,7 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
                 break;
             case Arduino:
                 if (arduino::isUno())
-                    cmd << "avr-g++ -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -o ";
+                    cmd << "avr-g++ -Os -w -Wl,--gc-sections -mmcu=atmega328p -o ";
                 else if (arduino::isMega())
                     cmd << "avr-g++ -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -o ";
                 else
@@ -52,7 +52,7 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         cmd.str("");
         auto hex = exe;
         hex.setExtension("hex");
-        cmd << "avr-objcopy -j .text -O ihex " << exe.name() << " " << hex.name();
+        cmd << "avr-objcopy -R .eeprom -O ihex " << exe.name() << " " << hex.name();
         verbose(cmd.str());
         MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
 

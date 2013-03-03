@@ -47,10 +47,8 @@ TestTag::TestTag(const string &tag):
     tag_(tag),
     root_(nullptr)
 {
-    L("ctor " << tag_);
     if (nullptr == rootTag.get())
     {
-        L("We are the root tag");
         rootTag.reset(this);
         root_ = new ThreadStats;
     }
@@ -62,11 +60,9 @@ TestTag::TestTag(const string &tag):
 }
 TestTag::~TestTag()
 {
-    L("dtor " << tag_);
     root_->popTag();
     if (this == rootTag.get())
     {
-        L("We were the root tag");
         TestMaster::instance().report(*(const ThreadStats *)root_);
         delete root_;
         rootTag.reset(nullptr);

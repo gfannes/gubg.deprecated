@@ -1,11 +1,36 @@
 //#define GUBG_LOG
 #include "da/build/Builder.hpp"
+#include "gubg/file/Filesystem.hpp"
+#include "gubg/env/Util.hpp"
+#include "gubg/string_algo.hpp"
 #include <queue>
 using namespace da;
+using namespace da::package;
+using namespace gubg;
+using namespace gubg::file;
 using gubg::file::File;
 using namespace std;
 
-ReturnCode Builder::process(const SourceFile &source)
+Builder::Builder()
+{
+    packages_ << Local::create(File(getcwd()));
+
+    {
+        string str;
+        if (env::expand(str, "$GUBG"))
+            packages_ << GUBG::create(File(str));
+        if (env::expand(str, "$GUBG_BOOST"))
+            packages_ << Boost::create(File(str));
+    }
+
+    packages_ << SDL::create(File(""));
+
+    packages_.prune();
+
+    L("I found following packages: " << string_algo::join(packages_.names(), ", "));
+}
+
+da::ReturnCode Builder::process(const SourceFile &source)
 {
     MSS_BEGIN(ReturnCode, process);
 
@@ -24,9 +49,9 @@ ReturnCode Builder::process(const SourceFile &source)
 
         Headers headers;
         SourceFiles sisterFiles;
-        MSS(src->searchForHeaders(headers, sisterFiles, configuration_.packages()));
+        MSS(src->searchForHeaders(headers, sisterFiles, packages_));
         headersPerSource_[src] = headers;
-        configuration_.packages().extractCompileSettings(compileSettings_);
+        packages_.extractCompileSettings(compileSettings_);
 
         for (auto hdr: headers)
         {

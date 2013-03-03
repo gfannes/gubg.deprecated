@@ -3,6 +3,7 @@
 
 #include "da/Types.hpp"
 #include "da/Codes.hpp"
+#include "da/Context.hpp"
 #include "gubg/file/File.hpp"
 #include <string>
 #include <memory>
@@ -12,7 +13,7 @@ namespace da
 {
     namespace package
     {
-        class Package
+        class Package: public gubg::Context<Context>
         {
             public:
                 typedef std::shared_ptr<Package> Ptr;
