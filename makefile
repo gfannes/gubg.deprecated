@@ -12,6 +12,12 @@ include make/da.makefile
 clean: da-clean
 	ruby internal/cleanAll.rb
 
+.PHONY: fix
+fix:
+	cd cpp/libs/gubg && da -f guards -r
+	cd cpp/libs/iup && da -f guards -r
+	cd cpp/apps/da && da -f guards -r
+
 .PHONY: pull commit publish upload
 pull:
 	git pull

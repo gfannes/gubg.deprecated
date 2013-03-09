@@ -21,6 +21,8 @@ Builder::Builder()
             packages_ << GUBG::create(File(str));
         if (env::expand(str, "$GUBG_BOOST"))
             packages_ << Boost::create(File(str));
+        if (env::expand(str, "$GUBG_DECODEIT"))
+            packages_ << DecodeIt::create(File(str));
     }
 
     packages_ << SDL::create(File(""));
