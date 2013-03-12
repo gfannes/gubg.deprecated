@@ -2,6 +2,7 @@
 #include "gubg/Testing.hpp"
 #include "gubg/l.hpp"
 
+#if 0
 namespace 
 {
     class SM
@@ -39,3 +40,45 @@ int main()
     sm.process();
     return 0;
 }
+#else
+namespace 
+{
+    class A
+    {
+        public:
+            A():sm(*this){}
+
+            void process()
+            {
+                sm.process(0);
+            }
+
+        private:
+            enum class State {Start, Flip};
+            typedef gubg::SM<A, State, State::Start> SM;
+            friend class gubg::SM<A, State, State::Start>;
+            SM sm;
+            template <typename S>
+                void sm_enter(SM::Start, S &s)
+                {
+                    L("sm_enter for Start event");
+                    sm.process(SM::ChangeState<State::Flip>());
+                    s.template changeTo<State::Flip>();
+                }
+            void sm_action(int event)
+            {
+                L("What a nice int event " << event);
+                if (event < 10)
+                    sm.process(event+1);
+            }
+    };
+}
+int main()
+{
+    A a;
+    a.process();
+    a.process();
+    a.process();
+    return 0;
+}
+#endif
