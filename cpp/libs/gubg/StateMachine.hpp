@@ -1,12 +1,38 @@
 #ifndef HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 
+#define GUBG_LOG
+#include "gubg/logging/Log.hpp"
 #include <queue>
 #include <cassert>
 #include "gubg/l.hpp"
 
 namespace gubg
 {
+    template <typename Outer, typename StateT>
+        class StateMachine_ftop
+        {
+            public:
+                typedef StateT State;
+
+                StateMachine_ftop(Outer &outer):outer_(outer), state_(State::OK){}
+                template <typename Event>
+                    void process(const Event &event)
+                    {
+                        LOG_S(process, STREAM(event));
+                        auto newState = outer_.sm_event(state_, event);
+                        while (newState != State::OK)
+                        {
+                            outer_.sm_exit(state_, event);
+                            state_ = newState;
+                            newState = outer_.sm_enter(state_, event);
+                        }
+                    }
+            private:
+                Outer &outer_;
+                State state_;
+        };
+#if 0
     template <typename Outer, typename StateT, StateT StartState>
         class SM
         {
@@ -144,6 +170,7 @@ namespace gubg
                 Outer &outer_;
                 State state_;
         };
+#endif
 }
 
 #endif
