@@ -1,115 +1,60 @@
 #include "gubg/StateMachine.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/l.hpp"
+#include <string>
+using namespace std;
 
-#if 0
 namespace 
 {
-    class SM
+    class A
     {
         public:
-            enum class State {Init, Start, Stop};
-
-            SM():sm_(*this){}
-
+            A():sm(*this){}
             void process()
             {
-                sm_.process();
-                sm_.changeState(State::Stop);
+                sm.process(0);
+                sm.process("abc");
             }
-
-            void sm_enter(State s)
+        private:
+            enum class State {Idle, Flip};
+            typedef gubg::StateMachine_ftop<A, State, State::Idle> SM;
+            friend class gubg::StateMachine_ftop<A, State, State::Idle>;
+            SM sm;
+            void sm_event(SM::State &s, int e)
             {
-                L("Enter " << (int)s);
+                L("Event " << e << " occured in state " << (int)s());
+                switch (s())
+                {
+                    case State::Idle: s.changeTo(State::Flip); break;
+                    case State::Flip:
+                                      if (e < 4)
+                                          sm.process(e+1);
+                                      break;
+                }
+            }
+            void sm_event(SM::State &s, const string &str)
+            {
+                L("Event " << str << " occured in state " << (int)s());
+                switch (s())
+                {
+                    case State::Idle: s.changeTo(State::Flip); break;
+                    case State::Flip:
+                                      if (!str.empty())
+                                          sm.process(str.substr(1));
+                                      break;
+                }
             }
             void sm_exit(State s)
             {
-                L("Exit " << (int)s);
+                L("Leaving state " << (int)s);
             }
-        private:
-            gubg::StateMachine_ftop<SM, State::Start> sm_;
-    };
-}
-
-int main()
-{
-    SM sm;
-
-    sm.process();
-    sm.process();
-    sm.process();
-    return 0;
-}
-namespace 
-{
-    class A
-    {
-        public:
-            A():sm(*this){}
-
-            void process()
+            void sm_enter(State s)
             {
-                sm.process(0);
-            }
-
-        private:
-            enum class State {Start, Flip};
-            typedef gubg::SM<A, State, State::Start> SM;
-            friend class gubg::SM<A, State, State::Start>;
-            SM sm;
-            template <typename S>
-                void sm_enter(SM::Start, S &s)
-                {
-                    L("sm_enter for Start event");
-                    sm.process(SM::ChangeState<State::Flip>());
-                    s.template changeTo<State::Flip>();
-                }
-            void sm_action(int event)
-            {
-                L("What a nice int event " << event);
-                if (event < 10)
-                    sm.process(event+1);
-            }
-    };
-}
-#else
-namespace 
-{
-    class A
-    {
-        public:
-            A():sm(*this){}
-            void process()
-            {
-                sm.process(0);
-            }
-        private:
-            enum class State {OK, Idle, Flip};
-            typedef gubg::StateMachine_ftop<A, State> SM;
-            friend class gubg::StateMachine_ftop<A, State>;
-            SM sm;
-            State sm_event(State s, int e)
-            {
-                MSS_BEGIN(State);
-                L("Event " << e << " occured in state " << (int)s);
+                L("Entering state " << (int)s);
                 switch (s)
                 {
-                    case State::OK: MSS_QL(Idle); break;
-                    case State::Flip: sm.process(e+1); break;
+                    case State::Idle: sm.process(0); break;
                 }
-                MSS_END();
-            }
-            void sm_exit(State s, int e){}
-            State sm_enter(State s, int e)
-            {
-                MSS_BEGIN(State);
-                L("Entering state " << (int)s << " via event " << e);
-                switch (s)
-                {
-                    case State::Idle: MSS_QL(Flip); break;
-                    case State::Flip: sm.process(e); break;
-                }
-                MSS_END();
             }
     };
 }
@@ -121,4 +66,3 @@ int main()
     a.process();
     return 0;
 }
-#endif
