@@ -30,4 +30,4 @@ endif
 
 #Clones the gubg repo
 $(GUBG):
-	$(GIT) clone git@github.com:gfannes/gubg.git $(GUBG)
+	$(GIT) clone https://github.com/gfannes/gubg.git $(GUBG)
