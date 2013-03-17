@@ -1,10 +1,9 @@
 == Installation
 
 === Linux
-* mkdir $HOME/sdks
-* Put boost in $HOME/sdks and compile it
-* export GUBG=$HOME/gubg
-* Make sure you have ruby 1.9 in stalled
+* sudo apt-get install git
+* wget https://raw.github.com/gfannes/gubg/master/bootstrap.makefile
+* make -f bootstrap.makefile install-gubg
 
 === Windows
 * Install g++
