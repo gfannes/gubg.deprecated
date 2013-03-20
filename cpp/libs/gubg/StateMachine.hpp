@@ -14,40 +14,41 @@ namespace gubg
         class StateMachine_ftop
         {
             public:
-                StateMachine_ftop(Outer &outer):outer_(outer) { }
+                StateMachine_ftop(Outer &outer): state_(outer) { }
 
                 class State
                 {
                     public:
-                        State(StateMachine_ftop &sm, StateT &s):sm_(sm), s_(s){}
                         StateT operator()() const {return s_;}
                         void changeTo(StateT ns)
                         {
-                            sm_.outer_.sm_exit(s_);
+                            outer_.sm_exit(s_);
                             s_ = ns;
-                            sm_.outer_.sm_enter(s_);
+                            outer_.sm_enter(s_);
                         }
                     private:
-                        StateMachine_ftop &sm_;
-                        StateT &s_;
+                        friend class StateMachine_ftop;
+                        State(Outer &outer): outer_(outer), s_(StartState) { }
+                        State(const State &);
+                        State &operator=(const State &);
+
+                        Outer &outer_;
+                        StateT s_;
                 };
+
                 template <typename Event>
                     void process(const Event &event)
                     {
                         LOG_S(process, STREAM(event));
 
                         if (doStart_())
-                        {
-                            state_ = StartState;
-                            outer_.sm_enter(state_);
-                        }
+                            state_.outer_.sm_enter(state_());
 
-                        State state(*this, state_);
-                        outer_.sm_event(state, event);
+                        state_.outer_.sm_event(state_, event);
                     }
+
             private:
-                Outer &outer_;
-                StateT state_;
+                State state_;
                 OnlyOnce doStart_;
         };
 }
