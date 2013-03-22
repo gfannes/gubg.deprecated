@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu
-#define aoeuaoeu
+#ifndef HEADER_garf_Sonar_hpp_ALREADY_INCLUDED
+#define HEADER_garf_Sonar_hpp_ALREADY_INCLUDED
 
 namespace garf
 {

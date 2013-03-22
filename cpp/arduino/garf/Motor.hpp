@@ -1,5 +1,5 @@
-#ifndef garf_Motor_hpp
-#define garf_Motor_hpp
+#ifndef HEADER_garf_Motor_hpp_ALREADY_INCLUDED
+#define HEADER_garf_Motor_hpp_ALREADY_INCLUDED
 
 namespace garf
 {
