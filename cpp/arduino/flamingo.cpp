@@ -3,6 +3,7 @@
 #include "garf/OOStatus.hpp"
 #include "garf/BusyProcess.hpp"
 #include "garf/Motor.hpp"
+#include "garf/Average.hpp"
 //#include "garf/Sonar.hpp"
 
 typedef unsigned char ubyte;
@@ -16,6 +17,8 @@ garf::Blinker<200> g_blinker;
 
 garf::Motor<6, 5> g_leftMotor;
 garf::Motor<10, 9> g_rightMotor;
+
+garf::RobustAverage<ubyte, 10> sonarAverage;
 
 //We we don't receive indicateOnline() within 1 second, we will
 //switch to offline
