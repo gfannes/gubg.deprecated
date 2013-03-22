@@ -1,5 +1,5 @@
-#ifndef garf_OOStatus_hpp
-#define garf_OOStatus_hpp
+#ifndef HEADER_garf_OOStatus_hpp_ALREADY_INCLUDED
+#define HEADER_garf_OOStatus_hpp_ALREADY_INCLUDED
 
 namespace garf
 {
