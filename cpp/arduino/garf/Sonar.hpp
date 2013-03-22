@@ -3,24 +3,41 @@
 
 namespace garf
 {
-    class Sonar
-    {
-        private:
-            enum State {Init, Idle, };
-        public:
-            Sonar():
-                state_(Init){}
-            void process(int elapse)
-            {
-                if (state_ == Init)
-                    changeState_(Idle);
-            }
-        private:
-            void changeState_(const State newState)
-            {
-            }
-            State state_;
-    };
+    template <int Trigger, int Echo, int PulseStart, int PulseEnd>
+        class Sonar
+        {
+            public:
+                void init()
+                {
+                    pinMode(Trigger, OUTPUT);
+                    pinMode(Echo, INPUT);
+                }
+                template <typename Distance>
+                    int measure(Distance &distance)
+                    {
+                        digitalWrite(Trigger, LOW);
+                        delay(10);
+                        //pulse
+                        digitalWrite(Trigger, HIGH);
+                        delayMicroseconds(20);
+                        digitalWrite(Trigger, LOW);
+                        auto start=millis();
+
+                        for (; digitalRead(Echo) == LOW;)
+                        {
+                            if (distance > PulseStart)
+                                return 1;
+                        }
+
+                        for (; digitalRead(Echo) == HIGH; ++distance)
+                        {
+                            if (distance > PulseEnd)
+                                return 2;
+                        }
+
+                        return 0;
+                    }
+        };
 }
 
 #endif
