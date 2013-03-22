@@ -10,8 +10,8 @@ namespace gubg
         enum class ReturnCode
         {
             MSS_DEFAULT_CODES,
-            , UnexpectedValidSocketDescriptor,
-            UnexpectedRole, AcceptFailed, ReceiveFailure, 
+            UnexpectedValidSocketDescriptor,
+            UnexpectedRole, AcceptFailed, ReceiveFailure, CouldNotGetSocketDescriptor, PortTooLow, PortTooHigh, CouldNotBind, CouldNotListen
         };
     }
 }

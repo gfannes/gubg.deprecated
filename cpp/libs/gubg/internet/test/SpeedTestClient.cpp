@@ -31,8 +31,8 @@ namespace
 
 ReturnCode main_()
 {
-    MSS_BEGIN(ReturnCode);
-    string peer = "piw";
+    MSS_BEGIN(ReturnCode, main_);
+    string peer = "localhost";
     gubg::internet::Client client(peer, 1234);
     SpeedTest::Ptr speedTest;
     MSS(client.createConnection(speedTest));
