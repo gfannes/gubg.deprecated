@@ -2,13 +2,13 @@
 #include "gubg/internet/Socket.hpp"
 #include "gubg/tty/Endpoint.hpp"
 #include <iostream>
+using namespace gubg;
 using namespace std;
-#define L(m) cout<<m<<endl
+
+enum class ReturnCode {MSS_DEFAULT_CODES, };
 
 namespace 
 {
-    int nrJoysticks;
-    SDL_Joystick *joystick = 0;
     class Arduino: public gubg::tty::Endpoint_crtp<Arduino>
     {
         public:
@@ -19,26 +19,12 @@ namespace
                 std::cout.flush();
             }
     };
-    class KeepAlive: public gubg::Timer_crtp<KeepAlive>
-    {
-        public:
-            KeepAlive(Arduino &arduino):arduino_(arduino){}
-            void timer_expired()
-            {
-                //L("Stay awake man");
-                arduino_.send("\xd9\xc0");
-                reset();
-            }
-        private:
-            Arduino &arduino_;
-    };
 }
 
-int main()
+ReturnCode main_()
 {
+    MSS_BEGIN(ReturnCode, main_);
     Arduino arduino;
-    KeepAlive keepAlive(arduino);
-    keepAlive.setTimeout(std::chrono::milliseconds(500));
 
     gubg::internet::Socket server;
     MSS(server.bind(1234));
@@ -47,17 +33,24 @@ int main()
     while (true)
     {
         gubg::internet::Socket peer;
-        TEST_OK(server.accept(peer));
+        MSS(server.accept(peer));
         gubg::internet::Socket::IOBuffer buffer(16);
         while (gubg::mss::isOK(peer.receive(buffer)))
         {
-            L("Received " << buffer.str());
+            arduino.process();
+            L("Received " << testing::toHex(buffer.str()));
             while (!buffer.empty())
             {
-                TEST_OK(peer.send(buffer));
+                L("Sending " << testing::toHex(buffer.str()));
+                arduino.send(buffer.str());
+                buffer.clear();
             }
             buffer.clear();
         }
     }
-    return 0;
+    MSS_END();
+}
+int main()
+{
+    return (MSS_IS_OK(main_()) ? 0 : -1);
 }
