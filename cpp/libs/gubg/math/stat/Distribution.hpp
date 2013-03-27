@@ -1,8 +1,6 @@
 #ifndef HEADER_gubg_math_distribution_distribution_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_math_distribution_distribution_hpp_ALREADY_INCLUDED
 
-using namespace std;
-
 namespace gubg
 {
     template <typename Receiver, typename DomainT>
@@ -15,12 +13,14 @@ namespace gubg
                 double logDensity(DomainT &value){return 0.0;}
                 bool draw(DomainT &value)
                 {
-                    cerr << "No draw functionality is implemented yet for this distribution." << endl;
-                    return false;
+                    return receiver_().distri_draw();
                 }
+
             private:
+                Receiver &receiver_(){return static_cast<Receiver&>(*this);}
         };
 
+#if 0
     // DomainC is the domain of the condition
     template <typename DomainT, typename DomainC>
         class ConditionalDistribution: public Distribution<DomainT>
@@ -38,6 +38,7 @@ namespace gubg
                 return false;
             }
     };
+#endif
 }
 
 #endif

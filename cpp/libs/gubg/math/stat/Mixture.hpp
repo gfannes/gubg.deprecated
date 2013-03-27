@@ -5,20 +5,33 @@
 
 namespace gubg
 {
-    template <typename Mode>
+    template <typename Component>
         class Mixture
         {
             public:
-                typedef typename Mode::DomainType DomainType;
+                typedef typename Component::value_type value_type;
 
-                Mixture(std::size_t nrModes):
-                    modes_(nrModes){}
-                bool draw(DomainType &res)
+                Mixture(const std::size_t nrComponents):
+                    components_(nrComponents), weights_(nrComponents)
+                {
+                    std::fill(weights_.begin(), weights_.end(), 1.0/nrComponents);
+                }
+
+                bool draw(value_type &res)
                 {
                     return false;
                 }
+
             private:
-                std::vector<Mode> modes_;
+                bool invariants_() const
+                {
+                    if (components_.size() != weights_.size())
+                        return false;
+                }
+                typedef std::vector<Component> Compontents;
+                Component components_;
+                typedef std::vector<double> Weights;
+                Weights weights_;
         };
 }
 
