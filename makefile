@@ -1,6 +1,6 @@
 .PHONY: help
 help:
-	@echo "Help"
+	@echo "fix"
 
 include make/gubg_env.makefile
 include make/dev_env.makefile

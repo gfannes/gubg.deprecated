@@ -60,7 +60,8 @@ ReturnCode setup()
     joystick = SDL_JoystickOpen(0);
     MSS(joystick, CouldNotOpenJoystick);
 
-    string peerIP = "localhost";
+    //string peerIP = "localhost";
+    string peerIP = "192.168.0.100";
     gubg::internet::Client client(peerIP, 1234);
     MSS(client.createConnection(pipi));
 
