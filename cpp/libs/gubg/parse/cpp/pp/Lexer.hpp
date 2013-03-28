@@ -7,6 +7,8 @@
 #include "gubg/parse/cpp/pp/Token.hpp"
 #include "gubg/parse/BreakUp.hpp"
 
+#define GUBG_MODULE "Lexer"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace parse
@@ -96,5 +98,6 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

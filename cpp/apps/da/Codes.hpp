@@ -10,6 +10,7 @@ namespace da
         MSS_DEFAULT_CODES,
         Skip, Stop, CompilationFailed, LinkingFailed, HeaderAlreadyKnown,
         AvrObjCopyFailed, AvrDudeFailed, RecognisedHeader, UnknownHeader,
+        NoIncludeGuardFound,
     };
 }
 

@@ -1,8 +1,5 @@
-//#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "da/FixIncludeGuards.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/l.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/string_algo.hpp"
 #include <vector>
@@ -13,6 +10,8 @@ using namespace gubg::parse::cpp;
 using namespace gubg::parse::cpp::pp;
 using namespace std;
 
+#define GUBG_MODULE "FixIncludeGuards"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     typedef da::ReturnCode ReturnCode;
@@ -58,7 +57,7 @@ namespace
             }
             ReturnCode fix_(const string &headerLocation)
             {
-                MSS_BEGIN(ReturnCode, fix_);
+                MSS_BEGIN(ReturnCode);
 
                 Token *ident1(0), *ident2(0), *lastMacro(0);
                 enum State {Start, IfndefDetected, Ident1Detected, DefineDetected, Ident2Detected, LastMacroDetected, Error};
@@ -66,7 +65,10 @@ namespace
                 for (auto &token: lexer_.tokens())
                 {
                     if (token.isWhitespace())
+                    {
+                        MSS(state != Start, NoIncludeGuardFound);
                         continue;
+                    }
 
                     switch (state)
                     {
@@ -74,7 +76,7 @@ namespace
                             if (token.type == Token::MacroHash)
                                 continue;
                             MSS(token.type == Token::Macro);
-                            MSS(token.range.content() == "ifndef");
+                            MSS(token.range.content() == "ifndef", NoIncludeGuardFound);
                             state = IfndefDetected;
                             break;
                         case IfndefDetected:
@@ -131,16 +133,24 @@ namespace
             }
             ReturnCode fixIncludeGuards_(const File &header)
             {
-                MSS_BEGIN(ReturnCode, fixIncludeGuards_, STREAM(header.name()));
+                MSS_BEGIN(ReturnCode, STREAM(header.name()));
                 MSS(tokenize_(header));
-                MSS(fix_(includeGuard_(header)));
-                if (content_() != range_.content())
+                switch (auto rc = fix_(includeGuard_(header)))
                 {
-                    L("Header " << header.name() << " needs fixing");
-//                    L("Orig content:\n" << range_.content());
-//                    L("New content:\n" << content_());
-                    if (options_.doFix)
-                        MSS(write(content_(), header));
+                    case ReturnCode::NoIncludeGuardFound:
+                        //Some headers do not use include guards
+                        break;
+                    default:
+                        MSS(rc);
+                        if (content_() != range_.content())
+                        {
+                            L("Header " << header.name() << " needs fixing");
+                            //                    L("Orig content:\n" << range_.content());
+                            //                    L("New content:\n" << content_());
+                            if (options_.doFix)
+                                MSS(write(content_(), header));
+                        }
+                        break;
                 }
                 MSS_END();
             }

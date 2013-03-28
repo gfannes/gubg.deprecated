@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#define GUBG_MODULE "Filesystem"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace file
@@ -85,5 +87,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

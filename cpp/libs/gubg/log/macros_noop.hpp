@@ -1,10 +1,7 @@
-#ifndef HEADER_gubg_log_macros_noop_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_log_macros_noop_hpp_ALREADY_INCLUDED
+//NO INCLUDE GUARDS HERE
 
-#include <iostream>
+#define S()     do {} while (false)
+#define SS(...) do {} while (false)
 
-#define S(s)
-
-#define L(m)
-
-#endif
+#define L(m)    do {} while (false)
+#define LL(m)   do {} while (false)

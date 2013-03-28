@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "gubg/l.hpp"
-
 namespace gubg
 {
     namespace file
