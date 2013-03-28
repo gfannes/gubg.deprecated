@@ -30,11 +30,13 @@ da::ReturnCode Boost::resolveHeader(File &resolvedHeader, SourceFiles &sisterFil
     MSS_Q(root == "boost", UnknownHeader);
 
     LOG_M(partial.name());
+    compileSettings_.includePaths.insert(base_);
     linkSettings_.libraries.insert("boost_thread");
     linkSettings_.libraries.insert("boost_system");
     linkSettings_.libraries.insert("boost_filesystem");
     linkSettings_.libraries.insert("boost_regex");
     linkSettings_.libraries.insert("boost_signals");
+    linkSettings_.libraryPaths.insert(libDir_);
     MSS_QL(RecognisedHeader);
 
     MSS_END();

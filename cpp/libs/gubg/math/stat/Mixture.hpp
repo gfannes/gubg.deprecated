@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_math_distribution_Mixture_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_math_distribution_Mixture_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_math_stat_Mixture_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_stat_Mixture_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

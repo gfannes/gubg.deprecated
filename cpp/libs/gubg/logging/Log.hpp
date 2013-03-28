@@ -3,13 +3,9 @@
 
 #include "gubg/Singleton.hpp"
 #include "gubg/macro.hpp"
-#include "boost/thread/thread.hpp"
-#include "boost/thread/tss.hpp"
-#include "boost/algorithm/string/join.hpp"
+#include "gubg/logging/Framework.hpp"
 #include <string>
-#include <iostream>
 #include <sstream>
-#include <memory>
 
 //This header file provides logging functionality:
 // * #define GUBG_LOG to enable logging before including this header
@@ -43,7 +39,7 @@
 #endif
 namespace
 {
-    const std::string l_gubg_logging_module__(GUBG_MODULE);
+    const char *l_gubg_logging_module__(GUBG_MODULE);
 }
 
 #ifdef GUBG_LOG
@@ -177,84 +173,5 @@ namespace
 #define STREAM_10(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10) STREAM_9(_1,_2,_3,_4,_5,_6,_7,_8,_9) STREAM_FORMAT_B(_10)
 #define STREAM_MACRO_CHOOSER(...) GUBG_GET_11TH_ARG(__VA_ARGS__, STREAM_10,STREAM_9,STREAM_8,STREAM_7,STREAM_6,STREAM_5,STREAM_4,STREAM_3,STREAM_2,STREAM_1)
 #define STREAM(...) STREAM_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) "}"
-
-namespace gubg
-{
-    namespace logging
-    {
-        struct Output
-        {
-            static void write(const std::string &str)
-            {
-                static boost::mutex mutex;
-                boost::mutex::scoped_lock lock(mutex);
-                std::cout << str;
-            }
-        };
-        struct Name
-        {
-            Name(const std::string &m, const std::string &n):
-                module(m), name(n){}
-            std::string module;
-            std::string name;
-        };
-        struct Scope
-        {
-            typedef std::vector<Name> NameStack;
-            Scope(const std::string &module, const std::string &name, bool verboseDtor):
-                threadId_(boost::this_thread::get_id()),
-                verboseDtor_(verboseDtor)
-            {
-                auto &nameStack = gubg::Singleton<boost::thread_specific_ptr<NameStack>>::instance();
-                if (!(nameStack_ = nameStack.get()))
-                {
-                    std::ostringstream oss;
-                    oss << "Thread " << threadId_ << " logs for the first time" << std::endl;
-                    Output::write(oss.str());
-                    nameStack.reset(nameStack_ = new NameStack);
-                }
-                nameStack_->push_back(Name(module, name));
-            }
-            ~Scope()
-            {
-                if (verboseDtor_)
-                {
-                    std::ostringstream oss;
-                    oss << indent() << "<<" << std::endl;
-                    Output::write(oss.str());
-                }
-                nameStack_->pop_back();
-            }
-
-            std::string name() const {return nameStack_->back().name;}
-            std::string module() const {return nameStack_->back().module;}
-            std::string indent()
-            {
-                if (!indent_)
-                {
-                    std::ostringstream oss;
-                    oss << threadId_;
-                    std::string currentModule;
-                    for (NameStack::const_iterator name = nameStack_->begin(); name != nameStack_->end(); ++name)
-                    {
-                        if (currentModule != name->module)
-                        {
-                            currentModule = name->module;
-                            oss << "->(" << name->module << ")";
-                        }
-                        oss << "->" << name->name;
-                    }
-                    indent_.reset(new std::string(oss.str()));
-                }
-                return *indent_;
-            }
-
-            boost::thread::id threadId_;
-            bool verboseDtor_;
-            NameStack *nameStack_;
-	    std::unique_ptr<std::string> indent_;
-        };
-    }
-}
 
 #endif
