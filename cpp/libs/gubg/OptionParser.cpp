@@ -3,7 +3,7 @@
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE "OptionParser"
+//#define GUBG_MODULE "OptionParser"
 #include "gubg/log/begin.hpp"
 MSS_CODES_BEGIN(OptionParser::ReturnCode);
 MSS_CODE(CouldNotFindExecutable);
