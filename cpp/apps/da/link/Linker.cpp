@@ -8,6 +8,8 @@ using namespace std;
 
 #define GUBG_MODULE "Linker"
 #include "gubg/log/begin.hpp"
+Linker::Linker(ExeType exeType):
+    exeType_(exeType){}
 ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
 {
     MSS_BEGIN(ReturnCode);
@@ -20,7 +22,16 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         {
             case Any:
             case Host:
-                cmd << "g++ -std=c++0x -g -pthread -o ";
+                switch (exeType_)
+                {
+                    case ExeType::Debug:
+                        cmd << "g++ -std=c++11 -g -pthread -o ";
+                        break;
+                    case ExeType::Release:
+                        cmd << "g++ -pthread -o ";
+                        break;
+                    default: assert(false); break;
+                }
                 break;
             case Arduino:
                 if (arduino::isUno())
@@ -53,9 +64,13 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
     {
         cmd.str("");
         cmd << "./" << exe.name();
-        verbose("---------------------------------------------Start------------------------------------------------------");
-        auto res = ::system(cmd.str().c_str());
-        verbose("---------------------------------------------Stop-------------------------------------------------------");
+        int res;
+        {
+            SSS(cmd.str());
+            verbose("---------------------------------------------Start------------------------------------------------------");
+            res = ::system(cmd.str().c_str());
+            verbose("---------------------------------------------Stop-------------------------------------------------------");
+        }
         if (res != 0)
         {
             verbose("  =>  ERROR");

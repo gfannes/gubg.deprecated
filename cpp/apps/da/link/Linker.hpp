@@ -16,6 +16,8 @@ namespace da
         class Linker: public gubg::Verbose<true>
         {
             public:
+                Linker(ExeType);
+
                 LinkSettings settings;
 
                 typedef gubg::file::File ExeFile;
@@ -25,6 +27,7 @@ namespace da
 
             private:
                 std::mutex mutex_;
+                const ExeType exeType_;
         };
     }
 }

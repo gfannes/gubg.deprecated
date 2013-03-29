@@ -30,7 +30,10 @@ namespace
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){DA_FINALIZE_OK(optionParser.help());});
             optionParser.addMandatory("-f", "--fix TYPE", "Fix something (e.g., guards)", [&tasks](string v){addFixTask(tasks, v);});
             optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
-            optionParser.addMandatory("-e", "--exe SOURCE", "Compile SOURCE into an executable", [&tasks](string source){tasks.push_back(CompileExe::create(source));});
+            optionParser.addMandatory("-e", "--exe-debug SOURCE", "Compile SOURCE into a debug executable",
+                    [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Debug));});
+            optionParser.addMandatory("-E", "--exe-release SOURCE", "Compile SOURCE into a release executable",
+                    [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Release));});
             optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
 
             OptionParser::Args args;

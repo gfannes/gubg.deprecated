@@ -1,6 +1,8 @@
 #ifndef HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
 
+#include "gubg/distribution/Uniform.hpp"
+
 namespace gubg
 {
     namespace distribution

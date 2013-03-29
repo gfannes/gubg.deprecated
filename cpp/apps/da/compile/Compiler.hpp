@@ -45,7 +45,7 @@ namespace da
         class Compiler: public gubg::Verbose<true>
         {
             public:
-                Compiler();
+                Compiler(ExeType);
 
                 CompileSettings settings;
 
@@ -71,6 +71,7 @@ namespace da
                 size_t nrFailures_;
 
                 std::mutex mutex_;
+                const ExeType exeType_;
         };
     }
 }

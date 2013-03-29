@@ -10,8 +10,8 @@ using namespace std;
 
 #define GUBG_MODULE "CompileExe"
 #include "gubg/log/begin.hpp"
-CompileExe::CompileExe(const string &source):
-    source_(source)
+CompileExe::CompileExe(const string &source, ExeType exeType):
+    source_(source), exeType_(exeType)
 {
 }
 
@@ -24,7 +24,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
     MSS(builder.process(source_));
 
     //Setup the compiler
-    Compiler compiler;
+    Compiler compiler(exeType_);
     compiler.setCache(FileCache().dir());
     builder.extractCompileSettings(compiler.settings);
 
@@ -38,7 +38,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
     MSS(compiler.nrFailures() == 0);
 
     //Setup the linker
-    Linker linker;
+    Linker linker(exeType_);
     builder.extractLinkSettings(linker.settings);
 
     //Link the object files into an exe

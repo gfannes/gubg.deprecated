@@ -4,6 +4,7 @@
 #include "gubg/math/stat/Distribution.hpp"
 #include "gubg/math/stat/random.hpp"
 #include "gubg/math/math.hpp"
+#include "gubg/distribution/Gaussian.hpp"
 #include <vector>
 #include <cmath>
 using namespace std;
@@ -16,8 +17,12 @@ namespace gubg
         class Gaussian
         {
             public:
+                typedef T value_type;
+
                 bool draw(T &t)
                 {
+                    t = distribution::drawGaussian(mean_, sigma_);
+                    return true;
                 }
 
             private:

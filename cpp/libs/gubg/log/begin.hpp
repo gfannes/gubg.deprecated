@@ -6,6 +6,9 @@
 #ifdef SS
   #error SS is already defined
 #endif
+#ifdef SSS
+  #error SSS is already defined
+#endif
 #ifdef SS_
   #error SS_ is already defined
 #endif
@@ -17,6 +20,9 @@
 #endif
 #ifdef LL
   #error LL is already defined
+#endif
+#ifdef LLL
+  #error LLL is already defined
 #endif
 #ifdef L_L__
   #error L_L__ is already defined
@@ -33,6 +39,7 @@
   #endif
 #endif
 
+#include "gubg/log/macros.hpp"
 #ifdef GUBG_DEBUG
   #ifdef GUBG_MODULE
     #include "gubg/log/macros_normal.hpp"
@@ -43,6 +50,6 @@
 #else
   #ifdef GUBG_MODULE_
     #define GUBG_MODULE GUBG_MODULE_
-    #include "gubg/log/macros_noop.hpp"
   #endif
+  #include "gubg/log/macros_noop.hpp"
 #endif

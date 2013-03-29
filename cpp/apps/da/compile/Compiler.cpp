@@ -31,14 +31,15 @@ ReturnCode Job::creater_create(const Files &files, const Settings &settings) con
     MSS_BEGIN(ReturnCode);
     string cmd;
     MSS(settings.get(cmd, Key::Command));
-    L(cmd);
+    LLL(cmd);
     MSS(::system(cmd.c_str()) == 0, CompilationFailed);
     MSS_END();
 }
 
-Compiler::Compiler():
+Compiler::Compiler(ExeType exeType):
     processor_(4),
-    nrFailures_(0)
+    nrFailures_(0),
+    exeType_(exeType)
 {
     processor_.start();
 }
@@ -53,7 +54,16 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
         {
             case Any:
             case Host:
-                cmd << "g++ -std=c++0x -O3 -pthread -c -DGUBG_DEBUG ";
+                switch (exeType_)
+                {
+                    case ExeType::Debug:
+                        cmd << "g++ -std=c++11 -g -pthread -c -DGUBG_DEBUG ";
+                        break;
+                    case ExeType::Release:
+                        cmd << "g++ -std=c++11 -O3 -pthread -c -DGUBG_RELEASE ";
+                        break;
+                    default: assert(false); break;
+                }
                 break;
             case Arduino:
                 if (arduino::isUno())

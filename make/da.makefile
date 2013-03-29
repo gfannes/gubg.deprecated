@@ -21,8 +21,8 @@ BOOST_LIBS := $(GUBG_BOOST)/stage/lib
 BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
 
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
-CPPFLAGS := -std=c++0x -O3 -pthread -DGUBG_DEBUG $(CPP_INCLUDE_PATHS)
-LDFLAGS := -std=c++0x
+CPPFLAGS := -std=c++11 -g -pthread -DGUBG_DEBUG $(CPP_INCLUDE_PATHS)
+LDFLAGS := -std=c++11 -g
 LINK_LIBS := $(BOOST_LINK)
 
 .PHONY: da-clean

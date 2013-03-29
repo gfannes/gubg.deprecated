@@ -12,6 +12,10 @@
   #error SS is not defined
 #endif
 #undef SS
+#ifndef SSS
+  #error SSS is not defined
+#endif
+#undef SSS
 #ifndef SS_
   #error SS_ is not defined
 #endif
@@ -28,6 +32,10 @@
   #error LL is not defined
 #endif
 #undef LL
+#ifndef LLL
+  #error LLL is not defined
+#endif
+#undef LLL
 
 #ifdef GUBG_MODULE
   #undef GUBG_MODULE
