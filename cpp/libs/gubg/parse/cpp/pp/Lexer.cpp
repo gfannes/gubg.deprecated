@@ -1,9 +1,11 @@
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/Platform.hpp"
 #include <sstream>
+#include <cstring>
+#include <cassert>
 using namespace std;
 
-#define GUBG_MODULE "Lexer"
+//#define GUBG_MODULE "Lexer"
 #include "gubg/log/begin.hpp"
 
 #ifndef GUBG_LINUX

@@ -7,7 +7,7 @@
 #include "gubg/parse/cpp/pp/Token.hpp"
 #include "gubg/parse/BreakUp.hpp"
 
-#define GUBG_MODULE "Lexer"
+//#define GUBG_MODULE "Lexer"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

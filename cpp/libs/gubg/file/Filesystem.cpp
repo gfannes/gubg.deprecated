@@ -2,14 +2,17 @@
 #include "gubg/Platform.hpp"
 #include <fstream>
 #include <cstdio>
+#include <cstring>
+#include <cstddef>
 #ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "Filesystem"
+//#define GUBG_MODULE "Filesystem"
 #include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)
