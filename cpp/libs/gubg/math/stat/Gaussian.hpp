@@ -14,18 +14,17 @@ using namespace std;
 namespace gubg
 {
     template <typename T>
-        class Gaussian
+        class Gaussian: public Distribution_crtp<Gaussian<T>, T>
         {
             public:
-                typedef T value_type;
-
-                bool draw(T &t)
+            private:
+                friend class Distribution_crtp<Gaussian<T>, T>;
+                bool distribution_draw(T &t)
                 {
                     t = distribution::drawGaussian(mean_, sigma_);
                     return true;
                 }
 
-            private:
                 T mean_ = 0;
                 T sigma_ = 1;
         };
