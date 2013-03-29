@@ -60,43 +60,50 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
     verbose(cmd.str());
     MSS(::system(cmd.str().c_str()) == 0, LinkingFailed);
 
-    if (settings.targetPlatform == Host)
+    //Run our new creation
+    switch (settings.targetPlatform)
     {
-        cmd.str("");
-        cmd << "./" << exe.name();
-        int res;
-        {
-            SSS(cmd.str());
-            verbose("---------------------------------------------Start------------------------------------------------------");
-            res = ::system(cmd.str().c_str());
-            verbose("---------------------------------------------Stop-------------------------------------------------------");
-        }
-        if (res != 0)
-        {
-            verbose("  =>  ERROR");
-            MSS_L(RunFailed);
-        }
-        verbose("  =>  OK");
-    }
+        case Any:
+        case Host:
+            {
+                cmd.str("");
+                cmd << "./" << exe.name();
+                int res;
+                {
+                    SSS(cmd.str());
+                    verbose("---------------------------------------------Start------------------------------------------------------");
+                    res = ::system(cmd.str().c_str());
+                    verbose("---------------------------------------------Stop-------------------------------------------------------");
+                }
+                if (res != 0)
+                {
+                    verbose("  =>  ERROR");
+                    MSS_L(RunFailed);
+                }
+                verbose("  =>  OK");
+            }
+            break;
 
-    if (settings.targetPlatform == Arduino)
-    {
-        cmd.str("");
-        auto hex = exe;
-        hex.setExtension("hex");
-        cmd << "avr-objcopy -R .eeprom -O ihex " << exe.name() << " " << hex.name();
-        verbose(cmd.str());
-        MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
+        case Arduino:
+            {
+                cmd.str("");
+                auto hex = exe;
+                hex.setExtension("hex");
+                cmd << "avr-objcopy -R .eeprom -O ihex " << exe.name() << " " << hex.name();
+                verbose(cmd.str());
+                MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
 
-        cmd.str("");
-        if (arduino::isUno())
-            cmd << "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:" << hex.name();
-        else if (arduino::isMega())
-            cmd << "avrdude -c stk500v2 -b 115200 -p atmega2560 -P /dev/ttyACM0 -U flash:w:" << hex.name();
-        else
-            cmd << "UNEXPECTED ARDUINO";
-        verbose(cmd.str());
-        MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
+                cmd.str("");
+                if (arduino::isUno())
+                    cmd << "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:" << hex.name();
+                else if (arduino::isMega())
+                    cmd << "avrdude -c stk500v2 -b 115200 -p atmega2560 -P /dev/ttyACM0 -U flash:w:" << hex.name();
+                else
+                    cmd << "UNEXPECTED ARDUINO";
+                verbose(cmd.str());
+                MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
+            }
+            break;
     }
 
     MSS_END();
