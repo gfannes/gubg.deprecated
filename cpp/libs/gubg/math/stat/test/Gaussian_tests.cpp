@@ -9,6 +9,6 @@ namespace
 int main()
 {
     Gaussian g;
-    return 1;
+    return 0;
 }
 #include "gubg/log/end.hpp"
