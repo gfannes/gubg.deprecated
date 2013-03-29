@@ -12,6 +12,20 @@ using namespace std;
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
+    template <typename T>
+        class Gaussian
+        {
+            public:
+                bool draw(T &t)
+                {
+                }
+
+            private:
+                T mean_ = 0;
+                T sigma_ = 1;
+        };
+
+#if 0
     template <typename DomainT = vector<double> >
         class GaussianD: public Distribution_crtp<GaussianD<DomainT>, DomainT>
     {
@@ -123,7 +137,6 @@ namespace gubg
                 value_type mSigmas2;
         };
 
-#if 0
     template <typename DomainT = vector<double> >
         class GaussianCD: public ConditionalDistribution<DomainT, DomainT>
     {

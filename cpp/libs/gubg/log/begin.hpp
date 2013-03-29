@@ -6,6 +6,9 @@
 #ifdef SS
   #error SS is already defined
 #endif
+#ifdef SS_
+  #error SS_ is already defined
+#endif
 #ifdef L_S__
   #error L_S__ is already defined
 #endif

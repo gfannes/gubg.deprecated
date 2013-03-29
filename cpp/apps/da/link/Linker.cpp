@@ -49,6 +49,21 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
     verbose(cmd.str());
     MSS(::system(cmd.str().c_str()) == 0, LinkingFailed);
 
+    if (settings.targetPlatform == Host)
+    {
+        cmd.str("");
+        cmd << "./" << exe.name();
+        verbose("---------------------------------------------Start------------------------------------------------------");
+        auto res = ::system(cmd.str().c_str());
+        verbose("---------------------------------------------Stop-------------------------------------------------------");
+        if (res != 0)
+        {
+            verbose("  =>  ERROR");
+            MSS_L(RunFailed);
+        }
+        verbose("  =>  OK");
+    }
+
     if (settings.targetPlatform == Arduino)
     {
         cmd.str("");

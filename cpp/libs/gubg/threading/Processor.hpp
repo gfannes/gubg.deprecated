@@ -49,7 +49,7 @@ namespace gubg
                         MSS_BEGIN(ReturnCode);
                         {
                             Lock lock(mutex_);
-                            MSS(state_ == Starting || state_ == Running, ProcessorAlreadyStopped);
+                            MSS_Q(state_ == Starting || state_ == Running, ProcessorAlreadyStopped);
                             state_ = Stopping;
                             event_.notify_one();
                         }

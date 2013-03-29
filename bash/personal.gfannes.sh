@@ -12,3 +12,4 @@ export LS_COLORS="no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:bd=40;33;01:cd
 export ICUI=$HOME/icui
 
 export GIT_EXTERNAL_DIFF=$GUBG/bin/git_diff.sh
+export CSCOPE_DB=$GUBG/cscope.out

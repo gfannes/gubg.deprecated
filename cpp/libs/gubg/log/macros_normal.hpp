@@ -15,9 +15,10 @@
     gubg::logging::Scope l_gubg_logging_scope_(GUBG_MODULE, tag_str, l_gubg_logging_verbose_); \
     if (l_gubg_logging_verbose_) L_L__(">>", msg)
 
-#define S()     L_S__(__FUNCTION__, "", false)
-#define S_()    L_S__(__FUNCTION__, "", true)
-#define SS(...) L_S__(__FUNCTION__, STREAM(__VA_ARGS__), true)
+#define S()      L_S__(__FUNCTION__, "", false)
+#define S_()     L_S__(__FUNCTION__, "", true)
+#define SS(...)  L_S__(__FUNCTION__, STREAM(__VA_ARGS__), false)
+#define SS_(...) L_S__(__FUNCTION__, STREAM(__VA_ARGS__), true)
 
 #define L(msg)  do { if (l_gubg_logging_verbose_)    L_L__("  ", msg); } while(false)
 #define L_(msg) do {                                 L_L__("  ", msg); } while(false)

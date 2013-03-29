@@ -12,6 +12,10 @@
   #error SS is not defined
 #endif
 #undef SS
+#ifndef SS_
+  #error SS_ is not defined
+#endif
+#undef SS_
 #ifndef L
   #error L is not defined
 #endif

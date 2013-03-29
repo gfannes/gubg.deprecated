@@ -161,10 +161,15 @@ ReturnCode gubg::file::determineType(File &file)
     MSS_BEGIN(ReturnCode);
     struct stat statbuf;
 #ifdef GUBG_LINUX
-    MSS(0 == ::lstat(file.name().c_str(), &statbuf), FileDoesNotExist);
+    auto res = ::lstat(file.name().c_str(), &statbuf);
 #else
-    MSS(0 == ::stat(file.name().c_str(), &statbuf), FileDoesNotExist);
+    auto res = ::stat(file.name().c_str(), &statbuf);
 #endif
+    if (res != 0)
+    {
+        L_("File \"" << file.name() << "\" does not exist");
+        MSS_L(FileDoesNotExist);
+    }
     switch (statbuf.st_mode & S_IFMT)
     {
         case S_IFREG: file.setType(File::Regular); break;

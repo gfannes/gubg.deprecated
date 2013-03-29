@@ -14,9 +14,10 @@
     gubg::logging::Scope l_gubg_logging_scope_(GUBG_MODULE, tag_str, true); \
     L_L__(">>", msg)
 
-#define S()     L_S__(__FUNCTION__, "")
-#define S_()    L_S__(__FUNCTION__, "")
-#define SS(...) L_S__(__FUNCTION__, STREAM(__VA_ARGS__))
+#define S()      L_S__(__FUNCTION__, "")
+#define S_()     L_S__(__FUNCTION__, "")
+#define SS(...)  L_S__(__FUNCTION__, STREAM(__VA_ARGS__))
+#define SS_(...) L_S__(__FUNCTION__, STREAM(__VA_ARGS__))
 
 #define L(msg)  do {                                 L_L__("  ", msg); } while(false)
 #define L_(msg) do {                                 L_L__("  ", msg); } while(false)
