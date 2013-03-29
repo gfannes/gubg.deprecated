@@ -5,7 +5,7 @@ using namespace da::package;
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "Local"
+#define GUBG_MODULE "Boost"
 #include "gubg/log/begin.hpp"
 Boost::Boost(const File &base):
     base_(base),

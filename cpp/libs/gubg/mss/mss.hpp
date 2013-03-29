@@ -346,7 +346,7 @@ MSS_BEGIN(t)
 }
 
 //Logging
-#define L_MSS_LOG_PRIM(rc_str, level, msg)  L(GUBG_HERE() << " " << level << "::" << rc_str << msg)
+#define L_MSS_LOG_PRIM(rc_str, level, msg)  L_(GUBG_HERE() << " " << level << "::" << rc_str << msg)
 #define L_MSS_LOG_PRIM_(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
 #define L_MSS_LOG(l, rc, msg) \
 { \

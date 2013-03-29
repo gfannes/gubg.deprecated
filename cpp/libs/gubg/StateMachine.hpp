@@ -1,13 +1,12 @@
 #ifndef HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 
-//#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/OnlyOnce.hpp"
 #include <queue>
 #include <cassert>
-#include "gubg/l.hpp"
 
+#define GUBG_MODULE "StateMachine"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     template <typename Outer, typename StateT, StateT StartState>
@@ -39,7 +38,7 @@ namespace gubg
                 template <typename Event>
                     void process(const Event &event)
                     {
-                        LOG_S(process, STREAM(event));
+                        SS(event);
 
                         if (doStart_())
                             state_.outer_.sm_enter(state_());
@@ -52,5 +51,6 @@ namespace gubg
                 OnlyOnce doStart_;
         };
 }
+#include "gubg/log/end.hpp"
 
 #endif

@@ -10,7 +10,7 @@ using namespace gubg::parse::cpp;
 using namespace gubg::parse::cpp::pp;
 using namespace std;
 
-//#define GUBG_MODULE "FixIncludeGuards"
+#define GUBG_MODULE "FixIncludeGuards"
 #include "gubg/log/begin.hpp"
 namespace 
 {
@@ -66,7 +66,7 @@ namespace
                 {
                     if (token.isWhitespace())
                     {
-                        MSS(state != Start, NoIncludeGuardFound);
+                        MSS_Q(state != Start, NoIncludeGuardFound);
                         continue;
                     }
 

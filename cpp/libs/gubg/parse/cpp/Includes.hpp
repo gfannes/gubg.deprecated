@@ -19,9 +19,9 @@ namespace gubg
             //System: #include <a/b/c.hpp>
             enum class IncludeType {Local, System, Macro};
 
-	    //Produces following events:
-	    //includes_detected(const std::string &, IncludeType)
-	    //includes_error(const std::string &msg) if needed
+            //Produces following events:
+            //includes_detected(const std::string &, IncludeType)
+            //includes_error(const std::string &msg) if needed
             template <typename Receiver>
                 class Includes_crtp
                 {

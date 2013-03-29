@@ -27,6 +27,7 @@ endif
 if athome
 	map -p <Bslash>aoLOG_M();<Esc><Bslash>ahhi
 	map -P <Bslash>aoLOG_M_(<Esc>:call ReadString("Log level")<CR>A, "");<Esc><Bslash>ahhhi
+    map -l <Bslash>ao#define GUBG_MODULE "<Esc>:call ReadString("Module name")<CR>A"<Esc>o#include "gubg/log/begin.hpp"<Esc>o#include "gubg/log/end.hpp"<Esc><Bslash>ak$
 	" MSS
 	map -n <Bslash>ajOMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc><Bslash>ak$
 	map -N <Bslash>ajOMSS_BEGIN(<Esc>:call ReadString("ReturnCode")<CR>A);<Esc>oMSS_END();<Esc><Bslash>ak$

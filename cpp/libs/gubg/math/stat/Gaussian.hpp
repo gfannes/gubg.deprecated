@@ -1,15 +1,15 @@
 #ifndef HEADER_gubg_math_stat_Gaussian_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_math_stat_Gaussian_hpp_ALREADY_INCLUDED
 
-#include <vector>
-#include <cmath>
-
 #include "gubg/math/stat/Distribution.hpp"
 #include "gubg/math/stat/random.hpp"
 #include "gubg/math/math.hpp"
-
+#include <vector>
+#include <cmath>
 using namespace std;
 
+#define GUBG_MODULE "Gaussian"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     template <typename DomainT = vector<double> >
@@ -171,5 +171,6 @@ namespace gubg
         };
 #endif
 }
+#include "gubg/log/end.hpp"
 
 #endif

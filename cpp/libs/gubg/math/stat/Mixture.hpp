@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#define GUBG_MODULE "Mixture"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     template <typename Component>
@@ -34,5 +36,6 @@ namespace gubg
                 Weights weights_;
         };
 }
+#include "gubg/log/end.hpp"
 
 #endif

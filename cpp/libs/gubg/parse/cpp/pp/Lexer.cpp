@@ -5,7 +5,7 @@
 #include <cassert>
 using namespace std;
 
-//#define GUBG_MODULE "Lexer"
+#define GUBG_MODULE "Lexer"
 #include "gubg/log/begin.hpp"
 
 #ifndef GUBG_LINUX

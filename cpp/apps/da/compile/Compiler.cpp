@@ -53,7 +53,7 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
         {
             case Any:
             case Host:
-                cmd << "g++ -std=c++0x -O3 -pthread -c ";
+                cmd << "g++ -std=c++0x -O3 -pthread -c -DGUBG_DEBUG ";
                 break;
             case Arduino:
                 if (arduino::isUno())
