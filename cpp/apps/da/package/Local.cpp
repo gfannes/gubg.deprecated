@@ -1,10 +1,11 @@
-//#define GUBG_LOG
 #include "da/package/Local.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <sstream>
 using namespace da::package;
 using namespace gubg::file;
 
+#define GUBG_MODULE "Local"
+#include "gubg/log/begin.hpp"
 Local::Local(const File &dir):
     dir_(dir)
 {

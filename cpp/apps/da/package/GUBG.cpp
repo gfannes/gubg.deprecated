@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/package/GUBG.hpp"
 #include "da/Arduino.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -8,6 +7,8 @@ using namespace da::package;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "GUBG"
+#include "gubg/log/begin.hpp"
 GUBG::GUBG(const File &base):
     base_(base),
     libsDir_(base),
@@ -42,7 +43,7 @@ bool GUBG::exists() const
 
 da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
-    MSS_BEGIN(ReturnCode, resolveHeader, partial.name());
+    MSS_BEGIN(ReturnCode, partial.name());
 
     //We eat the boost headers when we are building for arduino
     if (compileSettings_.targetPlatform == Arduino)

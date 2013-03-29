@@ -7,6 +7,8 @@ using namespace da;
 using gubg::OptionParser;
 using namespace std;
 
+#define GUBG_MODULE "da"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     void addFixTask(Tasks &tasks, const string &name)

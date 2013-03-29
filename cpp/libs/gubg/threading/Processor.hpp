@@ -7,6 +7,8 @@
 #include <condition_variable>
 #include <queue>
 
+#define GUBG_MODULE "Processor"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace threading
@@ -31,7 +33,7 @@ namespace gubg
 
                     ReturnCode start()
                     {
-                        MSS_BEGIN(ReturnCode, start);
+                        MSS_BEGIN(ReturnCode);
                         {
                             Lock lock(mutex_);
                             MSS(state_ == Stopped, ProcessorAlreadyRunning);
@@ -44,7 +46,7 @@ namespace gubg
                     }
                     ReturnCode stop()
                     {
-                        MSS_BEGIN(ReturnCode, stop);
+                        MSS_BEGIN(ReturnCode);
                         {
                             Lock lock(mutex_);
                             MSS(state_ == Starting || state_ == Running, ProcessorAlreadyStopped);
@@ -58,7 +60,7 @@ namespace gubg
                     //Thread that will start the processing threads
                     void operator()()
                     {
-                        MSS_BEGIN(void, processingThread);
+                        MSS_BEGIN(void);
                         Lock lock(mutex_);
                         bool ok = true;
                         while (ok)
@@ -78,19 +80,19 @@ namespace gubg
                                 continue;
                             if (nrRunningJobs_ >= maxJobs_)
                             {
-                                LOG_M("Maximum number of jobs reached, waiting for an event...");
+                                L("Maximum number of jobs reached, waiting for an event...");
                                 event_.wait(lock);
-                                LOG_M("Received an event, I will recheck");
+                                L("Received an event, I will recheck");
                                 continue;
                             }
                             if (queue_.empty())
                             {
-                                LOG_M("Queue is empty, waiting for an event...");
+                                L("Queue is empty, waiting for an event...");
                                 event_.wait(lock);
-                                LOG_M("Received an event, I will recheck");
+                                L("Received an event, I will recheck");
                                 continue;
                             }
-                            LOG_M("About to start job " << nrRunningJobs_);
+                            L("About to start job " << nrRunningJobs_);
                             ++nrRunningJobs_;
                             new Job_(queue_.front(), *this);
                             queue_.pop();
@@ -108,7 +110,7 @@ namespace gubg
                             job_(job), outer_(outer), thread_(std::ref(*this)){}
                         void operator()()
                         {
-                            MSS_BEGIN(void, jobThread);
+                            MSS_BEGIN(void);
                             job_->execute();
                             Lock lock(outer_.mutex_);
                             --outer_.nrRunningJobs_;
@@ -134,5 +136,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

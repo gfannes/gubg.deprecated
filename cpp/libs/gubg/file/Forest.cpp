@@ -4,6 +4,8 @@
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "Forest"
+#include "gubg/log/begin.hpp"
 //Tree
 namespace 
 {

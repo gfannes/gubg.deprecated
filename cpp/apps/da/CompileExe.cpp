@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/CompileExe.hpp"
 #include "da/build/Builder.hpp"
 #include "da/compile/Compiler.hpp"
@@ -9,6 +8,8 @@ using namespace da::compile;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "CompileExe"
+#include "gubg/log/begin.hpp"
 CompileExe::CompileExe(const string &source):
     source_(source)
 {
@@ -16,7 +17,7 @@ CompileExe::CompileExe(const string &source):
 
 da::ReturnCode CompileExe::execute(const Options &options)
 {
-    MSS_BEGIN(ReturnCode, execute);
+    MSS_BEGIN(ReturnCode);
 
     Builder builder;
     //Detect all header and source dependencies starting from source_

@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/build/Builder.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Util.hpp"
@@ -11,6 +10,8 @@ using namespace gubg::file;
 using gubg::file::File;
 using namespace std;
 
+#define GUBG_MODULE "Builder"
+#include "gubg/log/begin.hpp"
 Builder::Builder()
 {
     packages_ << Local::create(File(getcwd()));
@@ -29,12 +30,12 @@ Builder::Builder()
 
     packages_.prune();
 
-    L("I found following packages: " << string_algo::join(packages_.names(), ", "));
+    LL("I found following packages: " << string_algo::join(packages_.names(), ", "));
 }
 
 da::ReturnCode Builder::process(const SourceFile &source)
 {
-    MSS_BEGIN(ReturnCode, process);
+    MSS_BEGIN(ReturnCode);
 
     sources_.clear();
 

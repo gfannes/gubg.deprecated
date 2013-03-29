@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/compile/Compiler.hpp"
 #include "da/Arduino.hpp"
 #include <sstream>
@@ -7,6 +6,8 @@ using namespace da;
 using namespace da::compile;
 using namespace std;
 
+#define GUBG_MODULE "Compiler"
+#include "gubg/log/begin.hpp"
 Job::Job(Compiler &compiler):
     compiler_(compiler)
 {
@@ -27,7 +28,7 @@ void Job::execute()
 
 ReturnCode Job::creater_create(const Files &files, const Settings &settings) const
 {
-    MSS_BEGIN(ReturnCode, creater);
+    MSS_BEGIN(ReturnCode);
     string cmd;
     MSS(settings.get(cmd, Key::Command));
     L(cmd);
@@ -76,7 +77,7 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
 }
 ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src, Headers headers)
 {
-    MSS_BEGIN(ReturnCode, call);
+    MSS_BEGIN(ReturnCode);
 
     const bool useCache = true;
     if (useCache)

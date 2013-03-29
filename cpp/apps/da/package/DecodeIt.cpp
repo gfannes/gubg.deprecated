@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/package/DecodeIt.hpp"
 #include "da/Arduino.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -8,6 +7,8 @@ using namespace da::package;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "DecodeIt"
+#include "gubg/log/begin.hpp"
 DecodeIt::DecodeIt(const File &base):
     base_(base),
     softDir_(base)
@@ -34,7 +35,7 @@ bool DecodeIt::exists() const
 
 da::ReturnCode DecodeIt::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
-    MSS_BEGIN(ReturnCode, resolveHeader, partial.name());
+    MSS_BEGIN(ReturnCode, partial.name());
 
     File root;
     MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);

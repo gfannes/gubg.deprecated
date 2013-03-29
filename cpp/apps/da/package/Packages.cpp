@@ -1,14 +1,14 @@
-//#define GUBG_LOG
 #include "da/package/Packages.hpp"
-#include "gubg/l.hpp"
 #include <algorithm>
 #include <set>
 using namespace da::package;
 using namespace std;
 
+#define GUBG_MODULE "Packages"
+#include "gubg/log/begin.hpp"
 void Packages::prune()
 {
-    LOG_S(prune);
+    S();
     //Invalidate unexisting or duplicate packages
     set<string> names;
     for (auto &pkg: packages_)

@@ -1,12 +1,12 @@
-//#define GUBG_LOG
 #include "da/package/Boost.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/logging/Log.hpp"
 #include <string>
 using namespace da::package;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "Local"
+#include "gubg/log/begin.hpp"
 Boost::Boost(const File &base):
     base_(base),
     libDir_(base)
@@ -16,20 +16,20 @@ Boost::Boost(const File &base):
 
 bool Boost::exists() const
 {
-    LOG_S(exists, base_.name());
+    SS(base_.name());
     return gubg::file::exists(base_);
 }
 
 da::ReturnCode Boost::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
-    MSS_BEGIN(ReturnCode, resolveHeader);
+    MSS_BEGIN(ReturnCode);
 
     File p = partial;
     string root;
     MSS_Q(p.popRoot(root), UnknownHeader);
     MSS_Q(root == "boost", UnknownHeader);
 
-    LOG_M(partial.name());
+    L(partial.name());
     compileSettings_.includePaths.insert(base_);
     linkSettings_.libraries.insert("boost_thread");
     linkSettings_.libraries.insert("boost_system");

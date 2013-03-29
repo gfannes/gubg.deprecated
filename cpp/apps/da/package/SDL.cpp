@@ -1,12 +1,12 @@
-#define GUBG_LOG
 #include "da/package/SDL.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/logging/Log.hpp"
 #include <string>
 using namespace da::package;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "SDL"
+#include "gubg/log/begin.hpp"
 SDL::SDL(const File &base):
     base_(base),
     libDir_(base)

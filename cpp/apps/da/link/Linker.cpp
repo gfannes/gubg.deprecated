@@ -6,6 +6,8 @@ using namespace da;
 using namespace da::compile;
 using namespace std;
 
+#define GUBG_MODULE "Linker"
+#include "gubg/log/begin.hpp"
 ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
 {
     MSS_BEGIN(ReturnCode);
@@ -66,7 +68,6 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         verbose(cmd.str());
         MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
     }
-
 
     MSS_END();
 }

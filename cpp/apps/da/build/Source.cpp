@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/build/Source.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <queue>
@@ -8,6 +7,8 @@ using gubg::file::File;
 using gubg::file::Forest;
 using namespace std;
 
+#define GUBG_MODULE "Source"
+#include "gubg/log/begin.hpp"
 Source::Ptr Source::create(File file)
 {
     return Ptr(new Source(file));
@@ -33,7 +34,7 @@ namespace
 }
 ReturnCode Source::searchForHeaders(Headers &headers, SourceFiles &sisterFiles, package::Packages &packages)
 {
-    MSS_BEGIN(ReturnCode, searchForHeaders, file().name());
+    MSS_BEGIN(ReturnCode, file().name());
 
     queue<File> staging;
     //Add the direct includes from file() to staging using IncludePusher

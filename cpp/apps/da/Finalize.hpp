@@ -1,12 +1,12 @@
 #ifndef HEADER_da_Finalize_hpp_ALREADY_INCLUDED
 #define HEADER_da_Finalize_hpp_ALREADY_INCLUDED
 
-#include "gubg/l.hpp"
 #include <cstdlib>
+#include <iostream>
 
 #define DA_FINALIZE(code, msg) \
 do { \
-    L(msg); \
+    std::cout << msg << std::endl; \
     std::exit(code); \
 } while (false)
 #define DA_FINALIZE_OK(msg) DA_FINALIZE(0, msg)

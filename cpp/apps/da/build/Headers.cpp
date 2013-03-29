@@ -1,6 +1,8 @@
 #include "da/build/Headers.hpp"
 using namespace da;
 
+#define GUBG_MODULE "Headers"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     struct CompareFile
