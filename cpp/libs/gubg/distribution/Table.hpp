@@ -1,11 +1,11 @@
 #ifndef HEADER_gubg_distribution_Table_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_distribution_Table_hpp_ALREADY_INCLUDED
 
-#include "gubg/distribution/Uniform.hpp"
+#include "gubg/distribution/Engine.hpp"
 #include <vector>
 #include <random>
 
-#define GUBG_MODULE_ "Table"
+#define GUBG_MODULE "Table"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -40,7 +40,7 @@ namespace gubg
                         if (s == 0)
                             return false;
                         std::uniform_real_distribution<T> rng(0.0, cumulProbs_[s-1]);
-                        const auto rn = rng(gubg::distribution::uniform);
+                        const auto rn = rng(gubg::distribution::engine);
                         for (ix = 0; ix < s; ++ix)
                             if (rn <= cumulProbs_[ix])
                                 return true;

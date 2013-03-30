@@ -2,7 +2,7 @@
 #define HEADER_gubg_distribution_Dirichlet_hpp_ALREADY_INCLUDED
 
 #include "gubg/distribution/Codes.hpp"
-#include "gubg/distribution/Uniform.hpp"
+#include "gubg/distribution/Engine.hpp"
 #include <random>
 
 namespace gubg
@@ -19,7 +19,7 @@ namespace gubg
             for (auto count: counts)
             {
                 std::gamma_distribution<typename Result::value_type> gd(count, 1.0);
-                auto rn = gd(gubg::distribution::uniform);
+                auto rn = gd(gubg::distribution::engine);
                 factor += (*res++ = rn);
             }
             MSS(factor > 0.0, DivisionByZero);

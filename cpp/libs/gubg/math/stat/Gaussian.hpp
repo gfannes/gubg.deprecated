@@ -15,6 +15,9 @@ namespace gubg
         class Gaussian: public Distribution_crtp<Gaussian<T>, T>
         {
             public:
+                Gaussian &setMean(T m){mean_ = m; return *this;}
+                Gaussian &setSigma(T s){sigma_ = s; return *this;}
+
             private:
                 friend class Distribution_crtp<Gaussian<T>, T>;
                 bool distribution_draw(T &t)
