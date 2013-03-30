@@ -2,8 +2,6 @@
 #define HEADER_gubg_math_stat_Gaussian_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/stat/Distribution.hpp"
-#include "gubg/math/stat/random.hpp"
-#include "gubg/math/math.hpp"
 #include "gubg/distribution/Gaussian.hpp"
 #include <vector>
 #include <cmath>

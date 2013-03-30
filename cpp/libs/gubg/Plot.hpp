@@ -1,5 +1,5 @@
-#ifndef oeuaoeu
-#define oeuaoeu
+#ifndef HEADER_gubg_Plot_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Plot_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/stat/Histogram.hpp"
 #include <cstdio>

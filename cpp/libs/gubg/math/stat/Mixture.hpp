@@ -1,17 +1,24 @@
 #ifndef HEADER_gubg_math_stat_Mixture_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_math_stat_Mixture_hpp_ALREADY_INCLUDED
 
+#include "gubg/math/stat/Distribution.hpp"
+#include "gubg/distribution/Uniform.hpp"
 #include <vector>
 
-#define GUBG_MODULE "Mixture"
+#define GUBG_MODULE_ "Mixture"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
     template <typename Component>
-        class Mixture
+        class Mixture: public Distribution_crtp<Mixture<Component>, typename Component::value_type>
         {
+            private:
+                typedef Distribution_crtp<Mixture<Component>, typename Component::value_type> Base;
+
             public:
-                typedef typename Component::value_type value_type;
+                typedef std::vector<Component> Components;
+                typedef std::vector<double> Weights;
+                typedef typename Base::value_type value_type;
 
                 Mixture(const std::size_t nrComponents):
                     components_(nrComponents), weights_(nrComponents)
@@ -19,10 +26,8 @@ namespace gubg
                     std::fill(weights_.begin(), weights_.end(), 1.0/nrComponents);
                 }
 
-                bool draw(value_type &res)
-                {
-                    return false;
-                }
+                Components &components() {return components_;}
+                Weights &weights() {return weights_;}
 
             private:
                 bool invariants_() const
@@ -30,9 +35,17 @@ namespace gubg
                     if (components_.size() != weights_.size())
                         return false;
                 }
-                typedef std::vector<Component> Compontents;
-                Component components_;
-                typedef std::vector<double> Weights;
+
+                friend class Distribution_crtp<Mixture<Component>, typename Component::value_type>;
+                bool distribution_draw(value_type &res)
+                {
+                    S();
+                    auto u = distribution::uniform();
+                    L(u);
+                    return false;
+                }
+
+                Components components_;
                 Weights weights_;
         };
 }

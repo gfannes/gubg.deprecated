@@ -1,5 +1,5 @@
-#ifndef aoeaoeuaoue
-#define aoeaoeuaoue
+#ifndef HEADER_gubg_math_stat_Histogram_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_stat_Histogram_hpp_ALREADY_INCLUDED
 
 #include "gubg/OnlyOnce.hpp"
 #include <cassert>
