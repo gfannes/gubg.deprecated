@@ -44,6 +44,19 @@ namespace gubg
                     }
                     send_("e");
                 }
+            template <typename Vs>
+                bool scatter(const Vs &vs, size_t x, size_t y)
+                {
+                    send_("plot '-' using 1:2 with points");
+                    std::ostringstream oss;
+                    for (const auto &v: vs)
+                    {
+                        oss.str("");
+                        oss << v[x] << " " << v[y];
+                        send_(oss.str());
+                    }
+                    send_("e");
+                }
             template <typename Xs>
                 bool histogram(const Xs &xs, size_t nrBins)
                 {
