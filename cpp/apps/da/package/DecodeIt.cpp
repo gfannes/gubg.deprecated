@@ -19,6 +19,10 @@ DecodeIt::DecodeIt(const File &base):
     core << "core";
     forest_.add(core, {"cpp", "hpp"});
 
+    File algo(softDir_);
+    algo << "algo";
+    forest_.add(algo, {"cpp", "hpp"});
+
     File util(softDir_);
     util << "util";
     forest_.add(util, {"cpp", "hpp"});
@@ -39,11 +43,12 @@ da::ReturnCode DecodeIt::resolveHeader(File &resolvedHeader, SourceFiles &sister
 
     File root;
     MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);
+    L("Found this header in my forest");
 
     {
         string bn;
         MSS_Q(root.popBasename(bn), UnknownHeader);
-        if (bn == "core" || bn == "util" || bn == "ui")
+        if (bn == "core" || bn == "algo" || bn == "util" || bn == "ui")
         {
             if (compileSettings_.targetPlatform == Any)
             {

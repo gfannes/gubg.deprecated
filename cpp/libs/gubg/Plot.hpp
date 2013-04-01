@@ -21,6 +21,12 @@ namespace gubg
                 if (f_)
                     ::pclose(f_);
             }
+            void wait(const std::string &msg = "Press <enter> to continue ...")
+            {
+                LLL(msg);
+                char buffer[256];
+                std::gets(buffer);
+            }
             void function(const std::string &f)
             {
                 std::ostringstream oss;
