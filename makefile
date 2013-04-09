@@ -1,24 +1,25 @@
-.PHONY: help
+.PHONY: help clean fix da
+.PHONY: pull commit publish upload
 help:
-	@echo "fix"
+	@echo "help clean fix da"
 
 include make/gubg_env.makefile
 include make/dev_env.makefile
 include make/boost.makefile
 include make/iup.makefile
-include make/da.makefile
 
-.PHONY: clean
-clean: da-clean
+clean:
 	ruby internal/cleanAll.rb
+	make da-clean -f make/da.makefile
 
-.PHONY: fix
 fix:
 	cd cpp/libs/gubg && da -f guards -r
 	cd cpp/libs/iup && da -f guards -r
 	cd cpp/apps/da && da -f guards -r
 
-.PHONY: pull commit publish upload
+da:
+	make da -f make/da.makefile -j $(GUBG_NUMBER_CPU)
+
 pull:
 	git pull
 commit: pull
