@@ -15,21 +15,9 @@ DecodeIt::DecodeIt(const File &base):
 {
     softDir_ << "soft";
 
-    File core(softDir_);
-    core << "core";
-    forest_.add(core, {"cpp", "hpp"});
-
-    File algo(softDir_);
-    algo << "algo";
-    forest_.add(algo, {"cpp", "hpp"});
-
-    File util(softDir_);
-    util << "util";
-    forest_.add(util, {"cpp", "hpp"});
-
-    File ui(softDir_);
-    ui << "ui";
-    forest_.add(ui, {"cpp", "hpp"});
+    File dci(softDir_);
+    dci << "dci";
+    forest_.add(dci, {"cpp", "hpp"});
 }
 
 bool DecodeIt::exists() const
@@ -48,7 +36,7 @@ da::ReturnCode DecodeIt::resolveHeader(File &resolvedHeader, SourceFiles &sister
     {
         string bn;
         MSS_Q(root.popBasename(bn), UnknownHeader);
-        if (bn == "core" || bn == "algo" || bn == "util" || bn == "ui")
+        if (bn == "dci")
         {
             if (compileSettings_.targetPlatform == Any)
             {
