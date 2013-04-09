@@ -1,7 +1,9 @@
 #include "da/compile/Compiler.hpp"
 #include "da/Arduino.hpp"
+#include "gubg/env/Variables.hpp"
 #include <sstream>
 #include <stdlib.h>
+#include <cstdlib>
 using namespace da;
 using namespace da::compile;
 using namespace std;
@@ -36,8 +38,20 @@ ReturnCode Job::creater_create(const Files &files, const Settings &settings) con
     MSS_END();
 }
 
+namespace 
+{
+    int nrProcessors()
+    {
+        string nr_str;
+        gubg::env::Variables::shell().get(nr_str, "GUBG_NUMBER_CPU");
+        int nr = std::atoi(nr_str.c_str());
+        if (nr <= 0)
+            nr = 1;
+        return nr;
+    }
+}
 Compiler::Compiler(ExeType exeType):
-    processor_(4),
+    processor_(nrProcessors()),
     nrFailures_(0),
     exeType_(exeType)
 {
