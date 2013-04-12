@@ -1,4 +1,4 @@
-//@#platform.target:=arduino#@
+#include "garf/OOStatus.hpp"
 #include "Arduino.h"
 
 namespace 
@@ -14,6 +14,7 @@ void setup()
 
 void loop()
 {
+    unsigned long m = micros();
     for (char i = 0; i < Max; ++i)
     {
         digitalWrite(LED, HIGH);

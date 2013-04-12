@@ -2,8 +2,6 @@
 #define HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 
 #include "gubg/OnlyOnce.hpp"
-#include <queue>
-#include <cassert>
 
 #define GUBG_MODULE "StateMachine"
 #include "gubg/log/begin.hpp"
@@ -14,6 +12,15 @@ namespace gubg
         {
             public:
                 StateMachine_ftop(Outer &outer): state_(outer) { }
+
+                bool checkState(StateT s) const
+                {
+                    return s == state_.s_;
+                }
+                StateT debug_getState() const
+                {
+                    return state_.s_;
+                }
 
                 class State
                 {

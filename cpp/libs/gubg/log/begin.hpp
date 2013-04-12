@@ -39,17 +39,23 @@
   #endif
 #endif
 
-#include "gubg/log/macros.hpp"
-#ifdef GUBG_DEBUG
-  #ifdef GUBG_MODULE
-    #include "gubg/log/macros_normal.hpp"
-  #else
-    #define GUBG_MODULE GUBG_MODULE_
-    #include "gubg/log/macros_debug.hpp"
-  #endif
-#else
-  #ifdef GUBG_MODULE_
-    #define GUBG_MODULE GUBG_MODULE_
-  #endif
+#if defined(ARDUINO)
+  #define SSS()
+  #define LLL()
   #include "gubg/log/macros_noop.hpp"
+#else
+  #include "gubg/log/macros.hpp"
+  #ifdef GUBG_DEBUG
+    #ifdef GUBG_MODULE
+      #include "gubg/log/macros_normal.hpp"
+    #else
+      #define GUBG_MODULE GUBG_MODULE_
+      #include "gubg/log/macros_debug.hpp"
+    #endif
+  #else
+    #ifdef GUBG_MODULE_
+      #define GUBG_MODULE GUBG_MODULE_
+    #endif
+    #include "gubg/log/macros_noop.hpp"
+  #endif
 #endif

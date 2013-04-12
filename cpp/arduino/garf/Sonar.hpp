@@ -1,42 +1,99 @@
 #ifndef HEADER_garf_Sonar_hpp_ALREADY_INCLUDED
 #define HEADER_garf_Sonar_hpp_ALREADY_INCLUDED
 
+#include "gubg/StateMachine.hpp"
+#include "Arduino.h"
+
 namespace garf
 {
-    template <int Trigger, int Echo, int PulseStart, int PulseEnd>
+    template <int Trigger, int Echo, unsigned long Max>
         class Sonar
         {
             public:
-                void init()
+                enum class State {Init, Idle, SendPulse, WaitForEchoReady, WaitForEcho, EchoReceived, EchoTooLate, Error};
+
+                Sonar():
+                    sm_(*this),
+                    prev_(micros()){}
+
+                State debug_getState() const {return sm_.debug_getState();}
+
+                bool process(unsigned long &distance)
                 {
-                    pinMode(Trigger, OUTPUT);
-                    pinMode(Echo, INPUT);
-                }
-                template <typename Distance>
-                    int measure(Distance &distance)
+                    bool res = false;
+                    if (sm_.checkState(State::EchoReceived))
                     {
-                        digitalWrite(Trigger, LOW);
-                        delay(10);
-                        //pulse
-                        digitalWrite(Trigger, HIGH);
-                        delayMicroseconds(20);
-                        digitalWrite(Trigger, LOW);
-                        auto start=millis();
-
-                        for (; digitalRead(Echo) == LOW;)
-                        {
-                            if (distance > PulseStart)
-                                return 1;
-                        }
-
-                        for (; digitalRead(Echo) == HIGH; ++distance)
-                        {
-                            if (distance > PulseEnd)
-                                return 2;
-                        }
-
-                        return 0;
+                        //Raw conversion from us to cm
+                        distance = timer_/80;
+                        res = true;
                     }
+                    unsigned long current = micros();
+                    sm_.process(current-prev_);
+                    prev_ = current;
+                    return res;
+                }
+
+                typedef gubg::StateMachine_ftop<Sonar, State, State::Init> SM;
+                SM sm_;
+                void sm_enter(State s)
+                {
+                    switch (s)
+                    {
+                        case State::Init:
+                            pinMode(Trigger, OUTPUT);
+                            pinMode(Echo, INPUT);
+                            break;
+                        case State::Idle:
+                            digitalWrite(Trigger, LOW);
+                            timer_ = 0;
+                            break;
+                        case State::SendPulse:
+                            digitalWrite(Trigger, HIGH);
+                            delayMicroseconds(20);
+                            digitalWrite(Trigger, LOW);
+                            timer_ = 0;
+                            break;
+                    }
+                }
+                void sm_exit(State s){}
+                void sm_event(typename SM::State &s, const unsigned long &delta)
+                {
+                    timer_ += delta;
+                    switch (s())
+                    {
+                        case State::Init:
+                        case State::EchoTooLate:
+                        case State::Error:
+                            s.changeTo(State::Idle);
+                            break;
+                        case State::Idle:
+                            if (timer_ >= 1000 && (digitalRead(Echo) == LOW))
+                                s.changeTo(State::SendPulse);
+                            break;
+                        case State::SendPulse:
+                            s.changeTo(State::WaitForEchoReady);
+                            break;
+                        case State::WaitForEchoReady:
+                            if (timer_ > Max*33)
+                                s.changeTo(State::Error);
+                            else if (digitalRead(Echo) == HIGH)
+                                s.changeTo(State::WaitForEcho);
+                            break;
+                        case State::WaitForEcho:
+                            if (timer_ > Max*33)
+                                s.changeTo(State::EchoTooLate);
+                            else if (digitalRead(Echo) == LOW)
+                                s.changeTo(State::EchoReceived);
+                            break;
+                        case State::EchoReceived:
+                            s.changeTo(State::Idle);
+                            break;
+                    }
+                }
+
+            private:
+                unsigned long prev_;
+                unsigned long timer_;
         };
 }
 
