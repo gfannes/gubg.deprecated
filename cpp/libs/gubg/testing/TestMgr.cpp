@@ -2,6 +2,7 @@
 #include "gubg/OnlyOnce.hpp"
 #include "boost/thread/tss.hpp"
 #include <memory>
+#include <mutex>
 #include "gubg/nullptr.hpp"
 using namespace gubg::testing;
 using namespace std;
