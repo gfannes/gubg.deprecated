@@ -16,7 +16,7 @@ void setup()
 void loop()
 {
     int s = (int)sonar.debug_getState();
-#if 0
+#if 1
     switch (s)
     {
         case 1: break;

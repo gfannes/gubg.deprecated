@@ -10,11 +10,13 @@ namespace garf
         class Sonar
         {
             public:
-                enum class State {Init, Idle, SendPulse, WaitForEchoReady, WaitForEcho, EchoReceived, EchoTooLate, Error};
+                enum class State {Init, Idle, SendPulse, WaitForEchoReady, WaitForEcho, EchoReceived, EchoTooLate, Error, ReleaseMutex};
 
-                Sonar():
+                //mutex == true => mutex is locked
+                Sonar(bool &mutex):
                     sm_(*this),
-                    prev_(micros()){}
+                    prev_(micros()),
+                    mutex_(mutex){}
 
                 State debug_getState() const {return sm_.debug_getState();}
 
@@ -48,10 +50,14 @@ namespace garf
                             timer_ = 0;
                             break;
                         case State::SendPulse:
+                            mutex_ = true;
                             digitalWrite(Trigger, HIGH);
                             delayMicroseconds(20);
                             digitalWrite(Trigger, LOW);
                             timer_ = 0;
+                            break;
+                        case State::ReleaseMutex:
+                            mutex_ = false;
                             break;
                     }
                 }
@@ -62,12 +68,10 @@ namespace garf
                     switch (s())
                     {
                         case State::Init:
-                        case State::EchoTooLate:
-                        case State::Error:
                             s.changeTo(State::Idle);
                             break;
                         case State::Idle:
-                            if (timer_ >= 1000 && (digitalRead(Echo) == LOW))
+                            if (!mutex_ && timer_ >= 1000 && (digitalRead(Echo) == LOW))
                                 s.changeTo(State::SendPulse);
                             break;
                         case State::SendPulse:
@@ -86,6 +90,11 @@ namespace garf
                                 s.changeTo(State::EchoReceived);
                             break;
                         case State::EchoReceived:
+                        case State::EchoTooLate:
+                        case State::Error:
+                            s.changeTo(State::ReleaseMutex);
+                            break;
+                        case State::ReleaseMutex:
                             s.changeTo(State::Idle);
                             break;
                     }
@@ -94,6 +103,7 @@ namespace garf
             private:
                 unsigned long prev_;
                 unsigned long timer_;
+                bool &mutex_;
         };
 }
 

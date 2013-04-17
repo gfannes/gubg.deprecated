@@ -4,8 +4,6 @@
 #include "garf/BusyProcess.hpp"
 #include "garf/Motor.hpp"
 #include "garf/Average.hpp"
-#include "garf/NewPing.h"
-//#include "garf/Sonar.hpp"
 
 typedef unsigned char ubyte;
 
@@ -149,7 +147,6 @@ Decoder g_decoder;
 const int trigger = 7;
 const int echo = 8;
 const int MaxDistance = 200;
-NewPing sonar(trigger, echo, MaxDistance);
 
 long i;
 void setup()
@@ -164,12 +161,11 @@ void setup()
 void loop()
 {
     ++i;
+    g_leftMotor.setSpeed(0);
     g_elapser.process();
     g_blinker.process(g_elapser.elapse());
     g_oostatus.process(g_elapser.elapse());
 //    g_sonar.process(g_elapser.elapse());
-
-    unsigned int uS = sonar.ping_cm();
 
     if (Serial.available())
     {
