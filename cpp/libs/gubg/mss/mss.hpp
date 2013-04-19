@@ -24,8 +24,8 @@
 #include "gubg/mss/mss_common.hpp"
 #include "gubg/mss/info.hpp"
 #include "gubg/clock/timer.hpp"
-#include "gubg/logging/Log.hpp"
 #include "gubg/Location.hpp"
+#include "gubg/macro.hpp"
 #include <memory>
 #include <set>
 #include <iostream>
@@ -285,7 +285,7 @@ namespace gubg
         template <typename TT> struct l_declfix {typedef TT T;};
 
         template <typename X>
-            bool isOK(boost::shared_ptr<X> p){return (bool)p;}
+            bool isOK(std::shared_ptr<X> p){return (bool)p;}
         template <typename X, typename X::pimpl_tag is_pimpl = X::pimpl_tag::OK>
             bool isOK(X x){return x.pimplOK();}
 
@@ -306,20 +306,18 @@ namespace gubg
     }
 }
 
-#define MSS_BEGIN_RC_WRAPPER(...)   typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> mss_return_code_wrapper_type; \
-    typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \
-mss_return_code_wrapper_type MSS_RC_VAR
-#define MSS_BEGIN_1(type)           MSS_BEGIN_RC_WRAPPER(type); \
-    LOG_SQ(type)
-#define MSS_BEGIN_2(type, tc)       MSS_BEGIN_RC_WRAPPER(type); \
-    LOG_S(tc)
-#define MSS_BEGIN_3(type, tc, msg)  MSS_BEGIN_RC_WRAPPER(type); \
-    LOG_S(tc, msg)
-#define MSS_BEGIN_MACRO_CHOOSER(...) GUBG_GET_4TH_ARG(__VA_ARGS__, MSS_BEGIN_3,MSS_BEGIN_2,MSS_BEGIN_1)
-#define MSS_BEGIN(...) MSS_BEGIN_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS_BEGIN_RC_WRAPPER(...)    typedef gubg::mss::ReturnCodeWrapper<__VA_ARGS__> mss_return_code_wrapper_type; \
+                                     typedef mss_return_code_wrapper_type::ReturnCodeT mss_return_code_type; \
+                                     mss_return_code_wrapper_type MSS_RC_VAR
+#define MSS_BEGIN_1(type)            MSS_BEGIN_RC_WRAPPER(type); \
+                                     S()
+#define MSS_BEGIN_2(type, msg)       MSS_BEGIN_RC_WRAPPER(type); \
+                                     S(); L(msg)
+#define MSS_BEGIN_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_BEGIN_2,MSS_BEGIN_1)
+#define MSS_BEGIN(...)               MSS_BEGIN_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
-#define MSS_BEGIN_ALLOW(type)       MSS_BEGIN_RC_WRAPPER(type, AllowOtherCodes); \
-    LOG_S(type)
+#define MSS_BEGIN_ALLOW(type)        MSS_BEGIN_RC_WRAPPER(type, AllowOtherCodes); \
+                                     S(type)
 
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_mss_elapse_reporter_msg; \
@@ -348,7 +346,7 @@ MSS_BEGIN(t)
 }
 
 //Logging
-#define L_MSS_LOG_PRIM(rc_str, level, msg) LOG_M(GUBG_HERE() << " " << level << "::" << rc_str << msg)
+#define L_MSS_LOG_PRIM(rc_str, level, msg)  L_(GUBG_HERE() << " " << level << "::" << rc_str << msg)
 #define L_MSS_LOG_PRIM_(rc_str, level, msg) std::cout << GUBG_HERE() << " " << level << "::" << rc_str << msg << std::endl
 #define L_MSS_LOG(l, rc, msg) \
 { \

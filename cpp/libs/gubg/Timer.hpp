@@ -1,5 +1,5 @@
-#ifndef aoeaoeu
-#define aoeaoeu
+#ifndef HEADER_gubg_Timer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_Timer_hpp_ALREADY_INCLUDED
 
 #include "gubg/crtp.hpp"
 #include <chrono>

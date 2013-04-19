@@ -14,7 +14,7 @@ class Server: public gubg::tcp::Socket_crtp<Server, gubg::tcp::Role::Server>
         int socket_serverPort() const {return 1234;}
         void socket_newClient(int fid){L("A new client was accepted: " << fid);}
         void socket_closeClient(int fid){L("A client was closed: " << fid);}
-        void socket_ReceivedData(const string &data){L("I received data: " << data);}
+        void socket_ReceivedData(const string &data){L("I received data (" << data.size() << "): " << data);}
 };
 
 int main()

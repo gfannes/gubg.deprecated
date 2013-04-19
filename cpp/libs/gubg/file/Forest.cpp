@@ -4,6 +4,8 @@
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "Forest"
+#include "gubg/log/begin.hpp"
 //Tree
 namespace 
 {
@@ -39,7 +41,7 @@ ReturnCode Tree::add(const File &file)
 {
     MSS_BEGIN(ReturnCode);
     const auto ext = file.extension();
-    MSS(find(extensions_.begin(), extensions_.end(), ext) != extensions_.end(), WrongExtension);
+    MSS_Q(find(extensions_.begin(), extensions_.end(), ext) != extensions_.end(), WrongExtension);
     files_.push_back(file);
     MSS_END();
 }

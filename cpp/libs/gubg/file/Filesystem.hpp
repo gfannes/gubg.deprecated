@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#define GUBG_MODULE "Filesystem"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace file
@@ -65,7 +67,9 @@ namespace gubg
                             case RC::OK:
                                 {
                                     std::vector<File> files;
-                                    if (mss::isOK(read(files, file)))
+                                    if (isDirectory(file))
+                                    {
+                                        MSS(read(files, file));
                                         for (auto ff: files)
                                         {
                                             switch (auto rc2 = recurse_(ff))
@@ -74,6 +78,7 @@ namespace gubg
                                                 default:               MSS(rc2); break;
                                             }
                                         }
+                                    }
                                 }
                                 break;
                             case RC::Skip:          break;
@@ -85,5 +90,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

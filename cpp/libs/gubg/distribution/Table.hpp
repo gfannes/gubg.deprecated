@@ -1,10 +1,12 @@
 #ifndef HEADER_gubg_distribution_Table_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_distribution_Table_hpp_ALREADY_INCLUDED
 
-#include "gubg/distribution/Uniform.hpp"
+#include "gubg/distribution/Engine.hpp"
 #include <vector>
 #include <random>
 
+#define GUBG_MODULE "Table"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace distribution
@@ -15,6 +17,12 @@ namespace gubg
             {
                 public:
                     Table(){}
+                    Table(size_t nr)
+                    {
+                        std::vector<T> probs(nr);
+                        std::fill(probs.begin(), probs.end(), 1.0/nr);
+                        setProbs(probs);
+                    }
                     template <typename UnnormProbs>
                         Table(const UnnormProbs &unnormProbs):
                             cumulProbs_(convertToCumul_(unnormProbs)) { }
@@ -25,20 +33,19 @@ namespace gubg
                             cumulProbs_ = convertToCumul_(unnormProbs);
                         }
 
-                    ReturnCode generate(size_t &ix) const
+                    bool generate(size_t &ix) const
                     {
-                        MSS_BEGIN(ReturnCode);
+                        S();
                         const size_t s = cumulProbs_.size();
-                        MSS(s > 0);
+                        if (s == 0)
+                            return false;
                         std::uniform_real_distribution<T> rng(0.0, cumulProbs_[s-1]);
-                        const auto rn = rng(gubg::distribution::uniform);
+                        const auto rn = rng(gubg::distribution::engine);
                         for (ix = 0; ix < s; ++ix)
                             if (rn <= cumulProbs_[ix])
-                            {
-                                MSS_END();
-                            }
+                                return true;
                         ix = s-1;
-                        MSS_END();
+                        return true;
                     }
 
                     T sum() const {return cumulProbs_.back();}
@@ -65,5 +72,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

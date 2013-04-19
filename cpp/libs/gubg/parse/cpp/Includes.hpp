@@ -1,13 +1,14 @@
 #ifndef HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_parse_cpp_Includes_hpp_ALREADY_INCLUDED
 
-#define GUBG_LOG
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <vector>
 #include <sstream>
 
+#define GUBG_MODULE "Includes"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace parse
@@ -18,16 +19,16 @@ namespace gubg
             //System: #include <a/b/c.hpp>
             enum class IncludeType {Local, System, Macro};
 
-	    //Produces following events:
-	    //includes_detected(const std::string &, IncludeType)
-	    //includes_error(const std::string &msg) if needed
+            //Produces following events:
+            //includes_detected(const std::string &, IncludeType)
+            //includes_error(const std::string &msg) if needed
             template <typename Receiver>
                 class Includes_crtp
                 {
                     public:
                         ReturnCode process(const gubg::file::File &file)
                         {
-                            MSS_BEGIN(ReturnCode, process);
+                            MSS_BEGIN(ReturnCode);
                             Range range;
                             MSS(gubg::file::read(range, file));
                             pp::Lexer<std::vector<pp::Token>> lexer;
@@ -145,5 +146,6 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

@@ -5,6 +5,8 @@
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/hash/MD5.hpp"
 
+#define GUBG_MODULE "Creater"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace file
@@ -108,5 +110,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_distribution_Gaussian_hpp_ALREADY_INCLUDED
 
+#include "gubg/distribution/Engine.hpp"
+
 namespace gubg
 {
     namespace distribution
@@ -8,7 +10,7 @@ namespace gubg
         template <typename T>
             T drawGaussian(T mean, T sigma)
             {
-                return std::normal_distribution<double>(mean, sigma)(uniform);
+                return std::normal_distribution<double>(mean, sigma)(engine);
             }
     }
 }

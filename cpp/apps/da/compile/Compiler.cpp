@@ -1,12 +1,15 @@
-//#define GUBG_LOG
 #include "da/compile/Compiler.hpp"
 #include "da/Arduino.hpp"
+#include "gubg/env/Variables.hpp"
 #include <sstream>
 #include <stdlib.h>
+#include <cstdlib>
 using namespace da;
 using namespace da::compile;
 using namespace std;
 
+#define GUBG_MODULE "Compiler"
+#include "gubg/log/begin.hpp"
 Job::Job(Compiler &compiler):
     compiler_(compiler)
 {
@@ -27,17 +30,30 @@ void Job::execute()
 
 ReturnCode Job::creater_create(const Files &files, const Settings &settings) const
 {
-    MSS_BEGIN(ReturnCode, creater);
+    MSS_BEGIN(ReturnCode);
     string cmd;
     MSS(settings.get(cmd, Key::Command));
-    L(cmd);
+    LLL(cmd);
     MSS(::system(cmd.c_str()) == 0, CompilationFailed);
     MSS_END();
 }
 
-Compiler::Compiler():
-    processor_(4),
-    nrFailures_(0)
+namespace 
+{
+    int nrProcessors()
+    {
+        string nr_str;
+        gubg::env::Variables::shell().get(nr_str, "GUBG_NUMBER_CPU");
+        int nr = std::atoi(nr_str.c_str());
+        if (nr <= 0)
+            nr = 1;
+        return nr;
+    }
+}
+Compiler::Compiler(ExeType exeType):
+    processor_(nrProcessors()),
+    nrFailures_(0),
+    exeType_(exeType)
 {
     processor_.start();
 }
@@ -52,7 +68,16 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
         {
             case Any:
             case Host:
-                cmd << "g++ -std=c++0x -O3 -pthread -c ";
+                switch (exeType_)
+                {
+                    case ExeType::Debug:
+                        cmd << "g++ -std=c++11 -g -pthread -c -DGUBG_DEBUG ";
+                        break;
+                    case ExeType::Release:
+                        cmd << "g++ -std=c++11 -O3 -pthread -c -DGUBG_RELEASE ";
+                        break;
+                    default: assert(false); break;
+                }
                 break;
             case Arduino:
                 if (arduino::isUno())
@@ -76,7 +101,7 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
 }
 ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src, Headers headers)
 {
-    MSS_BEGIN(ReturnCode, call);
+    MSS_BEGIN(ReturnCode);
 
     const bool useCache = true;
     if (useCache)

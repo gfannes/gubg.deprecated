@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <sstream>
 
+#define GUBG_MODULE "Testing"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace testing
@@ -67,7 +69,7 @@ namespace gubg
 #else
 #define TEST_TAG(tag) \
         gubg::testing::TestTag l_gubg_testing_test_tag_(#tag); \
-        LOG_S(tag)
+        S()
 #endif
 
 #define TEST_REPORT() std::cout << gubg::testing::TestMaster::instance() << std::endl
@@ -215,5 +217,6 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

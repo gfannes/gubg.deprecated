@@ -1,5 +1,5 @@
-#ifndef garf_Elapser_hpp
-#define garf_Elapser_hpp
+#ifndef HEADER_garf_Elapser_hpp_ALREADY_INCLUDED
+#define HEADER_garf_Elapser_hpp_ALREADY_INCLUDED
 
 #include "Arduino.h"
 

@@ -3,7 +3,7 @@
 #include "garf/OOStatus.hpp"
 #include "garf/BusyProcess.hpp"
 #include "garf/Motor.hpp"
-//#include "garf/Sonar.hpp"
+#include "garf/Average.hpp"
 
 typedef unsigned char ubyte;
 
@@ -16,6 +16,8 @@ garf::Blinker<200> g_blinker;
 
 garf::Motor<6, 5> g_leftMotor;
 garf::Motor<10, 9> g_rightMotor;
+
+garf::RobustAverage<ubyte, 10> sonarAverage;
 
 //We we don't receive indicateOnline() within 1 second, we will
 //switch to offline
@@ -142,6 +144,10 @@ struct Decoder: gubg::d9::Decoder_crtp<Decoder, Flips>
 };
 Decoder g_decoder;
 
+const int trigger = 7;
+const int echo = 8;
+const int MaxDistance = 200;
+
 long i;
 void setup()
 {
@@ -155,6 +161,7 @@ void setup()
 void loop()
 {
     ++i;
+    g_leftMotor.setSpeed(0);
     g_elapser.process();
     g_blinker.process(g_elapser.elapse());
     g_oostatus.process(g_elapser.elapse());

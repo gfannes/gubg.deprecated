@@ -1,14 +1,14 @@
 #include "gubg/testing/TestMgr.hpp"
 #include "gubg/OnlyOnce.hpp"
-#include "gubg/l.hpp"
 #include "boost/thread/tss.hpp"
-#include "boost/thread/mutex.hpp"
 #include <memory>
+#include <mutex>
 #include "gubg/nullptr.hpp"
 using namespace gubg::testing;
 using namespace std;
-using namespace boost;
 
+#define GUBG_MODULE "TestMgr"
+#include "gubg/log/begin.hpp"
 namespace
 {
     unique_ptr<TestMaster> testMaster;
@@ -106,7 +106,7 @@ TestMaster &TestMaster::instance()
 }
 void TestMaster::report(const TestTag::ThreadStats &threadStats)
 {
-    L("Someone is reporting thread statistics");
+    S();L("Someone is reporting thread statistics");
     lock_guard<mutex> lock(testMasterMutex);
     threadStatss_.push_back(threadStats);
 }
@@ -161,26 +161,4 @@ std::ostream &operator<<(std::ostream &os, const TestMaster &testMaster)
     os << "Global: " << stats;
     return os;
 }
-
-#ifdef UnitTest
-int main()
-{
-    {
-        TestTag root("root");
-        TestTag level1("level1");
-        level1.addResult(TestResult::OK);
-        TestTag level2("level2");
-        level2.addResult(TestResult::OK);
-    }
-    cout << TestMaster::instance() << endl;
-    {
-        TestTag root("root");
-        TestTag level1("level1");
-        level1.addResult(TestResult::Failure);
-        TestTag level2("level2");
-        level2.addResult(TestResult::OK);
-        level2.addResult(TestResult::Failure);
-    }
-    cout << TestMaster::instance() << endl;
-}
-#endif
+#include "gubg/log/end.hpp"

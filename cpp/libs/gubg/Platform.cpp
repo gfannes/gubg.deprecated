@@ -1,10 +1,7 @@
 #include "gubg/Platform.hpp"
 #include "boost/filesystem.hpp"
-#define GUBG_MODULE "Platform"
-#define LOG_LEVEL Debug
-#include "gubg/logging/Log.hpp"
-#include <fstream>
 #include "boost/thread/mutex.hpp"
+#include <fstream>
 
 #ifdef GUBG_LINUX
 #include <stdlib.h>
@@ -16,6 +13,8 @@
 
 using namespace std;
 
+#define GUBG_MODULE "Platform"
+#include "gubg/log/begin.hpp"
 namespace
 {
     //4k is the intel page size
@@ -73,7 +72,7 @@ namespace gubg
     }
     bool deleteFile(const std::string &name, bool recursive)
     {
-        LOG_S_(Debug, deleteFile, "Deleting " << name << " recursive: " << recursive);
+        SS(name, recursive);
         try
         {
             if (recursive)
@@ -83,7 +82,7 @@ namespace gubg
         }
         catch (boost::filesystem::filesystem_error &exc)
         {
-            LOG_M_(Warning, "Failed to delete " << name << ": " << exc.what());
+            L("Failed to delete " << name << ": " << exc.what());
             return false;
         }
         return true;
@@ -102,3 +101,4 @@ namespace gubg
         return (home ? home : "");
     }
 }
+#include "gubg/log/end.hpp"

@@ -1,5 +1,5 @@
-#ifndef aoeuaoue
-#define aoeuaoue
+#ifndef HEADER_gubg_msgpack_Builder_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_msgpack_Builder_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Write.hpp"
 

@@ -1,4 +1,3 @@
-//#define GUBG_LOG
 #include "da/CompileExe.hpp"
 #include "da/build/Builder.hpp"
 #include "da/compile/Compiler.hpp"
@@ -9,21 +8,23 @@ using namespace da::compile;
 using namespace gubg::file;
 using namespace std;
 
-CompileExe::CompileExe(const string &source):
-    source_(source)
+#define GUBG_MODULE "CompileExe"
+#include "gubg/log/begin.hpp"
+CompileExe::CompileExe(const string &source, ExeType exeType):
+    source_(source), exeType_(exeType)
 {
 }
 
 da::ReturnCode CompileExe::execute(const Options &options)
 {
-    MSS_BEGIN(ReturnCode, execute);
+    MSS_BEGIN(ReturnCode);
 
     Builder builder;
     //Detect all header and source dependencies starting from source_
     MSS(builder.process(source_));
 
     //Setup the compiler
-    Compiler compiler;
+    Compiler compiler(exeType_);
     compiler.setCache(FileCache().dir());
     builder.extractCompileSettings(compiler.settings);
 
@@ -37,7 +38,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
     MSS(compiler.nrFailures() == 0);
 
     //Setup the linker
-    Linker linker;
+    Linker linker(exeType_);
     builder.extractLinkSettings(linker.settings);
 
     //Link the object files into an exe

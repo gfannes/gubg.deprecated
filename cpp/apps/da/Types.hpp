@@ -26,6 +26,8 @@ namespace da
         }
     }
 
+    enum class ExeType {Debug, Release};
+
     struct CompileSettings
     {
         IncludePaths includePaths;

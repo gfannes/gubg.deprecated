@@ -1,16 +1,19 @@
-//#define GUBG_LOG
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 #include <fstream>
 #include <cstdio>
+#include <cstring>
+#include <cstddef>
 #ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 using namespace gubg::file;
 using namespace std;
 
-#include "gubg/l.hpp"
+#define GUBG_MODULE "Filesystem"
+#include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)
 {
@@ -78,7 +81,7 @@ int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)
 #endif
 ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 {
-    MSS_BEGIN(ReturnCode, read, file.name());
+    MSS_BEGIN(ReturnCode, file.name());
     MSS(File::Unknown == file.type() || File::Directory ==  file.type(), ExpectedDirectory);
 #ifdef GUBG_POSIX
     //Open the directory in a RAII
@@ -130,7 +133,7 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 
 ReturnCode gubg::file::write(const std::string &content, const File &file)
 {
-    MSS_BEGIN(ReturnCode, write);
+    MSS_BEGIN(ReturnCode);
     MSS(File::Unknown == file.type() || File::Regular ==  file.type(), ExpectedRegular);
     ofstream fo(file.name(), ios_base::out | ios_base::binary | ios_base::trunc);
     MSS(bool(fo), CouldNotWriteFile);
@@ -146,7 +149,7 @@ ReturnCode gubg::file::remove(const File &file)
 
 ReturnCode gubg::file::copy(const File &from, const File &to)
 {
-    MSS_BEGIN(ReturnCode, copy);
+    MSS_BEGIN(ReturnCode);
     string content;
     MSS(read(content, from));
     MSS(write(content, to));
@@ -158,10 +161,15 @@ ReturnCode gubg::file::determineType(File &file)
     MSS_BEGIN(ReturnCode);
     struct stat statbuf;
 #ifdef GUBG_LINUX
-    MSS(0 == ::lstat(file.name().c_str(), &statbuf), FileDoesNotExist);
+    auto res = ::lstat(file.name().c_str(), &statbuf);
 #else
-    MSS(0 == ::stat(file.name().c_str(), &statbuf), FileDoesNotExist);
+    auto res = ::stat(file.name().c_str(), &statbuf);
 #endif
+    if (res != 0)
+    {
+        L_("File \"" << file.name() << "\" does not exist");
+        MSS_L(FileDoesNotExist);
+    }
     switch (statbuf.st_mode & S_IFMT)
     {
         case S_IFREG: file.setType(File::Regular); break;

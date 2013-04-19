@@ -1,5 +1,5 @@
-#ifndef garf_Blinker_hpp
-#define garf_Blinker_hpp
+#ifndef HEADER_garf_Blinker_hpp_ALREADY_INCLUDED
+#define HEADER_garf_Blinker_hpp_ALREADY_INCLUDED
 
 namespace garf
 {
@@ -40,7 +40,7 @@ namespace garf
             }
             void process(int elapse)
             {
-                switch (state_ & ModeMask)
+                switch ((BlinkMode)(state_ & ModeMask))
                 {
                     case BlinkMode::Flat:
                         return;

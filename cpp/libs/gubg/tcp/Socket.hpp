@@ -5,6 +5,8 @@
 //Extra checks are included to make sure the intended sequence of calls is followed (e.g., ::socket(), ::bind(), ::listen())
 
 #include "gubg/tcp/Codes.hpp"
+#include <sys/socket.h>
+#include <netdb.h>
 #include <fcntl.h>
 #include <sstream>
 #include <set>
@@ -20,6 +22,7 @@ namespace gubg
             {
                 private:
                     enum State {NeedSocketDescriptor, NeedsBinding, NeedsListening, Accepting, NeedsConnect};
+                    enum {InvalidFID = -1};
 
                 public:
                     Socket_crtp():

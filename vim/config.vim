@@ -56,4 +56,7 @@ command -bar Q q
 source $GUBG/vim/tabnumber.vim
 source $GUBG/vim/autoclose.vim
 source $GUBG/vim/cscope_maps.vim
+<<<<<<< HEAD
 source $GUBG/vim/git.vim
+=======
+>>>>>>> 5dc1174d1bd1231d7580aa078997d3aed53cefd1

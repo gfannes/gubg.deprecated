@@ -1,5 +1,5 @@
-#ifndef garf_BusyProcess_hpp
-#define garf_BusyProcess_hpp
+#ifndef HEADER_garf_BusyProcess_hpp_ALREADY_INCLUDED
+#define HEADER_garf_BusyProcess_hpp_ALREADY_INCLUDED
 
 namespace garf
 {

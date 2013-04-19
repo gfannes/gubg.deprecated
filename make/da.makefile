@@ -8,7 +8,7 @@ DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe FileCache Arduino \
 	build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Local package/Boost package/GUBG package/SDL \
+	package/Packages package/Local package/Boost package/GUBG package/SDL package/DecodeIt \
 	compile/Compiler \
 	link/Linker \
 
@@ -21,6 +21,7 @@ BOOST_LIBS := $(GUBG_BOOST)/stage/lib
 BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
 
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
+<<<<<<< HEAD
 ifeq ($(GUBG_PLATFORM),linux)
 	CPPFLAGS_PLATFORM := -pthread
 endif
@@ -29,6 +30,10 @@ ifeq ($(GUBG_PLATFORM),win32)
 endif
 CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
+=======
+CPPFLAGS := -std=c++11 -g -pthread -DGUBG_DEBUG $(CPP_INCLUDE_PATHS)
+LDFLAGS := -std=c++11 -g
+>>>>>>> 5dc1174d1bd1231d7580aa078997d3aed53cefd1
 LINK_LIBS := $(BOOST_LINK)
 
 .PHONY: da-clean
@@ -39,7 +44,9 @@ da-clean:
 DA_CACHE := $(GUBG_TMP)/da
 $(DA_CACHE):
 	mkdir $@
-da: $(OBJECT_FILES) $(DA_CACHE)
+$(GUBG_BIN):
+	mkdir $@
+da: $(OBJECT_FILES) $(DA_CACHE) $(GUBG_BIN)
 	g++ $(LDFLAGS) -o da $(OBJECT_FILES) $(LINK_LIBS)
 	cp da $(GUBG_BIN)
 

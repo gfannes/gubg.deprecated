@@ -170,7 +170,7 @@ namespace
             {
                 typedef Traits<R> Round;
                 uint32_t cachedB;
-                for (int oper; oper < 16; ++oper)
+                for (int oper = 0; oper < 16; ++oper)
                 {
                     Round::nonLinearFunction(state_);
                     state_[A] += words_[Round::g[oper]];
