@@ -21,7 +21,13 @@ BOOST_LIBS := $(GUBG_BOOST)/stage/lib
 BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
 
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
-CPPFLAGS := -std=c++0x -O3 -pthread $(CPP_INCLUDE_PATHS)
+ifeq ($(GUBG_PLATFORM),linux)
+	CPPFLAGS_PLATFORM := -pthread
+endif
+ifeq ($(GUBG_PLATFORM),win32)
+	CPPFLAGS_PLATFORM := 
+endif
+CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
 LINK_LIBS := $(BOOST_LINK)
 
