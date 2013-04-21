@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_Strange_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_Strange_hpp_ALREADY_INCLUDED
 
+#include "gubg/parse/numbers/Integer.hpp"
 #include <cstdlib>
 #include <cassert>
 
@@ -38,6 +39,7 @@ namespace gubg
 
                 return false;
             }
+#if 0
             template <typename Int>
                 bool popDecimal(Int &i)
                 {
@@ -57,6 +59,28 @@ namespace gubg
                     forward_(e-buffer);
                     return true;
                 }
+#else
+            bool popDecimal(long &res)
+            {
+                assert(invariants_());
+                if (empty())
+                    return false;
+                size_t l = l_;
+                if (!parse::numbers::read(res, s_, l))
+                    return false;
+                forward_(l);
+                return true;
+            }
+            template <typename Int>
+                bool popDecimal(Int &i)
+                {
+                    long l;
+                    if (!popDecimal(l))
+                        return false;
+                    i = l;
+                    return true;
+                }
+#endif
 
             bool popChar(const char ch)
             {
