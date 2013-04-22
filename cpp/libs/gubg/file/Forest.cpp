@@ -1,6 +1,8 @@
 #include "gubg/file/Forest.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <set>
+#include <algorithm>
+#include <cassert>
 using namespace gubg::file;
 using namespace std;
 

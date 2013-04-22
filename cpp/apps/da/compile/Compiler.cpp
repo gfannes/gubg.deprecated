@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cassert>
 using namespace da;
 using namespace da::compile;
 using namespace std;

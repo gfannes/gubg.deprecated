@@ -2,6 +2,7 @@
 #include "da/Arduino.hpp"
 #include <sstream>
 #include <stdlib.h>
+#include <cassert>
 using namespace da;
 using namespace da::compile;
 using namespace std;
