@@ -1,12 +1,13 @@
 .PHONY: help clean fix da
 .PHONY: pull commit publish upload
 help:
-	@echo "help clean fix da"
+	@echo "help clean fix da boost arduino"
 
 include make/gubg_env.makefile
 include make/dev_env.makefile
 include make/boost.makefile
 include make/iup.makefile
+include make/arduino.makefile
 
 clean:
 	ruby internal/cleanAll.rb
