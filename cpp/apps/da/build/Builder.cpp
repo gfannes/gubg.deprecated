@@ -22,6 +22,8 @@ Builder::Builder()
             packages_ << GUBG::create(File(str));
         if (env::expand(str, "$GUBG_BOOST"))
             packages_ << Boost::create(File(str));
+        if (env::expand(str, "$GUBG_ARDUINO"))
+            packages_ << Arduino::create(File(str));
         if (env::expand(str, "$GUBG_DECODEIT"))
             packages_ << DecodeIt::create(File(str));
     }

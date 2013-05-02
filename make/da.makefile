@@ -8,7 +8,7 @@ DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe FileCache Arduino \
 	build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Local package/Boost package/GUBG package/SDL package/DecodeIt \
+	package/Packages package/Local package/Boost package/Arduino package/GUBG package/SDL package/DecodeIt \
 	compile/Compiler \
 	link/Linker \
 
@@ -27,6 +27,7 @@ endif
 ifeq ($(GUBG_PLATFORM),win32)
 	CPPFLAGS_PLATFORM := 
 endif
+#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -DGUBG_DEBUG
 CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
 LINK_LIBS := $(BOOST_LINK)

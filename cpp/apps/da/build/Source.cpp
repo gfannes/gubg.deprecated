@@ -7,7 +7,7 @@ using gubg::file::File;
 using gubg::file::Forest;
 using namespace std;
 
-#define GUBG_MODULE "Source"
+#define GUBG_MODULE_ "Source"
 #include "gubg/log/begin.hpp"
 Source::Ptr Source::create(File file)
 {
@@ -65,7 +65,10 @@ ReturnCode Source::searchForHeaders(Headers &headers, SourceFiles &sisterFiles, 
         headers.add(hdr);
         sisterFiles.insert(sfs);
 
-        MSS(includePusher.process(hdr));
+        {
+            S();
+            MSS(includePusher.process(hdr));
+        }
     }
 
     MSS_END();
