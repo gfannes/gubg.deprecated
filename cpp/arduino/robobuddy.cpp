@@ -25,8 +25,8 @@ class OA: public ObjectAvoidance_crtp<OA>
         OA():
             target_l(), target_r(), current_l(), current_r(), pm_(millis()){}
 
-        void oa_left(int speed) { target_l = speed; }
-        void oa_right(int speed) { target_r = speed; }
+        void oa_left(int speed) { target_l = speed/2; }
+        void oa_right(int speed) { target_r = speed/2; }
         unsigned long oa_leftDistance(){return distance_l;}
         unsigned long oa_rightDistance(){return distance_r;}
         unsigned long oa_thresholdDistance(){return 18;}
@@ -72,7 +72,7 @@ void setup()
 
 void loop()
 {
-    //Serial.print((int)oa.debug_getState());
+    Serial.print((int)oa.debug_getState());
 #if 1
     if (sonar_l.process(distance_l))
     {
