@@ -103,6 +103,11 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
                     cmd << "UNEXPECTED ARDUINO";
                 verbose(cmd.str());
                 MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
+
+                cmd.str("");
+                cmd << "gtkterm";
+                verbose(cmd.str());
+                MSS(::system(cmd.str().c_str()) == 0, SerialMonitorFailed);
             }
             break;
     }

@@ -1,6 +1,8 @@
 #ifndef HEADER_garf_Blinker_hpp_ALREADY_INCLUDED
 #define HEADER_garf_Blinker_hpp_ALREADY_INCLUDED
 
+#include "Arduino.h"
+
 namespace garf
 {
     enum class BlinkMode: unsigned char { Flat, Normal, Fast};
