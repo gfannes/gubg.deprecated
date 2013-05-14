@@ -6,6 +6,7 @@
 #include "gubg/file/Filesystem.hpp"
 #include <vector>
 #include <sstream>
+#include <cassert>
 
 #define GUBG_MODULE "Includes"
 #include "gubg/log/begin.hpp"

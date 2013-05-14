@@ -6,6 +6,7 @@
 #include "da/package/Local.hpp"
 #include "da/package/GUBG.hpp"
 #include "da/package/Boost.hpp"
+#include "da/package/Arduino.hpp"
 #include "da/package/SDL.hpp"
 #include "da/package/DecodeIt.hpp"
 #include "gubg/file/File.hpp"

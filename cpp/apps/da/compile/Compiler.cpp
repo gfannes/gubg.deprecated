@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cassert>
 using namespace da;
 using namespace da::compile;
 using namespace std;
@@ -81,9 +82,9 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
                 break;
             case Arduino:
                 if (arduino::isUno())
-                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -c ";
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=100 -D__AVR_LIBC_DEPRECATED_ENABLE__ -c ";
                 else if (arduino::isMega())
-                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -c ";
+                    cmd << "avr-g++ -std=c++0x -Os -w -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=100 -D__AVR_LIBC_DEPRECATED_ENABLE__ -c ";
                 break;
             default:
                 cmd << "UNKNOWN TARGET PLATFORM ";

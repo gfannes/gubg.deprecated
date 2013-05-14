@@ -7,12 +7,14 @@
 
 typedef unsigned char ubyte;
 
-garf::Elapser g_elapser;
+typedef garf::Elapser Elapser;
+Elapser g_elapser;
 //garf::Sonar   g_sonar;
 
 //This blinker is used to show the online/offline status
 //We blink 10 times per second
-garf::Blinker<200> g_blinker;
+typedef garf::Blinker<200> Blinker;
+Blinker g_blinker;
 
 garf::Motor<6, 5> g_leftMotor;
 garf::Motor<10, 9> g_rightMotor;
@@ -151,6 +153,8 @@ const int MaxDistance = 200;
 long i;
 void setup()
 {
+    g_elapser = Elapser();
+    g_blinker = Blinker();
     g_blinker.set(garf::BlinkMode::Flat);
     garf::busyProcess<1000>(g_blinker);
     Serial.begin(9600);

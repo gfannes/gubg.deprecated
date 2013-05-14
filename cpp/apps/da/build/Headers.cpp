@@ -1,5 +1,7 @@
 #include "da/build/Headers.hpp"
+#include <algorithm>
 using namespace da;
+using namespace std;
 
 #define GUBG_MODULE "Headers"
 #include "gubg/log/begin.hpp"

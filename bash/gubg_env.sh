@@ -16,5 +16,6 @@ if [ ! $GUBG_BIN ];then
 fi
 export GUBG_BASH=$GUBG/bash
 export GUBG_NUMBER_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
+export GUBG_PLATFORM=linux
 export RUBYLIB=$GUBG/ruby
 export PATH=$PATH:$GUBG_BIN:$GUBG/bin
