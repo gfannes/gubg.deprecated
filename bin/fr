@@ -6,6 +6,7 @@ require("gubg/output")
 
 options = parseOptions(name: "Searches recursively in files: fr <options> <pattern>", author: "Geert Fannes") do |parser, options|
 	parser.on("-i", "--case-insensitive", "Case insensitive search"){options[:ci] = true}
+	parser.on("-w", "--match-word", "Match word"){options[:word] = true}
 	parser.on("-a", "--all", "Search all files"){options[:all] = true}
 	parser.on("-e", "--export FILE", "Export matches to FILE"){|filename|options[:export] = filename}
 	options[:operation] = :show
@@ -24,7 +25,11 @@ files2Open = (options[:open] || options[:choose]) && []
 
 finalize("You have to provide one and only one search pattern", :error) unless ARGV.length == 1
 
-lookFor = Regexp.new(ARGV[0], options[:ci])
+lookFor = if options[:word]
+		  Regexp.new("\\b#{ARGV[0]}\\b", options[:ci])
+	  else
+		  Regexp.new(ARGV[0], options[:ci])
+	  end
 puts("Regexp: #{lookFor}") if $verbose
 
 recursor = Proc.new do |dir|
