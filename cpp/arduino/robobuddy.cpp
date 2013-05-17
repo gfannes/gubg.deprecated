@@ -2,8 +2,23 @@
 #include "garf/Motor.hpp"
 #include "garf/ObjectAvoidance.hpp"
 #include "Arduino.h"
+#include "HMC5883L/HMC5883L.h"
 
 using namespace garf;
+
+// Reference the I2C Library
+
+
+#include "Wire/Wire.h"
+extern "C"
+{
+	#include "Wire/utility/twi.c"
+}
+// Reference the HMC5883L Compass Library
+#include "HMC5883L/HMC5883L.h"
+#include "HMC5883L/HMC5883L.cpp"
+HMC5883L compass;
+
 
 const int servo = 9;
 const int totalDelay = 2000;
@@ -72,6 +87,8 @@ void setup()
 
 void loop()
 {
+
+#if 0
     Serial.print((int)oa.debug_getState());
 #if 1
     if (sonar_l.process(distance_l))
@@ -84,4 +101,5 @@ void loop()
     }
 #endif
     oa.process();
+#endif
 }
