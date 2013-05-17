@@ -1,22 +1,24 @@
 #include "garf/Sonar.hpp"
 #include "Arduino.h"
 
-using namespace garf;
-
 const int trigger = 7;
 const int echo = 8;
 
-Sonar<7, 8, 200> sonar;
+bool mutex;
+typedef garf::Sonar<7, 8, 200> Sonar;
+Sonar sonar(mutex);
 
 void setup()
 {
+    mutex = false;
+    sonar.init();
     Serial.begin(9600);
 }
 
 void loop()
 {
     int s = (int)sonar.debug_getState();
-#if 1
+#if 0
     switch (s)
     {
         case 1: break;

@@ -47,11 +47,22 @@ da::ReturnCode Arduino::resolveHeader(File &resolvedHeader, SourceFiles &sisterF
             if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/variants/mega"))
                 compileSettings_.includePaths.insert(File(str));
         }
+        if (gubg::env::expand(str, "$GUBG_ARDUINO/libraries"))
+             compileSettings_.includePaths.insert(File(str));
+        if (gubg::env::expand(str, "$GUBG_ARDUINO/libraries/Wire/utility"))
+             compileSettings_.includePaths.insert(File(str));
         if (linkSettings_.targetPlatform != Platform::Arduino)
         {
             string arduinoBase;
             if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
                 for (auto base: {"main.cpp", "wiring.c", "wiring_digital.c", "wiring_analog.c", "wiring_pulse.c", "WMath.cpp", "HardwareSerial.cpp", "Print.cpp", "WString.cpp", "new.cpp", "Stream.cpp", "WInterrupts.c"})
+                {
+                    File f(arduinoBase);
+                    f << base;
+                    sisterFiles.insert(f);
+                }
+            if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/libraries"))
+                for (auto base: {"Wire/Wire.cpp"})
                 {
                     File f(arduinoBase);
                     f << base;
