@@ -17,6 +17,10 @@ namespace garf
                     sm_(*this),
                     prev_(micros()),
                     mutex_(mutex){}
+                void init()
+                {
+                    prev_ = micros();
+                }
 
                 State debug_getState() const {return sm_.debug_getState();}
 
