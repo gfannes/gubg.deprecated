@@ -5,6 +5,7 @@
 #include "gubg/Strange.hpp"
 #include <vector>
 #include <string>
+#include <map>
 
 #define GUBG_MODULE "xml::Parser"
 #include "gubg/log/begin.hpp"
@@ -17,8 +18,7 @@ namespace gubg
             {
                 public:
                     typedef std::vector<std::string> Path;
-                    typedef std::pair<std::string, std::string> Attribute;
-                    typedef std::vector<Attribute> Attributes;
+                    typedef std::map<std::string, std::string> Attributes;
 
                     ReturnCode process(const std::string &str)
                     {
@@ -82,7 +82,8 @@ namespace gubg
                     }
 
                     //Default event points
-                    void parser_comment(const std::string &comment){}
+                    void parser_text(const std::string &text, const Path &path){}
+                    void parser_comment(const std::string &comment, const Path &path){}
 
                 private:
                     typedef unsigned int Flags;
@@ -142,7 +143,7 @@ namespace gubg
                             while (attr.popChar(' ')){}
                             MSS(attr.popChar('"'));
                             MSS(attr.popUntil(v, '"'));
-                            attributes.push_back(std::make_pair(k.str(), v.str()));
+                            MSS(attributes.insert(std::make_pair(k.str(), v.str())).second, DuplicateAttributeName);
                             while (attr.popChar(' ')){}
                         }
                         MSS_END();

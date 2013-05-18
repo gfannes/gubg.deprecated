@@ -10,6 +10,10 @@ namespace data
     const char * openclose_attr = "<abc id=\"1\"/>";
     const char * text = "<abc>text</abc>";
     const char * comment = "<abc><!--this is a comment--></abc>";
+    namespace illegal
+    {
+        const char * duplicate_attr = "<abc id=\"1\" id=\"2\"></abc>";
+    }
 }
 
 #define GUBG_MODULE_ "ConcreteParser"
@@ -52,14 +56,22 @@ int main()
 {
     TEST_TAG(main);
     Parser p;
-    TEST_OK(p.process(data::open_close));
-    TEST_OK(p.process(data::openclose));
-    TEST_OK(p.process(data::open_close_attr));
-    TEST_OK(p.process(data::openclose_attr));
-    TEST_OK(p.process(data::text));
-    TEST_OK(p.process(data::comment));
-    if (true)
     {
+        TEST_TAG(pos);
+        TEST_OK(p.process(data::open_close));
+        TEST_OK(p.process(data::openclose));
+        TEST_OK(p.process(data::open_close_attr));
+        TEST_OK(p.process(data::openclose_attr));
+        TEST_OK(p.process(data::text));
+        TEST_OK(p.process(data::comment));
+    }
+    {
+        TEST_TAG(neg);
+        TEST_KO(p.process(data::illegal::duplicate_attr));
+    }
+    if (false)
+    {
+        TEST_TAG(freeplane);
         std::string str;
         gubg::file::read(str, gubg::file::File("/home/gfannes/cryptx-avalon/Overview.mm"));
         TEST_OK(p.process(str));
