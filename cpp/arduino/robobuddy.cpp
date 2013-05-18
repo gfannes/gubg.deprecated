@@ -1,13 +1,13 @@
 #include "garf/Sonar.hpp"
 #include "garf/Motor.hpp"
 #include "garf/ObjectAvoidance.hpp"
+#include "garf/IRSensor.hpp"
 #include "Arduino.h"
 #include "HMC5883L/HMC5883L.h"
 
 using namespace garf;
 
 // Reference the I2C Library
-
 
 #include "Wire/Wire.h"
 extern "C"
@@ -77,11 +77,27 @@ class OA: public ObjectAvoidance_crtp<OA>
 };
 OA oa;
 
+class IR: public IRSensor<IR, 42>
+{
+    public:
+        void irsensor_detect(bool b)
+        {
+            //Serial.println(b ? "Stoppen!" : "OK to go!");
+        }
+};
+IR ir;
+
 void setup()
 {
     Serial.begin(9600);
+    sonar_l.init();
+    sonar_r.init();
     pinMode(13, OUTPUT);
+    ir.init();
+    oa.init();
     nrSamples = 0;
+
+    /*
       // Initialize the serial port.
 
    Serial.println("Starting the I2C interface.");
@@ -99,6 +115,7 @@ void setup()
    error = compass.SetMeasurementMode(Measurement_Continuous); // Set the measurement mode to Continuous
    if(error != 0) // If there is an error, print it out.
      Serial.println(compass.GetErrorText(error));
+     */
 }
 // Output the data down the serial port.
 void Output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)
@@ -126,6 +143,8 @@ void Output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float
 
 void loop()
 {
+    /*
+    ir.process();
   // Retrive the raw values from the compass (not scaled).
   MagnetometerRaw raw = compass.ReadRawAxis();
   // Retrived the scaled values from the compass (scaled to the configured scale).
@@ -156,15 +175,16 @@ void loop()
   float headingDegrees = heading * 180/M_PI; 
 
   // Output the data via the serial port.
-  Output(raw, scaled, heading, headingDegrees);
+//  Output(raw, scaled, heading, headingDegrees);
 
   // Normally we would delay the application by 66ms to allow the loop
   // to run at 15Hz (default bandwidth for the HMC5883L).
   // However since we have a long serial out (104ms at 9600) we will let
   // it run at its natural speed.
   // delay(66);
+  */
 
-#if 0
+#if 1
 //    Serial.print((int)oa.debug_getState());
 #if 1
     if (sonar_l.process(distance_l))

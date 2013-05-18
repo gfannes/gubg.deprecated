@@ -13,6 +13,11 @@ namespace garf
                 sm_(*this),
                 prev_(micros()){}
 
+            void init()
+            {
+                prev_ = micros();
+            }
+
             State debug_getState() const {return sm_.debug_getState();}
 
             void process()
@@ -84,7 +89,7 @@ namespace garf
                             s.changeTo(State::Reverse);
                         break;
                     case State::Reverse:
-                        if(timer_ > 1000000)
+                        if(timer_ > 1000000 || !digitalRead(42))
                         {        
                             if ((timer_/16) % 2)
                                 s.changeTo(State::TurnRight);
