@@ -1,4 +1,4 @@
-#include "gubg/parse/xml/Factory.hpp"
+#include "gubg/parse/xml/Parser.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/file/Filesystem.hpp"
 
@@ -12,25 +12,25 @@ namespace data
     const char * comment = "<abc><!--this is a comment--></abc>";
 }
 
-#define GUBG_MODULE_ "ConcreteFactory"
+#define GUBG_MODULE_ "ConcreteParser"
 #include "gubg/log/begin.hpp"
 namespace 
 {
-    struct Factory: gubg::xml::Factory_crtp<Factory>
+    struct Parser: gubg::xml::Parser_crtp<Parser>
     {
-        void factory_text(const std::string &text, const Path &path)
+        void parser_text(const std::string &text, const Path &path)
         {
             SS(text);
         }
-        void factory_open(const std::string &tag, const Path &path)
+        void parser_open(const std::string &tag, const Path &path)
         {
             SS(tag);
         }
-        void factory_close(const std::string &tag, const Path &path)
+        void parser_close(const std::string &tag, const Path &path)
         {
             SS(tag);
         }
-        void factory_attr(const Attributes &attrs, const Path &path)
+        void parser_attr(const Attributes &attrs, const Path &path)
         {
             SS(attrs.size());
             for (auto attr: attrs)
@@ -38,7 +38,7 @@ namespace
                 L(STREAM(attr.first, attr.second));
             }
         }
-        void factory_comment(const std::string &comment, const Path &path)
+        void parser_comment(const std::string &comment, const Path &path)
         {
             SS(comment);
         }
@@ -51,18 +51,18 @@ namespace
 int main()
 {
     TEST_TAG(main);
-    Factory f;
-    TEST_OK(f.process(data::open_close));
-    TEST_OK(f.process(data::openclose));
-    TEST_OK(f.process(data::open_close_attr));
-    TEST_OK(f.process(data::openclose_attr));
-    TEST_OK(f.process(data::text));
-    TEST_OK(f.process(data::comment));
+    Parser p;
+    TEST_OK(p.process(data::open_close));
+    TEST_OK(p.process(data::openclose));
+    TEST_OK(p.process(data::open_close_attr));
+    TEST_OK(p.process(data::openclose_attr));
+    TEST_OK(p.process(data::text));
+    TEST_OK(p.process(data::comment));
     if (true)
     {
         std::string str;
         gubg::file::read(str, gubg::file::File("/home/gfannes/cryptx-avalon/Overview.mm"));
-        TEST_OK(f.process(str));
+        TEST_OK(p.process(str));
     }
     return 0;
 }

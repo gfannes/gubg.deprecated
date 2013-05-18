@@ -1,19 +1,19 @@
-#ifndef HEADER_gubg_parse_xml_Factory_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_parse_xml_Factory_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_parse_xml_Parser_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_parse_xml_Parser_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/xml/Codes.hpp"
 #include "gubg/Strange.hpp"
 #include <vector>
 #include <string>
 
-#define GUBG_MODULE "xml::Factory"
+#define GUBG_MODULE "xml::Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace xml
     {
         template <typename Receiver>
-            class Factory_crtp
+            class Parser_crtp
             {
                 public:
                     typedef std::vector<std::string> Path;
@@ -37,7 +37,7 @@ namespace gubg
                             {
                                 L(STREAM(text));
                                 MSS(!path_.empty(), TextNotExpected);
-                                receiver_().factory_text(text.str(), path_);
+                                receiver_().parser_text(text.str(), path_);
                             }
 
                             //Check for a comment
@@ -46,7 +46,7 @@ namespace gubg
                                 if (MSS_IS_OK(readComment_(comment)))
                                 {
                                     L(STREAM(comment));
-                                    receiver_().factory_comment(comment.str(), path_);
+                                    receiver_().parser_comment(comment.str(), path_);
                                     continue;
                                 }
                             }
@@ -58,12 +58,12 @@ namespace gubg
                             if (flags & Open)
                             {
                                 const auto t = tag.str();
-                                receiver_().factory_open(t, path_);
+                                receiver_().parser_open(t, path_);
                                 path_.push_back(std::move(t));
                                 Attributes attributes;
                                 MSS(readAttributes_(attributes, attr));
                                 if (!attributes.empty())
-                                    receiver_().factory_attr(attributes, path_);
+                                    receiver_().parser_attr(attributes, path_);
                             }
                             if (flags & Close)
                             {
@@ -72,7 +72,7 @@ namespace gubg
                                 L(STREAM(t, path_.back()));
                                 MSS(t == path_.back(), CloseTagMismatch);
                                 path_.pop_back();
-                                receiver_().factory_close(std::move(t), path_);
+                                receiver_().parser_close(std::move(t), path_);
                             }
                         }
 
@@ -82,7 +82,7 @@ namespace gubg
                     }
 
                     //Default event points
-                    void factory_comment(const std::string &comment){}
+                    void parser_comment(const std::string &comment){}
 
                 private:
                     typedef unsigned int Flags;
