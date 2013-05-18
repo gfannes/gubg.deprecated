@@ -6,8 +6,8 @@ namespace data
 {
     const char * open_close = "<abc></abc>";
     const char * openclose = "<abc/>";
-    const char * open_close_attr = "<abc id=1></abc>";
-    const char * openclose_attr = "<abc id=1/>";
+    const char * open_close_attr = "<abc id=\"1\"></abc>";
+    const char * openclose_attr = "<abc id=\"1\"/>";
     const char * text = "<abc>text</abc>";
     const char * comment = "<abc><!--this is a comment--></abc>";
 }
@@ -30,6 +30,14 @@ namespace
         {
             SS(tag);
         }
+        void factory_attr(const Attributes &attrs, const Path &path)
+        {
+            SS(attrs.size());
+            for (auto attr: attrs)
+            {
+                L(STREAM(attr.first, attr.second));
+            }
+        }
         void factory_comment(const std::string &comment, const Path &path)
         {
             SS(comment);
@@ -50,7 +58,7 @@ int main()
     TEST_OK(f.process(data::openclose_attr));
     TEST_OK(f.process(data::text));
     TEST_OK(f.process(data::comment));
-    if (false)
+    if (true)
     {
         std::string str;
         gubg::file::read(str, gubg::file::File("/home/gfannes/cryptx-avalon/Overview.mm"));

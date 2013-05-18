@@ -17,6 +17,8 @@ namespace gubg
             {
                 public:
                     typedef std::vector<std::string> Path;
+                    typedef std::pair<std::string, std::string> Attribute;
+                    typedef std::vector<Attribute> Attributes;
 
                     ReturnCode process(const std::string &str)
                     {
@@ -58,6 +60,10 @@ namespace gubg
                                 const auto t = tag.str();
                                 receiver_().factory_open(t, path_);
                                 path_.push_back(std::move(t));
+                                Attributes attributes;
+                                MSS(readAttributes_(attributes, attr));
+                                if (!attributes.empty())
+                                    receiver_().factory_attr(attributes, path_);
                             }
                             if (flags & Close)
                             {
@@ -84,6 +90,13 @@ namespace gubg
                     static const Flags Open = 1;
                     static const Flags Close = 2;
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
+                    ReturnCode readComment_(Strange &comment)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS_Q(str_.popString("<!--"));
+                        MSS(str_.popUntil(comment, "-->"));
+                        MSS_END();
+                    }
                     ReturnCode readTag_(Strange &tag, Strange &attr, Flags &flags)
                     {
                         MSS_BEGIN(ReturnCode);
@@ -117,11 +130,21 @@ namespace gubg
                         }
                         MSS_END();
                     }
-                    ReturnCode readComment_(Strange &comment)
+                    ReturnCode readAttributes_(Attributes &attributes, Strange &attr)
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS_Q(str_.popString("<!--"));
-                        MSS(str_.popUntil(comment, "-->"));
+                        attributes.clear();
+                        while (attr.popChar(' ')){}
+                        while (!attr.empty())
+                        {
+                            Strange k, v;
+                            MSS(attr.popUntil(k, '='));
+                            while (attr.popChar(' ')){}
+                            MSS(attr.popChar('"'));
+                            MSS(attr.popUntil(v, '"'));
+                            attributes.push_back(std::make_pair(k.str(), v.str()));
+                            while (attr.popChar(' ')){}
+                        }
                         MSS_END();
                     }
 
