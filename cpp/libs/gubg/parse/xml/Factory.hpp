@@ -3,8 +3,10 @@
 
 #include "gubg/parse/xml/Codes.hpp"
 #include "gubg/Strange.hpp"
+#include <vector>
+#include <string>
 
-#define GUBG_MODULE_ "xml::Factory"
+#define GUBG_MODULE "xml::Factory"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -14,6 +16,8 @@ namespace gubg
             class Factory_crtp
             {
                 public:
+                    typedef std::vector<std::string> Path;
+
                     ReturnCode process(const std::string &str)
                     {
                         MSS_BEGIN(ReturnCode, str);
@@ -21,9 +25,8 @@ namespace gubg
                         MSS(!str.empty(), XMLEmpty);
                         str_ = str;
                         while (str_.popChar('\n') || str_.popCharBack('\n')){}
+                        path_.clear();
 
-                        gubg::Strange tag, attr;
-                        Flags flags;
                         while (!str_.empty())
                         {
                             Strange text;
@@ -31,26 +34,64 @@ namespace gubg
                             if (!text.empty())
                             {
                                 L(STREAM(text));
+                                MSS(!path_.empty(), TextNotExpected);
+                                receiver_().factory_text(text.str(), path_);
                             }
+
+                            //Check for a comment
+                            {
+                                Strange comment;
+                                if (MSS_IS_OK(readComment_(comment)))
+                                {
+                                    L(STREAM(comment));
+                                    receiver_().factory_comment(comment.str(), path_);
+                                    continue;
+                                }
+                            }
+
+                            Strange tag, attr;
+                            Flags flags;
                             MSS(readTag_(tag, attr, flags));
                             L(STREAM(tag, attr, flags));
+                            if (flags & Open)
+                            {
+                                const auto t = tag.str();
+                                receiver_().factory_open(t, path_);
+                                path_.push_back(std::move(t));
+                            }
+                            if (flags & Close)
+                            {
+                                MSS(!path_.empty());
+                                const auto t = tag.str();
+                                L(STREAM(t, path_.back()));
+                                MSS(t == path_.back(), CloseTagMismatch);
+                                path_.pop_back();
+                                receiver_().factory_close(std::move(t), path_);
+                            }
                         }
+
+                        MSS(path_.empty());
 
                         MSS_END();
                     }
+
+                    //Default event points
+                    void factory_comment(const std::string &comment){}
+
                 private:
                     typedef unsigned int Flags;
                     static const Flags None = 0;
                     static const Flags Open = 1;
                     static const Flags Close = 2;
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
-                    ReturnCode readTag_(gubg::Strange &tag, gubg::Strange &attr, Flags &flags)
+                    ReturnCode readTag_(Strange &tag, Strange &attr, Flags &flags)
                     {
                         MSS_BEGIN(ReturnCode);
                         MSS(str_.popChar('<'));
-                        gubg::Strange all;
+                        Strange all;
                         MSS(str_.popUntil(all, '>'));
 
+                        attr.clear();
                         if (all.popChar('/'))
                         {
                             flags = Close;
@@ -76,8 +117,16 @@ namespace gubg
                         }
                         MSS_END();
                     }
+                    ReturnCode readComment_(Strange &comment)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS_Q(str_.popString("<!--"));
+                        MSS(str_.popUntil(comment, "-->"));
+                        MSS_END();
+                    }
 
                     Strange str_;
+                    Path path_;
             };
     }
 }

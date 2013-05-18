@@ -58,6 +58,28 @@ namespace gubg
 
                 return false;
             }
+            bool popUntil(Strange &res, const std::string &str)
+            {
+                assert(invariants_());
+                if (str.empty())
+                    return true;
+                const auto ch = str.front();
+                const size_t s = str.size();
+                const auto l2check = l_-s;
+                for (size_t i = 0; i < l2check; ++i)
+                    if (s_[i] == ch)
+                    {
+                        //Pontential match, check the rest of str
+                        if (!std::memcmp(str.data(), s_+i, s))
+                        {
+                            res.s_ = s_;
+                            res.l_ = i;
+                            forward_(i+s);
+                            return true;
+                        }
+                    }
+                return false;
+            }
 #if 0
             template <typename Int>
                 bool popDecimal(Int &i)
@@ -130,6 +152,19 @@ namespace gubg
                 forward_(1);
                 return true;
             }
+
+            bool popString(const std::string &str)
+            {
+                assert(invariants_());
+                const auto s = str.size();
+                if (l_ < s)
+                    return false;
+                if (std::memcmp(str.data(), s_, s))
+                    return false;
+                forward_(s);
+                return true;
+            }
+
 
         private:
             bool invariants_() const
