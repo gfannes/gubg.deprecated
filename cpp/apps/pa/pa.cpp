@@ -19,8 +19,9 @@ namespace
         {
             OptionParser optionParser("Develop assistent");
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){PA_FINALIZE_OK(optionParser.help());});
-            optionParser.addMandatory("-e", "--extract FILE", "Extract planning from a freeplane mindmap",
-                    [&tasks](string file){tasks.push_back(ExtractPlanning::create(file));});
+            optionParser.addMandatory("-f", "--file FILE", "File to use", [&options](string file){options.file = file;});
+            optionParser.addMandatory("-t", "--totals NAME", "Show totals for freeplane attribute NAME",
+                    [&tasks](string name){tasks.push_back(ShowTotals::create(name));});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));

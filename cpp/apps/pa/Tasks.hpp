@@ -2,6 +2,7 @@
 #define HEADER_pa_Tasks_hpp_ALREADY_INCLUDED
 
 #include "pa/Codes.hpp"
+#include "gubg/file/File.hpp"
 #include <list>
 #include <memory>
 
@@ -9,6 +10,7 @@ namespace pa
 {
     struct Options
     {
+        gubg::file::File file;
     };
     class ITask
     {
@@ -19,6 +21,6 @@ namespace pa
     typedef std::list<ITask::Ptr> Tasks;
 }
 
-#include "pa/ExtractPlanning.hpp"
+#include "pa/ShowTotals.hpp"
 
 #endif
