@@ -2,9 +2,10 @@
 #define HEADER_gubg_threading_Processor_hpp_ALREADY_INCLUDED
 
 #include "gubg/threading/Codes.hpp"
+#include "gubg/thread.hpp"
+#include "gubg/mutex.hpp"
+#include "gubg/condition_variable.hpp"
 #include <memory>
-#include <thread>
-#include <condition_variable>
 #include <queue>
 
 #define GUBG_MODULE "Processor"
@@ -40,7 +41,7 @@ namespace gubg
                             state_ = Starting;
                             event_.notify_one();
                         }
-                        std::thread tmpThread(std::ref(*this));
+			std::thread tmpThread(std::ref(*this));
                         tmpThread.swap(processingThread_);
                         MSS_END();
                     }
@@ -105,7 +106,7 @@ namespace gubg
                     {
                         JobPtr job_;
                         Processor &outer_;
-                        std::thread thread_;
+			std::thread thread_;
                         Job_(JobPtr job, Processor &outer):
                             job_(job), outer_(outer), thread_(std::ref(*this)){}
                         void operator()()
@@ -132,7 +133,7 @@ namespace gubg
 
                     enum State {Stopped, Starting, Running, Stopping};
                     volatile State state_;
-                    std::thread processingThread_;
+		    std::thread processingThread_;
             };
     }
 }

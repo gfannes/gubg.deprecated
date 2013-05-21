@@ -16,16 +16,17 @@ GUBG_CPP_FILES := OptionParser file/File file/Filesystem file/Forest env/Util en
 CPP_FILES := $(patsubst %,cpp/apps/da/%.cpp,$(DA_CPP_FILES)) $(patsubst %,cpp/libs/gubg/%.cpp,$(GUBG_CPP_FILES))
 OBJECT_FILES := $(patsubst %.cpp,%.o,$(CPP_FILES))
 
+ifeq ($(GUBG_PLATFORM),linux)
 BOOST_HEADERS := $(GUBG_BOOST)
 BOOST_LIBS := $(GUBG_BOOST)/stage/lib
 BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
-
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
-ifeq ($(GUBG_PLATFORM),linux)
-	CPPFLAGS_PLATFORM := -pthread
+CPPFLAGS_PLATFORM := -pthread
 endif
 ifeq ($(GUBG_PLATFORM),win32)
-	CPPFLAGS_PLATFORM := 
+BOOST_LINK := -lboost_thread -lboost_system -lboost_regex
+CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
+CPPFLAGS_PLATFORM := 
 endif
 #CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -DGUBG_DEBUG
 CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
@@ -42,9 +43,15 @@ $(DA_CACHE):
 	mkdir $@
 $(GUBG_BIN):
 	mkdir $@
+ifeq ($(GUBG_PLATFORM),win32)
+DA_EXE := da.exe
+endif
+ifeq ($(GUBG_PLATFORM),linux)
+DA_EXE := da
+endif
 da: $(OBJECT_FILES) $(DA_CACHE) $(GUBG_BIN)
-	g++ $(LDFLAGS) -o da $(OBJECT_FILES) $(LINK_LIBS)
-	cp da $(GUBG_BIN)
+	g++ $(LDFLAGS) -o $(DA_EXE) $(OBJECT_FILES) $(LINK_LIBS)
+	cp $(DA_EXE) $(GUBG_BIN)
 
 %.o: %.cpp $(GUBG_BOOST)
 	g++ $(CPPFLAGS) -c $< -o $@

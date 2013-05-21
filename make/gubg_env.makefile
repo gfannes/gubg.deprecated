@@ -11,6 +11,17 @@ $(info "GUBG: $(GUBG)")
 $(info "GUBG_SDKS: $(GUBG_SDKS)")
 $(info "GUBG_TMP: $(GUBG_TMP)")
 
+ifeq ($(GUBG_PLATFORM),win32)
+	GUBG_MAKE := gnu-make
+endif
+ifeq ($(GUBG_PLATFORM),linux)
+	GUBG_MAKE := make
+endif
+ifndef GUBG_MAKE
+	$(error No make specified)
+endif
+$(info Using $(GUBG_MAKE))
+
 .PHONY: env
 env: $(GUBG_SDKS) $(GUBG_TMP)
 

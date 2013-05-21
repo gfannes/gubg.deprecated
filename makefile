@@ -11,7 +11,7 @@ include make/arduino.makefile
 
 clean:
 	ruby internal/cleanAll.rb
-	make da-clean -f make/da.makefile
+	$(GUBG_MAKE) da-clean -f make/da.makefile
 
 fix:
 	cd cpp/libs/gubg && da -f guards -r
@@ -19,7 +19,7 @@ fix:
 	cd cpp/apps/da && da -f guards -r
 
 da:
-	make da -f make/da.makefile -j $(GUBG_NUMBER_CPU)
+	$(GUBG_MAKE) da -f make/da.makefile -j $(GUBG_NUMBER_CPU)
 
 pull:
 	git pull

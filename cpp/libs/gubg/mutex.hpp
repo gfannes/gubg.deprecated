@@ -4,23 +4,22 @@
 #include "gubg/Platform.hpp"
 
 #ifdef GUBG_LINUX
-
 #include <mutex>
+#endif
 
-#else//GUBG_LINUX
-
+#ifdef GUBG_MINGW
 #include "boost/thread/mutex.hpp"
-
+#include "boost/thread/lock_guard.hpp"
 namespace std
 {
     typedef ::boost::mutex mutex;
+
     template <typename Lock>
-        struct lock_guard: public ::boost::mutex::scoped_lock
-    {
-        lock_guard(Lock &lock):
-            ::boost::mutex::scoped_lock(lock){}
-    };
+	    using unique_lock = ::boost::unique_lock<Lock>;
+
+    template <typename Lock>
+	    using lock_guard = ::boost::lock_guard<Lock>;
 }
-#endif//GUBG_LINUX
+#endif
 
 #endif

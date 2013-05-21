@@ -1,15 +1,15 @@
 #ifndef HEADER_gubg_Async_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_Async_hpp_ALREADY_INCLUDED
 
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
+#include "gubg/mutex.hpp"
+#include "gubg/thread.hpp"
+#include "gubg/condition_variable.hpp"
 #include <queue>
 #include <vector>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <cassert>
 
+#define GUBG_MODULE "Async"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     template <typename Receiver, typename Job>
@@ -111,5 +111,6 @@ namespace gubg
                 std::condition_variable signal_;
         };
 }
+#include "gubg/log/end.hpp"
 
 #endif
