@@ -19,9 +19,12 @@ namespace
         {
             OptionParser optionParser("Develop assistent");
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){PA_FINALIZE_OK(optionParser.help());});
-            optionParser.addMandatory("-f", "--file FILE", "File to use", [&options](string file){options.file = file;});
+            optionParser.addMandatory("-i", "--input FILE", "Input file to use", [&options](string file){options.input = file;});
+            optionParser.addMandatory("-o", "--output FILE", "Output file to use", [&options](string file){options.output = file;});
+            optionParser.addMandatory("-f", "--fraction NAME", "Use freeplane attribute NAME as fraction", [&options](string name){options.fraction = name;});
+            optionParser.addMandatory("-F", "--fraction-default VALUE", "Default fraction to use", [&options](string value){options.fraction_default = value;});
             optionParser.addMandatory("-t", "--totals NAME", "Show totals for freeplane attribute NAME",
-                    [&tasks](string name){tasks.push_back(ShowTotals::create(name));});
+                    [&options, &tasks](string name){options.value = name; tasks.push_back(ShowTotals::create());});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));

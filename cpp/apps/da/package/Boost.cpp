@@ -30,7 +30,9 @@ da::ReturnCode Boost::resolveHeader(File &resolvedHeader, SourceFiles &sisterFil
     MSS_Q(root == "boost", UnknownHeader);
 
     L(partial.name());
+#ifdef GUBG_LINUX
     compileSettings_.includePaths.insert(base_);
+#endif
     linkSettings_.libraries.insert("boost_thread");
     linkSettings_.libraries.insert("boost_system");
     linkSettings_.libraries.insert("boost_filesystem");

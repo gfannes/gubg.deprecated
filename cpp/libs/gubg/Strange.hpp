@@ -122,6 +122,19 @@ namespace gubg
                     return true;
                 }
 #endif
+            bool popFloat(double &res)
+            {
+                assert(invariants_());
+                if (empty())
+                    return false;
+                char *e = 0;
+                double d = std::strtod(s_, &e);
+                if (e == s_)
+                    return false;
+                res = d;
+                forward_(e-s_);
+                return true;
+            }
 
             bool popChar(const char ch)
             {

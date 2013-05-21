@@ -1,5 +1,5 @@
-#ifndef gubg_thread_hpp
-#define gubg_thread_hpp
+#ifndef HEADER_gubg_thread_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_thread_hpp_ALREADY_INCLUDED
 
 #include "gubg/Platform.hpp"
 #include "gubg/chrono.hpp"

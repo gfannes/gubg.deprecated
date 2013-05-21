@@ -20,8 +20,13 @@ Builder::Builder()
         string str;
         if (env::expand(str, "$GUBG"))
             packages_ << GUBG::create(File(str));
+#ifdef GUBG_LINUX
         if (env::expand(str, "$GUBG_BOOST"))
             packages_ << Boost::create(File(str));
+#endif
+#ifdef GUBG_MINGW
+        packages_ << Boost::create(File(str));
+#endif
         if (env::expand(str, "$GUBG_ARDUINO"))
             packages_ << Arduino::create(File(str));
         if (env::expand(str, "$GUBG_DECODEIT"))

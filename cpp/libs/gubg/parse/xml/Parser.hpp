@@ -26,7 +26,7 @@ namespace gubg
 
                         MSS(!str.empty(), XMLEmpty);
                         str_ = str;
-                        while (str_.popChar('\n') || str_.popCharBack('\n')){}
+                        while (str_.popChar('\n') || str_.popCharBack('\n') || str_.popChar('\r') || str_.popCharBack('\r')){}
                         path_.clear();
 
                         while (!str_.empty())

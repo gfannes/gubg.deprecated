@@ -1,5 +1,5 @@
-#ifndef gubg_condition_variable_hpp
-#define gubg_condition_variable_hpp
+#ifndef HEADER_gubg_condition_variable_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_condition_variable_hpp_ALREADY_INCLUDED
 
 #ifdef GUBG_LINUX
 #include <condition_variable>

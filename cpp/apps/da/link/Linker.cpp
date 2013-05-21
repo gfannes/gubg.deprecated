@@ -23,16 +23,17 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         {
             case Any:
             case Host:
+                cmd << "g++ -std=c++11 ";
                 switch (exeType_)
                 {
-                    case ExeType::Debug:
-                        cmd << "g++ -std=c++11 -g -pthread -o ";
-                        break;
-                    case ExeType::Release:
-                        cmd << "g++ -pthread -o ";
-                        break;
+                    case ExeType::Debug:   cmd << "-g "; break;
+                    case ExeType::Release:               break;
                     default: assert(false); break;
                 }
+#ifdef GUBG_LINUX
+                cmd << "-pthread ";
+#endif
+                cmd << "-o ";
                 break;
             case Arduino:
                 if (arduino::isUno())
@@ -68,7 +69,12 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
         case Host:
             {
                 cmd.str("");
+#ifdef GUBG_LINUX
                 cmd << "./" << exe.name();
+#endif
+#ifdef GUBG_MINGW
+                cmd << ".\\" << exe.name();
+#endif
                 int res;
                 {
                     SSS(cmd.str());

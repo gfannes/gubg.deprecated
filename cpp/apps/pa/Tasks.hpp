@@ -10,7 +10,11 @@ namespace pa
 {
     struct Options
     {
-        gubg::file::File file;
+        gubg::file::File input;
+        gubg::file::File output;
+        std::string value;
+        std::string fraction;
+        std::string fraction_default;
     };
     class ITask
     {
