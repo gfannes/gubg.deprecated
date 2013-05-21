@@ -6,6 +6,7 @@ help:
 include make/gubg_env.makefile
 include make/dev_env.makefile
 include make/boost.makefile
+include make/nana.makefile
 include make/iup.makefile
 include make/arduino.makefile
 

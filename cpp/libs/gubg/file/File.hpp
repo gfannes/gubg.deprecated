@@ -4,6 +4,7 @@
 #include "gubg/string_algo.hpp"
 #include <string>
 #include <vector>
+#include <ostream>
 
 namespace gubg
 {
@@ -174,6 +175,14 @@ namespace gubg
                 Type type_;
                 Name name_;
         };
+    }
+}
+
+namespace std
+{
+    inline ostream &operator<<(ostream &os, const gubg::file::File &f)
+    {
+        return os << f.name();
     }
 }
 
