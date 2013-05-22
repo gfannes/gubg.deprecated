@@ -41,8 +41,8 @@ namespace gubg
                         if (!task.isPlanned())
                         {
                             if (first())
-                                tr.begin_ = it;
-                            tr.end_ = it+1;
+                                tr.b = it;
+                            tr.e = it+1;
                             if (task.deadline.isValid())
                                 break;
                         }
