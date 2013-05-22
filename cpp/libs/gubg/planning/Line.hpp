@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <algorithm>
 
 #define GUBG_MODULE "Line"
 #include "gubg/log/begin.hpp"

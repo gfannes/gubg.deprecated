@@ -23,8 +23,20 @@ namespace
             optionParser.addMandatory("-o", "--output FILE", "Output file to use", [&options](string file){options.output = file;});
             optionParser.addMandatory("-f", "--fraction NAME", "Use freeplane attribute NAME as fraction", [&options](string name){options.fraction = name;});
             optionParser.addMandatory("-F", "--fraction-default VALUE", "Default fraction to use", [&options](string value){options.fraction_default = value;});
-            optionParser.addMandatory("-t", "--totals NAME", "Show totals for freeplane attribute NAME",
-                    [&options, &tasks](string name){options.value = name; tasks.push_back(ShowTotals::create());});
+            optionParser.addMandatory("-t", "--totals NAME", "The totals to be used",
+                    [&options, &tasks](string name){options.value = name; tasks.push_back(LoadMindMap::create());});
+            optionParser.addSwitch("-d", "--details", "Show detailed work breakdown",
+                    [&options, &tasks]()
+                    {
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    tasks.push_back(ShowWBS::create());
+                    });
+            optionParser.addSwitch("-p", "--plan", "Basic planning",
+                    [&options, &tasks]()
+                    {
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    tasks.push_back(Plan::create());
+                    });
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));

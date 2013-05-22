@@ -25,6 +25,8 @@ namespace pa
     typedef std::list<ITask::Ptr> Tasks;
 }
 
-#include "pa/ShowTotals.hpp"
+#include "pa/LoadMindMap.hpp"
+#include "pa/ShowWBS.hpp"
+#include "pa/Plan.hpp"
 
 #endif

@@ -53,19 +53,19 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="3"/>
 <node TEXT="task a" POSITION="right" ID="ID_500267427" CREATED="1368925157507" MODIFIED="1368925605178">
 <edge COLOR="#ff0000"/>
-<attribute NAME="effort" VALUE="4" OBJECT="org.freeplane.features.format.FormattedNumber|4"/>
+<attribute NAME="estimate" VALUE="4" OBJECT="org.freeplane.features.format.FormattedNumber|4"/>
 <node TEXT="do 1" ID="ID_312674642" CREATED="1368925172695" MODIFIED="1368925622169">
-<attribute NAME="effort" VALUE="12" OBJECT="org.freeplane.features.format.FormattedNumber|12"/>
+<attribute NAME="estimate" VALUE="12" OBJECT="org.freeplane.features.format.FormattedNumber|12"/>
 </node>
 <node TEXT="do 2" ID="ID_1271135418" CREATED="1368925176164" MODIFIED="1368925648550">
-<attribute NAME="effort" VALUE="23" OBJECT="org.freeplane.features.format.FormattedNumber|23"/>
+<attribute NAME="estimate" VALUE="23" OBJECT="org.freeplane.features.format.FormattedNumber|23"/>
 <attribute NAME="oeu" VALUE="123" OBJECT="org.freeplane.features.format.FormattedNumber|123"/>
 </node>
 <node TEXT="do nothing" ID="ID_1017339220" CREATED="1368925179218" MODIFIED="1368925185647"/>
 </node>
 <node TEXT="task b" POSITION="right" ID="ID_1059129007" CREATED="1368925162726" MODIFIED="1368925304089">
 <edge COLOR="#0000ff"/>
-<attribute NAME="effort" VALUE="2" OBJECT="org.freeplane.features.format.FormattedNumber|2"/>
+<attribute NAME="estimate" VALUE="2" OBJECT="org.freeplane.features.format.FormattedNumber|2"/>
 </node>
 </node>
 </map>

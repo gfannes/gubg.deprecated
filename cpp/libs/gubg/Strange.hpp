@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <ostream>
+#include <cstring>
 
 namespace gubg
 {
@@ -204,7 +205,7 @@ namespace gubg
 
 namespace std
 {
-    ostream &operator<<(ostream &os, const gubg::Strange &strange)
+    inline ostream &operator<<(ostream &os, const gubg::Strange &strange)
     {
         os << strange.str();
         return os;
