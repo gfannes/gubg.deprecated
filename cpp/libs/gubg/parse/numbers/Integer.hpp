@@ -37,6 +37,9 @@ namespace gubg
                         //Number is too short or too long
                         return false;
 
+#ifdef L_CASE
+#error L_CASE already defined
+#endif
 #define L_CASE(n)       case n: l += lt_ ## n[*buf++ - '0']; L(#n ": " << l)
                     L_CASE(10);
                     L_CASE(9);
@@ -48,6 +51,7 @@ namespace gubg
                     L_CASE(3);
                     L_CASE(2);
                     L_CASE(1);
+#undef L_CASE
                 }
                 return true;
             } 
@@ -82,6 +86,9 @@ namespace gubg
                         //Number is too short or too long
                         return false;
 
+#ifdef L_CASE
+#error L_CASE already defined
+#endif
 #define L_CASE(n)       case n: l += lt_ ## n[*buf++ - '0']; L(#n ": " << l)
                     L_CASE(20);
                     L_CASE(19);
@@ -103,6 +110,7 @@ namespace gubg
                     L_CASE(3);
                     L_CASE(2);
                     L_CASE(1);
+#undef L_CASE
                 }
                 return true;
             } 

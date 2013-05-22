@@ -2,13 +2,15 @@
 #include "gubg/parse/xml/Parser.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
+#include "gubg/planning/Planning.hpp"
 #include <string>
 #include <fstream>
+#include <map>
 using namespace pa;
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "ShowTotals"
+#define GUBG_MODULE_ "ShowTotals"
 #include "gubg/log/begin.hpp"
 
 namespace pa
@@ -18,14 +20,16 @@ namespace pa
         typedef string Name;
         typedef double Value;
         typedef double Fraction;
-        typedef std::vector<Node> Childs;
+        typedef vector<Node> Childs;
         typedef string Id;
+	typedef map<string, string> Attributes;
 
         Name desc;
         Value value;
         Fraction fraction;
         Childs childs;
         Id id;
+	Attributes attributes;
 
         Node():value(), fraction(){}
     };
@@ -75,28 +79,37 @@ namespace pa
                 location.back()->id = id->second;
             }
             if (path.back() == "attribute")
-            {
-                auto n = attrs.find("NAME");
-                auto v = attrs.find("VALUE");
-                auto o = attrs.find("OBJECT");
-                MSS(n != attrs.end() && v != attrs.end() && o != attrs.end());
-                if (n->second == value)
-                {
-                    MSS(!location.empty());
-                    gubg::Strange strange(o->second);
-                    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-                    MSS(strange.popFloat(location.back()->value));
-                    L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
-                }
-                if (n->second == fraction)
-                {
-                    MSS(!location.empty());
-                    gubg::Strange strange(o->second);
-                    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-                    MSS(strange.popFloat(location.back()->fraction));
-                    L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
-                }
-            }
+	    {
+		    auto n = attrs.find("NAME");
+		    auto v = attrs.find("VALUE");
+		    MSS(n != attrs.end() && v != attrs.end());
+		    if (n->second == value)
+		    {
+			    auto o = attrs.find("OBJECT");
+			    MSS(n != attrs.end() && v != attrs.end() && o != attrs.end());
+			    MSS(!location.empty());
+			    gubg::Strange strange(o->second);
+			    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+			    MSS(strange.popFloat(location.back()->value));
+			    L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
+		    }
+		    else if (n->second == fraction)
+		    {
+			    auto o = attrs.find("OBJECT");
+			    MSS(n != attrs.end() && v != attrs.end() && o != attrs.end());
+			    MSS(!location.empty());
+			    gubg::Strange strange(o->second);
+			    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+			    MSS(strange.popFloat(location.back()->fraction));
+			    L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
+		    }
+		    else
+		    {
+			    MSS(!location.empty());
+			    location.back()->attributes[n->second] = v->second;
+			    L("Detected " << n->second << " for " << location.back()->desc << ": " << v->second);
+		    }
+	    }
             MSS_END();
         }
     };
@@ -136,83 +149,112 @@ namespace
             {
             }
     };
-    struct TJ
+    struct Planner
     {
-        string prevId;
-        ostream &os;
-        TJ(ostream &o):os(o){}
-        template <typename Path>
-            bool open(Node &n, Path &p)
-            {
-                const auto total = n.value*n.fraction;
-                if (total <= 0)
-                    return false;
-                switch (p.size())
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        prevId.clear();
-                        os << indent(p.size()) << "task " << n.desc << " \"" << n.desc << "\"" << endl << indent(p.size()) << "{" << endl;
-                        break;
-                    case 2:
-                        os << indent(p.size()) << "task " << n.id << " \"" << n.desc << "\"" << endl << indent(p.size()) << "{" << endl;
-                        os << indent(p.size()+1) << "effort " << total << "d";
-                        if (!prevId.empty())
-                            os <<  " depends !" << prevId;
-                        os << endl;
-                        prevId = n.id;
-                        break;
-                    default:
-                        return false;
-                        break;
-                }
-                return true;
-            }
-        template <typename Path>
-            void close(Node &n, Path &p) const
-            {
-                switch (p.size())
-                {
-                    case 0:
-                        break;
-                    case 1:
-                    case 2:
-                        os << indent(p.size()) << "}" << endl;
-                        break;
-                }
-            }
-        static string indent(size_t level) {return string(2*(level-1), ' ');}
+	gubg::planning::Planning planning;
+	gubg::planning::Line *line;
+	std::ostringstream error_;
+
+	Planner()
+	{
+		using namespace gubg::planning;
+		planning.resources.addWorker("gfa", 0.8);
+		planning.resources.addWorker("wba", 0.5);
+		for (auto d: workDays(90))
+			planning.resources.addDay(d);
+		for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
+			planning.resources.absence("gfa", d);
+		for (auto d: dayRange(Day(2013, 7, 1), Day(2013, 7, 12)))
+			planning.resources.absence("wba", d);
+
+		Workers workers;
+		workers.push_back("gfa");
+		planning.getLine("XX").setMaxSweatPerDay(1.0).setWorkers(workers);
+		workers.push_back("wba");
+		planning.getLine("BLITS_L").setMaxSweatPerDay(2.0).setWorkers(workers);
+		planning.getLine("BLITS_S").setMaxSweatPerDay(2.0).setWorkers(workers);
+	}
+
+	bool run()
+	{
+		if (!error_.str().empty())
+		{
+			std::cout << error_.str();
+			return false;
+		}
+		return planning.run();
+	}
+
+	template <typename Path>
+		bool open(Node &n, Path &p)
+		{
+			SS(n.desc, p.size());
+			const auto total = n.value*n.fraction;
+			if (total <= 0)
+				return false;
+			switch (p.size())
+			{
+				case 0:
+					break;
+				case 1:
+					line = &planning.getLine(n.desc);
+					break;
+				case 2:
+					{
+						gubg::planning::Task task(n.desc, total);
+						auto deadline = n.attributes.find("deadline");
+						if (deadline != n.attributes.end())
+						{
+							L("Found deadline attribute");
+							auto dl = gubg::planning::Day(deadline->second);
+							if (!dl.isValid())
+								error_ << "Could not parse deadline attribute for node " << n.desc << ": \"" << deadline->second << "\"" << std::endl;
+							else
+								task.deadline = dl;
+						}
+						line->addTask(task);
+					}
+					break;
+				default: return false; break;
+			}
+			return true;
+		}
+
+	template <typename Path>
+		void close(Node &n, Path &p) const { }
     };
 }
 pa::ReturnCode ShowTotals::execute(const Options &options)
 {
-    MSS_BEGIN(ReturnCode, "Showing totals: " << STREAM(options.input, options.value, options.fraction, options.fraction_default));
+	MSS_BEGIN(ReturnCode, "Showing totals: " << STREAM(options.input, options.value, options.fraction, options.fraction_default));
 
-    string xml;
-    MSS(read(xml, options.input));
+	string xml;
+	MSS(read(xml, options.input));
 
-    double defaultFraction = 1.0;
-    if (!options.fraction_default.empty())
-    {
-        gubg::Strange strange(options.fraction_default);
-        MSS(strange.popFloat(defaultFraction));
-    }
+	double defaultFraction = 1.0;
+	if (!options.fraction_default.empty())
+	{
+		gubg::Strange strange(options.fraction_default);
+		MSS(strange.popFloat(defaultFraction));
+	}
 
-    Node root;
-    {
-        Parser p(root, options.value, options.fraction, defaultFraction);
-        MSS(p.process(xml));
-    }
+	Node root;
+	{
+		Parser p(root, options.value, options.fraction, defaultFraction);
+		MSS(p.process(xml));
+	}
 
-    gubg::tree::dfs::iterate(root, Aggregate());
-    gubg::tree::dfs::iterate(root, Show(cout));
-    if (!options.output.name().empty())
-    {
-        ofstream fo(options.output.name());
-        TJ tj(fo);
-        gubg::tree::dfs::iterate(root, tj);
-    }
+	gubg::tree::dfs::iterate(root, Aggregate());
+	gubg::tree::dfs::iterate(root, Show(cout));
+	Planner planner;
+	gubg::tree::dfs::iterate(root, planner);
+	MSS(planner.run());
+	planner.planning.stream(cout);
+	if (!options.output.name().empty())
+	{
+		ofstream fo(options.output.name());
+		planner.planning.stream(fo);
+	}
 
-    MSS_END();
+	MSS_END();
 }
