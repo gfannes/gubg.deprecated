@@ -43,7 +43,7 @@ recursor = Proc.new do |dir|
 	end
 end
 
-unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c cloak.cpp]
+unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c cloak.cpp asm]
 str = unwantedExtensions.map{|ext|"(\\.#{ext})"}*"|"
 reUnwantedExtensions = /(#{str})$/
 

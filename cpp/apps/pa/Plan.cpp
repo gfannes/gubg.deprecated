@@ -23,7 +23,7 @@ namespace
             using namespace gubg::planning;
             planning.resources.addWorker("gfa", 0.8);
             planning.resources.addWorker("wba", 0.5);
-            for (auto d: workDays(90))
+            for (auto d: workDays(200))
                 planning.resources.addDay(d);
             for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
                 planning.resources.absence("gfa", d);

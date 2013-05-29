@@ -60,7 +60,7 @@ namespace gubg
                     {
                         os << "\t" << task.start << " => " << task.stop << ": " << task.name << std::string(maxTaskName-task.name.size(), ' ') << " (" << task.sweat << "d";
                         if (task.deadline.isValid())
-                            os << ", deadline " << task.deadline;
+                            os << ", deadline " << task.deadline << (task.stop <= task.deadline ? "" : " TOO LATE");
                         os << ")" << std::endl;
                     }
                 }

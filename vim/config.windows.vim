@@ -6,8 +6,8 @@ else
 	set lines=50 columns=190
 	set gfn=Courier:h12:cANSI
 endif
-set tabstop=8
-set shiftwidth=8
+set tabstop=4
+set shiftwidth=4
 set noexpandtab
 set backupdir=c:/temp
 set directory=c:/temp

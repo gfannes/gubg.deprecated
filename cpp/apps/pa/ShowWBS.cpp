@@ -1,6 +1,7 @@
 #include "pa/ShowWBS.hpp"
 #include "pa/Model.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
+#include <fstream>
 using namespace pa;
 using namespace std;
 
@@ -32,6 +33,12 @@ pa::ReturnCode ShowWBS::execute(const Options &options)
 	MSS_BEGIN(ReturnCode, "Showing WBS");
 
 	gubg::tree::dfs::iterate(model(), Show(cout));
+
+	if (!options.output.name().empty())
+	{
+		ofstream fo(options.output.name());
+		gubg::tree::dfs::iterate(model(), Show(fo));
+	}
 
 	MSS_END();
 }

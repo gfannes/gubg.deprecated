@@ -66,22 +66,36 @@ namespace pa
 		    MSS(n != attrs.end() && v != attrs.end());
 		    if (n->second == value)
 		    {
-			    auto o = attrs.find("OBJECT");
-			    MSS(n != attrs.end() && v != attrs.end() && o != attrs.end());
 			    MSS(!location.empty());
-			    gubg::Strange strange(o->second);
-			    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-			    MSS(strange.popFloat(location.back()->value));
+			    auto o = attrs.find("OBJECT");
+			    if (o != attrs.end())
+			    {
+				    gubg::Strange strange(o->second);
+				    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+				    MSS(strange.popFloat(location.back()->value));
+			    }
+			    else
+			    {
+				    gubg::Strange strange(v->second);
+				    MSS(strange.popFloat(location.back()->value));
+			    }
 			    L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
 		    }
 		    else if (n->second == fraction)
 		    {
-			    auto o = attrs.find("OBJECT");
-			    MSS(n != attrs.end() && v != attrs.end() && o != attrs.end());
 			    MSS(!location.empty());
-			    gubg::Strange strange(o->second);
-			    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-			    MSS(strange.popFloat(location.back()->fraction));
+			    auto o = attrs.find("OBJECT");
+			    if (o != attrs.end())
+			    {
+				    gubg::Strange strange(o->second);
+				    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+				    MSS(strange.popFloat(location.back()->fraction));
+			    }
+			    else
+			    {
+				    gubg::Strange strange(v->second);
+				    MSS(strange.popFloat(location.back()->fraction));
+			    }
 			    L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
 		    }
 		    else
