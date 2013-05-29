@@ -7,4 +7,5 @@ endif
 
 .PHONY: nana
 nana: $(GUBG_NANA)
-	cd $(GUBG_NANA)/Nana.Cpp11/build/makefile && make
+	mkdir $(GUBG_NANA)/Nana.Cpp11/build/bin
+	cd $(GUBG_NANA)/Nana.Cpp11/build/makefile && make -j $(GUBG_NUMBER_CPU)

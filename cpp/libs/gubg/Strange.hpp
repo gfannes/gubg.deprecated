@@ -137,7 +137,7 @@ namespace gubg
                 return true;
             }
 
-            bool popChar(const char ch)
+            bool popCharIf(const char ch)
             {
                 assert(invariants_());
                 if (empty())

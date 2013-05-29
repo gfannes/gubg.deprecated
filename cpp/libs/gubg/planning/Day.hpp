@@ -21,7 +21,7 @@ namespace gubg
             {
                 Strange strange(str);
                 int y, m, d;
-                if (strange.popDecimal(y) && strange.popChar('-') && strange.popDecimal(m) && strange.popChar('-') && strange.popDecimal(d))
+                if (strange.popDecimal(y) && strange.popCharIf('-') && strange.popDecimal(m) && strange.popCharIf('-') && strange.popDecimal(d))
                 {
                     y_ = y;
                     m_ = m;

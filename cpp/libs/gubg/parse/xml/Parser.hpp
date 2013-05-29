@@ -2,6 +2,7 @@
 #define HEADER_gubg_parse_xml_Parser_hpp_ALREADY_INCLUDED
 
 #include "gubg/parse/xml/Codes.hpp"
+#include "gubg/parse/xml/Coding.hpp"
 #include "gubg/Strange.hpp"
 #include <vector>
 #include <string>
@@ -26,7 +27,7 @@ namespace gubg
 
                         MSS(!str.empty(), XMLEmpty);
                         str_ = str;
-                        while (str_.popChar('\n') || str_.popCharBack('\n') || str_.popChar('\r') || str_.popCharBack('\r')){}
+                        while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
                         path_.clear();
 
                         while (!str_.empty())
@@ -37,7 +38,9 @@ namespace gubg
                             {
                                 L(STREAM(text));
                                 MSS(!path_.empty(), TextNotExpected);
-                                receiver_().parser_text(text.str(), path_);
+                                std::string t;
+                                MSS(decode(t, text.str()));
+                                receiver_().parser_text(t, path_);
                             }
 
                             //Check for a comment
@@ -57,7 +60,8 @@ namespace gubg
                             L(STREAM(tag, attr, flags));
                             if (flags & Open)
                             {
-                                const auto t = tag.str();
+                                std::string t;
+                                MSS(decode(t, tag.str()));
                                 receiver_().parser_open(t, path_);
                                 path_.push_back(std::move(t));
                                 Attributes attributes;
@@ -68,7 +72,8 @@ namespace gubg
                             if (flags & Close)
                             {
                                 MSS(!path_.empty());
-                                const auto t = tag.str();
+                                std::string t;
+                                MSS(decode(t, tag.str()));
                                 L(STREAM(t, path_.back()));
                                 MSS(t == path_.back(), CloseTagMismatch);
                                 path_.pop_back();
@@ -101,12 +106,12 @@ namespace gubg
                     ReturnCode readTag_(Strange &tag, Strange &attr, Flags &flags)
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS(str_.popChar('<'));
+                        MSS(str_.popCharIf('<'));
                         Strange all;
                         MSS(str_.popUntil(all, '>'));
 
                         attr.clear();
-                        if (all.popChar('/'))
+                        if (all.popCharIf('/'))
                         {
                             flags = Close;
                             all.popAll(tag);
@@ -135,16 +140,21 @@ namespace gubg
                     {
                         MSS_BEGIN(ReturnCode);
                         attributes.clear();
-                        while (attr.popChar(' ')){}
+                        while (attr.popCharIf(' ')){}
                         while (!attr.empty())
                         {
                             Strange k, v;
                             MSS(attr.popUntil(k, '='));
-                            while (attr.popChar(' ')){}
-                            MSS(attr.popChar('"'));
+                            while (attr.popCharIf(' ')){}
+                            MSS(attr.popCharIf('"'));
                             MSS(attr.popUntil(v, '"'));
-                            MSS(attributes.insert(std::make_pair(k.str(), v.str())).second, DuplicateAttributeName);
-                            while (attr.popChar(' ')){}
+                            std::string kk, vv;
+                            MSS(decode(kk, k.str()));
+                            MSS(decode(vv, v.str()));
+                            //insert().second returns false if insertion failed (i.e., the attribute was already present)
+                            //XML does not allow duplicate attribute names
+                            MSS(attributes.insert(std::make_pair(kk, vv)).second, DuplicateAttributeName);
+                            while (attr.popCharIf(' ')){}
                         }
                         MSS_END();
                     }
