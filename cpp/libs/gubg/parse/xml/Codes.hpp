@@ -10,7 +10,8 @@ namespace gubg
         enum class ReturnCode
         {
             MSS_DEFAULT_CODES,
-            XMLEmpty, TextNotExpected, CloseTagMismatch, DuplicateAttributeName,
+            XMLEmpty, TextNotExpected, CloseTagMismatch, DuplicateAttributeName, NonPrintable,
+            UnknownEscape, UnexpectedRawChar,
         };
     }
 }
