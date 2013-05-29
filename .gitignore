@@ -1,4 +1,4 @@
 *.o
 *.exe
 *.hex
-da
+cpp/apps/da/da

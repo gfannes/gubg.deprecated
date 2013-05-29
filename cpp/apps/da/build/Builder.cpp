@@ -27,6 +27,8 @@ Builder::Builder()
 #ifdef GUBG_MINGW
         packages_ << Boost::create(File(str));
 #endif
+        if (env::expand(str, "$GUBG_NANA"))
+            packages_ << Nana::create(File(str));
         if (env::expand(str, "$GUBG_ARDUINO"))
             packages_ << Arduino::create(File(str));
         if (env::expand(str, "$GUBG_DECODEIT"))
