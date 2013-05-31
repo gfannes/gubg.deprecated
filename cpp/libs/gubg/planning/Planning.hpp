@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_planning_Planning_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_planning_Planning_hpp_ALREADY_INCLUDED
 
+#include "gubg/planning/Codes.hpp"
 #include "gubg/planning/Line.hpp"
 #include "gubg/planning/Resources.hpp"
 #include <vector>
@@ -28,16 +29,15 @@ namespace gubg
                     return line->second;
                 }
 
-                bool run()
+                ReturnCode run()
                 {
+					MSS_BEGIN(ReturnCode);
                     TaskRange tr;
                     while (getNextDeadlineToPlan_(tr))
-                        if (!planASAP_(tr))
-                            return false;
+						MSS(planASAP_(tr), CouldNotPlanDeadline);
                     while (getNextRangeToPlan_(tr))
-                        if (!planASAP_(tr))
-                            return false;
-                    return true;
+						MSS(planASAP_(tr), CouldNotPlanNormal);
+					MSS_END();
                 }
 
                 void stream(std::ostream &os) const
@@ -68,12 +68,12 @@ namespace gubg
                             return true;
                     return false;
                 }
-                bool planASAP_(TaskRange &tr)
+                ReturnCode planASAP_(TaskRange &tr)
                 {
+					MSS_BEGIN(ReturnCode);
                     for (auto &task: tr)
-                        if (!resources.planASAP(task))
-                            return false;
-                    return true;
+						MSS(resources.planASAP(task));
+					MSS_END();
                 }
                 typedef std::map<Line::Name, Line> LinePerName;
                 LinePerName linePerName_;
