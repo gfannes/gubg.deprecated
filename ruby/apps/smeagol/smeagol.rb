@@ -18,7 +18,8 @@ Dir.each("./") do |dir, fn|
         page = Dir.relative(fp.gsub(/\.asciidoc$/, ""))
         html = File.expand_path(page.gsub("/", "_"), options[:output])
         html.setExtension!("html")
-        system("asciidoc -b html5 -o #{html} #{fp}")
+        #system("asciidoc -b html5 -o #{html} #{fp}")
+        system("asciidoctor -b html5 -o #{html} #{fp}")
         infoPerPage[page] = {html: html}
     else
     end
@@ -42,4 +43,4 @@ infoPerPage.each do |page, info|
     end
     content.export(info[:html])
     content.export(File.expand_path("index.html", options[:output])) if page == "home"
-end
+end if false
