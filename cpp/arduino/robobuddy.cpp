@@ -1,4 +1,5 @@
 #include "garf/Sonar.hpp"
+#include "garf/Sonars.hpp"
 #include "garf/Motor.hpp"
 #include "garf/ObjectAvoidance.hpp"
 #include "garf/IRSensor.hpp"
@@ -26,10 +27,10 @@ const int MaxSamples = 30;
 int values[MaxSamples];
 int nrSamples;
 
-bool sonarMutex = false;
-Sonar<7, 8, 200> sonar_l(sonarMutex);
-Sonar<2, 4, 200> sonar_r(sonarMutex);
-unsigned long distance_l, distance_r;
+typedef Sonars<7, 2, 8, 200> S;
+S sonars;
+volatile unsigned long distance_l, distance_r;
+S::Which wh;
 
 garf::Motor<6, 5> g_rightMotor;
 garf::Motor<10, 9> g_leftMotor;
@@ -90,8 +91,8 @@ IR ir;
 void setup()
 {
     Serial.begin(9600);
-    sonar_l.init();
-    sonar_r.init();
+    sonars = S();
+    sonars.init();
     pinMode(13, OUTPUT);
     ir.init();
     oa.init();
@@ -186,16 +187,29 @@ void loop()
 
 #if 1
 //    Serial.print((int)oa.debug_getState());
-#if 1
-    if (sonar_l.process(distance_l))
+    unsigned long distance;
+    if (sonars.process(wh, distance))
     {
+        switch (wh)
+        {
+            case S::Which::Left:
+                distance_l = distance;
+/*
+                Serial.print(distance);
+                Serial.println("");
+                */
+                break;
+            case S::Which::Right:
+                distance_r = distance;
+/*
+                Serial.print("               ");
+                Serial.print(distance);
+                Serial.println("");
+                */
+                break;
+        }
     }
-#endif
-#if 1
-    if (sonar_r.process(distance_r))
-    {
-    }
-#endif
     oa.process();
+
 #endif
 }

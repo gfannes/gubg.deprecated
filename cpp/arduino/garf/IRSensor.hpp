@@ -1,5 +1,5 @@
-#ifndef irs
-#define irs
+#ifndef HEADER_garf_IRSensor_hpp_ALREADY_INCLUDED
+#define HEADER_garf_IRSensor_hpp_ALREADY_INCLUDED
 
 namespace garf
 {
