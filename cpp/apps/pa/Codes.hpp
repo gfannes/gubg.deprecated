@@ -8,6 +8,7 @@ namespace pa
     enum class ReturnCode
     {
         MSS_DEFAULT_CODES,
+		ParsingError,
     };
 }
 

@@ -330,6 +330,9 @@ MSS_BEGIN(t)
 #define MSS_END()            return MSS_RC_VAR.get()
 #define MSS_FAIL()           gubg_mss_fail_label:
 
+//Normally, MSS_RC_VAR.get() is OK
+#define MSS_RETURN_OK()      return MSS_RC_VAR.get()
+
 //Checks if the main success scenario is successfully completed. It detects direct return statements and exceptions
 #define MSS_BEGIN_(type, msg) \
     MSS_BEGIN(type); \
