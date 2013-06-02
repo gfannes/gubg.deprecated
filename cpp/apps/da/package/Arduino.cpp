@@ -61,13 +61,15 @@ da::ReturnCode Arduino::resolveHeader(File &resolvedHeader, SourceFiles &sisterF
                     f << base;
                     sisterFiles.insert(f);
                 }
+#if 1
             if (gubg::env::expand(arduinoBase, "$GUBG_ARDUINO/libraries"))
-                for (auto base: {"Wire/Wire.cpp"})
+                for (auto base: {"Servo/Servo.cpp", /*Wire/Wire.cpp*/})
                 {
                     File f(arduinoBase);
                     f << base;
                     sisterFiles.insert(f);
                 }
+#endif
         }
         linkSettings_.targetPlatform = Platform::Arduino;
     }
