@@ -9,7 +9,6 @@ class ProcessInfo: public garf::ProcessInfo_crtp<ProcessInfo>
             Serial.print(c);
             Serial.println(" ");
         }
-    private:
 };
 ProcessInfo pi;
 
