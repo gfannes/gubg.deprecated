@@ -1,18 +1,17 @@
 #include "garf/Sweeper.hpp"
-#include "garf/Global.hpp"
+#include "garf/Elapser.hpp"
 
-
-typedef garf::Sweeper<2, 0, 180, 7> Sweeper_;
-typedef garf::Global<Sweeper_> Sweeper;
+typedef garf::Sweeper<2, 0, 180, 7> Sweeper;
 Sweeper sweeper; 
+
+garf::Elapser elapser;
 
 void setup()
 {
-    //This is optional with Global
-    //sweeper.init();
 }
 
 void loop()
 {
-    sweeper->process();
+    elapser.process();
+    sweeper.process(elapser.elapse());
 }
