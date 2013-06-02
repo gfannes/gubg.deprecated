@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_planning_Resources_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_planning_Resources_hpp_ALREADY_INCLUDED
 
+#include "gubg/planning/Codes.hpp"
 #include "gubg/planning/Types.hpp"
 #include "gubg/planning/Day.hpp"
 #include "gubg/planning/Task.hpp"
@@ -8,7 +9,7 @@
 #include <map>
 #include <ostream>
 
-#define GUBG_MODULE "Resources"
+#define GUBG_MODULE_ "Resources"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -43,8 +44,9 @@ namespace gubg
                         return;
                     j->second = 0;
                 }
-                bool planASAP(Task &task)
+                ReturnCode planASAP(Task &task)
                 {
+					MSS_BEGIN(ReturnCode, STREAM(task));
                     Sweat sweat = task.sweat;
                     gubg::OnlyOnce setStart;
                     for (auto &di: infoPerDay_)
@@ -64,19 +66,16 @@ namespace gubg
                                     {
                                         it->second -= sweat;
                                         task.stop = day;
-                                        return true;
+										MSS_RETURN_OK();
                                     }
-                                    else
-                                    {
-                                        sweat -= available;
-                                        it->second -= available;
-                                    }
+									sweat -= available;
+									it->second -= available;
                                 }
                             }
                         }
                     }
-                    //Not enough sweat available for this task
-                    return false;
+					MSS_L(NotEnoughSweatAvailable);
+					MSS_END();
                 }
 
                 void stream(std::ostream &os) const

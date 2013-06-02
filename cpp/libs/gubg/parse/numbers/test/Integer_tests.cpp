@@ -19,6 +19,10 @@ int main()
         TEST_TRUE(gubg::parse::numbers::read(bb, a, l));
         TEST_EQ(aa, bb);
         TEST_EQ(10, l);
+        auto n = "-123";
+        long nn = -123, mm = 0;
+        TEST_TRUE(gubg::parse::numbers::read(mm, n, l));
+        TEST_EQ(nn, mm);
     }
     {
         TEST_TAG(stress);

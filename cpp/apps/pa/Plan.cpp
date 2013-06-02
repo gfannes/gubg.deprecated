@@ -16,7 +16,7 @@ namespace
     {
         gubg::planning::Planning planning;
         gubg::planning::Line *line;
-        std::ostringstream error_;
+        std::ostringstream parseError_;
 
         Planner()
         {
@@ -38,14 +38,16 @@ namespace
             planning.getLine("BLITS_S").setMaxSweatPerDay(2.0).setWorkers(workers);
         }
 
-        bool run()
+        ReturnCode run()
         {
-            if (!error_.str().empty())
+			MSS_BEGIN(ReturnCode);
+            if (!parseError_.str().empty())
             {
-                std::cout << error_.str();
-                return false;
+                std::cout << parseError_.str();
+				MSS_L(ParsingError);
             }
-            return planning.run();
+			MSS(planning.run());
+			MSS_END();
         }
 
         template <typename Path>
@@ -71,7 +73,7 @@ namespace
                                 L("Found deadline attribute");
                                 auto dl = gubg::planning::Day(deadline->second);
                                 if (!dl.isValid())
-                                    error_ << "Could not parse deadline attribute for node " << n.desc << ": \"" << deadline->second << "\"" << std::endl;
+                                    parseError_ << "Could not parse deadline attribute for node " << n.desc << ": \"" << deadline->second << "\"" << std::endl;
                                 else
                                     task.deadline = dl;
                             }
