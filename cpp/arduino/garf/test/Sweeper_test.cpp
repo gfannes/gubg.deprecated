@@ -1,21 +1,18 @@
 #include "garf/Sweeper.hpp"
-#include "gubg/Global.hpp"
+#include "garf/Global.hpp"
 
-void * operator new (size_t size, void * ptr) { return ptr; }
 
-typedef garf::Sweeper<9, 180, 360> Sweeper_;
-typedef gubg::Global<Sweeper_> Sweeper;
-//Sweeper sweeper; 
-Sweeper_ s;
+typedef garf::Sweeper<2, 0, 180, 7> Sweeper_;
+typedef garf::Global<Sweeper_> Sweeper;
+Sweeper sweeper; 
 
 void setup()
 {
+    //This is optional with Global
     //sweeper.init();
-    s.init();
 }
 
 void loop()
 {
-    //sweeper->process();
-    s.process();
+    sweeper->process();
 }
