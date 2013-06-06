@@ -1,9 +1,5 @@
-#include "garf/Sweeper.hpp"
 #include "garf/ProcessInfo.hpp"
 #include "garf/Elapser.hpp"
-
-typedef garf::Sweeper<2, 0, 180, 7> Sweeper;
-Sweeper sweeper; 
 
 class ProcessInfo: public garf::ProcessInfo_crtp<ProcessInfo>
 {
@@ -13,7 +9,6 @@ class ProcessInfo: public garf::ProcessInfo_crtp<ProcessInfo>
             Serial.print(c);
             Serial.println(" ");
         }
-    private:
 };
 ProcessInfo pi;
 
@@ -27,6 +22,5 @@ void setup()
 void loop()
 {
     elapser.process();
-    sweeper.process(elapser.elapse());
     pi.process(elapser.elapse());
 }
