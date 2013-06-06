@@ -4,6 +4,8 @@
 #include "gubg/cortex/IColumn.hpp"
 #include <map>
 
+#define GUBG_MODULE "PLC"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace cortex
@@ -13,57 +15,66 @@ namespace gubg
         {
             public:
                 PLC(time::Span span):
-                    span_(span){}
+                    span_(span),
+                    now_(time::Clock::now()){}
 
                 void add(time::Offset offset, Value value)
                 {
-                    if (offset < -span || offset > span)
+                    if (offset < -span_ || offset > span_)
                         return;
-                    valuePerOffset_[offset] = value;
+                    valuePerPoint_[now_ + offset] = value;
                 }
 
-                void process(const Elapse elapse)
+                void process(const time::Elapse elapse)
                 {
-                    const auto minSpan = -span_;
-                    for (auto it = valuePerOffset_.begin(); it != valuePerOffset_.end();)
+                    now_ += elapse;
+                    const auto minPoint = now_-span_;
+                    for (auto it = valuePerPoint_.begin(); it != valuePerPoint_.end();)
                     {
-                        if (it->first < minSpan)
-                            it = valuePerOffset_.erase(it);
+                        if (it->first < minPoint)
+                            it = valuePerPoint_.erase(it);
                         else
-                        {
-                            it->first -= elapse;
                             ++it;
-                        }
                     }
                 }
 
                 //IColumn interface
                 virtual Value value(time::Offset offset, time::Span span)
                 {
-                    if (valuePerOffset_.empty())
+                    if (valuePerPoint_.empty())
                         return Value();
-                    auto it = valuePerOffset_.lower_bound(offset - span/2);//Not-less than
-                    const auto e = valuePerOffset_.upper_bound(offset + span/2);//Greater than
-                    time::Offset pt = it->first;
+                    const auto point = now_ + offset;
+                    auto it = valuePerPoint_.lower_bound(point - span/2);//Not-less than
+                    const auto e = valuePerPoint_.upper_bound(point + span/2);//Greater than
+                    auto pt = it->first;
                     Value pv = it->second;
                     Value res;
                     for (++it; it != e; ++it)
                     {
-                        const auto dt2 = 0.5*(it->first - pt);
+                        const auto dt = (it->first - pt).count();
                         const auto &v = it->second;
                         pt = it->first;
-                        res.p += dt2*(v.p - pv.p);
-                        res.v += dt2*(v.p - pv.p);
+                        res.p += dt*(v.p + pv.p)/2.0;
+                        res.v += dt*(2*(pv.v*pv.p + v.v*v.p) + pv.v*v.p + v.v*pv.p)/6.0;
                         pv = it->second;
+                    }
+                    if (res.p > 0)
+                    {
+                        res.v /= res.p;
+                        res.p /= span.count();
                     }
                     return res;
                 }
 
             private:
-                typedef std::map<time::Offset, Value> ValuePerOffset;
-                ValuePerOffset valuePerOffset_;
+                const time::Span span_;
+                time::Point now_;
+
+                typedef std::map<time::Point, Value> ValuePerPoint;
+                ValuePerPoint valuePerPoint_;
         };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif
