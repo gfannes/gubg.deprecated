@@ -53,6 +53,7 @@ namespace gubg
                         const auto &v = it->second;
                         pt = it->first;
                         res.p += dt2*(v.p - pv.p);
+                        res.v += dt2*(v.p - pv.p);
                         pv = it->second;
                     }
                     return res;
