@@ -23,6 +23,7 @@ namespace
             optionParser.addMandatory("-o", "--output FILE", "Output file to use", [&options](string file){options.output = file;});
             optionParser.addMandatory("-f", "--fraction NAME", "Use freeplane attribute NAME as fraction", [&options](string name){options.fraction = name;});
             optionParser.addMandatory("-F", "--fraction-default VALUE", "Default fraction to use", [&options](string value){options.fraction_default = value;});
+            optionParser.addMandatory("-l", "--line NAME", "Line NAME to use", [&options](string name){options.lines.push_back(name);});
             optionParser.addMandatory("-t", "--totals NAME", "The totals to be used",
                     [&options, &tasks](string name){options.value = name; tasks.push_back(LoadMindMap::create());});
             optionParser.addSwitch("-d", "--details", "Show detailed work breakdown",
@@ -36,6 +37,12 @@ namespace
                     {
                     if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
                     tasks.push_back(Plan::create());
+                    });
+            optionParser.addSwitch("-D", "--debug", "Debug view of the tree",
+                    [&options, &tasks]()
+                    {
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    tasks.push_back(ShowDebug::create());
                     });
 
             OptionParser::Args args;

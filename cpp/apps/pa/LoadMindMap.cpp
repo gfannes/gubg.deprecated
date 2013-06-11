@@ -48,65 +48,68 @@ namespace pa
             }
         }
         pa::ReturnCode parser_attr(const Attributes &attrs, const Path &path)
-        {
-            MSS_BEGIN(pa::ReturnCode);
-            if (path.back() == "node")
-            {
-                auto it = attrs.find("TEXT");
-                auto id = attrs.find("ID");
-                MSS(it != attrs.end() && id != attrs.end());
-                L(it->second);
-                location.back()->desc = it->second;
-                location.back()->id = id->second;
-            }
-            if (path.back() == "attribute")
-	    {
-		    auto n = attrs.find("NAME");
-		    auto v = attrs.find("VALUE");
-		    MSS(n != attrs.end() && v != attrs.end());
-		    if (n->second == value)
-		    {
-			    MSS(!location.empty());
-			    auto o = attrs.find("OBJECT");
-			    if (o != attrs.end())
-			    {
-				    gubg::Strange strange(o->second);
-				    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-				    MSS(strange.popFloat(location.back()->value));
-			    }
-			    else
-			    {
-				    gubg::Strange strange(v->second);
-				    MSS(strange.popFloat(location.back()->value));
-			    }
-			    L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
-		    }
-		    else if (n->second == fraction)
-		    {
-			    MSS(!location.empty());
-			    auto o = attrs.find("OBJECT");
-			    if (o != attrs.end())
-			    {
-				    gubg::Strange strange(o->second);
-				    MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
-				    MSS(strange.popFloat(location.back()->fraction));
-			    }
-			    else
-			    {
-				    gubg::Strange strange(v->second);
-				    MSS(strange.popFloat(location.back()->fraction));
-			    }
-			    L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
-		    }
-		    else
-		    {
-			    MSS(!location.empty());
-			    location.back()->attributes[n->second] = v->second;
-			    L("Detected " << n->second << " for " << location.back()->desc << ": " << v->second);
-		    }
-	    }
-            MSS_END();
-        }
+		{
+			MSS_BEGIN(pa::ReturnCode);
+			if (path.back() == "node")
+			{
+				auto it = attrs.find("TEXT");
+				auto id = attrs.find("ID");
+				MSS(it != attrs.end() && id != attrs.end());
+				L(it->second);
+				location.back()->desc = it->second;
+				location.back()->id = id->second;
+			}
+			if (path.back() == "attribute")
+			{
+				auto n = attrs.find("NAME");
+				auto v = attrs.find("VALUE");
+				MSS(n != attrs.end() && v != attrs.end());
+				if (n->second == value)
+				{
+					//Totals value
+					MSS(!location.empty());
+					auto o = attrs.find("OBJECT");
+					if (o != attrs.end())
+					{
+						gubg::Strange strange(o->second);
+						MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+						MSS(strange.popFloat(location.back()->value));
+					}
+					else
+					{
+						gubg::Strange strange(v->second);
+						MSS(strange.popFloat(location.back()->value));
+					}
+					L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
+				}
+				else if (n->second == fraction)
+				{
+					//Fraction
+					MSS(!location.empty());
+					auto o = attrs.find("OBJECT");
+					if (o != attrs.end())
+					{
+						gubg::Strange strange(o->second);
+						MSS(strange.popString("org.freeplane.features.format.FormattedNumber|"));
+						MSS(strange.popFloat(location.back()->fraction));
+					}
+					else
+					{
+						gubg::Strange strange(v->second);
+						MSS(strange.popFloat(location.back()->fraction));
+					}
+					L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
+				}
+				else
+				{
+					//General attribute
+					MSS(!location.empty());
+					location.back()->attributes[n->second] = v->second;
+					L("Detected " << n->second << " for " << location.back()->desc << ": " << v->second);
+				}
+			}
+			MSS_END();
+		}
     };
 }
 namespace 
@@ -124,6 +127,22 @@ namespace
                 //We add the value of n to the parent, if any
                 if (!p.empty())
                     p.back()->value += n.value*n.fraction;
+            }
+    };
+    struct Distribute
+    {
+        template <typename Path>
+            bool open(Node &n, Path &p) const
+            {
+				if (p.empty())
+					return true;
+				for (auto attr: p.back()->attributes)
+					n.attributes.insert(attr);
+				return true;
+            }
+        template <typename Path>
+            void close(Node &n, Path &p) const
+            {
             }
     };
 }
@@ -145,6 +164,7 @@ pa::ReturnCode LoadMindMap::execute(const Options &options)
     MSS(p.process(xml));
 
 	gubg::tree::dfs::iterate(model(), Aggregate());
+	gubg::tree::dfs::iterate(model(), Distribute());
 
 	MSS_END();
 }

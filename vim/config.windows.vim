@@ -1,6 +1,6 @@
 source $GUBG/vim/config.vim
 if hostname() ==? "GET11029"
-	set lines=55 columns=210
+	set lines=62 columns=210
 	set gfn=Courier:h12:cANSI
 else
 	set lines=50 columns=190
