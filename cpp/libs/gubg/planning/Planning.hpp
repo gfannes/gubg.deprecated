@@ -10,7 +10,7 @@
 #include <map>
 #include <set>
 
-#define GUBG_MODULE_ "Planning"
+#define GUBG_MODULE "Planning"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -33,7 +33,6 @@ namespace gubg
                     dayPlanningsPerWorker_[worker][day] = DayPlanning(day, 0);
                 }
 
-				//A bit to quick, the workers can vary per subtask
                 ReturnCode plan(Task &taskTree)
                 {
                     MSS_BEGIN(ReturnCode, STREAM(taskTree));
@@ -58,6 +57,7 @@ namespace gubg
                         MSS(planLeafASAP(*leaf));
                     MSS_END();
                 }
+
                 ReturnCode planLeafASAP(Task &task)
                 {
                     MSS_BEGIN(ReturnCode, STREAM(task.fullName()));
@@ -77,37 +77,12 @@ namespace gubg
                         MSS(dayPlanning != 0, NotEnoughSweatAvailable);
                         auto taskPart = dayPlanning->addTask(task, sweat);
                         MSS(taskPart);
+                        if (!task.start.isValid())
+                            task.start = dayPlanning->day;
+                        task.stop = dayPlanning->day;
                         L("Assigned " << taskPart->sweat << " to " << worker << " on " << dayPlanning->day);
                     }
-#if 0
-                    for (auto &di: infoPerDay_)
-                    {
-                        const Day &day = di.first;
-                        for (auto &worker: *task.workers)
-                        {
-                            auto it = di.second.sweatPerWorker.find(worker);
-                            if (it != di.second.sweatPerWorker.end())
-                            {
-                                //Sweat available = std::min(it->second, task.maxSweatPerDay);
-                                Sweat available = it->second;
-                                if (sweat <= 0 || available > 0)
-                                {
-                                    if (setStart())
-                                        task.start = day;
-                                    if (available >= sweat)
-                                    {
-                                        it->second -= sweat;
-                                        task.stop = day;
-                                        MSS_RETURN_OK();
-                                    }
-                                    sweat -= available;
-                                    it->second -= available;
-                                }
-                            }
-                        }
-                    }
-                    MSS_L(NotEnoughSweatAvailable);
-#endif
+
                     MSS_END();
                 }
 
@@ -118,7 +93,12 @@ namespace gubg
                         os << p.first << std::endl;
                         for (const auto &p2: p.second)
                         {
-                            os << "\t" << p2.first << " " << p2.second.sweat << std::endl;
+                            if (p2.second.taskParts.empty())
+                                //We do not break here, maybe some things are planned in the future
+                                continue;
+                            os << "\t" << p2.first << std::endl;
+                            for (const auto &tp: p2.second.taskParts)
+                                os << "\t\t(" << tp.sweat << "d) " << tp.task->fullName() << std::endl;
                         }
                     }
                 }

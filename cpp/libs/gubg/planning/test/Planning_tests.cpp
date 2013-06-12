@@ -32,5 +32,7 @@ int main()
 
     planning.plan(*root);
 
+	cout << planning;
+
 	return 0;
 }
