@@ -2,10 +2,10 @@
 #define HEADER_gubg_planning_Planning_hpp_ALREADY_INCLUDED
 
 #include "gubg/planning/Codes.hpp"
-#include "gubg/planning/Line.hpp"
-#include "gubg/planning/Resources.hpp"
+#include "gubg/planning/Task.hpp"
 #include <vector>
 #include <map>
+#include <set>
 
 #define GUBG_MODULE "Planning"
 #include "gubg/log/begin.hpp"
@@ -16,67 +16,41 @@ namespace gubg
         class Planning
         {
             public:
-                Resources resources;
-
-                Line &getLine(Line::Name name)
+                void addWorker(Worker worker, Efficiency efficiency)
                 {
-                    auto line = linePerName_.find(name);
-                    if (line == linePerName_.end())
-                    {
-                        linePerName_[name].setName(name);
-                        line = linePerName_.find(name);
-                    }
-                    return line->second;
+                    efficiencyPerWorker_[worker] = efficiency;
                 }
-
-                ReturnCode run()
+                void addDay(Day day)
                 {
-					MSS_BEGIN(ReturnCode);
-                    TaskRange tr;
-                    while (getNextDeadlineToPlan_(tr))
-						MSS(planASAP_(tr), CouldNotPlanDeadline);
-                    while (getNextRangeToPlan_(tr))
-						MSS(planASAP_(tr), CouldNotPlanNormal);
-					MSS_END();
+                    for (auto p: efficiencyPerWorker_)
+                        dayPlanningsPerWorker_[p.first][day] = DayPlanning(day, p.second);
+                }
+                void absence(Worker worker, Day day)
+                {
+                    dayPlanningsPerWorker_[worker][day] = DayPlanning(day, 0);
                 }
 
                 void stream(std::ostream &os) const
                 {
-                    for (auto &lpn: linePerName_)
-                        os << lpn.second;
                 }
 
             private:
-                bool getNextDeadlineToPlan_(TaskRange &tr)
+                typedef std::map<Worker, Efficiency> EfficiencyPerWorker;
+                EfficiencyPerWorker efficiencyPerWorker_;
+
+                typedef std::list<Task::Ptr> Tasks;
+                struct DayPlanning
                 {
-                    gubg::OnlyOnce first;
-                    for (auto &lpn: linePerName_)
-                    {
-                        TaskRange ltr;
-                        if (lpn.second.getUnplannedRange(ltr) && ltr.back().deadline.isValid())
-                        {
-                            if (first() || (ltr.back().deadline < tr.back().deadline))
-                                tr = ltr;
-                        }
-                    }
-                    return !first();
-                }
-                bool getNextRangeToPlan_(TaskRange &tr)
-                {
-                    for (auto &lpn: linePerName_)
-                        if (lpn.second.getUnplannedRange(tr))
-                            return true;
-                    return false;
-                }
-                ReturnCode planASAP_(TaskRange &tr)
-                {
-					MSS_BEGIN(ReturnCode);
-                    for (auto &task: tr)
-						MSS(resources.planASAP(task));
-					MSS_END();
-                }
-                typedef std::map<Line::Name, Line> LinePerName;
-                LinePerName linePerName_;
+                    Day day;
+                    Sweat sweat;
+                    Tasks tasks;
+
+                    DayPlanning():sweat(0){}
+                    DayPlanning(Day d, Sweat s):day(d), sweat(s){}
+                };
+                typedef std::map<Day, DayPlanning> DayPlannings;
+                typedef std::map<Worker, DayPlannings> DayPlanningsPerWorker;
+                DayPlanningsPerWorker dayPlanningsPerWorker_;
         };
     }
 }

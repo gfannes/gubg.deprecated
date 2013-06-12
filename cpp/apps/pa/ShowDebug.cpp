@@ -32,7 +32,7 @@ namespace
 							return false;
 						line = &n;
 					}
-					os << string(p.size()*2, ' ') << n.desc << " (value: " << n.value << ", fraction: " << n.fraction << ", cumul: " << n.cumul << ", id: " << n.id << ")" << endl;
+					os << string(p.size()*2, ' ') << n.desc << " (value: " << n.value << ", fraction: " << n.fraction << ", id: " << n.id << ")" << endl;
 					for (auto attr: n.attributes)
 						os << string(p.size()*2, ' ') << "[" << attr.first << ": " << attr.second << "]" << endl;
 				}

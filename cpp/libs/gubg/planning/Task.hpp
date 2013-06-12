@@ -16,14 +16,6 @@ namespace gubg
     {
         class Task;
         typedef std::shared_ptr<Day> Deadline;
-		struct CompareDeadlines
-		{
-			bool operator()(Deadline lhs, Deadline rhs)
-			{
-				return *lhs < *rhs;
-			}
-		};
-		typedef std::multimap<Deadline, std::shared_ptr<Task>, CompareDeadlines> TasksPerDeadline;
 
         namespace priv
         {
@@ -34,21 +26,7 @@ namespace gubg
                     template <typename N, typename P>
                         bool open(N &n, P &p) const
                         {
-							if (p.empty())
-								os_ << n.fullName() << std::endl;
-							else
-							{
-								os_ << std::string(2*p.size(), ' ') << n.name;
-								if (n.deadline)
-									os_	<< " deadline: " << *n.deadline;
-								if (n.workers && !n.workers->empty())
-								{
-									os_ << " workers: ";
-									for (auto w: *n.workers)
-										os_ << " " << w;
-								}
-								os_ << " effort: " << n.sweat << std::endl;
-							}
+                            os_ << std::string(2*p.size(), ' ') << n.name << " " << n.deadline.get() << " " << n.sweat << std::endl;
                             return true;
                         }
                     template <typename N, typename P>
@@ -57,21 +35,6 @@ namespace gubg
                         }
                 private:
                     std::ostream &os_;
-            };
-            class DistributeWorkers
-            {
-                public:
-                    template <typename N, typename P>
-                        bool open(N &n, P &p) const
-                        {
-                            if (!n.workers && !p.empty())
-                                n.workers = p.back()->workers;
-                            return true;
-                        }
-                    template <typename N, typename P>
-                        void close(N &n, P &p) const
-                        {
-                        }
             };
             class DistributeDeadline
             {
@@ -111,26 +74,10 @@ namespace gubg
                         {
                         }
             };
-            class AggregateSweat
-            {
-                public:
-                    template <typename N, typename P>
-                        bool open(N &n, P &p) const
-                        {
-							n.cumulSweat = n.sweat;
-							return true;
-                        }
-                    template <typename N, typename P>
-                        void close(N &n, P &p) const
-                        {
-							if (p.empty())
-								return;
-							p.back()->cumulSweat += n.cumulSweat;
-                        }
-            };
             class CollectTasksPerDeadline
             {
                 public:
+                    typedef std::multimap<Deadline, std::shared_ptr<Task>> TasksPerDeadline;
                     CollectTasksPerDeadline(TasksPerDeadline &tpd):tpd_(tpd){}
                     template <typename N, typename P>
                         bool open(N &n, P &p) const
@@ -164,11 +111,10 @@ namespace gubg
 
                 Name name;
                 Sweat sweat;
-                Sweat cumulSweat;
                 Day start;
                 Day stop;
                 Deadline deadline;
-                WorkersPtr workers;
+                Workers workers;
                 Childs childs;
                 WPtr parent;
 
@@ -193,12 +139,6 @@ namespace gubg
                     deadline.reset(new Day(day));
                     assert(invariants_());
                 }
-                void setWorkers(Workers ws)
-                {
-                    assert(invariants_());
-                    workers.reset(new Workers(ws));
-                    assert(invariants_());
-                }
                 void setSweat(Sweat sw)
                 {
                     assert(invariants_());
@@ -206,19 +146,12 @@ namespace gubg
                     assert(invariants_());
                 }
 
-                void distributeWorkers()
-                {
-                    tree::dfs::iterate_ptr(*this, priv::DistributeWorkers());
-                }
                 void distributeDeadlines()
                 {
                     tree::dfs::iterate_ptr(*this, priv::DistributeDeadline());
                 }
-				void aggregateSweat()
-				{
-                    tree::dfs::iterate_ptr(*this, priv::AggregateSweat());
-				}
 
+                typedef std::multimap<Deadline, Ptr> TasksPerDeadline;
                 TasksPerDeadline tasksPerDeadline()
                 {
                     TasksPerDeadline tpd;
@@ -233,26 +166,8 @@ namespace gubg
                     tree::dfs::iterate_ptr(*this, priv::Printer(os));
                 }
 
-				Name fullName() const
-				{
-					std::list<std::string> parts;
-					auto n = shared_from_this();
-					while (n)
-					{
-						parts.push_back(n->name);
-						n = n->parent.lock();
-					}
-					std::ostringstream oss;
-					for (auto it = parts.rbegin(); it != parts.rend(); ++it)
-						oss << *it << "/";
-					return oss.str();
-				}
-
             private:
-                Task(Name n):name(n), sweat(0), cumulSweat(0)
-			{
-				SS(name);
-			}
+                Task(Name n):name(n), sweat(0){}
 
                 bool invariants_() const
                 {

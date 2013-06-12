@@ -27,13 +27,6 @@ namespace gubg
                 res = *this;
                 clear();
             }
-            void popAll(std::string &res)
-            {
-                assert(invariants_());
-				Strange s;
-				popAll(s);
-				res = s.str();
-            }
             bool popTo(Strange &res, const char ch)
             {
                 assert(invariants_());
@@ -65,14 +58,6 @@ namespace gubg
                     }
 
                 return false;
-            }
-            bool popUntil(std::string &res, const char ch)
-            {
-				Strange s;
-				if (!popUntil(s, ch))
-					return false;
-				res = s.str();
-				return true;
             }
             bool popUntil(Strange &res, const std::string &str)
             {
