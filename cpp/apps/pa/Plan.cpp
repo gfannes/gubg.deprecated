@@ -2,8 +2,7 @@
 #include "pa/Model.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
 #include "gubg/planning/Task.hpp"
-#include "gubg/planning/Resources.hpp"
-//#include "gubg/planning/Planning.hpp"
+#include "gubg/planning/Planning.hpp"
 #include <string>
 #include <fstream>
 #include <map>
@@ -19,46 +18,21 @@ namespace
     {
 		gubg::planning::Task::Ptr root;
 		gubg::planning::Task::Ptr current;
-		gubg::planning::Resources resources;
-		gubg::planning::TasksPerDeadline tpd_;
-
-#if 0
-        gubg::planning::Planning planning;
-        gubg::planning::Line *line;
-		int lineDepth;
-#endif
+		gubg::planning::Planning planning;
         std::ostringstream parseError_;
 		set<string> lineNames_;
 
         Planner()
         {
 			using namespace gubg::planning;
-            resources.addWorker("gfa", 0.8);
-            resources.addWorker("wba", 0.5);
+            planning.addWorker("gfa", 0.8);
+            planning.addWorker("wba", 0.5);
             for (auto d: workDays(400))
-                resources.addDay(d);
+                planning.addDay(d);
             for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
-                resources.absence("gfa", d);
+                planning.absence("gfa", d);
             for (auto d: dayRange(Day(2013, 7, 1), Day(2013, 7, 12)))
-                resources.absence("wba", d);
-#if 0
-            using namespace gubg::planning;
-            planning.resources.addWorker("gfa", 0.8);
-            planning.resources.addWorker("wba", 0.5);
-            for (auto d: workDays(400))
-                planning.resources.addDay(d);
-            for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
-                planning.resources.absence("gfa", d);
-            for (auto d: dayRange(Day(2013, 7, 1), Day(2013, 7, 12)))
-                planning.resources.absence("wba", d);
-
-            Workers workers;
-            workers.push_back("gfa");
-            planning.getLine("XX").setMaxSweatPerDay(1.0).setWorkers(workers);
-            workers.push_back("wba");
-            planning.getLine("BLITS_L").setMaxSweatPerDay(2.0).setWorkers(workers);
-            planning.getLine("BLITS_S").setMaxSweatPerDay(2.0).setWorkers(workers);
-#endif
+                planning.absence("wba", d);
         }
 
 		void addLineName(const string &lineName)
@@ -80,25 +54,23 @@ namespace
 
 			{
 				gubg::planning::Day day;
-				MSS(resources.getLastDay(day));
+				MSS(planning.getLastDay(day));
 				root->setDeadline(day);
 			}
-			root->distributeDeadlines();
-			root->distributeWorkers();
-			root->aggregateSweat();
-			tpd_ = root->tasksPerDeadline();
-			for (auto p: tpd_)
-				resources.planASAP(*p.second);
+            planning.plan(*root);
 
 			MSS_END();
         }
 		void stream(std::ostream &os)
 		{
+            planning.stream(os);
+#if 0
 			for (auto p: tpd_)
 			{
 				auto &task = *p.second;
 				os << task.start << " -- " << task.stop << ":: " << *p.first << " " << task.fullName()  << "(" << task.cumulSweat << ")" << std::endl;
 			}
+#endif
 		}
 
         template <typename Path>

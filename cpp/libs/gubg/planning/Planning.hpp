@@ -33,6 +33,21 @@ namespace gubg
                     dayPlanningsPerWorker_[worker][day] = DayPlanning(day, 0);
                 }
 
+				bool getLastDay(Day &day) const
+				{
+                    Day d;
+                    for (auto &p: dayPlanningsPerWorker_)
+                    {
+                        const Day ld = p.second.rbegin()->first;
+                        if (!d.isValid() || d < ld)
+                            d = ld;
+                    }
+                    if (!d.isValid())
+                        return false;
+                    day = d;
+					return true;
+				}
+
                 ReturnCode plan(Task &taskTree)
                 {
                     MSS_BEGIN(ReturnCode, STREAM(taskTree));
