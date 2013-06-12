@@ -3,6 +3,7 @@
 
 #include "gubg/planning/Types.hpp"
 #include "gubg/planning/Day.hpp"
+#include "gubg/tree/dfs/Iterate.hpp"
 #include <string>
 #include <vector>
 #include <ostream>
@@ -13,27 +14,166 @@ namespace gubg
 {
     namespace planning
     {
-        class Task
+        class Task;
+        typedef std::shared_ptr<Day> Deadline;
+
+        namespace priv
+        {
+            class Printer
+            {
+                public:
+                    Printer(std::ostream &os):os_(os){}
+                    template <typename N, typename P>
+                        bool open(N &n, P &p) const
+                        {
+                            os_ << std::string(2*p.size(), ' ') << n.name << " " << n.deadline.get() << " " << n.sweat << std::endl;
+                            return true;
+                        }
+                    template <typename N, typename P>
+                        void close(N &n, P &p) const
+                        {
+                        }
+                private:
+                    std::ostream &os_;
+            };
+            class DistributeDeadline
+            {
+                public:
+                    template <typename N, typename P>
+                        bool open(N &n, P &p) const
+                        {
+                            if (!n.deadline && !p.empty())
+                                n.deadline = p.back()->deadline;
+                            return true;
+                        }
+                    template <typename N, typename P>
+                        void close(N &n, P &p) const
+                        {
+                        }
+            };
+            class CheckDeadlines
+            {
+                public:
+                    mutable bool same;
+                    mutable Deadline deadline;
+                    CheckDeadlines():same(true){}
+                    template <typename N, typename P>
+                        bool open(N &n, P &p) const
+                        {
+                            if (!deadline)
+                                deadline = n.deadline;
+                            else if (deadline != n.deadline)
+                            {
+                                same = false;
+                                return false;
+                            }
+                            return true;
+                        }
+                    template <typename N, typename P>
+                        void close(N &n, P &p) const
+                        {
+                        }
+            };
+            class CollectTasksPerDeadline
+            {
+                public:
+                    typedef std::multimap<Deadline, std::shared_ptr<Task>> TasksPerDeadline;
+                    CollectTasksPerDeadline(TasksPerDeadline &tpd):tpd_(tpd){}
+                    template <typename N, typename P>
+                        bool open(N &n, P &p) const
+                        {
+                            CheckDeadlines checkDeadlines;
+                            tree::dfs::iterate_ptr(n, checkDeadlines);
+                            if (checkDeadlines.same)
+                            {
+                                tpd_.insert(std::make_pair(n.deadline, n.shared_from_this()));
+                                return false;
+                            }
+                            return true;
+                        }
+                    template <typename N, typename P>
+                        void close(N &n, P &p) const
+                        {
+                        }
+                private:
+                    TasksPerDeadline &tpd_;
+            };
+        }
+
+        class Task: public std::enable_shared_from_this<Task>
         {
             public:
                 typedef std::string Name;
+                typedef std::shared_ptr<Task> Ptr;
+                typedef std::weak_ptr<Task> WPtr;
+                typedef std::shared_ptr<Task> Child;
+                typedef std::vector<Child> Childs;
 
                 Name name;
                 Sweat sweat;
                 Day start;
                 Day stop;
-                Day deadline;
+                Deadline deadline;
                 Workers workers;
-                Sweat maxSweatPerDay;
+                Childs childs;
+                WPtr parent;
 
-                Task(Name n, Sweat s):name(n), sweat(s){}
+                static Ptr create(Name n){return Ptr(new Task(n));}
+
+                Ptr addChild(Name n)
+                {
+                    assert(invariants_());
+                    Ptr child;
+                    if (sweat == 0)
+                    {
+                        childs.push_back(child = Task::create(n));
+                        child->parent = shared_from_this();
+                        assert(child->invariants_());
+                    }
+                    assert(invariants_());
+                    return child;
+                }
+                void setDeadline(Day day)
+                {
+                    assert(invariants_());
+                    deadline.reset(new Day(day));
+                    assert(invariants_());
+                }
+                void setSweat(Sweat sw)
+                {
+                    assert(invariants_());
+                    sweat = sw;
+                    assert(invariants_());
+                }
+
+                void distributeDeadlines()
+                {
+                    tree::dfs::iterate_ptr(*this, priv::DistributeDeadline());
+                }
+
+                typedef std::multimap<Deadline, Ptr> TasksPerDeadline;
+                TasksPerDeadline tasksPerDeadline()
+                {
+                    TasksPerDeadline tpd;
+                    tree::dfs::iterate_ptr(*this, priv::CollectTasksPerDeadline(tpd));
+                    return tpd;
+                }
 
                 bool isPlanned() const {return start.isValid() && stop.isValid();}
 
                 void stream(std::ostream &os) const
                 {
-                    //os << "Task \"" << name << "\"";
-                    os << "Task " << STREAM(name, sweat, start, stop);
+                    tree::dfs::iterate_ptr(*this, priv::Printer(os));
+                }
+
+            private:
+                Task(Name n):name(n), sweat(0){}
+
+                bool invariants_() const
+                {
+                    if (!childs.empty() && sweat != 0)
+                        return false;
+                    return true;
                 }
         };
         typedef std::vector<Task> Tasks;
