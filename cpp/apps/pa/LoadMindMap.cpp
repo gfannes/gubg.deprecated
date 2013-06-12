@@ -119,14 +119,15 @@ namespace
         template <typename Path>
             bool open(Node &n, Path &p) const
             {
+				n.cumul = n.value*n.fraction;
                 return true;
             }
         template <typename Path>
             void close(Node &n, Path &p) const
             {
-                //We add the value of n to the parent, if any
+                //We add the cumul of n to the parent, if any
                 if (!p.empty())
-                    p.back()->value += n.value*n.fraction;
+                    p.back()->cumul += n.cumul;
             }
     };
     struct Distribute
@@ -164,7 +165,7 @@ pa::ReturnCode LoadMindMap::execute(const Options &options)
     MSS(p.process(xml));
 
 	gubg::tree::dfs::iterate(model(), Aggregate());
-	gubg::tree::dfs::iterate(model(), Distribute());
+	//gubg::tree::dfs::iterate(model(), Distribute());
 
 	MSS_END();
 }

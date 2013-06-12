@@ -10,6 +10,7 @@ namespace gubg
     {
         typedef std::string Worker;
         typedef std::vector<Worker> Workers;
+        typedef std::shared_ptr<Workers> WorkersPtr;
         typedef double Sweat;
     }
 }

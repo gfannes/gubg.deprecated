@@ -18,12 +18,13 @@ namespace pa
 
         Name desc;
         Value value;
+        Value cumul;
         Fraction fraction;
         Childs childs;
         Id id;
         Attributes attributes;
 
-        Node():value(), fraction(){}
+        Node():value(), cumul(), fraction(){}
     };
 
     inline Node &model()

@@ -44,20 +44,22 @@ namespace gubg
                         return;
                     j->second = 0;
                 }
+				//A bit to quick, the workers can vary per subtask
                 ReturnCode planASAP(Task &task)
                 {
 					MSS_BEGIN(ReturnCode, STREAM(task));
-                    Sweat sweat = task.sweat;
+                    Sweat sweat = task.cumulSweat;
                     gubg::OnlyOnce setStart;
                     for (auto &di: infoPerDay_)
                     {
                         const Day &day = di.first;
-                        for (auto &worker: task.workers)
+                        for (auto &worker: *task.workers)
                         {
                             auto it = di.second.sweatPerWorker.find(worker);
                             if (it != di.second.sweatPerWorker.end())
                             {
-                                Sweat available = std::min(it->second, task.maxSweatPerDay);
+                                //Sweat available = std::min(it->second, task.maxSweatPerDay);
+                                Sweat available = it->second;
                                 if (sweat <= 0 || available > 0)
                                 {
                                     if (setStart())
@@ -77,6 +79,14 @@ namespace gubg
 					MSS_L(NotEnoughSweatAvailable);
 					MSS_END();
                 }
+
+				bool getLastDay(Day &day) const
+				{
+					if (infoPerDay_.empty())
+						return false;
+					day = infoPerDay_.rbegin()->first;
+					return true;
+				}
 
                 void stream(std::ostream &os) const
                 {
