@@ -119,39 +119,6 @@ namespace
 								current->setDeadline(deadline);
 						}
 						break;
-#if 0
-                    case 0:
-						line = 0;
-						lineDepth = 0;
-                        break;
-					default:
-						if (!line)
-						{
-							if (!lineNames_.empty() && lineNames_.count(n.desc) == 0)
-								return true;
-							L("Found new line " << n.desc);
-							line = &planning.getLine(n.desc);
-							lineDepth = p.size();
-						}
-						else
-						{
-							if (p.size() > lineDepth + 1)
-								return false;
-                            gubg::planning::Task task(n.desc, total);
-                            auto deadline = n.attributes.find("deadline");
-                            if (deadline != n.attributes.end())
-                            {
-                                L("Found deadline attribute");
-                                auto dl = gubg::planning::Day(deadline->second);
-                                if (!dl.isValid())
-                                    parseError_ << "Could not parse deadline attribute for node " << n.desc << ": \"" << deadline->second << "\"" << std::endl;
-                                else
-                                    task.deadline = dl;
-                            }
-                            line->addTask(task);
-						}
-						break;
-#endif
                 }
                 return true;
             }
@@ -161,12 +128,6 @@ namespace
 			{
 				if (current)
 					current = current->parent.lock();
-#if 0
-				if (line && lineDepth == p.size())
-				{
-					line = 0;
-				}
-#endif
 			}
     };
 }
@@ -180,14 +141,11 @@ pa::ReturnCode Plan::execute(const Options &options)
 	MSS(planner.run());
 	planner.root->stream(cout);
 	planner.stream(cout);
-#if 0
-	planner.planning.stream(cout);
 	if (!options.output.name().empty())
 	{
 		ofstream fo(options.output.name());
-		planner.planning.stream(fo);
+		planner.stream(fo);
 	}
-#endif
 
 	MSS_END();
 }
