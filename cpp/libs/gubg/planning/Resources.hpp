@@ -18,7 +18,6 @@ namespace gubg
         class Resources
         {
             public:
-                typedef double Efficiency;
 
                 void addWorker(Worker worker, Efficiency efficiency)
                 {
@@ -43,41 +42,6 @@ namespace gubg
                     if (j == i->second.sweatPerWorker.end())
                         return;
                     j->second = 0;
-                }
-				//A bit to quick, the workers can vary per subtask
-                ReturnCode planASAP(Task &task)
-                {
-					MSS_BEGIN(ReturnCode, STREAM(task));
-                    Sweat sweat = task.cumulSweat;
-                    gubg::OnlyOnce setStart;
-                    for (auto &di: infoPerDay_)
-                    {
-                        const Day &day = di.first;
-                        for (auto &worker: *task.workers)
-                        {
-                            auto it = di.second.sweatPerWorker.find(worker);
-                            if (it != di.second.sweatPerWorker.end())
-                            {
-                                //Sweat available = std::min(it->second, task.maxSweatPerDay);
-                                Sweat available = it->second;
-                                if (sweat <= 0 || available > 0)
-                                {
-                                    if (setStart())
-                                        task.start = day;
-                                    if (available >= sweat)
-                                    {
-                                        it->second -= sweat;
-                                        task.stop = day;
-										MSS_RETURN_OK();
-                                    }
-									sweat -= available;
-									it->second -= available;
-                                }
-                            }
-                        }
-                    }
-					MSS_L(NotEnoughSweatAvailable);
-					MSS_END();
                 }
 
 				bool getLastDay(Day &day) const

@@ -8,7 +8,7 @@
 #include <vector>
 #include <ostream>
 
-#define GUBG_MODULE_ "Task"
+#define GUBG_MODULE "Task"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
