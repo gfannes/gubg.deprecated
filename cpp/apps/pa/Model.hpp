@@ -17,9 +17,14 @@ namespace pa
         typedef std::map<std::string, std::string> Attributes;
 
         Name desc;
+
+		//Only for leafs
         Value value;
+		//The total of the subtree, before applying fraction
         Value cumul;
         Fraction fraction;
+		Value total() const {return cumul*fraction;}
+
         Childs childs;
         Id id;
         Attributes attributes;

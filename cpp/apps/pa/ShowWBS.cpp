@@ -16,10 +16,9 @@ namespace
         template <typename Path>
             bool open(Node &n, Path &p) const
             {
-                const auto total = n.value*n.fraction;
-                if (total <= 0)
+                if (n.total() <= 0)
                     return false;
-                os << string(p.size()*2, ' ') << n.desc << " (" << total << ": " << n.fraction << " * " << n.value << ")" << endl;
+                os << string(p.size()*2, ' ') << n.desc << " (" << n.total() << ": " << n.fraction << " * " << n.cumul << ")" << endl;
                 return true;
             }
         template <typename Path>

@@ -32,11 +32,17 @@ namespace
                     if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
                     tasks.push_back(ShowWBS::create());
                     });
-            optionParser.addSwitch("-p", "--plan", "Basic planning",
+            optionParser.addSwitch("-p", "--plan-overview", "Planning overview",
                     [&options, &tasks]()
                     {
                     if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
-                    tasks.push_back(Plan::create());
+                    tasks.push_back(Plan::create(Plan::Overview));
+                    });
+            optionParser.addSwitch("-p", "--plan-details", "Planning details",
+                    [&options, &tasks]()
+                    {
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    tasks.push_back(Plan::create(Plan::Details));
                     });
             optionParser.addSwitch("-D", "--debug", "Debug view of the tree",
                     [&options, &tasks]()

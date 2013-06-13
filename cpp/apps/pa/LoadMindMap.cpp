@@ -119,7 +119,7 @@ namespace
         template <typename Path>
             bool open(Node &n, Path &p) const
             {
-				n.cumul = n.value*n.fraction;
+				n.cumul = n.value;
                 return true;
             }
         template <typename Path>
@@ -127,7 +127,7 @@ namespace
             {
                 //We add the cumul of n to the parent, if any
                 if (!p.empty())
-                    p.back()->cumul += n.cumul;
+                    p.back()->cumul += n.total();
             }
     };
     struct Distribute

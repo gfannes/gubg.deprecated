@@ -88,6 +88,11 @@ namespace gubg
                             MSS(rawSize >= 4);
                             rawSize -= 4;
                         }
+                        else if (strange.popString("apos;"))
+                        {
+                            MSS(rawSize >= 5);
+                            rawSize -= 5;
+                        }
                         else
                             MSS_L(UnknownEscape);
                     }
@@ -122,6 +127,8 @@ namespace gubg
                             *dst++ = '>';
                         else if (strange.popString("amp;"))
                             *dst++ = '&';
+                        else if (strange.popString("apos;"))
+                            *dst++ = '\'';
                         else
                         {
                             //Should have failed above

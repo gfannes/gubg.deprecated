@@ -108,6 +108,8 @@ namespace gubg
                 {
                     return y_ == rhs.y_ && m_ == rhs.m_ && d_ == rhs.d_;
                 }
+                bool operator>(const Day &rhs) const {return !operator<=(rhs);}
+                bool operator>=(const Day &rhs) const {return !operator<(rhs);}
 
             private:
                 int y_;

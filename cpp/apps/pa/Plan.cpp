@@ -27,11 +27,16 @@ namespace
 			using namespace gubg::planning;
             planning.addWorker("gfa", 0.8);
             planning.addWorker("wba", 0.5);
+			gubg::OnlyOnce upgradeWBA;
             for (auto d: workDays(400))
+			{
+				if (d >= Day(2013,8,1) && upgradeWBA())
+					planning.addWorker("wba", 0.8);
                 planning.addDay(d);
+			}
             for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
                 planning.absence("gfa", d);
-            for (auto d: dayRange(Day(2013, 7, 1), Day(2013, 7, 12)))
+            for (auto d: dayRange(Day(2013, 7, 15), Day(2013, 7, 26)))
                 planning.absence("wba", d);
         }
 
@@ -76,8 +81,8 @@ namespace
         template <typename Path>
             bool open(Node &n, Path &p)
             {
-                SS(n.desc, p.size(), n.cumul);
-                if (n.cumul <= 0)
+                SS(n.desc, p.size(), n.total());
+                if (n.total() <= 0)
                     return false;
                 switch (p.size())
                 {
@@ -88,7 +93,8 @@ namespace
 						if (!root)
 						{
 							assert(p.empty());
-							current = root = gubg::planning::Task::create(n.desc);
+							//We do not put the root name, it is typically not a task and causes only bloat in the output
+							current = root = gubg::planning::Task::create("");
 						}
 						else
 							current = current->addChild(n.desc);

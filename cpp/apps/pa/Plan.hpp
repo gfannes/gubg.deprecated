@@ -10,12 +10,15 @@ namespace pa
     class Plan: public ITask
     {
         public:
-            static Ptr create(){return Ptr(new Plan());}
+			enum Level {Overview, Details};
+
+            static ITask::Ptr create(Level level){return ITask::Ptr(new Plan(Level level));}
 
             virtual ReturnCode execute(const Options &);
 
         private:
-            Plan(){}
+            Plan(Level level):level_(level){}
+			const Level level_;
     };
 }
 

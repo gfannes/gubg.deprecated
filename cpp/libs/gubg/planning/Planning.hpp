@@ -84,7 +84,7 @@ namespace gubg
 
                     Sweat sweat = task.cumulSweat;
                     gubg::OnlyOnce setStart;
-                    while (sweat > 0)
+                    while (sweat > eps_())
                     {
                         SS(sweat);
                         Worker worker;
@@ -111,15 +111,19 @@ namespace gubg
                             if (p2.second.taskParts.empty())
                                 //We do not break here, maybe some things are planned in the future
                                 continue;
-                            os << "\t" << p2.first << std::endl;
+                            os << "\t" << p2.first;
+							gubg::OnlyOnce putBehindDate;
                             for (const auto &tp: p2.second.taskParts)
-                                os << "\t\t(" << tp.sweat << "d) " << tp.task->fullName() << std::endl;
+							{
+								if (!putBehindDate())
+									os << "\t          ";
+								os << " (" << tp.sweat << "d) " << tp.task->fullName() << " (work: " << tp.task->sweat << "d)" << std::endl;
+							}
                         }
                     }
                 }
 
             private:
-
                 typedef std::map<Worker, Efficiency> EfficiencyPerWorker;
                 EfficiencyPerWorker efficiencyPerWorker_;
 
@@ -149,7 +153,7 @@ namespace gubg
                     }
                     bool hasSweatAvailable() const
                     {
-                        return availableSweat() > 0;
+                        return availableSweat() > eps_();
                     }
                     TaskPart *addTask(Task &task, Sweat &sweatLeft)
                     {
@@ -202,6 +206,8 @@ namespace gubg
                     }
                     return res;
                 }
+
+				static Sweat eps_() {return 0.0001;}
         };
     }
 }
