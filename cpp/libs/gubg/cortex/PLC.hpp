@@ -3,8 +3,9 @@
 
 #include "gubg/cortex/IColumn.hpp"
 #include <map>
+#include <algorithm>
 
-#define GUBG_MODULE "PLC"
+#define GUBG_MODULE_ "PLC"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -14,8 +15,8 @@ namespace gubg
         class PLC: public IColumn
         {
             public:
-                PLC(time::Span span):
-                    span_(span),
+                PLC(time::Span span, time::Span pulse):
+                    span_(span), pulse_(pulse),
                     now_(time::Clock::now()){}
 
                 void add(time::Offset offset, Value value)
@@ -46,28 +47,26 @@ namespace gubg
                     const auto point = now_ + offset;
                     auto it = valuePerPoint_.lower_bound(point - span/2);//Not-less than
                     const auto e = valuePerPoint_.upper_bound(point + span/2);//Greater than
-                    auto pt = it->first;
-                    Value pv = it->second;
                     Value res;
-                    for (++it; it != e; ++it)
+                    for (; it != e; ++it)
                     {
-                        const auto dt = (it->first - pt).count();
-                        const auto &v = it->second;
-                        pt = it->first;
-                        res.p += dt*(v.p + pv.p)/2.0;
-                        res.v += dt*(2*(pv.v*pv.p + v.v*v.p) + pv.v*v.p + v.v*pv.p)/6.0;
-                        pv = it->second;
+                        const Value &l = it->second;
+                        res.v += l.v*l.p;//sum v*p
+                        res.p += l.p;//sum p
                     }
                     if (res.p > 0)
                     {
                         res.v /= res.p;
-                        res.p /= span.count();
+                        const auto r = span.count()/pulse_.count();
+                        res.p /= std::max<decltype(r)>(r, 1);
+                        res.p = std::min(res.p, 1.0);
                     }
                     return res;
                 }
 
             private:
                 const time::Span span_;
+                const time::Span pulse_;
                 time::Point now_;
 
                 typedef std::map<time::Point, Value> ValuePerPoint;
