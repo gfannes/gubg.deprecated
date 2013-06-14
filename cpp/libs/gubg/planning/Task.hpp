@@ -128,6 +128,26 @@ namespace gubg
 							p.back()->cumulSweat += n.cumulSweat;
                         }
             };
+            class AggregateStartStop
+            {
+                public:
+                    template <typename N, typename P>
+                        bool open(N &n, P &p) const
+                        {
+							return true;
+                        }
+                    template <typename N, typename P>
+                        void close(N &n, P &p) const
+                        {
+							if (p.empty())
+								return;
+							N &parent = *p.back();
+							if (!parent.start.isValid() || n.start < parent.start)
+								parent.start = n.start;
+							if (!parent.stop.isValid() || parent.stop < n.stop)
+								parent.stop = n.stop;
+                        }
+            };
             class CollectTasksPerDeadline
             {
                 public:
@@ -217,6 +237,10 @@ namespace gubg
 				void aggregateSweat()
 				{
                     tree::dfs::iterate_ptr(*this, priv::AggregateSweat());
+				}
+				void aggregateStartStop()
+				{
+                    tree::dfs::iterate_ptr(*this, priv::AggregateStartStop());
 				}
 
                 TasksPerDeadline tasksPerDeadline()

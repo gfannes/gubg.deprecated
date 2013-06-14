@@ -31,6 +31,10 @@ namespace gubg
 
                 bool isValid() const {return y_ != 0 || m_ != 0 || d_ != 0;}
 
+				int day() const {return d_;}
+				int month() const {return m_;}
+				int year() const {return y_;}
+
                 Day &operator++()
                 {
                     ++d_;
@@ -78,7 +82,7 @@ namespace gubg
                 void stream(std::ostream &os) const
                 {
                     std::ostringstream oss;
-                    oss << y_ << "-" << std::setw(2) << std::setfill('0') << m_ << "-" << std::setw(2) << std::setfill('0') << d_;
+                    oss << std::setw(4) << std::setfill('0') << y_ << "-" << std::setw(2) << std::setfill('0') << m_ << "-" << std::setw(2) << std::setfill('0') << d_;
                     os << oss.str();
                 }
 

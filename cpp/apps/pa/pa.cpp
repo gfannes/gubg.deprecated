@@ -38,7 +38,7 @@ namespace
                     if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
                     tasks.push_back(Plan::create(Plan::Overview));
                     });
-            optionParser.addSwitch("-p", "--plan-details", "Planning details",
+            optionParser.addSwitch("-P", "--plan-details", "Planning details",
                     [&options, &tasks]()
                     {
                     if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");

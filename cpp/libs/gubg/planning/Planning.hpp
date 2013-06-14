@@ -6,6 +6,7 @@
 #include "gubg/planning/Task.hpp"
 #include "gubg/tree/dfs/Leafs.hpp"
 #include "gubg/OnlyOnce.hpp"
+#include "gubg/xml/Builder.hpp"
 #include <vector>
 #include <map>
 #include <set>
@@ -60,6 +61,8 @@ namespace gubg
                     for (auto &p: tpd)
                         MSS(planTreeASAP(*p.second));
 
+                    taskTree.aggregateStartStop();
+
                     MSS_END();
                 }
 
@@ -101,27 +104,18 @@ namespace gubg
                     MSS_END();
                 }
 
-                void stream(std::ostream &os) const
+                void stream(std::ostream &os, Format format = Format::Text) const
                 {
-                    for (const auto &p: dayPlanningsPerWorker_)
-                    {
-                        os << p.first << std::endl;
-                        for (const auto &p2: p.second)
-                        {
-                            if (p2.second.taskParts.empty())
-                                //We do not break here, maybe some things are planned in the future
-                                continue;
-                            os << "\t" << p2.first;
-							gubg::OnlyOnce putBehindDate;
-                            for (const auto &tp: p2.second.taskParts)
-							{
-								if (!putBehindDate())
-									os << "\t          ";
-								os << " (" << tp.sweat << "d) " << tp.task->fullName() << " (work: " << tp.task->sweat << "d)" << std::endl;
-							}
-                        }
-                    }
-                }
+					switch (format)
+					{
+						case Format::Text:
+							streamText_(os);
+							break;
+						case Format::Html:
+							streamHtml_(os);
+							break;
+					}
+				}
 
             private:
                 typedef std::map<Worker, Efficiency> EfficiencyPerWorker;
@@ -205,6 +199,150 @@ namespace gubg
                         }
                     }
                     return res;
+                }
+                void streamText_(std::ostream &os) const
+				{
+                    for (const auto &p: dayPlanningsPerWorker_)
+                    {
+                        os << p.first << std::endl;
+                        for (const auto &p2: p.second)
+                        {
+                            if (p2.second.taskParts.empty())
+                                //We do not break here, maybe some things are planned in the future
+                                continue;
+                            os << "\t" << p2.first;
+							gubg::OnlyOnce putBehindDate;
+                            for (const auto &tp: p2.second.taskParts)
+							{
+								if (!putBehindDate())
+									os << "\t          ";
+								os << " (" << tp.sweat << "d) " << tp.task->fullName() << " (work: " << tp.task->sweat << "d)" << std::endl;
+							}
+                        }
+                    }
+                }
+
+				struct CompareStart
+				{
+					//We first compare the start days. If these are the same, we compare the stop days.
+					//If we still have a tie, just use the pointer value itself to make sure different tasks with the same start and stop won't get lost
+					bool operator()(const Task::Ptr &lhs, const Task::Ptr &rhs) const {return std::make_tuple(lhs->start, lhs->stop, lhs) < std::make_tuple(rhs->start, rhs->stop, rhs);}
+				};
+                void streamHtml_(std::ostream &os) const
+				{
+					using namespace gubg::xml::builder;
+					Tag html(os, "html", NoShortClose);
+					auto body = html.tag("body");
+					auto table = body.tag("table");
+					table.attr("border", 0).attr("cellpadding", 0).attr("cellspacing", 0);
+
+					Day globalLast;
+                    for (const auto &p: dayPlanningsPerWorker_)
+					{
+						const auto &dayPlannings = p.second;
+                        for (const auto &p2: dayPlannings)
+						if (!globalLast.isValid() || (p2.second.sweat - p2.second.availableSweat()) > eps_())
+							globalLast = p2.second.day;
+					}
+
+                    for (const auto &p: dayPlanningsPerWorker_)
+                    {
+						const auto worker = p.first;
+						const auto &dayPlannings = p.second;
+
+						table.tag("tr").tag("th") << worker;
+
+						Day start = dayPlannings.begin()->first;
+						Day stop = globalLast;
+
+						//The header with the days
+						{
+							auto tr = table.tag("tr");
+							tr.tag("th") << "date";
+							Day firstOfMonth, prev;
+							int nr;
+							bool toggle = true;
+							for (auto d = start; d <= stop; ++d)
+							{
+								if (!firstOfMonth.isValid())
+								{
+									firstOfMonth = start;
+									nr = 1;
+								}
+								else
+								{
+									if (d.day() == 1)
+									{
+										tr.tag("th").attr("bgcolor", (toggle ? "yellow" : "orange")).attr("colspan", nr) << firstOfMonth << " " << prev;
+										firstOfMonth = d;
+										nr = 0;
+										toggle = !toggle;
+									}
+									++nr;
+								}
+								prev = d;
+							}
+						}
+
+						//Determine the set of all tasks this workers has on its schedule, and sort them based on the start date
+						typedef std::set<Task::Ptr, CompareStart> Tasks;
+						Tasks tasks;
+                        for (const auto &p2: dayPlannings)
+							for (const auto &tp: p2.second.taskParts)
+								tasks.insert(tp.task);
+
+						//Add the load for this day
+						{
+							auto tr = table.tag("tr");
+							tr.tag("td") << "load";
+							for (auto d = start; d <= stop; ++d)
+							{
+								auto it = dayPlannings.find(d);
+								auto td = tr.tag("td");
+								if (it == dayPlannings.end())
+									td.attr("bgcolor", "grey");
+								else
+								{
+									const auto sweat = it->second.sweat - it->second.availableSweat();
+									if (sweat <= 0.2)
+											td.attr("bgcolor", "green");
+									else if (sweat <= 0.5)
+											td.attr("bgcolor", "orange");
+									else
+											td.attr("bgcolor", "red");
+								}
+								td << "&nbsp;";
+							}
+						}
+
+						for (auto task: tasks)
+						{
+							auto tr = table.tag("tr");
+							tr.tag("td").attr("nowrap", "") << task->fullName();
+							for (auto d = start; d <= stop; ++d)
+							{
+								auto it = dayPlannings.find(d);
+								auto td = tr.tag("td");
+								if (it == dayPlannings.end())
+									td.attr("bgcolor", "grey");
+								else
+								{
+									auto &dayPlanning = it->second;
+									auto tp = std::find_if(dayPlanning.taskParts.begin(), dayPlanning.taskParts.end(), [&task](const TaskPart &tp){return tp.task == task;});
+									if (tp == dayPlanning.taskParts.end())
+									{
+										if (dayPlanning.sweat > eps_())
+											td.attr("bgcolor", "green");
+										else
+											td.attr("bgcolor", "pink");
+									}
+									else
+										td.attr("bgcolor", "red");
+								}
+								td << "&nbsp;";
+							}
+						}
+                    }
                 }
 
 				static Sweat eps_() {return 0.0001;}

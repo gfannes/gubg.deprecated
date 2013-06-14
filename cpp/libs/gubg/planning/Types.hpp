@@ -14,6 +14,8 @@ namespace gubg
         typedef std::shared_ptr<Workers> WorkersPtr;
         typedef double Sweat;
         typedef double Efficiency;
+
+		enum class Format {Text, Html};
     }
 }
 

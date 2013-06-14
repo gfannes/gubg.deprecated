@@ -12,7 +12,7 @@ namespace pa
         public:
 			enum Level {Overview, Details};
 
-            static ITask::Ptr create(Level level){return ITask::Ptr(new Plan(Level level));}
+            static Ptr create(Level level){return Ptr(new Plan(level));}
 
             virtual ReturnCode execute(const Options &);
 

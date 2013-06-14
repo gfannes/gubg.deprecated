@@ -28,13 +28,13 @@ namespace
             planning.addWorker("gfa", 0.8);
             planning.addWorker("wba", 0.5);
 			gubg::OnlyOnce upgradeWBA;
-            for (auto d: workDays(400))
+            for (auto d: workDays(200))
 			{
 				if (d >= Day(2013,8,1) && upgradeWBA())
 					planning.addWorker("wba", 0.8);
                 planning.addDay(d);
 			}
-            for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 20)))
+            for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 18)))
                 planning.absence("gfa", d);
             for (auto d: dayRange(Day(2013, 7, 15), Day(2013, 7, 26)))
                 planning.absence("wba", d);
@@ -66,16 +66,34 @@ namespace
 
 			MSS_END();
         }
-		void stream(std::ostream &os)
+		void stream(std::ostream &os, Plan::Level level, gubg::planning::Format format)
 		{
-            planning.stream(os);
-#if 0
-			for (auto p: tpd_)
+			using namespace gubg::planning;
+			switch (level)
 			{
-				auto &task = *p.second;
-				os << task.start << " -- " << task.stop << ":: " << *p.first << " " << task.fullName()  << "(" << task.cumulSweat << ")" << std::endl;
+				case Plan::Overview:
+					switch (format)
+					{
+						case Format::Text:
+							for (auto p: root->tasksPerDeadline())
+							{
+								auto &task = *p.second;
+								if (task.stop > *p.first)
+									os << "! ";
+								else
+									os << "  ";
+								os << task.start << " -- " << task.stop << ":: deadline: " << *p.first << " " << task.fullName()  << "(" << task.cumulSweat << ")" << std::endl;
+							}
+							break;
+						case Format::Html:
+							os << "<html><body>Not implemented yet</body></html>";
+							break;
+					}
+					break;
+				case Plan::Details:
+					planning.stream(os, format);
+					break;
 			}
-#endif
 		}
 
         template <typename Path>
@@ -141,16 +159,27 @@ pa::ReturnCode Plan::execute(const Options &options)
 {
 	MSS_BEGIN(ReturnCode, "Planning");
 
+	using namespace gubg::planning;
 	Planner planner;
 	for (auto lineName: options.lines)
 		planner.addLineName(lineName);
 	MSS(planner.run());
 	planner.root->stream(cout);
-	planner.stream(cout);
+	planner.stream(cout, level_, Format::Text);
 	if (!options.output.name().empty())
 	{
-		ofstream fo(options.output.name());
-		planner.stream(fo);
+		{
+			gubg::file::File fn(options.output.name());
+			fn.setExtension("txt");
+			ofstream fo(fn.name());
+			planner.stream(fo, level_, Format::Text);
+		}
+		{
+			gubg::file::File fn(options.output.name());
+			fn.setExtension("html");
+			ofstream fo(fn.name());
+			planner.stream(fo, level_, Format::Html);
+		}
 	}
 
 	MSS_END();

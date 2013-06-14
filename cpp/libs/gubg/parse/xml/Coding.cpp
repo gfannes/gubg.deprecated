@@ -93,6 +93,11 @@ namespace gubg
                             MSS(rawSize >= 5);
                             rawSize -= 5;
                         }
+                        else if (strange.popString("#xa;") || strange.popString("#xA;") || strange.popString("#xd;") || strange.popString("#xD;"))
+                        {
+                            MSS(rawSize >= 4);
+                            rawSize -= 4;
+                        }
                         else
                             MSS_L(UnknownEscape);
                     }
@@ -129,6 +134,10 @@ namespace gubg
                             *dst++ = '&';
                         else if (strange.popString("apos;"))
                             *dst++ = '\'';
+                        else if (strange.popString("#xa;") || strange.popString("#xA;"))
+                            *dst++ = '\n';
+                        else if (strange.popString("#xd;") || strange.popString("#xD;"))
+                            *dst++ = '\r';
                         else
                         {
                             //Should have failed above

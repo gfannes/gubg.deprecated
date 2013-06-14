@@ -9,11 +9,12 @@ namespace gubg
     {
         namespace builder
         {
+			enum CloseType {ShortClose, NoShortClose};
             class Tag
             {
                 public:
-                    Tag(std::ostream &os, const std::string &name, const size_t indent = 0)
-                        :os_(os), name_(name), indent_(indent), state_(Attributes)
+                    Tag(std::ostream &os, const std::string &name, CloseType closeType = ShortClose, const size_t indent = 0)
+                        :os_(os), name_(name), indent_(indent), state_(Attributes), closeType_(closeType)
                     {
                         if (indent_)
                             os_ << std::string(2*indent_, ' ');
@@ -23,7 +24,8 @@ namespace gubg
                         os_(rhs.os_),
                         name_(std::move(rhs.name_)),
                         indent_(rhs.indent_),
-                        state_(rhs.state_)
+                        state_(rhs.state_),
+						closeType_(rhs.closeType_)
                     {
                     }
                     template <typename Name, typename Value>
@@ -36,14 +38,29 @@ namespace gubg
                     {
                         closeAttributes_();
                         os_ << std::endl;
-                        return Tag(os_, name, indent_+1);
+                        return Tag(os_, name, closeType_, indent_+1);
                     }
-                    ~Tag()
-                    {
-                        switch (state_)
-                        {
+					template <typename T>
+						Tag &operator<<(const T &t)
+						{
+							closeAttributes_();
+							os_ << t;
+							return *this;
+						}
+					~Tag()
+					{
+						switch (state_)
+						{
                             case Attributes:
-                                os_ << "/>";
+								switch (closeType_)
+								{
+									case ShortClose:
+										os_ << "/>";
+										break;
+									case NoShortClose:
+										os_ << "></" << name_ << ">";
+										break;
+								}
                                 break;
                             case Elements:
                                 os_ << std::endl << std::string(2*indent_, ' ');
@@ -68,6 +85,7 @@ namespace gubg
                     const size_t indent_;
                     enum State {Attributes, Elements, Closed};
                     State state_;
+					CloseType closeType_;
             };
             class Header
             {
