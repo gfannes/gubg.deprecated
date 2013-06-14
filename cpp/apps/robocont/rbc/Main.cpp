@@ -12,7 +12,9 @@ Main::Main():
     select_arduino_dev_(*this),
     main_(*this),
     log_(*this),
-    place_(*this)
+    place_(*this),
+    picture_(*this, nana::rectangle(100,100,100,100)),
+    drawing_(picture_)
 {
     using namespace nana::gui;
 
@@ -35,5 +37,9 @@ Main::Main():
 
     place_.collocate();
 
+    drawing_.line(1,1,100,100,0xff0000);
+    drawing_.rectangle(50,50,10,100,0x00ff00,true);
+
     show();
+nana::gui::API::refresh_window(picture_);
 }

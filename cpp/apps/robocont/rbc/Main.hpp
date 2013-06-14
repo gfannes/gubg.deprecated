@@ -5,6 +5,7 @@
 #include "nana/gui/place.hpp"
 #include "nana/gui/widgets/label.hpp"
 #include "nana/gui/widgets/button.hpp"
+#include "nana/gui/widgets/picture.hpp"
 
 namespace rbc
 {
@@ -23,6 +24,9 @@ namespace rbc
             nana::gui::label log_;
 
             nana::gui::place place_;
+
+            nana::gui::picture picture_;
+            nana::gui::drawing drawing_;
     };
 }
 
