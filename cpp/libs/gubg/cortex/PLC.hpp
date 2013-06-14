@@ -40,24 +40,28 @@ namespace gubg
                 }
 
                 //IColumn interface
+                //We let a piramid weight function around offset with width span/2 for the p-values
                 virtual Value value(time::Offset offset, time::Span span)
                 {
                     if (valuePerPoint_.empty())
                         return Value();
                     const auto point = now_ + offset;
-                    auto it = valuePerPoint_.lower_bound(point - span/2);//Not-less than
-                    const auto e = valuePerPoint_.upper_bound(point + span/2);//Greater than
+                    const auto sd2 = span/2;
+                    auto it = valuePerPoint_.lower_bound(point - sd2);//Not-less than
+                    const auto e = valuePerPoint_.upper_bound(point + sd2);//Greater than
                     Value res;
                     for (; it != e; ++it)
                     {
-                        const Value &l = it->second;
+                        Value l = it->second;
+                        //Adjust the p-value with a piramidal weight function
+                        l.p *= 1.0-((double)std::abs((it->first - point).count()))/sd2.count();
                         res.v += l.v*l.p;//sum v*p
                         res.p += l.p;//sum p
                     }
                     if (res.p > 0)
                     {
                         res.v /= res.p;
-                        const auto r = span.count()/pulse_.count();
+                        const auto r = sd2.count()/pulse_.count();
                         res.p /= std::max<decltype(r)>(r, 1);
                         res.p = std::min(res.p, 1.0);
                     }
