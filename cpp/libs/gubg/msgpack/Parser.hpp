@@ -5,6 +5,8 @@
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/FixedVector.hpp"
 
+#define GUBG_MODULE_ "msgpack_Parser"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace msgpack
@@ -24,7 +26,7 @@ namespace gubg
                 public:
                     ReturnCode process(ubyte b)
                     {
-                        MSS_BEGIN(ReturnCode);
+                        MSS_BEGIN(ReturnCode, std::hex << (int)b);
                         if (mss::isOK(el_.type.valid()))
                         {
                             if (it_ != buffer_.end())
@@ -128,6 +130,14 @@ namespace gubg
                         }
                         MSS_END();
                     }
+                    template <typename String>
+                        ReturnCode process(const String &str)
+                        {
+                            MSS_BEGIN(ReturnCode);
+                            for (auto it = str.begin(); it != str.end(); ++it)
+                                MSS(process((ubyte)*it));
+                            MSS_END();
+                        }
 
                     void clear()
                     {
@@ -247,5 +257,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

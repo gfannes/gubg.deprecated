@@ -1,5 +1,7 @@
 #include "gubg/msgpack/Primitives.hpp"
 
+#define GUBG_MODULE "msgpack_Primitives"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace msgpack
@@ -188,7 +190,7 @@ namespace gubg
         ReturnCode Type::valid() const
         {
             MSS_BEGIN(ReturnCode);
-            MSS(primitive != Primitive::Unknown, UnknownPrimitive);
+            MSS_Q(primitive != Primitive::Unknown, UnknownPrimitive);
             MSS(group != Group::Unknown, UnknownGroup);
             MSS(width != Width::Unknown, UnknownWidth);
             MSS((nr & 0x80) == 0x00, InvalidNr);
@@ -196,3 +198,4 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"

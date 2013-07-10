@@ -3,7 +3,7 @@
 
 #include "gubg/OnlyOnce.hpp"
 
-#define GUBG_MODULE "StateMachine"
+#define GUBG_MODULE_ "StateMachine"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -28,9 +28,12 @@ namespace gubg
                         StateT operator()() const {return s_;}
                         void changeTo(StateT ns)
                         {
+                            S();
+                            L("Leaving state " << (int)s_);
                             outer_.sm_exit(s_);
                             s_ = ns;
-                            outer_.sm_enter(s_);
+                            L("Entering state " << (int)s_);
+                            outer_.sm_enter(*this);
                         }
                     private:
                         friend class StateMachine_ftop;
@@ -45,10 +48,8 @@ namespace gubg
                 template <typename Event>
                     void process(const Event &event)
                     {
-                        SS(event);
-
                         if (doStart_())
-                            state_.outer_.sm_enter(state_());
+                            state_.outer_.sm_enter(state_);
 
                         state_.outer_.sm_event(state_, event);
                     }
