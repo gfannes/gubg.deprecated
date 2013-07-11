@@ -135,7 +135,17 @@ namespace gubg
                         {
                             MSS_BEGIN(ReturnCode);
                             for (auto it = str.begin(); it != str.end(); ++it)
-                                MSS(process((ubyte)*it));
+                            {
+                                switch (auto rc = process((ubyte)*it))
+                                {
+                                    case ReturnCode::OK:
+                                    case ReturnCode::ParsingFinished:
+                                        break;
+                                    default:
+                                        MSS(rc);
+                                        break;
+                                }
+                            }
                             MSS_END();
                         }
 

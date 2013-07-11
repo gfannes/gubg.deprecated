@@ -1,5 +1,6 @@
 #ifndef HEADER_gubg_msgpack_Factory_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_msgpack_Factory_hpp_ALREADY_INCLUDED
+
 #include "gubg/msgpack/Parser.hpp"
 #include "gubg/StateMachine.hpp"
 #include <queue>
@@ -15,6 +16,9 @@ namespace gubg
             {
                     private:
                         typedef Factory_crtp<Receiver> Self;
+                        typedef Parser_crtp<Factory_crtp<Receiver>, std::vector<Element>> Parser;
+                        DATA_EVENT(Reset);
+
                     public:
                         Factory_crtp():
                             sm_(*this){}
@@ -54,12 +58,14 @@ namespace gubg
                             ReturnCode parser_close(const Element &e, const P &p)
                             {
                                 MSS_BEGIN(ReturnCode, (int)e.type.primitive << " " << p.size());
+                                if (p.empty())
+                                    sm_.process(Reset());
                                 MSS_END();
                             }
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
-                        enum class State {Idle, Map, CreateObj, CreatedObj, SemanticError};
+                        enum class State {Idle, Primitive_detected, UT_map_detected, UT_nil_detected, UT_created, SemanticError};
                         typedef StateMachine_ftop<Self, State, State::Idle> SM;
                         friend class StateMachine_ftop<Self, State, State::Idle>;
                         SM sm_;
@@ -68,16 +74,25 @@ namespace gubg
                         }
                         void sm_enter(typename SM::State &s)
                         {
+                            switch (s())
+                            {
+                                case State::Idle: Parser::clear(); break;
+                                case State::Primitive_detected: s.changeTo(State::Idle); break;
+                            }
                         }
                         void sm_event(typename SM::State &s, const Element &el)
                         {
                             switch (s())
                             {
                                 case State::Idle:
-                                    if (el.type.group == Group::Map)
-                                        s.changeTo(State::Map);
-                                    else
-                                        s.changeTo(State::SemanticError);
+                                    switch (el.type.group)
+                                    {
+                                        case Group::Integer:
+                                            s.changeTo(State::Idle);
+                                            break;
+                                        case Group::Map:     s.changeTo(State::UT_map_detected); break;
+                                        default:             s.changeTo(State::SemanticError); break;
+                                    }
                                     break;
                             }
                         }
@@ -85,8 +100,8 @@ namespace gubg
                         {
                             switch (s())
                             {
-                                case State::Map:
-                                    s.changeTo(State::CreateObj);
+                                case State::UT_map_detected:
+                                    s.changeTo(State::UT_nil_detected);
                                     break;
                             }
                         }
@@ -94,17 +109,26 @@ namespace gubg
                         {
                             switch (s())
                             {
-                                case State::CreateObj:
+                                case State::Idle:
+                                    receiver_().factory_primitive(id);
+                                    s.changeTo(State::Primitive_detected);
+                                    return;
+                                    break;
+                                case State::UT_nil_detected:
                                     {
                                         IObject *obj = receiver_().factory_createObject(id);
                                         if (!obj)
                                             break;
-                                        s.changeTo(State::CreatedObj);
+                                        s.changeTo(State::UT_created);
                                         return;
                                     }
                                     break;
                             }
                             s.changeTo(State::SemanticError);
+                        }
+                        void sm_event(typename SM::State &s, Reset)
+                        {
+                            s.changeTo(State::Idle);
                         }
 
                         typedef std::queue<IObject*> Objects;

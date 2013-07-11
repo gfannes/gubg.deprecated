@@ -7,6 +7,8 @@
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
+#define DATA_EVENT(name) struct name {}
+
     template <typename Outer, typename StateT, StateT StartState>
         class StateMachine_ftop
         {
