@@ -24,6 +24,7 @@ namespace gubg
             class Parser_crtp
             {
                 public:
+                    //Emits ParsingFinished when a complete top-level object is parsed
                     ReturnCode process(ubyte b)
                     {
                         MSS_BEGIN(ReturnCode, std::hex << (int)b);

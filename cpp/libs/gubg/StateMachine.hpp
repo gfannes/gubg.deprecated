@@ -1,6 +1,8 @@
 #ifndef HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_StateMachine_hpp_ALREADY_INCLUDED
 
+//sm_enter() might be called for the init state when it is not really expected: upon checkState() or processing the first event; make sure its enter action is not too harmful
+
 #include "gubg/OnlyOnce.hpp"
 
 #define GUBG_MODULE_ "StateMachine"
@@ -17,10 +19,14 @@ namespace gubg
 
                 bool checkState(StateT s) const
                 {
+                    if (doStart_())
+                        state_.outer_.sm_enter(state_);
                     return s == state_.s_;
                 }
                 StateT debug_getState() const
                 {
+                    if (doStart_())
+                        state_.outer_.sm_enter(state_);
                     return state_.s_;
                 }
 
