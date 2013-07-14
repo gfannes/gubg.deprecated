@@ -20,10 +20,12 @@ namespace gubg
             void clear() { type.clear(); }
         };
 
-        template <typename Receiver, typename Path>
+        template <typename Receiver, typename Path_>
             class Parser_crtp
             {
                 public:
+                    typedef Path_ Path;
+
                     //Emits ParsingFinished when a complete top-level object is parsed
                     ReturnCode process(ubyte b)
                     {
@@ -125,7 +127,7 @@ namespace gubg
                                             {
                                                 unsigned long l;
                                                 MSS(convertUInt_(l, buffer_));
-                                                receiver_().parser_add(l, path_);
+                                                receiver_().parser_add((long)l, path_);
                                                 MSS_Q(proceed_());
                                             }
                                             break;

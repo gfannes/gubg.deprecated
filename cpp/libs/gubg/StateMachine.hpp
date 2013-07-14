@@ -4,12 +4,19 @@
 //sm_enter() might be called for the init state when it is not really expected: upon checkState() or processing the first event; make sure its enter action is not too harmful
 
 #include "gubg/OnlyOnce.hpp"
+#include "gubg/macro.hpp"
 
 #define GUBG_MODULE_ "StateMachine"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
-#define DATA_EVENT(name) struct name {}
+#define DATA_EVENT_1(tn)                 struct tn {}
+#define DATA_EVENT_2(_1, _2)             error 
+#define DATA_EVENT_3(tn, t1, n1)         struct tn {t1 n1; tn(t1 ln1):n1(ln1){}}
+#define DATA_EVENT_4(_1, _2, _3, _4)     error
+#define DATA_EVENT_5(tn, t1, n1, t2, n2) struct tn {t1 n1; t2 n2; tn(t1 ln1, t2 ln2):n1(ln1),n2(ln2){}}
+#define DATA_EVENT_MACRO_CHOOSER(...) GUBG_GET_6TH_ARG(__VA_ARGS__, DATA_EVENT_5,DATA_EVENT_4,DATA_EVENT_3,DATA_EVENT_2,DATA_EVENT_1)
+#define DATA_EVENT(...) DATA_EVENT_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
     template <typename Outer, typename StateT, StateT StartState>
         class StateMachine_ftop

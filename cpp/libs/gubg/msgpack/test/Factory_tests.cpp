@@ -11,7 +11,7 @@ Work work;
 
 #define GUBG_MODULE_ "test_Factory"
 #include "gubg/log/begin.hpp"
-class Factory: public gubg::msgpack::Factory_crtp<Factory>
+class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
 {
     public:
         IObject *factory_createObject(unsigned long id)

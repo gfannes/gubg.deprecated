@@ -3,6 +3,7 @@
 
 #include "gubg/msgpack/Parser.hpp"
 #include "gubg/StateMachine.hpp"
+#include "gubg/FixedVector.hpp"
 #include <queue>
 
 #define GUBG_MODULE_ "msgpack_Factory"
@@ -11,13 +12,15 @@ namespace gubg
 {
     namespace msgpack
     {
-        template <typename Receiver>
-            class Factory_crtp: public Parser_crtp<Factory_crtp<Receiver>, std::vector<Element>>
+        template <typename Receiver, size_t MaxString>
+            class Factory_crtp: public Parser_crtp<Factory_crtp<Receiver, MaxString>, std::vector<Element>>
             {
                     private:
-                        typedef Factory_crtp<Receiver> Self;
-                        typedef Parser_crtp<Factory_crtp<Receiver>, std::vector<Element>> Parser;
+                        typedef Factory_crtp<Receiver, MaxString> Self;
+                        typedef Parser_crtp<Factory_crtp<Receiver, MaxString>, std::vector<Element>> Parser;
+                        typedef std::vector<Element> Path;
                         DATA_EVENT(Reset);
+                        DATA_EVENT(OpenElement, const Element &, el, const Path &, path);
 
                     public:
                         Factory_crtp():
@@ -26,7 +29,7 @@ namespace gubg
                         class IObject
                         {
                             public:
-                                virtual void set(Receiver &receiver, unsigned long id, Nil_tag) = 0;
+                                virtual void set(Receiver &receiver, long id, Nil_tag) = 0;
                             private:
                         };
                         template <typename T>
@@ -34,7 +37,7 @@ namespace gubg
                         {
                             public:
                                 Object(T &t):obj_(t){}
-                                virtual void set(Receiver &receiver, unsigned long id, Nil_tag nil)
+                                virtual void set(Receiver &receiver, long id, Nil_tag nil)
                                 {
                                     receiver.factory_setMember(obj_, id, nil);
                                 }
@@ -48,33 +51,35 @@ namespace gubg
                             void factory_primitive(Primitive primitive){S();L("Received a toplevel primitive");}
 
                         template <typename P>
-                            ReturnCode parser_open(const Element &e, const P &p)
+                            void parser_open(const Element &e, const P &p)
                             {
-                                MSS_BEGIN(ReturnCode, (int)e.type.group << " " << &e << " " << p.size());
-                                sm_.process(e);
-                                MSS_END();
+                                S();L((int)e.type.group << " " << &e << " " << p.size());
+                                sm_.process(OpenElement(e, p));
                             }
                         template <typename P>
-                            ReturnCode parser_add(Nil_tag nil, const P &p)
+                            void parser_add(Nil_tag nil, const P &p)
                             {
-                                MSS_BEGIN(ReturnCode, "nil " << p.size());
+                                S();L("nil " << p.size());
                                 sm_.process(nil);
-                                MSS_END();
                             }
                         template <typename P>
-                            ReturnCode parser_add(unsigned long l, const P &p)
+                            void parser_add(long l, const P &p)
                             {
-                                MSS_BEGIN(ReturnCode, l << " " << p.size());
+                                S();L("long: " << l << " " << p.size());
                                 sm_.process(l);
-                                MSS_END();
                             }
                         template <typename P>
-                            ReturnCode parser_close(const Element &e, const P &p)
+                            void parser_add(char ch, const P &p)
                             {
-                                MSS_BEGIN(ReturnCode, (int)e.type.primitive << " " << p.size());
+                                S();L("char: " << ch << " " << p.size());
+                                sm_.process(ch);
+                            }
+                        template <typename P>
+                            void parser_close(const Element &e, const P &p)
+                            {
+                                S();L((int)e.type.group << " " << p.size());
                                 if (p.empty())
                                     sm_.process(Reset());
-                                MSS_END();
                             }
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
@@ -93,14 +98,14 @@ namespace gubg
                                 case State::Primitive_detected: s.changeTo(State::Idle); break;
                             }
                         }
-                        void sm_event(typename SM::State &s, const Element &el)
+                        void sm_event(typename SM::State &s, const OpenElement &oe)
                         {
                             S();
-                            L("Received an element " << (int)el.type.group << " " << &el);
+                            L("Received an element " << (int)oe.el.type.group << " " << &oe.el);
                             switch (s())
                             {
                                 case State::Idle:
-                                    switch (el.type.group)
+                                    switch (oe.el.type.group)
                                     {
                                         case Group::Integer:
                                             s.changeTo(State::Idle);
@@ -133,7 +138,7 @@ namespace gubg
                             }
                             s.changeTo(State::SemanticError);
                         }
-                        void sm_event(typename SM::State &s, unsigned long id)
+                        void sm_event(typename SM::State &s, long id)
                         {
                             switch (s())
                             {
@@ -162,7 +167,10 @@ namespace gubg
                             s.changeTo(State::Idle);
                         }
 
-                        unsigned long memberId_;
+                        long memberId_;
+
+                        typedef FixedVector<char, MaxString> String;
+                        String string_;
 
                         typedef std::queue<IObject*> Objects;
                         Objects objects_;

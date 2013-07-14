@@ -12,6 +12,11 @@
 #define GUBG_GET_3TH_ARG(_1,_2,_3,...) _3
 #define GUBG_GET_4TH_ARG(_1,_2,_3,_4,...) _4
 #define GUBG_GET_5TH_ARG(_1,_2,_3,_4,_5,...) _5
+#define GUBG_GET_6TH_ARG(_1,_2,_3,_4,_5,_6,...) _6
+#define GUBG_GET_7TH_ARG(_1,_2,_3,_4,_5,_6,_7,...) _7
+#define GUBG_GET_8TH_ARG(_1,_2,_3,_4,_5,_6,_7,_8,...) _8
+#define GUBG_GET_9TH_ARG(_1,_2,_3,_4,_5,_6,_7,_8,_9,...) _9
+#define GUBG_GET_10TH_ARG(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,...) _10
 #define GUBG_GET_11TH_ARG(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,...) _11
 
 #if 0
