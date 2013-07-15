@@ -1,11 +1,16 @@
 #include "gubg/msgpack/Factory.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/test/Helper.hpp"
+#include <iostream>
 
 struct Work
 {
     std::string nonce;
     std::string msg;
+    void stream(std::ostream &os) const
+    {
+        os << STREAM(nonce, msg) << std::endl;
+    }
 };
 Work work;
 
@@ -27,6 +32,10 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
         {
             SS(l);
         }
+        void factory_primitive(const String &str)
+        {
+            SS(str.size());
+        }
         void factory_primitive(gubg::msgpack::Nil_tag)
         {
             S();
@@ -34,6 +43,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
         }
         void factory_setMember(Work &work, unsigned long id, gubg::msgpack::Nil_tag)
         {
+            S();L("Setting member " << id << " to nil");
             switch (id)
             {
                 case 0:
@@ -41,6 +51,19 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
                     break;
                 case 1:
                     work.msg.clear();
+                    break;
+            }
+        }
+        void factory_setMember(Work &work, unsigned long id, const String &str)
+        {
+            S();L("Setting member " << id << " to str");
+            switch (id)
+            {
+                case 0:
+                    work.nonce.assign(&str[0], str.size());
+                    break;
+                case 1:
+                    work.msg.assign(&str[0], str.size());
                     break;
             }
         }
@@ -65,6 +88,7 @@ int main()
 //    f.process(data::msg_0);
 //    f.process(data::msg_nil);
     f.process(data::msg_ut);
+    work.stream(std::cout);
     return 0;
 }
 #include "gubg/log/end.hpp"

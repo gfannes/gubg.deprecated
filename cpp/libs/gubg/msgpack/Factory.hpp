@@ -23,6 +23,8 @@ namespace gubg
                         DATA_EVENT(OpenElement, const Element &, el, const Path &, path);
 
                     public:
+                        typedef FixedVector<char, MaxString> String;
+
                         Factory_crtp():
                             sm_(*this){}
 
@@ -30,6 +32,7 @@ namespace gubg
                         {
                             public:
                                 virtual void set(Receiver &receiver, long id, Nil_tag) = 0;
+                                virtual void set(Receiver &receiver, long id, const String &) = 0;
                             private:
                         };
                         template <typename T>
@@ -40,6 +43,10 @@ namespace gubg
                                 virtual void set(Receiver &receiver, long id, Nil_tag nil)
                                 {
                                     receiver.factory_setMember(obj_, id, nil);
+                                }
+                                virtual void set(Receiver &receiver, long id, const String &str)
+                                {
+                                    receiver.factory_setMember(obj_, id, str);
                                 }
                             private:
                                 T &obj_;
@@ -71,8 +78,13 @@ namespace gubg
                         template <typename P>
                             void parser_add(char ch, const P &p)
                             {
-                                S();L("char: " << ch << " " << p.size());
-                                sm_.process(ch);
+                                const auto &el = p.back();
+                                S();L("char: '" << ch << "' " << p.size() << " " << el.ix << " " << el.length);
+                                if (el.ix == 0)
+                                    string_.clear();
+                                string_.push_back(ch);
+                                if (el.ix == el.length-1)
+                                    sm_.process(string_);
                             }
                         template <typename P>
                             void parser_close(const Element &e, const P &p)
@@ -162,6 +174,26 @@ namespace gubg
                             }
                             s.changeTo(State::SemanticError);
                         }
+                        void sm_event(typename SM::State &s, const String &str)
+                        {
+                            S();L("Received string event");
+                            switch (s())
+                            {
+                                case State::Idle:
+                                    receiver_().factory_primitive(str);
+                                    return s.changeTo(State::Primitive_detected);
+                                    break;
+                                case State::UT_member:
+                                    if (!objects_.empty())
+                                    {
+                                        auto obj = objects_.back();
+                                        obj->set(receiver_(), memberId_, str);
+                                        return s.changeTo(State::UT_created);
+                                    }
+                                    break;
+                            }
+                            s.changeTo(State::SemanticError);
+                        }
                         void sm_event(typename SM::State &s, Reset)
                         {
                             s.changeTo(State::Idle);
@@ -169,7 +201,6 @@ namespace gubg
 
                         long memberId_;
 
-                        typedef FixedVector<char, MaxString> String;
                         String string_;
 
                         typedef std::queue<IObject*> Objects;

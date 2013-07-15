@@ -100,10 +100,11 @@ namespace gubg
                                     {
                                         receiver_().parser_add((char)b, path_);
                                         //We do not clear el_ to make sure the next byte won't cause the start of a new object
-                                        ++el_.ix;
-                                        if (el_.ix == el_.length)
+                                        auto &el = path_.back();
+                                        ++el.ix;
+                                        if (el.ix == el.length)
                                         {
-                                            receiver_().parser_close(el_, path_);
+                                            receiver_().parser_close(el, path_);
                                             MSS_Q(proceed_());
                                         }
                                     }
