@@ -2,6 +2,7 @@
 #define HEADER_gubg_msgpack_Factory_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Parser.hpp"
+#include "gubg/msgpack/Write.hpp"
 #include "gubg/StateMachine.hpp"
 #include "gubg/FixedVector.hpp"
 #include <queue>
@@ -27,6 +28,35 @@ namespace gubg
 
                         Factory_crtp():
                             sm_(*this){}
+
+                        template <typename Buffer, typename T>
+                            ReturnCode serialize(Buffer &buffer, const T &t)
+                            {
+                                MSS_BEGIN(ReturnCode);
+                                MSS(receiver_().factory_serialize(buffer, t));
+                                MSS_END();
+                            }
+                        template <typename Buffer>
+                            ReturnCode writeIdAndLength(Buffer &buffer, long id, size_t nr)
+                            {
+                                MSS_BEGIN(ReturnCode);
+                                MSS(write(buffer, nr+1, MapTL_tag()));
+                                MSS(write(buffer, Nil_tag()));
+                                MSS(write(buffer, id));
+                                MSS_END();
+                            }
+                        template <typename Buffer, typename T>
+                            ReturnCode writeMember(Buffer &buffer, long id, const T &t)
+                            {
+                                MSS_BEGIN(ReturnCode);
+                                MSS(write(buffer, id));
+                                MSS(serialize(buffer, t));
+                                MSS_END();
+                            }
+                        template <typename Buffer>
+                            ReturnCode serialize(Buffer &buffer, long l) { return write(buffer, l); }
+                        template <typename Buffer>
+                            ReturnCode serialize(Buffer &buffer, const std::string &str) { return write(buffer, str); }
 
                         class IObject
                         {

@@ -14,6 +14,8 @@ struct Work
 };
 Work work;
 
+enum class ReturnCode {MSS_DEFAULT_CODES,};
+
 #define GUBG_MODULE_ "test_Factory"
 #include "gubg/log/begin.hpp"
 class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
@@ -67,6 +69,15 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
                     break;
             }
         }
+        template <typename Buffer>
+            ReturnCode factory_serialize(Buffer &buffer, const Work &work)
+            {
+                MSS_BEGIN(ReturnCode);
+                MSS(writeIdAndLength(buffer, 0, 2));
+                MSS(writeMember(buffer, 0, work.nonce));
+                MSS(writeMember(buffer, 1, work.msg));
+                MSS_END();
+            }
     private:
 };
 #include "gubg/log/end.hpp"
@@ -85,10 +96,14 @@ int main()
 {
     TEST_TAG(main);
     Factory f;
-//    f.process(data::msg_0);
-//    f.process(data::msg_nil);
+    //    f.process(data::msg_0);
+    //    f.process(data::msg_nil);
     f.process(data::msg_ut);
     work.stream(std::cout);
+
+    std::string buffer;
+    f.serialize(buffer, work);
+    std::cout << gubg::testing::toHex(buffer) << std::endl;
     return 0;
 }
 #include "gubg/log/end.hpp"
