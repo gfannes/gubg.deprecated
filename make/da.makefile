@@ -8,7 +8,7 @@ DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe FileCache Arduino \
 	build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Local package/Boost package/Nana package/Arduino package/GUBG package/SDL package/DecodeIt \
+	package/Packages package/Local package/Boost package/Nana package/Arduino package/GUBG package/SDL package/DecodeIt package/Libs \
 	compile/Compiler \
 	link/Linker \
 
@@ -28,8 +28,8 @@ BOOST_LINK := -lboost_thread -lboost_system -lboost_regex
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := 
 endif
-#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -DGUBG_DEBUG
-CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
+CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
+#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
 LINK_LIBS := $(BOOST_LINK)
 

@@ -109,6 +109,7 @@ namespace gubg
                                                         case '.':
                                                         case '/':
                                                         case '-':
+                                                        case '+':
                                                             incl << symbol;
                                                             break;
                                                         case '>':

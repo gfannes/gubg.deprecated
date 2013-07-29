@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu
-#define aoeuaoeu
+#ifndef HEADER_gubg_peer_Connector_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_peer_Connector_hpp_ALREADY_INCLUDED
 
 #include "gubg/peer/Codes.hpp"
 #include <string>

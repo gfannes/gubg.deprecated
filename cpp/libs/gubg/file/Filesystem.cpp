@@ -12,7 +12,7 @@
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "Filesystem"
+#define GUBG_MODULE_ "Filesystem"
 #include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)
@@ -27,7 +27,7 @@ ReturnCode gubg::file::size(size_t &fileSize, const File &file)
 
 ReturnCode gubg::file::read(string &content, const File &file)
 {
-    MSS_BEGIN(ReturnCode, "filename: " << file.name());
+    MSS_BEGIN(ReturnCode, "filename: [" << file.name() << "]");
     MSS(File::Unknown == file.type() || File::Regular ==  file.type(), ExpectedRegular);
     ifstream fi(file.name(), ios_base::in | ios_base::binary | ios_base::ate);
     MSS(bool(fi), CouldNotOpenFile);
