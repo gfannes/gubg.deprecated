@@ -37,7 +37,7 @@ namespace
             optionParser.addMandatory("-E", "--exe-release SOURCE", "Compile SOURCE into a release executable",
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Release));});
             optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
-            optionParser.addMandatory("-I", "--include PATH", "Add PATH as an include path", [&options](string path){options.includePaths.push_back(path);});
+            optionParser.addMandatory("-t", "--tree TREE", "Add TREE", [&options](string tree){options.trees.push_back(tree);});
             optionParser.addSwitch("-v", "--verbose", "Verbose", [&verbose](){verbose = true;});
 
             OptionParser::Args args;

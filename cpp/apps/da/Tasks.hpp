@@ -5,13 +5,14 @@
 #include <list>
 #include <memory>
 #include <ostream>
+#include <vector>
 
 namespace da
 {
     struct Options
     {
         bool doFix;
-		std::vector<std::string> includePaths;
+		std::vector<std::string> trees;
 
         Options():
             doFix(false){}
@@ -30,11 +31,11 @@ namespace std
 	inline ostream &operator<<(ostream &os, const da::Options &options)
 	{
 		os << STREAM(options.doFix) << endl;
-		if (!options.includePaths.empty())
+		if (!options.trees.empty())
 		{
-			os << "Include paths:" << endl;
-			for (auto ip: options.includePaths)
-				os << ip << endl;
+			os << "Trees:" << endl;
+			for (auto tree: options.trees)
+				os << tree << endl;
 		}
 		return os;
 	}
