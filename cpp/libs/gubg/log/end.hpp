@@ -1,5 +1,11 @@
 //NO INCLUDE GUARDS HERE
 
+#ifndef L_GUBG_LOG_STARTED
+  #error gubg logging was never started, but you want to stop it here
+#else
+  #undef L_GUBG_LOG_STARTED
+#endif
+
 #ifndef S
   #error S is not defined
 #endif

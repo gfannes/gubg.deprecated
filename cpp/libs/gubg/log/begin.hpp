@@ -1,5 +1,11 @@
 //NO INCLUDE GUARDS HERE
 
+#ifdef L_GUBG_LOG_STARTED
+  #error gubg logging is already started, you have a begin/end mismatch
+#else
+  #define L_GUBG_LOG_STARTED
+#endif
+
 #ifdef S
   #error S is already defined
 #endif

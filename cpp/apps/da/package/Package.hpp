@@ -28,7 +28,9 @@ namespace da
                 virtual std::string name() const = 0;
                 virtual bool exists() const = 0;
 
-                //Searches the packages for a header
+                //Searches the packages for a header using chain of responsibility
+				//Should return OK if the header was resolved, UnknownHeader if the next in the chain should be tested, 
+				//and something else if something else fails
                 virtual ReturnCode resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial) {return ReturnCode::UnknownHeader;}
 
                 virtual void appendIncludePaths(IncludePaths &) const {};

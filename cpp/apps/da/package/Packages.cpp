@@ -4,7 +4,7 @@
 using namespace da::package;
 using namespace std;
 
-#define GUBG_MODULE "Packages"
+#define GUBG_MODULE_ "Packages"
 #include "gubg/log/begin.hpp"
 void Packages::prune()
 {
@@ -39,13 +39,26 @@ void Packages::prune()
 
 da::ReturnCode Packages::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
 {
+	MSS_BEGIN(ReturnCode, partial);
     for (auto pkg: packages_)
     {
-        auto rc = pkg->resolveHeader(resolvedHeader, sisterFiles, partial); 
-        if (rc != ReturnCode::UnknownHeader)
-            return rc;
+        switch (auto rc = pkg->resolveHeader(resolvedHeader, sisterFiles, partial)) 
+		{
+			case ReturnCode::OK:
+				L("Header " << partial << " was resolved by " << pkg->name() << " into " << resolvedHeader);
+				MSS_RETURN_OK();
+				break;
+			case ReturnCode::UnknownHeader:
+				break;
+			default:
+				L(pkg->name() << " failed on " << partial);
+				MSS(rc);
+				break;
+		}
     }
-    return ReturnCode::UnknownHeader;
+	L(partial << " is unknown by everybody");
+	MSS(ReturnCode::UnknownHeader);
+	MSS_END();
 }
 
 void Packages::extractCompileSettings(CompileSettings &cs) const

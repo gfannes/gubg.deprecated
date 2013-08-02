@@ -37,6 +37,8 @@ Builder::Builder()
 
     packages_ << SDL::create(File(""));
 
+	packages_ << (forest_ = package::Forest::create());
+
     packages_.prune();
 
     LL("I found following packages: " << string_algo::join(packages_.names(), ", "));
@@ -80,6 +82,14 @@ da::ReturnCode Builder::process(const SourceFile &source)
     }
 
     MSS_END();
+}
+
+da::ReturnCode Builder::addTree(const gubg::file::File &tree)
+{
+	MSS_BEGIN(ReturnCode);
+	MSS(!tree.empty());
+	forest_->addTree(tree);
+	MSS_END();
 }
 
 Headers Builder::headers(Source::Ptr src) const

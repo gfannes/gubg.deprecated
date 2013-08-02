@@ -200,6 +200,7 @@ namespace gubg
                     Ptr child;
                     if (sweat == 0)
                     {
+						//We only allow leafs to have sweat
                         childs.push_back(child = Task::create(n));
                         child->parent = shared_from_this();
                         assert(child->invariants_());

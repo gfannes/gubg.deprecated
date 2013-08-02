@@ -5,7 +5,7 @@ def newlineType(input)
   buffer = nil
   case input
   when String
-    buffer = String.load(input).unpack("C*")
+    buffer = String.loadBinary(input).unpack("C*")
   when Array
     buffer = input
   else
@@ -45,7 +45,7 @@ def changeNewlineType(input, wantedType)
   buffer = nil
   case input
   when String
-    buffer = String.load(input).unpack("C*")
+    buffer = String.loadBinary(input).unpack("C*")
   when Array
     buffer = input
   else

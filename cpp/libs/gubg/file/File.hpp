@@ -32,6 +32,8 @@ namespace gubg
                     return std::make_pair(name_, type_) < std::make_pair(rhs.name_, rhs.type_);
                 }
 
+				bool empty() const {return name_.empty();}
+
                 void clear()
                 {
                     type_ = Unknown;

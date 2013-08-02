@@ -29,25 +29,25 @@ namespace
             optionParser.addSwitch("-d", "--details", "Show detailed work breakdown",
                     [&options, &tasks]()
                     {
-                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used before the details");
                     tasks.push_back(ShowWBS::create());
                     });
             optionParser.addSwitch("-p", "--plan-overview", "Planning overview",
                     [&options, &tasks]()
                     {
-                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used before the planning overview");
                     tasks.push_back(Plan::create(Plan::Overview));
                     });
             optionParser.addSwitch("-P", "--plan-details", "Planning details",
                     [&options, &tasks]()
                     {
-                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used before the planning details");
                     tasks.push_back(Plan::create(Plan::Details));
                     });
             optionParser.addSwitch("-D", "--debug", "Debug view of the tree",
                     [&options, &tasks]()
                     {
-                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used");
+                    if (options.value.empty()) PA_FINALIZE_OK("You have to specify the totals to be used before the debug view");
                     tasks.push_back(ShowDebug::create());
                     });
 

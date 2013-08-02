@@ -20,6 +20,8 @@ da::ReturnCode CompileExe::execute(const Options &options)
     MSS_BEGIN(ReturnCode);
 
     Builder builder;
+	for (auto tree: options.includePaths)
+		builder.addTree(File(tree));
     //Detect all header and source dependencies starting from source_
     MSS(builder.process(source_));
 

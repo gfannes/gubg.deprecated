@@ -17,8 +17,9 @@ namespace da
             typedef gubg::file::File SourceFile;
             ReturnCode process(const SourceFile &);
 
-            void extractCompileSettings(CompileSettings &cs) const {packages_.extractCompileSettings(cs);}
+            void extractCompileSettings(CompileSettings &cs) const {cs = compileSettings_;}
             void extractLinkSettings(LinkSettings &ls) const {packages_.extractLinkSettings(ls);}
+			ReturnCode addTree(const gubg::file::File &);
 
             const Sources &sources() const {return sources_;}
             Headers headers(Source::Ptr) const;
@@ -26,6 +27,7 @@ namespace da
 
         private:
             da::package::Packages packages_;
+			da::package::Forest::Ptr forest_;
             Sources sources_;
             Headers headers_;
             typedef std::map<Source::Ptr, Headers> HeadersPerSource;

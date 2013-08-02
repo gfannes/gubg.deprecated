@@ -121,9 +121,15 @@ namespace gubg
                 int d_;
         };
 
+		inline Day today()
+		{
+            auto t = std::time(0);
+            auto gt = std::gmtime(&t);
+            return Day(gt->tm_year+1900, gt->tm_mon+1, gt->tm_mday);
+		}
         typedef std::vector<Day> Days;
         //Returns a vector of nr days starting from today, only including mon ... fri
-        Days workDays(size_t nr)
+        inline Days workDays(size_t nr)
         {
             Days days;
             auto t = std::time(0);
@@ -141,7 +147,7 @@ namespace gubg
             return days;
         }
         //to is also included
-        Days dayRange(Day from, Day to)
+        inline Days dayRange(Day from, Day to)
         {
             Days days;
             while (from <= to)
@@ -155,7 +161,7 @@ namespace gubg
 }
 namespace std
 {
-    ostream &operator<<(ostream &os, const gubg::planning::Day &day)
+    inline ostream &operator<<(ostream &os, const gubg::planning::Day &day)
     {
         day.stream(os);
         return os;

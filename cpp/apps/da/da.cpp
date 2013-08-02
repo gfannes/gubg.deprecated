@@ -3,6 +3,7 @@
 #include "da/Finalize.hpp"
 #include "da/Arduino.hpp"
 #include "gubg/OptionParser.hpp"
+#include <iostream>
 using namespace da;
 using gubg::OptionParser;
 using namespace std;
@@ -23,6 +24,7 @@ namespace
     {
         MSS_BEGIN(ReturnCode);
 
+		bool verbose = false;
         Tasks tasks;
         Options options;
         {
@@ -35,11 +37,16 @@ namespace
             optionParser.addMandatory("-E", "--exe-release SOURCE", "Compile SOURCE into a release executable",
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Release));});
             optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
+            optionParser.addMandatory("-I", "--include PATH", "Add PATH as an include path", [&options](string path){options.includePaths.push_back(path);});
+            optionParser.addSwitch("-v", "--verbose", "Verbose", [&verbose](){verbose = true;});
 
             OptionParser::Args args;
             MSS(OptionParser::createArgs(args, argc, argv));
             MSS(optionParser.parse(args));
         }
+
+		if (verbose)
+			cout << options << endl;
 
         for (auto task: tasks)
             MSS(task->execute(options));

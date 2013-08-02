@@ -1,6 +1,7 @@
 #include "pa/LoadMindMap.hpp"
 #include "pa/Model.hpp"
 #include "gubg/parse/xml/Parser.hpp"
+#include "gubg/parse/basic.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
 #include <string>
@@ -114,6 +115,48 @@ namespace pa
 }
 namespace 
 {
+	struct Pruner
+	{
+		typedef deque<string> AllowedPath;
+		typedef list<AllowedPath> AllowedPaths;
+		AllowedPaths allowedPaths;
+
+
+		void add(const AllowedPath &allowedPath)
+		{
+			allowedPaths.push_back(allowedPath);
+		}
+
+		struct Compare
+		{
+			bool operator()(const string &desc, const Node *node) const
+			{
+				return desc.empty() || node->desc == desc;
+			}
+		};
+		template <typename Path>
+			bool open(Node &n, Path &p) const
+			{
+				Path pp(p);
+				pp.push_back(&n);
+				for (const auto &ap: allowedPaths)
+				{
+					auto ap_beg = ap.cbegin(), ap_end = ap.cend();
+					auto pp_beg = pp.cbegin(), pp_end = pp.cend();
+					if (pp.size() <= ap.size())
+						ap_end = ap_beg + pp.size();
+					else
+						pp_end = pp_beg + ap.size();
+					if (std::equal(ap_beg, ap_end, pp_beg, Compare()))
+						return true;
+				}
+				n.childs.clear();
+				n.fraction = 0;
+				return false;
+			}
+		template <typename Path>
+			void close(Node &n, Path &p) const { }
+	};
     struct Aggregate
     {
         template <typename Path>
@@ -164,6 +207,12 @@ pa::ReturnCode LoadMindMap::execute(const Options &options)
     Parser p(model(), options.value, options.fraction, defaultFraction);
     MSS(p.process(xml));
 
+	{
+		Pruner pruner;
+		for (auto line: options.lines)
+			pruner.add(gubg::parse::tokenize(line, "/"));
+		gubg::tree::dfs::iterate(model(), pruner);
+	}
 	gubg::tree::dfs::iterate(model(), Aggregate());
 	//gubg::tree::dfs::iterate(model(), Distribute());
 

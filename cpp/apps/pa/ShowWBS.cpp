@@ -1,6 +1,7 @@
 #include "pa/ShowWBS.hpp"
 #include "pa/Model.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
+#include "gubg/planning/Day.hpp"
 #include <fstream>
 using namespace pa;
 using namespace std;
@@ -36,6 +37,7 @@ pa::ReturnCode ShowWBS::execute(const Options &options)
 	if (!options.output.name().empty())
 	{
 		ofstream fo(options.output.name());
+		fo << "Work breakdown on " << gubg::planning::today() << endl;
 		gubg::tree::dfs::iterate(model(), Show(fo));
 	}
 

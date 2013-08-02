@@ -11,7 +11,7 @@
 #include <map>
 #include <set>
 
-#define GUBG_MODULE "Planning"
+#define GUBG_MODULE_ "Planning"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -202,6 +202,7 @@ namespace gubg
                 }
                 void streamText_(std::ostream &os) const
 				{
+					os << "Planning on " << today() << std::endl;
                     for (const auto &p: dayPlanningsPerWorker_)
                     {
                         os << p.first << std::endl;
@@ -233,16 +234,24 @@ namespace gubg
 					using namespace gubg::xml::builder;
 					Tag html(os, "html", NoShortClose);
 					auto body = html.tag("body");
+					{
+						auto h1 = body.tag("h1");
+						h1 << "Planning on " << today();
+					}
 					auto table = body.tag("table");
 					table.attr("border", 0).attr("cellpadding", 0).attr("cellspacing", 0);
 
-					Day globalLast;
+					Day globalFirst, globalLast;
                     for (const auto &p: dayPlanningsPerWorker_)
 					{
 						const auto &dayPlannings = p.second;
                         for (const auto &p2: dayPlannings)
-						if (!globalLast.isValid() || (p2.second.sweat - p2.second.availableSweat()) > eps_())
-							globalLast = p2.second.day;
+						{
+							if (!globalFirst.isValid() || ((p2.second.sweat - p2.second.availableSweat()) > eps_() && p2.second.day < globalFirst))
+								globalFirst = p2.second.day;
+							if (!globalLast.isValid() || ((p2.second.sweat - p2.second.availableSweat()) > eps_() && p2.second.day > globalLast))
+								globalLast = p2.second.day;
+						}
 					}
 
                     for (const auto &p: dayPlanningsPerWorker_)
@@ -252,7 +261,7 @@ namespace gubg
 
 						table.tag("tr").tag("th") << worker;
 
-						Day start = dayPlannings.begin()->first;
+						Day start = globalFirst;
 						Day stop = globalLast;
 
 						//The header with the days

@@ -146,3 +146,4 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
 
     MSS_END();
 }
+#include "gubg/log/end.hpp"
