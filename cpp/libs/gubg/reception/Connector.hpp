@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_reception_Connector_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_reception_Connector_hpp_ALREADY_INCLUDED
 
+#include "gubg/reception/Codes.hpp"
 #include "ev++.h"
 #include <thread>
 
@@ -22,6 +23,14 @@ namespace gubg
                     thread_.join();
                 }
 
+                ReturnCode watch(int port)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    MSS(acceptorPerPort_.count(port) == 0);
+                    acceptorPerPort_[port] = Acceptor::create(port);
+                    MSS_END();
+                }
+
                 void operator()()
                 {
                     S();
@@ -32,6 +41,21 @@ namespace gubg
                 }
 
             private:
+                class Acceptor
+                {
+                    public:
+                        const int port;
+                        typedef std::unique_ptr<Acceptor> Ptr;
+                        static Ptr create(int p)
+                        {
+                            return Ptr(new Acceptor(p));
+                        }
+                    private:
+                        Acceptor(int p): port(p) { }
+                };
+                typedef std::map<int, Acceptor::Ptr> AcceptorPerPort;
+                AcceptorPerPort acceptorPerPort_;
+
                 volatile bool quit_;
                 std::thread thread_;
         };
