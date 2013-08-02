@@ -12,13 +12,13 @@ Dir.mkdir(options[:output]) unless File.exist?(options[:output])
 infoPerPage = {}
 Dir.each("./") do |dir, fn|
     case fn
-    when /\.asciidoc$/
+    when /\.adoc$/
         fp = "#{dir}/#{fn}"
         puts("Processing #{fp}")
-        page = Dir.relative(fp.gsub(/\.asciidoc$/, ""))
+        page = Dir.relative(fp.gsub(/\.adoc$/, ""))
         html = File.expand_path(page.gsub("/", "_"), options[:output])
         html.setExtension!("html")
-        #system("asciidoc -b html5 -o #{html} #{fp}")
+        #system("adoc -b html5 -o #{html} #{fp}")
         system("asciidoctor -b html5 -o #{html} #{fp}")
         infoPerPage[page] = {html: html}
     else

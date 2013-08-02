@@ -11,19 +11,19 @@ namespace gubg
 
         enum class Primitive: unsigned char
         {
-            Unknown,
-            PosFix, UInt8, UInt16, UInt32, UInt64,
-            NegFix, Int8, Int16, Int32, Int64,
-            Nil, Boolean,
-            Float, Double,
-            FixArray, Array16, Array32,
-            FixRaw, Raw16, Raw32,
-            FixMap, Map16, Map32,
+            Unknown,//0
+            PosFix, UInt8, UInt16, UInt32, UInt64,//1-5
+            NegFix, Int8, Int16, Int32, Int64,//6-10
+            Nil, Boolean,//11-12
+            Float, Double,//13-14
+            FixArray, Array16, Array32,//15-17
+            FixRaw, Raw16, Raw32,//18-20
+            FixMap, Map16, Map32,//21-23
         };
         enum class Group: unsigned char
         {
-            Unknown,
-            Integer, Nil, Boolean, Float, Array, Raw, Map
+            Unknown,//0
+            Integer, Nil, Boolean, Float, Array, Raw, Map//1-7
         };
         enum class Width: unsigned char
         {

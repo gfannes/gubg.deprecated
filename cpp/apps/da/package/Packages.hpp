@@ -10,6 +10,7 @@
 #include "da/package/Arduino.hpp"
 #include "da/package/SDL.hpp"
 #include "da/package/DecodeIt.hpp"
+#include "da/package/Libs.hpp"
 #include "da/package/Forest.hpp"
 #include "gubg/file/File.hpp"
 #include <list>

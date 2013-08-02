@@ -5,6 +5,8 @@
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/FixedVector.hpp"
 
+#define GUBG_MODULE_ "msgpack_Parser"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace msgpack
@@ -18,15 +20,22 @@ namespace gubg
             void clear() { type.clear(); }
         };
 
-        template <typename Receiver, typename Path>
+        template <typename Receiver, typename Path_>
             class Parser_crtp
             {
                 public:
+                    typedef Path_ Path;
+
+                    //Emits ParsingFinished when a complete top-level object is parsed
                     ReturnCode process(ubyte b)
                     {
-                        MSS_BEGIN(ReturnCode);
+                        MSS_BEGIN(ReturnCode, std::hex << (int)b);
+
+                        bool isNewObject = false;
+
                         if (mss::isOK(el_.type.valid()))
                         {
+                            //Add this byte to the length buffer, if still needed
                             if (it_ != buffer_.end())
                                 *it_++ = b;
                         }
@@ -34,6 +43,7 @@ namespace gubg
                         {
                             //We are ready to read a new object
                             MSS(el_.type.read(b));
+                            isNewObject = true;
                             switch (el_.type.width)
                             {
                                 case Width::Zero:
@@ -67,20 +77,43 @@ namespace gubg
                         }
                         if (it_ == buffer_.end())
                         {
+                            //We read the length info into buffer_, we can now read the data
+
                             switch (el_.type.group)
                             {
                                 case Group::Array:
                                     MSS(convertUInt_(el_.length, buffer_));
                                     el_.ix = 0;
-                                    MSS(receiver_().parser_open(el_, path_));
+                                    receiver_().parser_open(el_, path_);
                                     path_.push_back(el_);
                                     el_.clear();
+                                    break;
+                                case Group::Raw:
+                                    if (isNewObject)
+                                    {
+                                        MSS(convertUInt_(el_.length, buffer_));
+                                        el_.ix = 0;
+                                        receiver_().parser_open(el_, path_);
+                                        path_.push_back(el_);
+                                    }
+                                    else
+                                    {
+                                        receiver_().parser_add((char)b, path_);
+                                        //We do not clear el_ to make sure the next byte won't cause the start of a new object
+                                        auto &el = path_.back();
+                                        ++el.ix;
+                                        if (el.ix == el.length)
+                                        {
+                                            receiver_().parser_close(el, path_);
+                                            MSS_Q(proceed_());
+                                        }
+                                    }
                                     break;
                                 case Group::Map:
                                     MSS(convertUInt_(el_.length, buffer_));
                                     el_.length += el_.length;
                                     el_.ix = 0;
-                                    MSS(receiver_().parser_open(el_, path_));
+                                    receiver_().parser_open(el_, path_);
                                     path_.push_back(el_);
                                     el_.clear();
                                     break;
@@ -95,7 +128,7 @@ namespace gubg
                                             {
                                                 unsigned long l;
                                                 MSS(convertUInt_(l, buffer_));
-                                                MSS(receiver_().parser_add(l, path_));
+                                                receiver_().parser_add((long)l, path_);
                                                 MSS_Q(proceed_());
                                             }
                                             break;
@@ -103,7 +136,7 @@ namespace gubg
                                             {
                                                 long l = el_.type.nr;
                                                 l -= 32;
-                                                MSS(receiver_().parser_add(l, path_));
+                                                receiver_().parser_add(l, path_);
                                                 MSS_Q(proceed_());
                                             }
                                             break;
@@ -114,20 +147,38 @@ namespace gubg
                                             {
                                                 long l;
                                                 MSS(convertInt_(l, el_.type.width, buffer_));
-                                                MSS(receiver_().parser_add(l, path_));
+                                                receiver_().parser_add(l, path_);
                                                 MSS_Q(proceed_());
                                             }
                                             break;
                                     }
                                     break;
                                 case Group::Nil:
-                                    MSS(receiver_().parser_add(Nil_tag(), path_));
+                                    receiver_().parser_add(Nil_tag(), path_);
                                     MSS_Q(proceed_());
                                     break;
                             }
                         }
                         MSS_END();
                     }
+                    template <typename String>
+                        ReturnCode process(const String &str)
+                        {
+                            MSS_BEGIN(ReturnCode);
+                            for (auto it = str.begin(); it != str.end(); ++it)
+                            {
+                                switch (auto rc = process((ubyte)*it))
+                                {
+                                    case ReturnCode::OK:
+                                    case ReturnCode::ParsingFinished:
+                                        break;
+                                    default:
+                                        MSS(rc);
+                                        break;
+                                }
+                            }
+                            MSS_END();
+                        }
 
                     void clear()
                     {
@@ -151,7 +202,7 @@ namespace gubg
                         {
                             auto e = path_.back();
                             path_.pop_back();
-                            MSS(receiver_().parser_close(e, path_));
+                            receiver_().parser_close(e, path_);
                         }
                         MSS_END();
                     }
@@ -247,5 +298,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

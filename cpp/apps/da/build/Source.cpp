@@ -28,6 +28,7 @@ namespace
         template <typename String, typename Type>
             void includes_detected(const String &str, Type type)
             {
+                assert(!str.empty());
                 staging.push(File(str));
             }
     };
@@ -66,7 +67,7 @@ ReturnCode Source::searchForHeaders(Headers &headers, SourceFiles &sisterFiles, 
         sisterFiles.insert(sfs);
 
         {
-            S();
+            S();L(STREAM(hdr.name()));
             MSS(includePusher.process(hdr));
         }
     }

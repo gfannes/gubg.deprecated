@@ -11,6 +11,19 @@ A good file browser is one of the most important weapons a developer needs. My h
 
 Here are some browsers that can make all the difference:
 
+=== Sunflower
+* Works like a charm now, my current selection
+* Make sure you have 0.1a (56), the previous version could not show the files in the root for some reason
+
+=== Doublecommander
+* Tons of features, the latest version is stable now
+* Since sunflower is not available on windows, this is what I use on that platform
+
+=== Vifm
+* Looks nice and works ok
+* Both available for linux and windows
+* ncurses-based
+
 === emlFM2
 * tons of features, everything I need
 * Fast
@@ -34,9 +47,6 @@ Here are some browsers that can make all the difference:
 * The default ubuntu crashes
 * Needs fpc, the free pascal compiler
 * Needs fp-units-gtk2, fp-units
-
-=== Sunflower
-* Crashes
 
 === muCommander
 * To slow to use in practice, probably because its written in java

@@ -36,12 +36,13 @@ Builder::Builder()
     }
 
     packages_ << SDL::create(File(""));
+    packages_ << Libs::create(File(""));
 
 	packages_ << (forest_ = package::Forest::create());
 
     packages_.prune();
 
-    LL("I found following packages: " << string_algo::join(packages_.names(), ", "));
+    LL("I found following packages: " << (string_algo::join(packages_.names(), ", ")));
 }
 
 da::ReturnCode Builder::process(const SourceFile &source)

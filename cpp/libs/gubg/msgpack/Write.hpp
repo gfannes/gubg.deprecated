@@ -7,6 +7,8 @@
 #include <deque>
 #include <list>
 
+#define GUBG_MODULE "msgpack_Write"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace msgpack
@@ -335,5 +337,6 @@ namespace gubg
             }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

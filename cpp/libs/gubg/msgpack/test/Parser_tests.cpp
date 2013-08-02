@@ -1,7 +1,3 @@
-#include <iostream>
-#define L(m) std::cout<<m<<std::endl
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/Parser.hpp"
 #include "gubg/msgpack/Write.hpp"
@@ -10,6 +6,8 @@ using namespace std;
 using namespace gubg;
 using namespace gubg::testing;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     using namespace gubg::msgpack;
@@ -17,35 +15,37 @@ namespace
 
     struct Parser: msgpack::Parser_crtp<Parser, Path>
     {
-        ReturnCode parser_open(Element el, const Path &path)
+        void parser_open(Element el, const Path &path)
         {
-            LOG_S(open, STREAM(el.ix, el.length));
-            return ReturnCode::OK;
+            SS(el.ix, el.length);
         }
-        ReturnCode parser_close(Element el, const Path &path)
+        void parser_close(Element el, const Path &path)
         {
-            LOG_S(close, STREAM(el.ix, el.length));
-            return ReturnCode::OK;
+            SS(el.ix, el.length);
         }
-        ReturnCode parser_add(long v, const Path &path)
+        void parser_add(long v, const Path &path)
         {
-            LOG_S(add_l, STREAM(v));
+            SS(v);
             if (!path.empty())
-                LOG_M(STREAM(path.back().ix));
-            return ReturnCode::OK;
+                L(STREAM(path.back().ix));
         }
-        ReturnCode parser_add(unsigned long v, const Path &path)
+        void parser_add(unsigned long v, const Path &path)
         {
-            LOG_S(add_ul, STREAM(v));
+            SS(v, path.size());
             if (!path.empty())
-                LOG_M(STREAM(path.back().ix));
-            return ReturnCode::OK;
+                L(STREAM(path.back().ix));
+        }
+        void parser_add(char ch, const Path &path)
+        {
+            SS(ch);
+            if (!path.empty())
+                L(STREAM(path.back().ix));
         }
         template <typename T>
-        ReturnCode parser_add(const T &t, const Path &path)
-        {
-            return ReturnCode::IllegalArgument;
-        }
+            void parser_add(const T &t, const Path &path)
+            {
+                SS(path.size());
+            }
     };
 }
 
@@ -54,33 +54,42 @@ int main()
     TEST_TAG(main);
     Parser parser;
     //0
-    parser.process(0x00);
+    parser.process((unsigned char)0x00);
     //1
-    parser.process(0x01);
+    parser.process((unsigned char)0x01);
     //uint16 0x1234
-    parser.process(0xcd);
-    parser.process(0x12);
-    parser.process(0x34);
+    parser.process((unsigned char)0xcd);
+    parser.process((unsigned char)0x12);
+    parser.process((unsigned char)0x34);
     //uint32 0x12345678
-    parser.process(0xce);
-    parser.process(0x12);
-    parser.process(0x34);
-    parser.process(0x56);
-    parser.process(0x78);
+    parser.process((unsigned char)0xce);
+    parser.process((unsigned char)0x12);
+    parser.process((unsigned char)0x34);
+    parser.process((unsigned char)0x56);
+    parser.process((unsigned char)0x78);
 
     cout << endl;
     //[0, 1]
-    parser.process(0x92);
-    parser.process(0x00);
-    parser.process(0x01);
+    parser.process((unsigned char)0x92);
+    parser.process((unsigned char)0x00);
+    parser.process((unsigned char)0x01);
 
+    cout << endl;
+    //"123"
+    parser.process((unsigned char)0xa3);
+    parser.process((unsigned char)0x31);
+    parser.process((unsigned char)0x32);
+    parser.process((unsigned char)0x33);
+
+    if (false)
     for (int i = -1; i > -130; --i)
     {
         string str;
         msgpack::write(str, i);
         L(testing::toHex(str));
         for (char ch: str)
-            parser.process(ch);
+            parser.process((unsigned char)ch);
     }
     return 0;
 }
+#include "gubg/log/end.hpp"
