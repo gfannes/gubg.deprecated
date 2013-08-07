@@ -15,6 +15,7 @@ namespace pa
         std::string value;
         std::string fraction;
         std::string fraction_default;
+		std::string category;
 		std::vector<std::string> lines;
     };
     class ITask
@@ -30,5 +31,6 @@ namespace pa
 #include "pa/ShowWBS.hpp"
 #include "pa/ShowDebug.hpp"
 #include "pa/Plan.hpp"
+#include "pa/Quarter.hpp"
 
 #endif
