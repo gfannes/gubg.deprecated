@@ -10,6 +10,7 @@ namespace gubg
         class Descriptor
         {
             public:
+                static Descriptor listen(unsigned short port, const std::string &ip = "");
                 void reset(){pimpl_.reset();}
             private:
                 struct Pimpl;

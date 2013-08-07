@@ -17,7 +17,7 @@ namespace gubg
                 typedef std::string Name;
                 static const char Delimiter;// = '/';
 
-                File()                                   :type_(Unknown){};
+                File()                            :type_(Unknown)                        {}
                 File(const Name & name)           :type_(Unknown), name_(name)           {canonicalize_();}
                 File(      Name &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
                 File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
