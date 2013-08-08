@@ -13,7 +13,7 @@ namespace gubg
         {
             public:
                 static Descriptor listen(unsigned short port, const std::string &ip = "");
-                static Descriptor open(File);
+                static Descriptor listen(File);
                 void reset(){pimpl_.reset();}
                 ReturnCode accept(Descriptor &);
             private:

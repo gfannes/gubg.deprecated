@@ -65,7 +65,7 @@ Descriptor Descriptor::listen(unsigned short port, const std::string &ip)
     ::freeaddrinfo(servinfo);
     return res;
 }
-Descriptor Descriptor::open(File f)
+Descriptor Descriptor::listen(File f)
 {
     Descriptor res;
     return res;
@@ -74,7 +74,14 @@ Descriptor Descriptor::open(File f)
 ReturnCode Descriptor::accept(Descriptor &s)
 {
     MSS_BEGIN(ReturnCode);
+    MSS(pimpl_);
+    Pimpl &me = *pimpl_;
     s.reset();
+    int desc;
+    struct sockaddr_storage peer_addr;
+    socklen_t addr_sz = sizeof(peer_addr);
+    MSS((desc = ::accept(me.desc, (struct sockaddr *)&peer_addr, &addr_sz)) != -1, FailedToAccept);
+    s.pimpl_.reset(new Pimpl(desc));
     MSS_END();
 }
 #include "gubg/log/end.hpp"
