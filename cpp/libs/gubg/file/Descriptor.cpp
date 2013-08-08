@@ -65,6 +65,11 @@ Descriptor Descriptor::listen(unsigned short port, const std::string &ip)
     ::freeaddrinfo(servinfo);
     return res;
 }
+Descriptor Descriptor::open(File f)
+{
+    Descriptor res;
+    return res;
+}
 
 ReturnCode Descriptor::accept(Descriptor &s)
 {
