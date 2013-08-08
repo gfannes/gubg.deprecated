@@ -12,6 +12,7 @@ namespace gubg
             public:
                 static Descriptor listen(unsigned short port, const std::string &ip = "");
                 void reset(){pimpl_.reset();}
+                ReturnCode accept(Descriptor &);
             private:
                 struct Pimpl;
                 std::shared_ptr<Pimpl> pimpl_;

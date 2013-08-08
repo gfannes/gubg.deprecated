@@ -65,4 +65,11 @@ Descriptor Descriptor::listen(unsigned short port, const std::string &ip)
     ::freeaddrinfo(servinfo);
     return res;
 }
+
+ReturnCode Descriptor::accept(Descriptor &s)
+{
+    MSS_BEGIN(ReturnCode);
+    s.reset();
+    MSS_END();
+}
 #include "gubg/log/end.hpp"

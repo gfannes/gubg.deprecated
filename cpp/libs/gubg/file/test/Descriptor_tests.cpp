@@ -9,6 +9,8 @@ int main()
     TEST_TAG(main);
     auto d = Descriptor::listen(1234);
     auto dd = Descriptor::listen(1234);
+    Descriptor c;
+    d.accept(c);
     return 0;
 }
 #include "gubg/log/end.hpp"
