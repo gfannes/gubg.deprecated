@@ -11,7 +11,7 @@
 #include <map>
 #include <set>
 
-#define GUBG_MODULE_ "Planning"
+#define GUBG_MODULE "Planning"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -20,6 +20,15 @@ namespace gubg
         class Planning
         {
             public:
+                struct TaskPart
+                {
+                    Sweat sweat;
+                    Task::Ptr task;
+
+                    TaskPart():sweat(0){}
+                };
+                typedef std::list<TaskPart> TaskParts;
+
                 void addWorker(Worker worker, Efficiency efficiency)
                 {
                     efficiencyPerWorker_[worker] = efficiency;
@@ -104,6 +113,27 @@ namespace gubg
                     MSS_END();
                 }
 
+				typedef std::map<Day, TaskParts> TaskPartsPerDay;
+				TaskPartsPerDay taskPartsPerDay() const
+				{
+					S();
+					TaskPartsPerDay res;
+                    for (auto &dpsw: dayPlanningsPerWorker_)
+					{
+						for (auto &dp: dpsw.second)
+						{
+							SS(dp.first);
+							for (auto &tp: dp.second.taskParts)
+							{
+								L(STREAM(*tp.task));
+								res[dp.first].push_back(tp);
+								L(res.size());
+							}
+						}
+					}
+					return res;
+				}
+
                 void stream(std::ostream &os, Format format = Format::Text) const
                 {
 					switch (format)
@@ -116,19 +146,39 @@ namespace gubg
 							break;
 					}
 				}
+				void overview(std::ostream &os, const std::set<Day> &days)
+				{
+					if (days.empty())
+					{
+						os << "Empty period specified" << std::endl;
+						return;
+					}
+					std::map<std::string, double> sweatPerCat;
+					for (auto it: taskPartsPerDay())
+					{
+						auto day = it.first;
+						if (days.count(day) > 0)
+						{
+							for (auto &tp: it.second)
+							{
+								auto task = tp.task;
+								auto sweat = tp.sweat;
+								if (task)
+									sweatPerCat[task->category] += sweat;
+							}
+						}
+					}
+					auto b = days.begin();
+					auto e = days.end();
+					--e;
+					for (auto &c_s: sweatPerCat)
+						os << c_s.first << "\t" << c_s.second << std::endl;
+				}
 
             private:
                 typedef std::map<Worker, Efficiency> EfficiencyPerWorker;
                 EfficiencyPerWorker efficiencyPerWorker_;
 
-                struct TaskPart
-                {
-                    Sweat sweat;
-                    Task::Ptr task;
-
-                    TaskPart():sweat(0){}
-                };
-                typedef std::list<TaskPart> TaskParts;
                 struct DayPlanning
                 {
                     Day day;
@@ -360,7 +410,7 @@ namespace gubg
 }
 namespace std
 {
-    ostream &operator<<(ostream &os, const gubg::planning::Planning &pl)
+    inline ostream &operator<<(ostream &os, const gubg::planning::Planning &pl)
     {
         pl.stream(os);
         return os;

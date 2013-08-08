@@ -177,12 +177,14 @@ namespace gubg
         {
             public:
                 typedef std::string Name;
+                typedef std::string Category;
                 typedef std::shared_ptr<Task> Ptr;
                 typedef std::weak_ptr<Task> WPtr;
                 typedef std::shared_ptr<Task> Child;
                 typedef std::vector<Child> Childs;
 
                 Name name;
+				Category category;
                 Sweat sweat;
                 Sweat cumulSweat;
                 Day start;
@@ -193,6 +195,10 @@ namespace gubg
                 WPtr parent;
 
                 static Ptr create(Name n){return Ptr(new Task(n));}
+
+				size_t id() const {return (size_t)this;}
+
+				void setCategory(std::string cat) {category = std::move(cat);}
 
                 Ptr addChild(Name n)
                 {
@@ -302,7 +308,7 @@ namespace gubg
 }
 namespace std
 {
-    ostream &operator<<(ostream &os, const gubg::planning::Task &task)
+    inline ostream &operator<<(ostream &os, const gubg::planning::Task &task)
     {
         task.stream(os);
         return os;

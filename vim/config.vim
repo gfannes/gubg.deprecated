@@ -44,6 +44,7 @@ autocmd BufEnter,BufNewFile,BufRead *.hpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim
 autocmd BufEnter,BufNewFile,BufRead *.asciidoc source $GUBG/vim/asciidoc2.vim
+autocmd BufEnter,BufNewFile,BufRead *.adoc source $GUBG/vim/asciidoc2.vim
 autocmd BufEnter,BufNewFile,BufRead *.puml source $GUBG/vim/plantuml.vim
 autocmd BufEnter,BufNewFile,BufRead *.tjp source $GUBG/vim/tjp.vim
 autocmd BufEnter,BufNewFile,BufRead *.tji source $GUBG/vim/tjp.vim

@@ -11,7 +11,7 @@ using namespace pa;
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE_ "LoadMindMap"
+#define GUBG_MODULE "LoadMindMap"
 #include "gubg/log/begin.hpp"
 namespace pa
 {
@@ -175,13 +175,17 @@ namespace
     };
     struct Distribute
     {
+		const std::string attr_;
+		Distribute(std::string attr): attr_(attr){}
         template <typename Path>
             bool open(Node &n, Path &p) const
             {
 				if (p.empty())
 					return true;
-				for (auto attr: p.back()->attributes)
-					n.attributes.insert(attr);
+				const auto &attrs = p.back()->attributes;
+				auto it = attrs.find(attr_);
+				if (it != attrs.end())
+					n.attributes.insert(*it);
 				return true;
             }
         template <typename Path>
@@ -214,7 +218,8 @@ pa::ReturnCode LoadMindMap::execute(const Options &options)
 		gubg::tree::dfs::iterate(model(), pruner);
 	}
 	gubg::tree::dfs::iterate(model(), Aggregate());
-	//gubg::tree::dfs::iterate(model(), Distribute());
+	if (!options.category.empty())
+		gubg::tree::dfs::iterate(model(), Distribute(options.category));
 
 	MSS_END();
 }

@@ -157,6 +157,24 @@ namespace gubg
             }
             return days;
         }
+		//The first quarter might be incomplete
+		typedef std::set<Day> Quarter;
+		inline std::vector<Quarter> quarters(Day from, const size_t nr)
+		{
+			std::vector<Quarter> qs;
+			Quarter q;
+			while (qs.size() != nr)
+			{
+				q.insert(from);
+				++from;
+				if (from.day() == 1 && (from.month()%3) == 1)
+				{
+					qs.push_back(q);
+					q.clear();
+				}
+			}
+			return qs;
+		}
     }
 }
 namespace std
