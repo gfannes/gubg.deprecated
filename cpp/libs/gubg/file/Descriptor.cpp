@@ -160,13 +160,12 @@ bool Descriptor::operator<(const Descriptor &rhs) const
 }
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE "Select"
+#define GUBG_MODULE_ "Select"
 #include "gubg/log/begin.hpp"
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
     MSS_BEGIN(ReturnCode);
-    MSS((bool)desc.pimpl_);
-    MSS(desc.pimpl_->desc != Descriptor::InvalidDesc);
+    MSS(desc.desc() != Descriptor::InvalidDesc);
     switch (accessMode)
     {
         case AccessMode::Read:
@@ -214,7 +213,19 @@ ReturnCode Select::operator()(std::chrono::milliseconds timeout)
         to.tv_usec = 1000*(timeout.count()%1000);
         pto = &to;
     }
+    L("Waiting for ::select() to return");
     MSS(::select(maxDesc+1, &read_fds, &write_fds, 0, pto) != -1, FailedToSelect);
+    L("::select() returned OK");
+    for (auto d: read_set_)
+    {
+        if (FD_ISSET(d.desc(), &read_fds))
+            select_readyToRead(d);
+    }
+    for (auto d: write_set_)
+    {
+        if (FD_ISSET(d.desc(), &write_fds))
+            select_readyToWrite(d);
+    }
     MSS_END();
 }
 #include "gubg/log/end.hpp"
