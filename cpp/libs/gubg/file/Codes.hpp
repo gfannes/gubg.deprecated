@@ -28,6 +28,7 @@ namespace gubg
             FailedToAccept,
             FailedToOpen,
             UnknownType,
+            FailedToSelect,
         };
     }
 }

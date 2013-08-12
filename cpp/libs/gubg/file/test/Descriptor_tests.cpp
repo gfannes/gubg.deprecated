@@ -4,6 +4,20 @@ using namespace gubg::file;
 
 #define GUBG_MODULE "test"
 #include "gubg/log/begin.hpp"
+namespace 
+{
+    class S: public Select
+    {
+        public:
+                virtual void select_readyToRead(Descriptor)
+                {
+                }
+                virtual void select_readyToWrite(Descriptor)
+                {
+                }
+        private:
+    };
+}
 int main()
 {
     TEST_TAG(main);

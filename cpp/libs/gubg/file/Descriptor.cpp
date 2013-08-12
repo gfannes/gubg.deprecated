@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <chrono>
 using namespace gubg::file;
 using namespace std;
 
@@ -11,7 +12,6 @@ namespace
 {
     enum class Role { Normal, Acceptor };
     enum class Type { Socket, File };
-    const int InvalidDesc = -1;
 
     void translate_(int &flags, AccessMode am)
     {
@@ -142,6 +142,79 @@ ReturnCode Descriptor::accept(Descriptor &desc)
     }
     desc.pimpl_ = pp;
 
+    MSS_END();
+}
+
+int Descriptor::desc() const
+{
+    if (!pimpl_)
+        return InvalidDesc;
+    return pimpl_->desc;
+}
+
+bool Descriptor::operator<(const Descriptor &rhs) const
+{
+    //We first compare the file descriptors, this is handy for the ::select() systemcall, this needs the largest descriptor
+    //If they are equal, we will compare the pimpl_ pointer itself
+    return make_pair(desc(), pimpl_.get()) < make_pair(rhs.desc(), rhs.pimpl_.get());
+}
+#include "gubg/log/end.hpp"
+
+#define GUBG_MODULE "Select"
+#include "gubg/log/begin.hpp"
+ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS((bool)desc.pimpl_);
+    MSS(desc.pimpl_->desc != Descriptor::InvalidDesc);
+    switch (accessMode)
+    {
+        case AccessMode::Read:
+            read_set_.insert(desc);
+            break;
+        case AccessMode::Write:
+            write_set_.insert(desc);
+            break;
+        case AccessMode::ReadWrite:
+            read_set_.insert(desc);
+            write_set_.insert(desc);
+            break;
+    }
+    MSS_END();
+}
+namespace 
+{
+    ReturnCode translate_(fd_set &fds, const set<Descriptor> &s)
+    {
+        MSS_BEGIN(ReturnCode);
+        FD_ZERO(&fds);
+        for (auto d: s)
+        {
+            FD_SET(d.desc(), &fds);
+        }
+        MSS_END();
+    }
+}
+ReturnCode Select::operator()(std::chrono::milliseconds timeout)
+{
+    MSS_BEGIN(ReturnCode);
+    fd_set read_fds, write_fds;
+    MSS(translate_(read_fds, read_set_));
+    MSS(translate_(write_fds, write_set_));
+    int maxDesc = Descriptor::InvalidDesc;
+    if (!read_set_.empty())
+        maxDesc = max(maxDesc, read_set_.rbegin()->pimpl_->desc);
+    if (!write_set_.empty())
+        maxDesc = max(maxDesc, write_set_.rbegin()->pimpl_->desc);
+    struct timeval *pto = 0;
+    struct timeval to;
+    if (timeout.count() > 0)
+    {
+        to.tv_sec = timeout.count()/1000;
+        to.tv_usec = 1000*(timeout.count()%1000);
+        pto = &to;
+    }
+    MSS(::select(maxDesc+1, &read_fds, &write_fds, 0, pto) != -1, FailedToSelect);
     MSS_END();
 }
 #include "gubg/log/end.hpp"
