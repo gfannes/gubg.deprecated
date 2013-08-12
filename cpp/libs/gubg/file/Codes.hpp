@@ -26,6 +26,8 @@ namespace gubg
             CouldNotResolve,
             CouldNotRemove,
             FailedToAccept,
+            FailedToOpen,
+            UnknownType,
         };
     }
 }

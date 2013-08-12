@@ -9,12 +9,15 @@ namespace gubg
 {
     namespace file
     {
+        enum class AccessMode {Read, Write, ReadWrite};
+
         class Descriptor
         {
             public:
                 static Descriptor listen(unsigned short port, const std::string &ip = "");
-                static Descriptor listen(File);
+                static Descriptor listen(File, AccessMode);
                 void reset(){pimpl_.reset();}
+                bool valid() const {return (bool)pimpl_;}
                 ReturnCode accept(Descriptor &);
             private:
                 struct Pimpl;
