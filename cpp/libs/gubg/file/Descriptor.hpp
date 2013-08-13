@@ -19,9 +19,14 @@ namespace gubg
         {
             private:
                 friend class Select;
+                struct Pimpl;
+                typedef std::shared_ptr<Pimpl> PP;
 
             public:
                 static const int InvalidDesc = -1;
+
+                Descriptor(){}
+                Descriptor(PP pp): pimpl_(pp) {}
 
                 static Descriptor listen(unsigned short port, const std::string &ip = "");
                 static Descriptor listen(File, AccessMode);
@@ -29,15 +34,14 @@ namespace gubg
                 ReturnCode accept(Descriptor &);
 
                 void reset(){pimpl_.reset();}
-                bool valid() const {return (bool)pimpl_;}
+                bool valid() const;
 
                 bool operator<(const Descriptor &rhs) const;
 
-                int desc() const;
+                void stream(std::ostream &) const;
 
             private:
-                struct Pimpl;
-                std::shared_ptr<Pimpl> pimpl_;
+                PP pimpl_;
         };
 
         class Select
@@ -47,15 +51,26 @@ namespace gubg
 
                 ReturnCode operator()(std::chrono::milliseconds timeout);
 
-            protected:
                 virtual void select_readyToRead(Descriptor) = 0;
                 virtual void select_readyToWrite(Descriptor) = 0;
 
             private:
-                typedef std::set<Descriptor> Set;
+                bool invariants_() const;
+
+                typedef Descriptor::PP PP;
+                typedef std::set<PP> Set;
                 Set read_set_;
                 Set write_set_;
         };
+    }
+}
+
+namespace std
+{
+    inline ostream &operator<<(ostream &os, const gubg::file::Descriptor &d)
+    {
+        d.stream(os);
+        return os;
     }
 }
 

@@ -29,6 +29,7 @@ namespace gubg
             FailedToOpen,
             UnknownType,
             FailedToSelect,
+            NotSupported,
         };
     }
 }

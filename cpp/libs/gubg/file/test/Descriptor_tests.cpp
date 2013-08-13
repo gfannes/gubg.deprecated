@@ -11,11 +11,11 @@ namespace
         public:
                 virtual void select_readyToRead(Descriptor d)
                 {
-                    S();L(d.desc() << " is ready to read");
+                    S();L(d << " is ready to read");
                 }
                 virtual void select_readyToWrite(Descriptor d)
                 {
-                    S();L(d.desc() << " is ready to write");
+                    S();L(d << " is ready to write");
                 }
         private:
     };
@@ -23,18 +23,23 @@ namespace
 int main()
 {
     TEST_TAG(main);
-    if (false)
+    if (true)
     {
         TEST_TAG(file);
         auto d = Descriptor::listen(File("/dev/ttyACM0"), AccessMode::ReadWrite);
+        TEST_TRUE(d.valid());
+        S s;
+        s.add(d, AccessMode::Read);
+        s(std::chrono::seconds(1));
         Descriptor c;
         d.accept(c);
         TEST_TRUE(c.valid());
     }
-    if (true)
+    if (false)
     {
         TEST_TAG(socket);
         auto d = Descriptor::listen(1234);
+        TEST_TRUE(d.valid());
         S s;
         s.add(d, AccessMode::Read);
         for (int i = 0; i < 10; ++i)

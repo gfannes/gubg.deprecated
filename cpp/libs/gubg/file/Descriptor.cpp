@@ -27,7 +27,7 @@ namespace
 
 #define GUBG_MODULE_ "Descr::Pimpl"
 #include "gubg/log/begin.hpp"
-struct Descriptor::Pimpl
+struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 {
     typedef shared_ptr<Pimpl> Ptr;
 
@@ -42,6 +42,32 @@ struct Descriptor::Pimpl
     {
         if (desc != InvalidDesc)
             ::close(desc);
+    }
+    bool operator<(const Pimpl &rhs) const
+    {
+        //We first compare the file descriptors, this is handy for the ::select() systemcall, this needs the largest descriptor
+        //If they are equal, we will compare the this pointers
+        return make_pair(desc, this) < make_pair(rhs.desc, &rhs);
+    }
+    void stream(ostream &os) const
+    {
+        os << STREAM(desc, fn);
+    }
+    ReturnCode selectNonBlock(Select &s, AccessMode am)
+    {
+        MSS_BEGIN(ReturnCode);
+        if (role == Role::Acceptor && type == Type::File)
+        {
+        }
+        else
+            MSS_L(NotSupported);
+        MSS_END();
+    }
+    bool valid() const
+    {
+        if (role == Role::Acceptor && type == Type::File)
+            return !fn.empty();
+        return desc != InvalidDesc;
     }
     ReturnCode acceptSocket(Ptr &pp)
     {
@@ -145,18 +171,21 @@ ReturnCode Descriptor::accept(Descriptor &desc)
     MSS_END();
 }
 
-int Descriptor::desc() const
+bool Descriptor::valid() const
 {
     if (!pimpl_)
-        return InvalidDesc;
-    return pimpl_->desc;
+        return false;
+    return pimpl_->valid();
 }
 
-bool Descriptor::operator<(const Descriptor &rhs) const
+void Descriptor::stream(std::ostream &os) const
 {
-    //We first compare the file descriptors, this is handy for the ::select() systemcall, this needs the largest descriptor
-    //If they are equal, we will compare the pimpl_ pointer itself
-    return make_pair(desc(), pimpl_.get()) < make_pair(rhs.desc(), rhs.pimpl_.get());
+    if (!pimpl_)
+    {
+        os << "Descriptor==nil";
+        return;
+    }
+    pimpl_->stream(os);
 }
 #include "gubg/log/end.hpp"
 
@@ -165,67 +194,155 @@ bool Descriptor::operator<(const Descriptor &rhs) const
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
     MSS_BEGIN(ReturnCode);
-    MSS(desc.desc() != Descriptor::InvalidDesc);
+    assert(invariants_());
+    MSS(desc.valid());
     switch (accessMode)
     {
         case AccessMode::Read:
-            read_set_.insert(desc);
+            read_set_.insert(desc.pimpl_);
             break;
         case AccessMode::Write:
-            write_set_.insert(desc);
+            write_set_.insert(desc.pimpl_);
             break;
         case AccessMode::ReadWrite:
-            read_set_.insert(desc);
-            write_set_.insert(desc);
+            read_set_.insert(desc.pimpl_);
+            write_set_.insert(desc.pimpl_);
             break;
     }
+    assert(invariants_());
     MSS_END();
 }
 namespace 
 {
-    ReturnCode translate_(fd_set &fds, const set<Descriptor> &s)
-    {
-        MSS_BEGIN(ReturnCode);
-        FD_ZERO(&fds);
-        for (auto d: s)
+    template <typename Set>
+        ReturnCode translate_(fd_set &fds, bool &allSelectable, const Set &s)
         {
-            FD_SET(d.desc(), &fds);
+            MSS_BEGIN(ReturnCode);
+            FD_ZERO(&fds);
+            for (auto p: s)
+            {
+                auto desc = p->desc;
+                if (desc == Descriptor::InvalidDesc)
+                {
+                    allSelectable = false;
+                    continue;
+                }
+                FD_SET(desc, &fds);
+            }
+            MSS_END();
         }
-        MSS_END();
-    }
+    template <typename Receiver, typename DSet>
+        ReturnCode select_(Receiver &receiver, int maxDesc, fd_set &rs, fd_set &ws, const DSet &rds, const DSet &wds, std::chrono::milliseconds timeout)
+        {
+            MSS_BEGIN(ReturnCode);
+
+            struct timeval *pto = 0;
+            struct timeval to;
+            if (timeout.count() > 0)
+            {
+                to.tv_sec = timeout.count()/1000;
+                to.tv_usec = 1000*(timeout.count()%1000);
+                pto = &to;
+            }
+
+            if (maxDesc == Descriptor::InvalidDesc)
+                L("Skipping select, no selectable descriptors found");
+            else
+            {
+                S();L("Waiting for ::select() to return " << STREAM(maxDesc));
+                MSS(::select(maxDesc+1, &rs, &ws, 0, pto) != -1, FailedToSelect);
+                L("::select() returned OK");
+            }
+
+            for (auto p: rds)
+            {
+                auto desc = p->desc;
+                if (desc == Descriptor::InvalidDesc)
+                    continue;
+                if (FD_ISSET(desc, &rs))
+                    receiver.select_readyToRead(Descriptor(p));
+            }
+            for (auto p: wds)
+            {
+                auto desc = p->desc;
+                if (desc == Descriptor::InvalidDesc)
+                    continue;
+                if (FD_ISSET(desc, &ws))
+                    receiver.select_readyToWrite(Descriptor(p));
+            }
+            MSS_END();
+        }
 }
 ReturnCode Select::operator()(std::chrono::milliseconds timeout)
 {
     MSS_BEGIN(ReturnCode);
+
+    assert(invariants_());
+
+    bool allSelectable = true;
+
     fd_set read_fds, write_fds;
-    MSS(translate_(read_fds, read_set_));
-    MSS(translate_(write_fds, write_set_));
+    {
+        MSS(translate_(read_fds, allSelectable, read_set_));
+        MSS(translate_(write_fds, allSelectable, write_set_));
+    }
+
     int maxDesc = Descriptor::InvalidDesc;
-    if (!read_set_.empty())
-        maxDesc = max(maxDesc, read_set_.rbegin()->pimpl_->desc);
-    if (!write_set_.empty())
-        maxDesc = max(maxDesc, write_set_.rbegin()->pimpl_->desc);
-    struct timeval *pto = 0;
-    struct timeval to;
-    if (timeout.count() > 0)
     {
-        to.tv_sec = timeout.count()/1000;
-        to.tv_usec = 1000*(timeout.count()%1000);
-        pto = &to;
+        if (!read_set_.empty())
+            maxDesc = max(maxDesc, (*read_set_.rbegin())->desc);
+        if (!write_set_.empty())
+            maxDesc = max(maxDesc, (*write_set_.rbegin())->desc);
     }
-    L("Waiting for ::select() to return");
-    MSS(::select(maxDesc+1, &read_fds, &write_fds, 0, pto) != -1, FailedToSelect);
-    L("::select() returned OK");
-    for (auto d: read_set_)
+
+    if (allSelectable)
     {
-        if (FD_ISSET(d.desc(), &read_fds))
-            select_readyToRead(d);
+        //We can use normal ::select()
+        if (maxDesc != Descriptor::InvalidDesc)
+            MSS(select_(*this, maxDesc, read_fds, write_fds, read_set_, write_set_, timeout));
     }
-    for (auto d: write_set_)
+    else
     {
-        if (FD_ISSET(d.desc(), &write_fds))
-            select_readyToWrite(d);
+        //We have to pauze ::select() from time to time to give non-select()-able non-blocking select-lookalikes a chance
+        const auto timeStep = std::chrono::milliseconds(500);
+        while (timeout > timeStep)
+        {
+            //Do non-blocking select on those that cannot be selected
+            for (auto p: read_set_)
+            {
+                if (p->desc == Descriptor::InvalidDesc)
+                    continue;
+                p->selectNonBlock(*this, AccessMode::Read);
+            }
+            for (auto p: write_set_)
+            {
+                if (p->desc == Descriptor::InvalidDesc)
+                    continue;
+                p->selectNonBlock(*this, AccessMode::Write);
+            }
+            if (maxDesc != Descriptor::InvalidDesc)
+                MSS(select_(*this, maxDesc, read_fds, write_fds, read_set_, write_set_, timeStep));
+            timeout -= timeStep;
+        }
+        MSS(false);
     }
+
+    assert(invariants_());
+
     MSS_END();
+}
+bool Select::invariants_() const
+{
+    for (auto p: read_set_)
+    {
+        if (!p)
+            return false;
+    }
+    for (auto p: write_set_)
+    {
+        if (!p)
+            return false;
+    }
+    return true;
 }
 #include "gubg/log/end.hpp"
