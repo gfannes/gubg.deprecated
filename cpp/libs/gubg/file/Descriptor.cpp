@@ -312,19 +312,32 @@ ReturnCode Select::operator()(std::chrono::milliseconds timeout)
             {
                 if (p->desc == Descriptor::InvalidDesc)
                     continue;
-                p->selectNonBlock(*this, AccessMode::Read);
+                switch (auto rc = p->selectNonBlock(*this, AccessMode::Read))
+                {
+                    case ReturnCode::OK:
+                        L("Read selectNB");
+                        break;
+                    default:
+                        break;
+                }
             }
             for (auto p: write_set_)
             {
                 if (p->desc == Descriptor::InvalidDesc)
                     continue;
-                p->selectNonBlock(*this, AccessMode::Write);
+                switch (auto rc = p->selectNonBlock(*this, AccessMode::Write))
+                {
+                    case ReturnCode::OK:
+                        L("Write selectNB");
+                        break;
+                    default:
+                        break;
+                }
             }
             if (maxDesc != Descriptor::InvalidDesc)
                 MSS(select_(*this, maxDesc, read_fds, write_fds, read_set_, write_set_, timeStep));
             timeout -= timeStep;
         }
-        MSS(false);
     }
 
     assert(invariants_());
