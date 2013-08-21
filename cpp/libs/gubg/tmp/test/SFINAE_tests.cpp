@@ -1,7 +1,8 @@
 #include "gubg/Testing.hpp"
 #include "gubg/tmp/Types.hpp"
 #include <utility>
-//#include "gubg/tmp/SFINAE.hpp"
+#include "gubg/tmp/SFINAE.hpp"
+#include "gubg/tmp/Equal.hpp"
 using namespace gubg::tmp;
 
 class HasFoo
@@ -48,10 +49,30 @@ bool eval(Type* obj, bool (Type::*method)()) { return (obj->*method)(); }
 template <typename Type>
 bool eval(Type* obj, void (Type::*method)()) { (obj->*method)(); return true; }
 
+namespace 
+{
+    struct HasUsedMemory
+    {
+        size_t used_memory() const
+        {
+            return 42;
+        }
+    };
+    struct HasNotUsedMemory
+    {
+    };
+    GUBG_CHECK_FOR_METHOD(HasUsedMemoryMethod, used_memory, size_t (U::*)() const);
+}
+
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(SFINAE);
     TEST_TRUE(DetectX<HasFoo>::value);
     TEST_FALSE(DetectX<HasNotFoo>::value);
+    TEST_TRUE((Equal<HasUsedMemoryMethod<HasUsedMemory>::Value, HasMethod>::Value));
+    TEST_TRUE((Equal<HasUsedMemoryMethod<HasNotUsedMemory>::Value, HasNotMethod>::Value));
     return 0;
 }
+#include "gubg/log/end.hpp"
