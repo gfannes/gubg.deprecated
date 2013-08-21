@@ -10,14 +10,16 @@ namespace gubg
         struct HasMethod {};
         struct HasNotMethod {};
 
-        template<typename T>
-            struct HasUsedMemoryMethod
-            {
-                template<typename U, size_t (U::*)() const> struct SFINAE {};
-                template<typename U> static char Test(SFINAE<U, &U::used_memory>*);
-                template<typename U> static int Test(...);
-                typedef typename If<sizeof(Test<T>(0)) == sizeof(char), HasMethod, HasNotMethod>::Type Value;
-            };
+        //method_signature: size_t (U::*)() const, the U is important
+#define GUBG_CHECK_FOR_METHOD(test_name, method_name, method_signature) \
+        template<typename T> \
+            struct test_name \
+            { \
+                template<typename U, method_signature> struct SFINAE {}; \
+                template<typename U> static char Test(SFINAE<U, &U::method_name>*); \
+                template<typename U> static int Test(...); \
+                typedef typename If<sizeof(Test<T>(0)) == sizeof(char), HasMethod, HasNotMethod>::Type Value; \
+            }
 /*
         template <typename T>
             class has_helloworld

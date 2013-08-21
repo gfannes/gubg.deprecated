@@ -61,6 +61,7 @@ namespace
     struct HasNotUsedMemory
     {
     };
+    GUBG_CHECK_FOR_METHOD(HasUsedMemoryMethod, used_memory, size_t (U::*)() const);
 }
 
 #define GUBG_MODULE "test"
