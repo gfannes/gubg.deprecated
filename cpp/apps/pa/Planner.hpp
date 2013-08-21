@@ -36,6 +36,7 @@ namespace pa
 				planning.absence("gfa", d);
 			for (auto d: dayRange(Day(2013, 7, 22), Day(2013, 8, 2)))
 				planning.absence("wba", d);
+			planning.absence("wba", Day(2013, 8, 16));
 
 			{
 				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));
