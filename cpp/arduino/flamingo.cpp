@@ -21,8 +21,7 @@ garf::Motor<10, 9> g_rightMotor;
 
 garf::RobustAverage<ubyte, 10> sonarAverage;
 
-//We we don't receive indicateOnline() within 1 second, we will
-//switch to offline
+//If we don't receive indicateOnline() within 1 second, we go offline
 struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
     void oostatus_online()
