@@ -12,6 +12,7 @@ namespace gubg
     namespace file
     {
         enum class AccessMode {Read, Write, ReadWrite};
+        enum class EventType {Read, Write, Open, Close};
 
         class Select;
 
@@ -33,6 +34,8 @@ namespace gubg
 
                 ReturnCode accept(Descriptor &);
 
+                ReturnCode read(std::string &buffer);
+
                 void reset(){pimpl_.reset();}
                 bool valid() const;
 
@@ -49,16 +52,28 @@ namespace gubg
             public:
                 ReturnCode add(Descriptor, AccessMode);
 
-                ReturnCode operator()(std::chrono::milliseconds timeout);
+                //Calls select() on the added Descriptors
+                //Waits infinitely for a descriptor event
+                ReturnCode operator()() { return callOperator_(0); }
+                //Waits for the specified timeout, 0 is polling
+                ReturnCode operator()(std::chrono::milliseconds timeout) { return callOperator_(&timeout); }
+                //Waits for the specified timeout, 0 pointer waits infinitely
+                ReturnCode operator()(const std::chrono::milliseconds *timeout);
 
-                virtual void select_readyToRead(Descriptor) = 0;
-                virtual void select_readyToWrite(Descriptor) = 0;
+                //Callbacks with typical select-events: a descriptor can be served
+                virtual bool select_ready(Descriptor, EventType) = 0;
 
             private:
+                //This version of the call operator is too dangerous to make public, timeout will be changed
+                ReturnCode callOperator_(std::chrono::milliseconds *timeout);
                 bool invariants_() const;
 
                 typedef Descriptor::PP PP;
-                typedef std::set<PP> Set;
+                struct Compare
+                {
+                    bool operator()(const Descriptor::PP &lhs, const Descriptor::PP &rhs);
+                };
+                typedef std::set<PP, Compare> Set;
                 Set read_set_;
                 Set write_set_;
         };

@@ -30,6 +30,9 @@ namespace gubg
             UnknownType,
             FailedToSelect,
             NotSupported,
+            AlreadyAcceptedFile,
+            InvalidMaxDesc,
+            PeerClosedConnection,
         };
     }
 }

@@ -6,16 +6,14 @@ using namespace gubg::file;
 #include "gubg/log/begin.hpp"
 namespace 
 {
-    class S: public Select
+    class MySelect: public Select
     {
         public:
-                virtual void select_readyToRead(Descriptor d)
+                virtual bool select_ready(Descriptor d, EventType et)
                 {
-                    S();L(d << " is ready to read");
-                }
-                virtual void select_readyToWrite(Descriptor d)
-                {
-                    S();L(d << " is ready to write");
+                    S();L(d << " is ready " << STREAM((int)et));
+                    //Stop select
+                    return false;
                 }
         private:
     };
@@ -28,19 +26,20 @@ int main()
         TEST_TAG(file);
         auto d = Descriptor::listen(File("/dev/ttyACM0"), AccessMode::ReadWrite);
         TEST_TRUE(d.valid());
-        S s;
+        MySelect s;
         s.add(d, AccessMode::Read);
-        s(std::chrono::seconds(1));
+        s(std::chrono::seconds(10));
         Descriptor c;
         d.accept(c);
         TEST_TRUE(c.valid());
+        s(std::chrono::seconds(10));
     }
     if (false)
     {
         TEST_TAG(socket);
         auto d = Descriptor::listen(1234);
         TEST_TRUE(d.valid());
-        S s;
+        MySelect s;
         s.add(d, AccessMode::Read);
         for (int i = 0; i < 10; ++i)
         {
