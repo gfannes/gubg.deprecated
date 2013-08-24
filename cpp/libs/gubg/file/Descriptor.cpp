@@ -5,8 +5,12 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <chrono>
 #include <thread>
+#include <cassert>
+#include <cstring>
+#include <algorithm>
 using namespace gubg::file;
 using namespace std;
 
@@ -35,7 +39,7 @@ namespace
     }
 }
 
-#define GUBG_MODULE "Descr::Pimpl"
+#define GUBG_MODULE_ "Descr::Pimpl"
 #include "gubg/log/begin.hpp"
 struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 {
@@ -76,7 +80,7 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     {
         os << STREAM(desc, fn, (int)role, (int)type);
     }
-    ReturnCode selectNonBlock(Select &s, AccessMode am)
+    ReturnCode selectNonBlock(EventType &et, AccessMode am)
     {
         MSS_BEGIN(ReturnCode, STREAM((int)role, (int)type));
         switch (type)
@@ -88,10 +92,12 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
                         MSS_Q(!peer);
                         MSS_Q(exists(fn));
                         L("File " << fn << " exists and has no peer yet");
+                        et = EventType::Open;
                         break;
                     case Role::Normal:
                         //If a descriptor is present, we should do real select()
-                        assert(desc == InvalidDesc);
+                        MSS(desc == InvalidDesc);
+                        et = EventType::Close;
                         break;
                 }
                 break;
@@ -152,7 +158,7 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 };
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE "Descriptor"
+#define GUBG_MODULE_ "Descriptor"
 #include "gubg/log/begin.hpp"
 Descriptor Descriptor::listen(unsigned short port, const std::string &ip)
 {
@@ -255,7 +261,7 @@ void Descriptor::stream(std::ostream &os) const
 }
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE "Select"
+#define GUBG_MODULE_ "Select"
 #include "gubg/log/begin.hpp"
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
@@ -276,6 +282,18 @@ ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
             break;
     }
     assert(invariants_());
+    MSS_END();
+}
+ReturnCode Select::erase(Descriptor desc)
+{
+    MSS_BEGIN(ReturnCode);
+    assert(invariants_());
+    read_set_.erase(desc.pimpl_);
+    write_set_.erase(desc.pimpl_);
+    assert(invariants_());
+    LLL(STREAM(read_set_.size(), write_set_.size()));
+    for (auto d: read_set_)
+        LLL(Descriptor(d));
     MSS_END();
 }
 namespace 
@@ -350,6 +368,34 @@ ReturnCode Select::operator()(const std::chrono::milliseconds *timeout)
         lTimeout = *timeout;
     return callOperator_(timeout ? &lTimeout : 0);
 }
+namespace 
+{
+    struct Compare
+    {
+        template <typename P>
+            bool operator()(const P &lhs, const P &rhs) const { return *lhs < *rhs; }
+    };
+    template <typename Set>
+    void computeMinMaxDesc_(int &minDesc, int &maxDesc, const Set &r, const Set &w)
+    {
+        minDesc = maxDesc = Descriptor::InvalidDesc;
+        gubg::OnlyOnce setMinDesc;
+        {
+            if (!r.empty())
+            {
+                maxDesc = max(maxDesc, (*max_element(r.begin(), r.end(), Compare()))->desc);
+                if (setMinDesc())
+                    minDesc = min(minDesc, (*min_element(r.begin(), r.end(), Compare()))->desc);
+            }
+            if (!w.empty())
+            {
+                maxDesc = max(maxDesc, (*max_element(w.begin(), w.end(), Compare()))->desc);
+                if (setMinDesc())
+                    minDesc = min(minDesc, (*min_element(w.begin(), w.end(), Compare()))->desc);
+            }
+        }
+    }
+}
 ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
 {
     MSS_BEGIN(ReturnCode);
@@ -359,24 +405,7 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
 
     assert(invariants_());
 
-    int maxDesc = Descriptor::InvalidDesc;
-    int minDesc = Descriptor::InvalidDesc;
-    OnlyOnce setMinDesc;
-    {
-        if (!read_set_.empty())
-        {
-            maxDesc = std::max(maxDesc, (*read_set_.rbegin())->desc);
-            L(STREAM(maxDesc, (*read_set_.rbegin())->desc));
-            if (setMinDesc())
-                minDesc = min(minDesc, (*read_set_.begin())->desc);
-        }
-        if (!write_set_.empty())
-        {
-            maxDesc = std::max(maxDesc, (*write_set_.rbegin())->desc);
-            if (setMinDesc())
-                minDesc = min(minDesc, (*write_set_.begin())->desc);
-        }
-    }
+    int minDesc, maxDesc; computeMinMaxDesc_(minDesc, maxDesc, read_set_, write_set_);
     L(STREAM(minDesc, maxDesc));
 
     if (minDesc != Descriptor::InvalidDesc)
@@ -395,21 +424,18 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
         {
             S();L("Processing " << timeStep.count() << " ms");
             //Do non-blocking select on those that cannot be selected
-            for (auto p: read_set_)
+            auto lReadSet = read_set_;
+            for (auto p: lReadSet)
             {
                 if (p->desc != Descriptor::InvalidDesc)
                     //This thing has a descriptor, so we can use real select on it; in linux, you can select on everything!
                     continue;
-                switch (auto rc = p->selectNonBlock(*this, AccessMode::Read))
+                EventType et;
+                switch (auto rc = p->selectNonBlock(et, AccessMode::Read))
                 {
                     case ReturnCode::OK:
-                        {
-                            EventType et; translate_(et, p->role, AccessMode::Read);
-                            L("Read selectNB " << STREAM((int)et));
-                            MSS_(Info, select_ready(Descriptor(p), et));
-                        }
-                        break;
-                    default:
+                        L("Event detected: " << STREAM((int)et));
+                        MSS_(Info, select_ready(Descriptor(p), et));
                         break;
                 }
             }
@@ -417,19 +443,19 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
             {
                 if (p->desc == Descriptor::InvalidDesc)
                     continue;
-                switch (auto rc = p->selectNonBlock(*this, AccessMode::Write))
+                EventType et;
+                switch (auto rc = p->selectNonBlock(et, AccessMode::Write))
                 {
                     case ReturnCode::OK:
-                        {
-                            EventType et; translate_(et, p->role, AccessMode::Write);
-                            L("Write selectNB " << STREAM((int)et));
-                            MSS_(Info, select_ready(Descriptor(p), et));
-                        }
-                        break;
-                    default:
+                        L("Event detected: " << STREAM((int)et));
+                        MSS_(Info, select_ready(Descriptor(p), et));
                         break;
                 }
             }
+
+            //Refresh the descriptor range, things might have change already
+            computeMinMaxDesc_(minDesc, maxDesc, read_set_, write_set_);
+            L(STREAM(minDesc, maxDesc));
             if (maxDesc != Descriptor::InvalidDesc)
                 MSS(select_(*this, maxDesc, read_set_, write_set_, &timeStep));
             else
@@ -456,9 +482,5 @@ bool Select::invariants_() const
             return false;
     }
     return true;
-}
-bool Select::Compare::operator()(const Descriptor::PP &lhs, const Descriptor::PP &rhs)
-{
-    return *lhs < *rhs;
 }
 #include "gubg/log/end.hpp"

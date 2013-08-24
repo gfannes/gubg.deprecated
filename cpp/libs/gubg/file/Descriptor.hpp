@@ -51,6 +51,7 @@ namespace gubg
         {
             public:
                 ReturnCode add(Descriptor, AccessMode);
+                ReturnCode erase(Descriptor);
 
                 //Calls select() on the added Descriptors
                 //Waits infinitely for a descriptor event
@@ -69,11 +70,7 @@ namespace gubg
                 bool invariants_() const;
 
                 typedef Descriptor::PP PP;
-                struct Compare
-                {
-                    bool operator()(const Descriptor::PP &lhs, const Descriptor::PP &rhs);
-                };
-                typedef std::set<PP, Compare> Set;
+                typedef std::set<PP> Set;
                 Set read_set_;
                 Set write_set_;
         };

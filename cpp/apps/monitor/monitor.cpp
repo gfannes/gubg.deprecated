@@ -11,7 +11,7 @@ using gubg::file::AccessMode;
 using gubg::file::File;
 using namespace std;
 
-#define GUBG_MODULE "monitor::Select"
+#define GUBG_MODULE_ "monitor::Select"
 #include "gubg/log/begin.hpp"
 namespace 
 {
@@ -30,6 +30,8 @@ namespace
                         add(tty_, AccessMode::Read);
                         break;
                     case EventType::Close:
+                        LLL("Closed tty " << tty_);
+                        erase(tty_);
                         break;
                     case EventType::Read:
                         {
