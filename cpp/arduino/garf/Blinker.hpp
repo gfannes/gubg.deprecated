@@ -11,8 +11,9 @@ namespace garf
     class Blinker
     {
         private:
-            static const unsigned char StateMask = 0x80;
-            static const unsigned char ModeMask = 0x7f;
+            static const unsigned char InitMask = 0x80;
+            static const unsigned char StateMask = 0x40;
+            static const unsigned char ModeMask = 0x3f;
 
         public:
             static const long NormalTimeout = NormalTimeout_;
@@ -20,14 +21,15 @@ namespace garf
             static const long LED = LED_;
 
             Blinker():
-                state_((unsigned char)BlinkMode::Flat & StateMask),
+                state_((unsigned char)BlinkMode::Flat | StateMask | InitMask),
                 timeout_(0)
             {
-                pinMode(LED, OUTPUT);
-                digitalWrite(LED, HIGH);
             }
+
             void set(BlinkMode mode)
             {
+                doInitialization_();
+
                 const BlinkMode currentMode = BlinkMode(state_ & ModeMask);
                 if (mode == currentMode)
                     return;
@@ -40,8 +42,11 @@ namespace garf
                 state_ = ((unsigned char)mode | StateMask);
                 digitalWrite(LED, HIGH);
             }
-            void process(int elapse)
+
+            void process(unsigned int elapse)
             {
+                doInitialization_();
+
                 switch ((BlinkMode)(state_ & ModeMask))
                 {
                     case BlinkMode::Flat:
@@ -70,7 +75,19 @@ namespace garf
             }
 
         private:
-            long timeout_;
+            void doInitialization_()
+            {
+                if (state_ & InitMask)
+                {
+                    //We delay initialization beyond the ctor to make sure
+                    //normal arduino setup was done
+                    pinMode(LED, OUTPUT);
+                    digitalWrite(LED, HIGH);
+                    state_ ^= InitMask;
+                }
+            }
+
+            unsigned long timeout_;
 
             //The MSBit indicates the current LED status
             unsigned char state_;

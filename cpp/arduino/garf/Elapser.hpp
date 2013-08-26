@@ -8,21 +8,28 @@ namespace garf
     class Elapser
     {
         public:
-            Elapser():
-                previousProcess_(millis()),
-                elapse_(0){}
+            Elapser(): initialized_(false) {}
 
             void process()
             {
-                const long now = millis();
+                if (!initialized_)
+                {
+                    previousProcess_ = millis();
+                    elapse_ = 0;
+                    initialized_ = true;
+                }
+
+                const unsigned long now = millis();
                 elapse_ = now - previousProcess_;
                 previousProcess_ = now;
             }
-            int elapse() const {return elapse_;}
+
+            unsigned int elapse() const {return elapse_;}
 
         private:
-            long previousProcess_;
-            int elapse_;
+            unsigned long previousProcess_;
+            unsigned int elapse_;
+            bool initialized_;
     };
 }
 
