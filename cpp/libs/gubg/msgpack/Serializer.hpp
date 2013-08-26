@@ -2,7 +2,7 @@
 #define aoeuaoeu
 
 #include "gubg/msgpack/Write.hpp"
-#include <vector>
+#include "gubg/FixedVector.hpp"
 
 #define GUBG_MODULE "Serializer"
 #include "gubg/log/begin.hpp"
@@ -13,7 +13,7 @@ namespace gubg
         typedef long TypeId;
         typedef long AttrId;
 
-        template <typename Buffer>
+        template <typename Buffer, size_t MaxDepth>
             class Serializer
             {
                 public:
@@ -39,6 +39,7 @@ namespace gubg
                         }
                     ReturnCode serialize(long v) { return write(buffer_, v); }
                     ReturnCode serialize(int v) { return write(buffer_, v); }
+                    ReturnCode serialize(bool v) { return write(buffer_, v); }
                     ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
 
                     ReturnCode writeIdAndAttrCnt(TypeId tid, size_t attr_cnt)
@@ -50,7 +51,9 @@ namespace gubg
                             AttrInfo ai;
                             ai.nr = attr_cnt;
                             ai.ix = 0;
+                            const size_t s = attrInfos_.size();
                             attrInfos_.push_back(ai);
+                            MSS(attrInfos_.size() == s+1);
                         }
                         MSS(write(buffer_, Nil_tag()));
                         MSS(write(buffer_, tid));
@@ -76,7 +79,7 @@ namespace gubg
                         size_t nr;
                         size_t ix;
                     };
-                    typedef std::vector<AttrInfo> AttrInfos;
+                    typedef FixedVector<AttrInfo, MaxDepth> AttrInfos;
                     AttrInfos attrInfos_;
             };
     }

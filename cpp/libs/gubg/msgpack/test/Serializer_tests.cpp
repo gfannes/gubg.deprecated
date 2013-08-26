@@ -30,7 +30,7 @@ int main()
 {
     TEST_TAG(main);
     Obj obj;
-    gubg::msgpack::Serializer<string> s;
+    gubg::msgpack::Serializer<string, 15> s;
     TEST_OK(s.serialize(obj));
     string buf;
     TEST_OK(s.swap(buf));
