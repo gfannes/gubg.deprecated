@@ -41,7 +41,8 @@ namespace
                         {
                             string buf(16, '\0');
                             MSS(d.read(buf));
-                            cout << buf.size() << " " << buf << " " << gubg::testing::toHex(buf) << endl;
+                            //cout << buf.size() << " " << buf << " " << gubg::testing::toHex(buf) << endl;
+                            cout << buf.size() << " " << gubg::testing::toHex(buf) << endl;
                             L(buf);
                         }
                         break;
@@ -52,7 +53,7 @@ namespace
                             size_t s;
                             string str("Hello world");
                             LLL("Sending " << str);
-                            MSS(d.write(s, str));
+                 //           MSS(d.write(s, str));
                             if (false && s == str.size())
                                 erase(tty_, AccessMode::Write);
                         }

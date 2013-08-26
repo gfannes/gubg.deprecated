@@ -71,6 +71,12 @@ namespace gubg
                     return elements_[size_-1];
                 }
 
+                const T *data() const
+                {
+                    assert(!empty());
+                    return elements_;
+                }
+
             private:
                 T elements_[Capacity];
                 size_t size_;

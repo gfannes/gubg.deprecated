@@ -29,7 +29,14 @@ namespace gubg
                         buffer_.swap(buffer);
                         MSS_END();
                     }
+                    const Buffer &buffer() const {return buffer_;}
 
+                    ReturnCode serialize(long v) { return write(buffer_, v); }
+                    ReturnCode serialize(int v) { return write(buffer_, v); }
+                    ReturnCode serialize(bool v) { return write(buffer_, v); }
+#ifndef ARDUINO
+                    ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
+#endif
                     template <typename T>
                         ReturnCode serialize(const T &t)
                         {
@@ -37,10 +44,6 @@ namespace gubg
                             MSS(t.msgpack_serialize(*this));
                             MSS_END();
                         }
-                    ReturnCode serialize(long v) { return write(buffer_, v); }
-                    ReturnCode serialize(int v) { return write(buffer_, v); }
-                    ReturnCode serialize(bool v) { return write(buffer_, v); }
-                    ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
 
                     ReturnCode writeIdAndAttrCnt(TypeId tid, size_t attr_cnt)
                     {

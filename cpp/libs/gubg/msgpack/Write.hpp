@@ -3,9 +3,11 @@
 
 #include "gubg/msgpack/Codes.hpp"
 #include "gubg/msgpack/Primitives.hpp"
+#ifndef ARDUINO
 #include <vector>
 #include <deque>
 #include <list>
+#endif
 
 #define GUBG_MODULE "msgpack_Write"
 #include "gubg/log/begin.hpp"
@@ -228,6 +230,7 @@ namespace gubg
                     MSS(write(buffer, v));
                 MSS_END();
             }
+#ifndef ARDUINO
         template <typename Buffer, typename T>
             ReturnCode write(Buffer &buffer, const std::vector<T> &ary)
             {
@@ -262,6 +265,7 @@ namespace gubg
                     return ReturnCode::OK;
                 return ReturnCode::TooLarge;
             }
+#endif
 
         //Raw
         template <typename Buffer, typename String>
@@ -300,6 +304,7 @@ namespace gubg
                 buffer.append(str);
                 MSS_END();
             }
+#ifndef ARDUINO
         template <typename Buffer>
             ReturnCode write(Buffer &buffer, const std::string &str)
             {
@@ -311,6 +316,7 @@ namespace gubg
                     return ReturnCode::OK;
                 return ReturnCode::TooLarge;
             }
+#endif
 
         //Map
         template <typename Buffer>
