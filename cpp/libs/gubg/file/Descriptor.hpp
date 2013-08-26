@@ -35,6 +35,9 @@ namespace gubg
                 ReturnCode accept(Descriptor &);
 
                 ReturnCode read(std::string &buffer);
+                ReturnCode write(size_t &written, const std::string &buffer);
+
+                ReturnCode setBaudRate(int rate);
 
                 void reset(){pimpl_.reset();}
                 bool valid() const;
@@ -51,7 +54,7 @@ namespace gubg
         {
             public:
                 ReturnCode add(Descriptor, AccessMode);
-                ReturnCode erase(Descriptor);
+                ReturnCode erase(Descriptor, AccessMode);
 
                 //Calls select() on the added Descriptors
                 //Waits infinitely for a descriptor event

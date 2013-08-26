@@ -11,8 +11,10 @@
 #include <cassert>
 #include <cstring>
 #include <algorithm>
+#include <sstream>
 using namespace gubg::file;
 using namespace std;
+using std::chrono::milliseconds;
 
 namespace 
 {
@@ -149,10 +151,41 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
             clear();
             MSS_L(PeerClosedConnection);
         }
-        L("I read " << s << " bytes");
-
+        MSS(s <= buffer.size());
         buffer.resize(s);
 
+        L("I read " << buffer.size() << " bytes");
+
+        MSS_END();
+    }
+    ReturnCode write(size_t &written, const string &buffer)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        MSS(!buffer.empty());
+        MSS(role == Role::Normal);
+        MSS(desc != InvalidDesc);
+
+        const auto s = ::write(desc, &buffer[0], buffer.size());
+        if (s == 0)
+        {
+            clear();
+            MSS_L(PeerClosedConnection);
+        }
+        MSS(s <= buffer.size());
+        written = s;
+        L("I wrote " << written << " bytes");
+
+        MSS_END();
+    }
+    ReturnCode setBaudRate(int rate)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(role == Role::Normal);
+        MSS(type == Type::File);
+        ostringstream cmd;
+        cmd << "stty -F " << fn.name() << " " << rate << " raw";
+        MSS(::system(cmd.str().c_str()) == 0);
         MSS_END();
     }
 };
@@ -160,13 +193,13 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 
 #define GUBG_MODULE_ "Descriptor"
 #include "gubg/log/begin.hpp"
-Descriptor Descriptor::listen(unsigned short port, const std::string &ip)
+Descriptor Descriptor::listen(unsigned short port, const string &ip)
 {
     S();
 
     struct addrinfo hints;
     struct addrinfo *servinfo = 0;
-    std::memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
@@ -242,6 +275,20 @@ ReturnCode Descriptor::read(string &buffer)
     MSS(pimpl_->read(buffer));
     MSS_END();
 }
+ReturnCode Descriptor::write(size_t &written, const string &buffer)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(pimpl_);
+    MSS(pimpl_->write(written, buffer));
+    MSS_END();
+}
+ReturnCode Descriptor::setBaudRate(int rate)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(pimpl_);
+    MSS(pimpl_->setBaudRate(rate));
+    MSS_END();
+}
 
 bool Descriptor::valid() const
 {
@@ -250,7 +297,7 @@ bool Descriptor::valid() const
     return pimpl_->valid();
 }
 
-void Descriptor::stream(std::ostream &os) const
+void Descriptor::stream(ostream &os) const
 {
     if (!pimpl_)
     {
@@ -282,17 +329,35 @@ ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
             break;
     }
     assert(invariants_());
+    LLL(STREAM(read_set_.size(), write_set_.size()));
+    for (auto d: read_set_)
+        LLL(Descriptor(d));
+    for (auto d: write_set_)
+        LLL(Descriptor(d));
     MSS_END();
 }
-ReturnCode Select::erase(Descriptor desc)
+ReturnCode Select::erase(Descriptor desc, AccessMode accessMode)
 {
     MSS_BEGIN(ReturnCode);
     assert(invariants_());
-    read_set_.erase(desc.pimpl_);
-    write_set_.erase(desc.pimpl_);
+    switch (accessMode)
+    {
+        case AccessMode::Read:
+            read_set_.erase(desc.pimpl_);
+            break;
+        case AccessMode::Write:
+            write_set_.erase(desc.pimpl_);
+            break;
+        case AccessMode::ReadWrite:
+            read_set_.erase(desc.pimpl_);
+            write_set_.erase(desc.pimpl_);
+            break;
+    }
     assert(invariants_());
     LLL(STREAM(read_set_.size(), write_set_.size()));
     for (auto d: read_set_)
+        LLL(Descriptor(d));
+    for (auto d: write_set_)
         LLL(Descriptor(d));
     MSS_END();
 }
@@ -335,8 +400,10 @@ namespace
                 L("::select() returned OK");
             }
 
+            auto lRds = rds;
             for (auto p: rds)
             {
+                L("Checking for a read event: " << Descriptor(p));
                 auto desc = p->desc;
                 if (desc == Descriptor::InvalidDesc)
                     continue;
@@ -346,8 +413,10 @@ namespace
                     MSS(receiver.select_ready(Descriptor(p), et));
                 }
             }
-            for (auto p: wds)
+            auto lWds = wds;
+            for (auto p: lWds)
             {
+                L("Checking for a write event " << Descriptor(p));
                 auto desc = p->desc;
                 if (desc == Descriptor::InvalidDesc)
                     continue;
@@ -360,9 +429,9 @@ namespace
             MSS_END();
         }
 }
-ReturnCode Select::operator()(const std::chrono::milliseconds *timeout)
+ReturnCode Select::operator()(const milliseconds *timeout)
 {
-    std::chrono::milliseconds lTimeout;
+    milliseconds lTimeout;
     //Make sure we are using milliseconds
     if (timeout)
         lTimeout = *timeout;
@@ -376,27 +445,27 @@ namespace
             bool operator()(const P &lhs, const P &rhs) const { return *lhs < *rhs; }
     };
     template <typename Set>
-    void computeMinMaxDesc_(int &minDesc, int &maxDesc, const Set &r, const Set &w)
-    {
-        minDesc = maxDesc = Descriptor::InvalidDesc;
-        gubg::OnlyOnce setMinDesc;
+        void computeMinMaxDesc_(int &minDesc, int &maxDesc, const Set &r, const Set &w)
         {
-            if (!r.empty())
+            minDesc = maxDesc = Descriptor::InvalidDesc;
+            gubg::OnlyOnce setMinDesc;
             {
-                maxDesc = max(maxDesc, (*max_element(r.begin(), r.end(), Compare()))->desc);
-                if (setMinDesc())
-                    minDesc = min(minDesc, (*min_element(r.begin(), r.end(), Compare()))->desc);
-            }
-            if (!w.empty())
-            {
-                maxDesc = max(maxDesc, (*max_element(w.begin(), w.end(), Compare()))->desc);
-                if (setMinDesc())
-                    minDesc = min(minDesc, (*min_element(w.begin(), w.end(), Compare()))->desc);
+                if (!r.empty())
+                {
+                    maxDesc = max(maxDesc, (*max_element(r.begin(), r.end(), Compare()))->desc);
+                    if (setMinDesc())
+                        minDesc = min(minDesc, (*min_element(r.begin(), r.end(), Compare()))->desc);
+                }
+                if (!w.empty())
+                {
+                    maxDesc = max(maxDesc, (*max_element(w.begin(), w.end(), Compare()))->desc);
+                    if (setMinDesc())
+                        minDesc = min(minDesc, (*min_element(w.begin(), w.end(), Compare()))->desc);
+                }
             }
         }
-    }
 }
-ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
+ReturnCode Select::callOperator_(milliseconds *timeout)
 {
     MSS_BEGIN(ReturnCode);
     L(STREAM(read_set_.size(), write_set_.size()));
@@ -419,7 +488,7 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
     {
         S();L("Not all descriptors are selectable");
         //We have to pauze ::select() from time to time to give non-select()-able non-blocking select-lookalikes a chance
-        const auto timeStep = std::chrono::milliseconds(500);
+        const auto timeStep = milliseconds(500);
         while (!timeout || *timeout >= timeStep)
         {
             S();L("Processing " << timeStep.count() << " ms");
@@ -439,7 +508,8 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
                         break;
                 }
             }
-            for (auto p: write_set_)
+            auto lWriteSet = write_set_;
+            for (auto p: lWriteSet)
             {
                 if (p->desc == Descriptor::InvalidDesc)
                     continue;
@@ -459,7 +529,7 @@ ReturnCode Select::callOperator_(std::chrono::milliseconds *timeout)
             if (maxDesc != Descriptor::InvalidDesc)
                 MSS(select_(*this, maxDesc, read_set_, write_set_, &timeStep));
             else
-                std::this_thread::sleep_for(timeStep);
+                this_thread::sleep_for(timeStep);
             if (timeout)
                 *timeout -= timeStep;
         }

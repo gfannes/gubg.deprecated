@@ -2,6 +2,7 @@
 #include "monitor/Finalize.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Descriptor.hpp"
+#include "gubg/Testing.hpp"
 #include <iostream>
 using namespace monitor;
 using gubg::OptionParser;
@@ -18,27 +19,42 @@ namespace
     class Select: public gubg::file::Select
     {
         public:
+            int nr;
+            Select():nr(0){}
             virtual bool select_ready(Descriptor d, EventType et)
             {
-                MSS_BEGIN(bool, d << " is ready to read");
+                MSS_BEGIN(bool, d << " is ready " << STREAM((int)et));
                 L("select_ready " << STREAM(d, (int)et));
                 switch (et)
                 {
                     case EventType::Open:
                         MSS(d.accept(tty_));
                         LLL("Accepted a tty, adding it to the read set: " << tty_);
-                        add(tty_, AccessMode::Read);
+                        tty_.setBaudRate(9600);
+                        add(tty_, AccessMode::ReadWrite);
                         break;
                     case EventType::Close:
                         LLL("Closed tty " << tty_);
-                        erase(tty_);
+                        erase(tty_, AccessMode::ReadWrite);
                         break;
                     case EventType::Read:
                         {
                             string buf(16, '\0');
                             MSS(d.read(buf));
-                            cout << buf;
+                            cout << buf.size() << " " << buf << " " << gubg::testing::toHex(buf) << endl;
                             L(buf);
+                        }
+                        break;
+                    case EventType::Write:
+                        if (nr == 0)
+                        {
+                            nr = 1;
+                            size_t s;
+                            string str("Hello world");
+                            LLL("Sending " << str);
+                            MSS(d.write(s, str));
+                            if (false && s == str.size())
+                                erase(tty_, AccessMode::Write);
                         }
                         break;
                 }
@@ -75,7 +91,7 @@ namespace
         s.add(d, AccessMode::Read);
 
         while (true)
-            s(std::chrono::seconds(1));
+            s(std::chrono::milliseconds(500));
 
         MSS_END();
     }
