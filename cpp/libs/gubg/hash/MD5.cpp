@@ -322,9 +322,9 @@ string MD5::hash_hex() const
 
 string MD5::to_hex(const Hash &h)
 {
-        std::ostringstream oss;
-        oss << std::hex;
-        for (auto i = 0; i < 16; ++i)
-            oss << std::setfill('0') << std::setw(2) << (int)h[i];
-        return oss.str();
+    std::ostringstream oss;
+    oss << std::hex;
+    for (auto i = 0; i < 16; ++i)
+        oss << std::setfill('0') << std::setw(2) << (int)h[i];
+    return oss.str();
 }
