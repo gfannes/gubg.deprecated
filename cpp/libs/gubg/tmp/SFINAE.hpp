@@ -18,7 +18,7 @@ namespace gubg
                 template<typename U, method_signature> struct SFINAE {}; \
                 template<typename U> static char Test(SFINAE<U, &U::method_name>*); \
                 template<typename U> static int Test(...); \
-                typedef typename If<sizeof(Test<T>(0)) == sizeof(char), HasMethod, HasNotMethod>::Type Value; \
+                typedef typename gubg::tmp::If<sizeof(Test<T>(0)) == sizeof(char), gubg::tmp::HasMethod, gubg::tmp::HasNotMethod>::Type Value; \
             }
 /*
         template <typename T>

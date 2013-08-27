@@ -18,10 +18,10 @@ enum class ReturnCode {MSS_DEFAULT_CODES,};
 
 #define GUBG_MODULE_ "test_Factory"
 #include "gubg/log/begin.hpp"
-class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
+class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
 {
     public:
-        IObject *factory_createObject(unsigned long id)
+        Object_itf *factory_createObject(TypeId id)
         {
             SS(id);
             switch (id)
@@ -34,7 +34,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
         {
             SS(l);
         }
-        void factory_primitive(const String &str)
+        void factory_primitive(const std::string &str)
         {
             SS(str.size());
         }
@@ -43,7 +43,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
             S();
             L("nil");
         }
-        void factory_setMember(Work &work, unsigned long id, gubg::msgpack::Nil_tag)
+        void factory_setMember(Work &work, AttributeId id, gubg::msgpack::Nil_tag)
         {
             S();L("Setting member " << id << " to nil");
             switch (id)
@@ -56,7 +56,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, 10>
                     break;
             }
         }
-        void factory_setMember(Work &work, unsigned long id, const String &str)
+        void factory_setMember(Work &work, AttributeId id, const std::string &str)
         {
             S();L("Setting member " << id << " to str");
             switch (id)

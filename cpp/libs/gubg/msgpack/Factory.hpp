@@ -3,9 +3,9 @@
 
 #include "gubg/msgpack/Parser.hpp"
 #include "gubg/msgpack/Write.hpp"
+#include "gubg/msgpack/Deserialize.hpp"
 #include "gubg/StateMachine.hpp"
 #include "gubg/FixedVector.hpp"
-#include <queue>
 
 #define GUBG_MODULE_ "msgpack_Factory"
 #include "gubg/log/begin.hpp"
@@ -13,18 +13,21 @@ namespace gubg
 {
     namespace msgpack
     {
-        template <typename Receiver, size_t MaxString>
-            class Factory_crtp: public Parser_crtp<Factory_crtp<Receiver, MaxString>, std::vector<Element>>
+        template <typename Receiver, typename String, size_t MaxDepth>
+            class Factory_crtp: public Parser_crtp<Factory_crtp<Receiver, String, MaxDepth>, FixedVector<Element, MaxDepth*2>>
             {
                     private:
-                        typedef Factory_crtp<Receiver, MaxString> Self;
-                        typedef Parser_crtp<Factory_crtp<Receiver, MaxString>, std::vector<Element>> Parser;
-                        typedef std::vector<Element> Path;
+                        typedef Factory_crtp<Receiver, String, MaxDepth> Self;
+                        //We take twice MaxDepth, msgpack encoding is +- twice as deep as the object stack
+                        typedef FixedVector<Element, MaxDepth*2> Path;
+                        typedef Parser_crtp<Factory_crtp<Receiver, String, MaxDepth>, Path> Parser;
                         DATA_EVENT(Reset);
                         DATA_EVENT(OpenElement, const Element &, el, const Path &, path);
 
                     public:
-                        typedef FixedVector<char, MaxString> String;
+                        typedef msgpack::TypeId TypeId;
+                        typedef msgpack::AttributeId AttributeId;
+                        typedef msgpack::Object_itf Object_itf;
 
                         Factory_crtp():
                             sm_(*this){}
@@ -58,35 +61,13 @@ namespace gubg
                         template <typename Buffer>
                             ReturnCode serialize(Buffer &buffer, const std::string &str) { return write(buffer, str); }
 
-                        class IObject
-                        {
-                            public:
-                                virtual void set(Receiver &receiver, long id, Nil_tag) = 0;
-                                virtual void set(Receiver &receiver, long id, const String &) = 0;
-                            private:
-                        };
                         template <typename T>
-                            class Object: public IObject
-                        {
-                            public:
-                                Object(T &t):obj_(t){}
-                                virtual void set(Receiver &receiver, long id, Nil_tag nil)
-                                {
-                                    receiver.factory_setMember(obj_, id, nil);
-                                }
-                                virtual void set(Receiver &receiver, long id, const String &str)
-                                {
-                                    receiver.factory_setMember(obj_, id, str);
-                                }
-                            private:
-                                T &obj_;
-                        };
-                        template <typename T>
-                            Object<T> *wrap(T &t){return new Object<T>(t);}
+                            Object<T> *wrap(T &t){return ::gubg::msgpack::wrap(t);}
 
                         template <typename Primitive>
                             void factory_primitive(Primitive primitive){S();L("Received a toplevel primitive");}
 
+                        //Called by the parser, translated basically in events for the state machine
                         template <typename P>
                             void parser_open(const Element &e, const P &p)
                             {
@@ -105,6 +86,8 @@ namespace gubg
                                 S();L("long: " << l << " " << p.size());
                                 sm_.process(l);
                             }
+                        //We collect a raw string character by character and send it to the state machine
+                        //when it is complete
                         template <typename P>
                             void parser_add(char ch, const P &p)
                             {
@@ -126,7 +109,7 @@ namespace gubg
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
-                        enum class State {Idle, Primitive_detected, UT_map_detected, UT_nil_detected, UT_created, UT_member, SemanticError};
+                        enum class State {Idle, Primitive_detected, UT_map_detected, UT_nil_detected, UT_created, UT_member, SemanticError, MaximumRecursionReached};
                         typedef StateMachine_ftop<Self, State, State::Idle> SM;
                         friend class StateMachine_ftop<Self, State, State::Idle>;
                         SM sm_;
@@ -170,10 +153,10 @@ namespace gubg
                                     return s.changeTo(State::UT_nil_detected);
                                     break;
                                 case State::UT_member:
-                                    if (!objects_.empty())
+                                    if (!objectsStack_.empty())
                                     {
-                                        auto obj = objects_.back();
-                                        obj->set(receiver_(), memberId_, nil);
+                                        auto obj = objectsStack_.back();
+                                        obj->set(memberId_, nil);
                                         return s.changeTo(State::UT_created);
                                     }
                                     break;
@@ -190,10 +173,14 @@ namespace gubg
                                     break;
                                 case State::UT_nil_detected:
                                     {
-                                        IObject *obj = receiver_().factory_createObject(id);
+                                        Object_itf *obj = receiver_().factory_createObject(id);
                                         if (!obj)
                                             break;
-                                        objects_.push(obj);
+                                        const auto ls = objectsStack_.size();
+                                        objectsStack_.push_back(obj);
+                                        if (objectsStack_.size() != ls + 1)
+                                            //Increase MaxDepth
+                                            s.changeTo(State::MaximumRecursionReached);
                                         return s.changeTo(State::UT_created);
                                     }
                                     break;
@@ -214,10 +201,10 @@ namespace gubg
                                     return s.changeTo(State::Primitive_detected);
                                     break;
                                 case State::UT_member:
-                                    if (!objects_.empty())
+                                    if (!objectsStack_.empty())
                                     {
-                                        auto obj = objects_.back();
-                                        obj->set(receiver_(), memberId_, str);
+                                        auto obj = objectsStack_.back();
+                                        obj->set(memberId_, str);
                                         return s.changeTo(State::UT_created);
                                     }
                                     break;
@@ -233,8 +220,8 @@ namespace gubg
 
                         String string_;
 
-                        typedef std::queue<IObject*> Objects;
-                        Objects objects_;
+                        typedef FixedVector<Object_itf*, MaxDepth> ObjectStack;
+                        ObjectStack objectsStack_;
             };
     }
 }
