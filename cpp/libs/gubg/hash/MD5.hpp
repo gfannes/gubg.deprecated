@@ -28,6 +28,7 @@ namespace gubg
                 typedef std::array<uint32_t, 4> HashWords;
                 HashWords hash_;
                 std::string remainder_;
+				//This should stay 64 bit and little endian, its content is copied as-is
                 typedef std::uint64_t Length;
                 Length length_;
         };

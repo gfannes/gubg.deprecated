@@ -1,12 +1,14 @@
 #include "gubg/Testing.hpp"
 #include "gubg/hash/MD5.hpp"
-#include "gubg/l.hpp"
 using namespace gubg::hash;
 
+#define GUBG_MODULE_ "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     bool hash(MD5 &md5, const std::string &message, const std::string &expected)
     {
+		S();
         md5.clear();
         md5 << message;
         const auto hash = md5.hash();
@@ -43,3 +45,4 @@ int main()
         
     return 0;
 }
+#include "gubg/log/end.hpp"

@@ -110,6 +110,23 @@ namespace
     typedef array<Word, 16> Constants;
     enum {A, B, C, D};//Do not change this lightly, the actual values are used as indices into State and HashWords
 
+    string to_hex(const HashWords &hw)
+    {
+        std::ostringstream oss;
+        oss << std::hex;
+        for (size_t i = 0; i < 4; ++i)
+            oss << "0x" << std::setfill('0') << std::setw(8) << hw[i] << " ";
+        return oss.str();
+    }
+    string to_hex(const Word *words, size_t nr)
+    {
+        std::ostringstream oss;
+        oss << std::hex;
+        for (size_t i = 0; i < nr; ++i)
+            oss << "0x" << std::setfill('0') << std::setw(8) << words[i] << " ";
+        return oss.str();
+    }
+
     enum RoundE {Zero, One, Two, Three};
     template <RoundE> struct Traits  {};
     template <> struct Traits<Zero>
@@ -155,7 +172,12 @@ namespace
     const Constants Traits<Three>::r = {6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
     const Constants Traits<Three>::k = {0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391 };
     const Constants Traits<Three>::g = {0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9};
+}
 
+#define GUBG_MODULE_ "BlockProcessor"
+#include "gubg/log/begin.hpp"
+namespace 
+{
     struct BlockProcessor
     {
         HashWords &hash_;
@@ -168,10 +190,13 @@ namespace
         template <RoundE R>
             void round_()
             {
+                S(); L(STREAM(to_hex(state_)));
+                assert(words_);
                 typedef Traits<R> Round;
                 uint32_t cachedB;
                 for (int oper = 0; oper < 16; ++oper)
                 {
+                    S(); L(STREAM(oper, to_hex(state_)));
                     Round::nonLinearFunction(state_);
                     state_[A] += words_[Round::g[oper]];
                     state_[A] += Round::k[oper];
@@ -181,11 +206,16 @@ namespace
                     state_[D] = state_[C];
                     state_[C] = cachedB;
                 }
+                L(STREAM(to_hex(state_)));
             }
 
         void process(const Word *words)
         {
+            S(); L(STREAM(to_hex(hash_)));
+
+            assert(words);
             words_ = words;
+            L(STREAM(to_hex(words_, 16)));
 
             state_ = hash_;
 
@@ -198,9 +228,12 @@ namespace
             hash_[B] += state_[B];
             hash_[C] += state_[C];
             hash_[D] += state_[D];
+
+            L(STREAM(to_hex(hash_)));
         }
     };
 }
+#include "gubg/log/end.hpp"
 
 MD5::MD5()
 {
@@ -280,6 +313,8 @@ MD5::Hash MD5::hash() const
         auto block = remainder_;
         block.push_back((char)0x80);
         block.append(64-8-1-rs, '\0');
+        //Make sure length is little endian
+        assert(sizeof(length) == 8);
         block.append((char*)&length, 8);
         assert(block.size() == 64);
 #ifndef GUBG_LITTLE_ENDIAN
@@ -300,6 +335,8 @@ MD5::Hash MD5::hash() const
         bp.process((const Word *)block.data());
 
         block.assign(56, '\0');
+        //Make sure length is little endian
+        assert(sizeof(length) == 8);
         block.append((char*)&length, 8);
         assert(block.size() == 64);
 #ifndef GUBG_LITTLE_ENDIAN
@@ -322,9 +359,9 @@ string MD5::hash_hex() const
 
 string MD5::to_hex(const Hash &h)
 {
-        std::ostringstream oss;
-        oss << std::hex;
-        for (auto i = 0; i < 16; ++i)
-            oss << std::setfill('0') << std::setw(2) << (int)h[i];
-        return oss.str();
+    std::ostringstream oss;
+    oss << std::hex;
+    for (auto i = 0; i < 16; ++i)
+        oss << std::setfill('0') << std::setw(2) << (int)h[i];
+    return oss.str();
 }
