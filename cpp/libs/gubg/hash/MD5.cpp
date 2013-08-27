@@ -174,7 +174,7 @@ namespace
     const Constants Traits<Three>::g = {0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9};
 }
 
-#define GUBG_MODULE_ "BlockProcessor"
+#define GUBG_MODULE "BlockProcessor"
 #include "gubg/log/begin.hpp"
 namespace 
 {
