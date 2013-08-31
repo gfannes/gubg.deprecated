@@ -13,8 +13,8 @@ namespace gubg
         typedef long TypeId;
         typedef long AttrId;
 
-        template <typename Buffer, size_t MaxDepth>
-            class Serializer
+        template <typename Buffer, typename Ids, size_t MaxDepth>
+            class Serializer: public Ids
             {
                 public:
                     void clear()

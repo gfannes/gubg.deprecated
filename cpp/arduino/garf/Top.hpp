@@ -21,11 +21,15 @@ namespace garf
                 gubg::msgpack::ReturnCode msgpack_serialize(S &s) const
                 {
                     MSS_BEGIN(gubg::msgpack::ReturnCode);
-                    s.writeIdAndAttrCnt(0, nr_);
+                    s.writeIdAndAttrCnt(S::TopInfo, nr_);
                     s.template writeAttribute<long>(nrLoops_, nrLoops);
                     s.template writeAttribute<long>(maxElapse_, maxElapse);
                     MSS_END();
                 }
+        };
+        struct Ids
+        {
+            enum {TopInfo};
         };
 
         template <unsigned long Period>
@@ -59,7 +63,7 @@ namespace garf
             private:
                 gubg::OnlyOnce clearInfo_;
                 Info info_;
-                gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, 2> serializer_;
+                gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, Ids, 2> serializer_;
         };
     }
 }

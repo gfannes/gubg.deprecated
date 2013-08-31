@@ -13,10 +13,14 @@ struct Time
         gubg::msgpack::ReturnCode msgpack_serialize(S &s) const
         {
             MSS_BEGIN(gubg::msgpack::ReturnCode);
-            s.writeIdAndAttrCnt(0, 1);
+            s.writeIdAndAttrCnt(S::Time, 1);
             s.template writeAttribute<long>(0, t_);
             MSS_END();
         }
+};
+struct Ids
+{
+    enum {Time};
 };
 class SendTime: public garf::Metronome_crtp<SendTime, 1000>
 {
@@ -28,7 +32,7 @@ class SendTime: public garf::Metronome_crtp<SendTime, 1000>
             Serial.write(serializer_.buffer().data(), serializer_.buffer().size());
         }
     private:
-        gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, 2> serializer_;
+        gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, Ids, 2> serializer_;
 };
 SendTime g_sendTime;
 
