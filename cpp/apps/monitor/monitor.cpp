@@ -42,7 +42,9 @@ namespace
                             string buf(16, '\0');
                             MSS(d.read(buf));
                             //cout << buf.size() << " " << buf << " " << gubg::testing::toHex(buf) << endl;
-                            cout << buf.size() << " " << gubg::testing::toHex(buf) << endl;
+                            if ((unsigned char)buf[0] == 0x83)
+                                cout << std::endl;
+                            cout << gubg::testing::toHex(buf);// << std::endl;
                             L(buf);
                         }
                         break;
