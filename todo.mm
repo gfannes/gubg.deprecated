@@ -1,7 +1,7 @@
 <map version="freeplane 1.2.0">
 <!--To view this file, download free mind mapping software Freeplane from http://freeplane.sourceforge.net -->
 <node TEXT="TODO" ID="ID_419133746" CREATED="1321300707832" MODIFIED="1377978601905"><hook NAME="MapStyle" zoom="1.948">
-    <properties show_note_icons="true" show_icon_for_attributes="true"/>
+    <properties show_icon_for_attributes="true" show_note_icons="true"/>
 
 <map_styles>
 <stylenode LOCALIZED_TEXT="styles.root_node">
@@ -62,6 +62,7 @@
 <node TEXT="move garf to libs" ID="ID_1852334827" CREATED="1377978530459" MODIFIED="1377978908243"/>
 <node TEXT="work out placement new" ID="ID_710644561" CREATED="1377978861735" MODIFIED="1377978913936"/>
 <node TEXT="move Top to gubg" ID="ID_1292126663" CREATED="1377978545890" MODIFIED="1377978919765"/>
+<node TEXT="check why Top.new is faster than .slow" ID="ID_602416213" CREATED="1378034236399" MODIFIED="1378034255545"/>
 </node>
 <node TEXT="deprecated" POSITION="right" ID="ID_1498294467" CREATED="1377978958918" MODIFIED="1377978965445">
 <edge COLOR="#00007c"/>
