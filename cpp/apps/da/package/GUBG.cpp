@@ -12,11 +12,9 @@ using namespace std;
 GUBG::GUBG(const File &base):
     base_(base),
     libsDir_(base),
-    arduinoDir_(base),
     appsDir_(base)
 {
     libsDir_ << "cpp/libs";
-    arduinoDir_ << "cpp/arduino";
     appsDir_ << "cpp/apps";
 
     File gubg(libsDir_);
@@ -27,7 +25,7 @@ GUBG::GUBG(const File &base):
     iup << "iup";
     forest_.add(iup, {"cpp", "hpp"});
 
-    File garf(arduinoDir_);
+    File garf(libsDir_);
     garf << "garf";
     forest_.add(garf, {"cpp", "hpp", "h"});
 
@@ -38,7 +36,7 @@ GUBG::GUBG(const File &base):
 
 bool GUBG::exists() const
 {
-    return gubg::file::exists(libsDir_) && gubg::file::exists(arduinoDir_) && gubg::file::exists(appsDir_);
+    return gubg::file::exists(libsDir_) && gubg::file::exists(appsDir_);
 }
 
 da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFiles, const File &partial)
@@ -89,7 +87,7 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
             {
                 L("This has to be the Arduino platform");
                 compileSettings_.targetPlatform = Arduino;
-                compileSettings_.includePaths.insert(arduinoDir_);
+                compileSettings_.includePaths.insert(libsDir_);
                 string str;
                 if (gubg::env::expand(str, "$GUBG_ARDUINO/hardware/arduino/cores/arduino"))
                     compileSettings_.includePaths.insert(File(str));
