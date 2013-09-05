@@ -1,8 +1,6 @@
 #ifndef HEADER_garf_Metronome_hpp_ALREADY_INCLUDED
 #define HEADER_garf_Metronome_hpp_ALREADY_INCLUDED
 
-#include "Arduino.h"
-
 namespace garf
 {
     template <typename Receiver, unsigned long Period>

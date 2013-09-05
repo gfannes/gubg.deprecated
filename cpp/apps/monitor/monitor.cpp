@@ -2,7 +2,9 @@
 #include "monitor/Finalize.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Descriptor.hpp"
+#include "gubg/msgpack/Factory.hpp"
 #include "gubg/Testing.hpp"
+#include "garf/Types.hpp"
 #include <iostream>
 using namespace monitor;
 using gubg::OptionParser;
@@ -12,7 +14,37 @@ using gubg::file::AccessMode;
 using gubg::file::File;
 using namespace std;
 
-#define GUBG_MODULE_ "monitor::Select"
+
+#define GUBG_MODULE_ "Factory"
+#include "gubg/log/begin.hpp"
+namespace 
+{
+    class Factory: public gubg::msgpack::Factory_crtp<Factory, string, 5>
+    {
+        public:
+            Object_itf *factory_createObject(AttributeId aid, TypeId tid)
+            {
+                S();L(STREAM(aid, tid));
+                switch (tid)
+                {
+                    case garf::TypeIds::Time: return wrap(time_);
+                    case garf::TypeIds::TopInfo: return wrap(topInfo_);
+                }
+                return 0;
+            }
+            void factory_createdObject(AttributeId aid, TypeId tid)
+            {
+                S();L(STREAM(aid, tid));
+            }
+        private:
+            garf::Time time_;
+            garf::TopInfo topInfo_;
+    };
+}
+#include "gubg/log/end.hpp"
+
+
+#define GUBG_MODULE "monitor::Select"
 #include "gubg/log/begin.hpp"
 namespace 
 {
@@ -41,6 +73,7 @@ namespace
                         {
                             string buf(16, '\0');
                             MSS(d.read(buf));
+                            factory_.process(buf);
                             //cout << buf.size() << " " << buf << " " << gubg::testing::toHex(buf) << endl;
                             if ((unsigned char)buf[0] == 0x83)
                                 cout << std::endl;
@@ -55,7 +88,7 @@ namespace
                             size_t s;
                             string str("Hello world");
                             LLL("Sending " << str);
-                 //           MSS(d.write(s, str));
+                            //           MSS(d.write(s, str));
                             if (false && s == str.size())
                                 erase(tty_, AccessMode::Write);
                         }
@@ -65,6 +98,7 @@ namespace
             }
         private:
             Descriptor tty_;
+            Factory factory_;
     };
 }
 #include "gubg/log/end.hpp"

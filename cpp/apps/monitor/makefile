@@ -1,6 +1,6 @@
 .PHONY: doitall fix
 doitall: $(GUBG_BIN)
-	da -E monitor.cpp
+	da -e monitor.cpp
 ifeq ($(GUBG_PLATFORM),linux)
 	cp monitor.exe $(GUBG_BIN)/monitor
 endif

@@ -13,3 +13,5 @@ export ICUI=$HOME/icui
 
 export GIT_EXTERNAL_DIFF=$GUBG/bin/git_diff.sh
 export CSCOPE_DB=$GUBG/cscope.out
+
+export PATH=$PATH:$HOME/.gem/ruby/2.0.0/bin

@@ -5,7 +5,7 @@
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/FixedVector.hpp"
 
-#define GUBG_MODULE_ "msgpack_Parser"
+#define GUBG_MODULE "msgpack_Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -35,12 +35,14 @@ namespace gubg
 
                         if (mss::isOK(el_.type.valid()))
                         {
+                            L("Type type is known");
                             //Add this byte to the length buffer, if still needed
                             if (it_ != buffer_.end())
                                 *it_++ = b;
                         }
                         else
                         {
+                            L("This should start a new object");
                             //We are ready to read a new object
                             MSS(el_.type.read(b));
                             isNewObject = true;
@@ -77,6 +79,7 @@ namespace gubg
                         }
                         if (it_ == buffer_.end())
                         {
+                            L("The type and data len are known, time to read the data");
                             //We read the length info into buffer_, we can now read the data
 
                             switch (el_.type.group)
@@ -102,9 +105,11 @@ namespace gubg
                                         //We do not clear el_ to make sure the next byte won't cause the start of a new object
                                         auto &el = path_.back();
                                         ++el.ix;
+                                        L("Proceeding char ix to " << el.ix << " len: " << el.length);
                                         if (el.ix == el.length)
                                         {
                                             receiver_().parser_close(el, path_);
+                                            path_.pop_back();
                                             MSS_Q(proceed_());
                                         }
                                     }
@@ -198,8 +203,10 @@ namespace gubg
                         MSS_Q(!path_.empty(), ParsingFinished);
                         auto &el = path_.back();
                         ++el.ix;
+                        L("Proceeded to " << el.ix << " len: " << el.length);
                         if (el.ix == el.length)
                         {
+                            S();L("This was the last of the list, pop and close");
                             auto e = path_.back();
                             path_.pop_back();
                             receiver_().parser_close(e, path_);

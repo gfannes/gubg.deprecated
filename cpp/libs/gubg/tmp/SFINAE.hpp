@@ -12,13 +12,13 @@ namespace gubg
 
         //method_signature: size_t (U::*)() const, the U is important
 #define GUBG_CHECK_FOR_METHOD(test_name, method_name, method_signature) \
-        template<typename T> \
+        template<typename ObjectType_> \
             struct test_name \
             { \
                 template<typename U, method_signature> struct SFINAE {}; \
                 template<typename U> static char Test(SFINAE<U, &U::method_name>*); \
                 template<typename U> static int Test(...); \
-                typedef typename gubg::tmp::If<sizeof(Test<T>(0)) == sizeof(char), gubg::tmp::HasMethod, gubg::tmp::HasNotMethod>::Type Value; \
+                typedef typename gubg::tmp::If<sizeof(Test<ObjectType_>(0)) == sizeof(char), gubg::tmp::HasMethod, gubg::tmp::HasNotMethod>::Type Value; \
             }
 /*
         template <typename T>

@@ -22,12 +22,13 @@ namespace gubg
                         typedef FixedVector<Element, MaxDepth*2> Path;
                         typedef Parser_crtp<Factory_crtp<Receiver, String, MaxDepth>, Path> Parser;
                         DATA_EVENT(Reset);
-                        DATA_EVENT(OpenElement, const Element &, el, const Path &, path);
+                        DATA_EVENT(OpenElement, const Element &, el);
+                        DATA_EVENT(CloseElement, const Element &, el);
 
                     public:
                         typedef msgpack::TypeId TypeId;
                         typedef msgpack::AttributeId AttributeId;
-                        typedef msgpack::Object_itf Object_itf;
+                        typedef msgpack::Object_itf<String> Object_itf;
 
                         Factory_crtp():
                             sm_(*this){}
@@ -59,31 +60,38 @@ namespace gubg
                         template <typename Buffer>
                             ReturnCode serialize(Buffer &buffer, long l) { return write(buffer, l); }
                         template <typename Buffer>
-                            ReturnCode serialize(Buffer &buffer, const std::string &str) { return write(buffer, str); }
+                            ReturnCode serialize(Buffer &buffer, const String &str) { return write(buffer, str); }
 
                         template <typename T>
-                            Object<T> *wrap(T &t){return ::gubg::msgpack::wrap(t);}
-
-                        template <typename Primitive>
-                            void factory_primitive(Primitive primitive){S();L("Received a toplevel primitive");}
+                            Object_itf *wrap(T &t){return ::gubg::msgpack::wrap<String>(t);}
+                        template <typename T>
+                            Object_itf *wrapWithoutClear(T &t){return ::gubg::msgpack::wrapWithoutClear<String>(t);}
 
                         //Called by the parser, translated basically in events for the state machine
                         template <typename P>
                             void parser_open(const Element &e, const P &p)
                             {
-                                S();L((int)e.type.group << " " << &e << " " << p.size());
-                                sm_.process(OpenElement(e, p));
+                                //S();L((int)e.type.group << " " << &e << " " << p.size());
+                                if (e.type.group == Group::Map)
+                                    sm_.process(OpenElement(e));
+                            }
+                        template <typename P>
+                            void parser_close(const Element &e, const P &p)
+                            {
+                                //S();L((int)e.type.group << " " << p.size());
+                                if (e.type.group == Group::Map)
+                                    sm_.process(CloseElement(e));
                             }
                         template <typename P>
                             void parser_add(Nil_tag nil, const P &p)
                             {
-                                S();L("nil " << p.size());
+                                //S();L("nil");
                                 sm_.process(nil);
                             }
                         template <typename P>
                             void parser_add(long l, const P &p)
                             {
-                                S();L("long: " << l << " " << p.size());
+                                //S();L("long: " << l);
                                 sm_.process(l);
                             }
                         //We collect a raw string character by character and send it to the state machine
@@ -92,41 +100,50 @@ namespace gubg
                             void parser_add(char ch, const P &p)
                             {
                                 const auto &el = p.back();
-                                S();L("char: '" << ch << "' " << p.size() << " " << el.ix << " " << el.length);
+                                //S();L("char: '" << ch << "' " << p.size() << " " << el.ix << " " << el.length);
                                 if (el.ix == 0)
                                     string_.clear();
                                 string_.push_back(ch);
                                 if (el.ix == el.length-1)
                                     sm_.process(string_);
                             }
-                        template <typename P>
-                            void parser_close(const Element &e, const P &p)
-                            {
-                                S();L((int)e.type.group << " " << p.size());
-                                if (p.empty())
-                                    sm_.process(Reset());
-                            }
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
-                        enum class State {Idle, Primitive_detected, UT_map_detected, UT_nil_detected, UT_created, UT_member, SemanticError, MaximumRecursionReached};
-                        typedef StateMachine_ftop<Self, State, State::Idle> SM;
-                        friend class StateMachine_ftop<Self, State, State::Idle>;
+                        enum class State {Init, Idle, UT_map_detected, UT_nil_detected, UT_created, AttributeWasSet, SemanticError, MaximumRecursionReached};
+                        typedef StateMachine_ftop<Self, State, State::Init> SM;
+                        friend class StateMachine_ftop<Self, State, State::Init>;
+                        AttributeId attrId_;
                         SM sm_;
                         void sm_exit(State s)
                         {
                         }
                         void sm_enter(typename SM::State &s)
                         {
+                            S();L("Entering state " << (int)s());
                             switch (s())
                             {
-                                case State::Primitive_detected: s.changeTo(State::Idle); break;
+                                case State::Init:
+                                    attrId_ = -1;
+                                    objectsStack_.push_back(wrapWithoutClear(receiver_()));
+                                    s.changeTo(State::Idle);
+                                    break;
+                                case State::AttributeWasSet:
+                                    if (attrId_ == -1)
+                                        return s.changeTo(State::Idle);
+                                    attrId_ = objectsStack_.back()->aid;
+                                    return s.changeTo(State::UT_created);
+                                    break;
+                                case State::SemanticError:
+                                    {
+                                        S();L("SemanticError occured");
+                                    }
+                                    break;
                             }
                         }
                         void sm_event(typename SM::State &s, const OpenElement &oe)
                         {
-                            S();
-                            L("Received an element " << (int)oe.el.type.group << " " << &oe.el);
+                            S();L("OpenElement " << (int)oe.el.type.group << " " << &oe.el);
                             switch (s())
                             {
                                 case State::Idle:
@@ -141,41 +158,63 @@ namespace gubg
                                     break;
                             }
                         }
+                        void sm_event(typename SM::State &s, const CloseElement &ce)
+                        {
+                            S();L("CloseElement " << (int)s() << " " << (int)ce.el.type.group << " " << &ce.el);
+                            switch (s())
+                            {
+                                case State::UT_created:
+                                    switch (ce.el.type.group)
+                                    {
+                                        case Group::Map:
+                                            assert(!objectsStack_.empty());
+                                            attrId_ = objectsStack_.back()->aid;
+                                            receiver_().factory_createdObject(attrId_, objectsStack_.back()->tid);
+                                            objectsStack_.pop_back();
+                                            if (attrId_ == -1)
+                                                s.changeTo(State::Idle);
+                                            else
+                                                s.changeTo(State::UT_created);
+                                            break;
+
+                                        default: return s.changeTo(State::SemanticError);
+                                    }
+                                    break;
+                            }
+                        }
                         void sm_event(typename SM::State &s, Nil_tag nil)
                         {
+                            S();L("nil");
                             switch (s())
                             {
                                 case State::Idle:
-                                    receiver_().factory_primitive(nil);
-                                    return s.changeTo(State::Primitive_detected);
+                                    assert(!objectsStack_.empty());
+                                    objectsStack_.back()->set(attrId_, nil);
+                                    return s.changeTo(State::AttributeWasSet);
                                     break;
                                 case State::UT_map_detected:
                                     return s.changeTo(State::UT_nil_detected);
-                                    break;
-                                case State::UT_member:
-                                    if (!objectsStack_.empty())
-                                    {
-                                        auto obj = objectsStack_.back();
-                                        obj->set(memberId_, nil);
-                                        return s.changeTo(State::UT_created);
-                                    }
                                     break;
                             }
                             s.changeTo(State::SemanticError);
                         }
                         void sm_event(typename SM::State &s, long id)
                         {
+                            S();L("long: " << id);
                             switch (s())
                             {
                                 case State::Idle:
-                                    receiver_().factory_primitive(id);
-                                    return s.changeTo(State::Primitive_detected);
+                                    assert(!objectsStack_.empty());
+                                    objectsStack_.back()->set(attrId_, id);
+                                    return s.changeTo(State::AttributeWasSet);
                                     break;
                                 case State::UT_nil_detected:
                                     {
-                                        Object_itf *obj = receiver_().factory_createObject(id);
+                                        Object_itf *obj = receiver_().factory_createObject(attrId_, id);
                                         if (!obj)
                                             break;
+                                        obj->aid = attrId_;
+                                        obj->tid = id;
                                         const auto ls = objectsStack_.size();
                                         objectsStack_.push_back(obj);
                                         if (objectsStack_.size() != ls + 1)
@@ -185,38 +224,30 @@ namespace gubg
                                     }
                                     break;
                                 case State::UT_created:
-                                    memberId_ = id;
-                                    return s.changeTo(State::UT_member);
+                                    attrId_ = id;
+                                    return s.changeTo(State::Idle);
                                     break;
                             }
                             s.changeTo(State::SemanticError);
                         }
                         void sm_event(typename SM::State &s, const String &str)
                         {
-                            S();L("Received string event");
+                            S();L("String: " << str);
                             switch (s())
                             {
                                 case State::Idle:
-                                    receiver_().factory_primitive(str);
-                                    return s.changeTo(State::Primitive_detected);
-                                    break;
-                                case State::UT_member:
-                                    if (!objectsStack_.empty())
-                                    {
-                                        auto obj = objectsStack_.back();
-                                        obj->set(memberId_, str);
-                                        return s.changeTo(State::UT_created);
-                                    }
+                                    assert(!objectsStack_.empty());
+                                    objectsStack_.back()->set(attrId_, str);
+                                    return s.changeTo(State::AttributeWasSet);
                                     break;
                             }
                             s.changeTo(State::SemanticError);
                         }
                         void sm_event(typename SM::State &s, Reset)
                         {
+                            S();L("Reset");
                             s.changeTo(State::Idle);
                         }
-
-                        long memberId_;
 
                         String string_;
 

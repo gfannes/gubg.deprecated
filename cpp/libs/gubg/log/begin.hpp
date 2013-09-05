@@ -53,7 +53,12 @@
   #include "gubg/log/macros.hpp"
   #ifdef GUBG_DEBUG
     #ifdef GUBG_MODULE
+#if 0
       #include "gubg/log/macros_normal.hpp"
+#else
+      //Nothing gets logged, and no call stack is built
+      #include "gubg/log/macros_noop.hpp"
+#endif
     #else
       #define GUBG_MODULE GUBG_MODULE_
       #include "gubg/log/macros_debug.hpp"
