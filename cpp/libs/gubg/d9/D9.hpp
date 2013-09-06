@@ -5,6 +5,8 @@
 #include "gubg/d9/Helper.hpp"
 #include <cassert>
 
+#define GUBG_MODULE_ "d9"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace d9
@@ -15,11 +17,10 @@ namespace gubg
                 MSS_BEGIN(ReturnCode);
 
                 MSS(src.size() > 0, PlainTooShort);
-                MSS(bool((src[0] & 0x80) == 0x80), FirstByteCannotBeFixPos);
 
                 //Compute the total size of encoding src
                 const auto nrDx = nrDXBytesInBuffer(src);
-                const size_t nrFlipBytes = (nrDx+6)/7;
+                const size_t nrFlipBytes = nrDx/7+1;
                 const size_t length = 1+nrFlipBytes+src.size();
 
                 //Resize the destination buffer
@@ -33,9 +34,11 @@ namespace gubg
                 //Create the flip iterator which will be used to keep track of 0xd9 into 0xd8 flipping
                 //and set all the flip bytes to 0x00
                 typename Frame::iterator flip = it;
-                size_t flipOffset = 0;
-                while (it != flip+nrFlipBytes)
+                const typename Frame::iterator last = flip+(nrFlipBytes-1);
+                unsigned char flipOffset = 0;
+                while (it != last)
                     *it++ = 0x00;
+                *it++ = 0x80;//The last flip byte should start with 0b10******
 
                 //Add all bytes to the buffer using it
                 //Translate 0xd9 into 0xd8 and keep track of the flips using flip
@@ -57,6 +60,8 @@ namespace gubg
                     }
                     *it++ = ch;
                 }
+                //The two MSBits of the last flip should still match 0b10******
+                assert((*last & 0xc0) == 0x80);
 
                 assert(it == dst.end());
                 MSS_END();
@@ -77,9 +82,9 @@ namespace gubg
                 typename Frame::const_iterator flip = src;
                 for (;;)
                 {
-                    if ((*src & 0x80) == 0x80)
+                    if ((*src++ & 0xc0) == 0x80)
+                        //This marks the end of the flips
                         break;
-                    ++src;
                     MSS(src != end, PlainTooShort);
                 }
                 const typename Frame::const_iterator flipEnd = src;
@@ -109,5 +114,6 @@ namespace gubg
             }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

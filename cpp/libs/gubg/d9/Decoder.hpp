@@ -4,6 +4,8 @@
 #include "gubg/d9/Codes.hpp"
 #include "gubg/d9/Types.hpp"
 
+#define GUBG_MODULE "Decoder"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace d9
@@ -18,93 +20,80 @@ namespace gubg
             class Decoder_crtp
             {
                 public:
-                    Decoder_crtp():
-                        state_(State::WaitForD9){}
+                    Decoder_crtp(){reset();}
+
+                    void reset()
+                    {
+                        //This makes sure no bytes are reported until a d9 was received
+                        state_ = State::WaitForD9;
+                    }
 
                     ReturnCode process(ubyte b)
                     {
                         MSS_BEGIN(ReturnCode);
 
-                        if (state_ == State::WaitForD9)
+                        //If we receive a D9, we start a new frame immediately
+                        if (b == Byte::D9)
                         {
-                            //Errors that happen here are not reported to Receiver
-                            MSS(b == Byte::D9, StartMarkerExpected);
-                            MSS(receiver_().d9_start());
                             flips_.resize(0);
                             state_ = State::Flips;
+                            receiver_().d9_start();
+                            MSS_RETURN_OK();
                         }
-                        else
+
+                        switch (state_)
                         {
-                            if (b == Byte::D9)
-                            {
-                                state_ = State::WaitForD9;
-                                receiver_().d9_error(ReturnCode::UnexpectedD9Received);
-                                MSS_L(UnexpectedD9Received);
-                            }
-                            if (state_ == State::Flips)
-                            {
-                                if ((b & 0x80) == 0x00)
+                            case State::WaitForD9:
+                                //Maybe some garbage because we started tuning in the middle of a stream
+                                break;
+                            case State::Flips:
                                 {
-                                    //This is a flip byte
-                                    const auto s = flips_.size();
-                                    flips_.push_back(b);
-                                    if (s+1 != flips_.size())
+                                    //Store this flip byte
                                     {
-                                        state_ = State::WaitForD9;
-                                        receiver_().d9_error(ReturnCode::TooManyFlips);
-                                        MSS_L(TooManyFlips);
+                                        const auto s = flips_.size();
+                                        flips_.push_back(b);
+                                        if (s+1 != flips_.size())
+                                        {
+                                            //push_back() failed: container is too small
+                                            state_ = State::WaitForD9;
+                                            receiver_().d9_error(ReturnCode::TooManyFlips);
+                                            MSS_L(TooManyFlips);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    //This is the first content byte, we deal with it hereunder
-                                    //after we initialize necessary members
-                                    flip_ = flips_.begin();
-                                    flipOffset_ = 0;
-                                    state_ = State::Content;
-                                }
-                            }
-                            if (state_ == State::Content)
-                            {
-                                if (b == Byte::D8)
-                                {
-                                    if (flip_ == flips_.end())
+
+                                    if ((b & 0xc0) == 0x80)
                                     {
-                                        state_ = State::WaitForD9;
-                                        receiver_().d9_error(ReturnCode::TooManyDx);
-                                        MSS_L(TooManyDx);
-                                    }
-                                    //Flip if necessary
-                                    if (*flip_ & (1 << flipOffset_++))
-                                        b = Byte::D9;
-                                    //Proceed flip when exhausted
-                                    if (flipOffset_ >= NrFlipsPerByte)
-                                    {
-                                        ++flip_;
+                                        //This is the last flip byte
+                                        flip_ = flips_.begin();
                                         flipOffset_ = 0;
+                                        state_ = State::Content;
                                     }
                                 }
-                                switch (receiver_().d9_ubyte(b))
+                                break;
+                            case State::Content:
                                 {
-                                    case ReturnCode::OK:
-                                        break;
-                                    case ReturnCode::ContentComplete:
-                                        state_ = State::WaitForD9;
-                                        break;
-                                    default:
-                                        state_ = State::WaitForD9;
-                                        receiver_().d9_error(ReturnCode::UnexpectedReply);
-                                        MSS_L(UnexpectedReply);
-                                        break;
+                                    if (b == Byte::D8)
+                                    {
+                                        if (flip_ == flips_.end())
+                                        {
+                                            state_ = State::WaitForD9;
+                                            receiver_().d9_error(ReturnCode::TooManyDx);
+                                            MSS_L(TooManyDx);
+                                        }
+                                        //Flip if necessary
+                                        if (*flip_ & (1 << flipOffset_++))
+                                            b = Byte::D9;
+                                        //Proceed flip when exhausted
+                                        if (flipOffset_ >= NrFlipsPerByte)
+                                        {
+                                            ++flip_;
+                                            flipOffset_ = 0;
+                                        }
+                                    }
+                                    receiver_().d9_ubyte(b);
                                 }
-                            }
                         }
                         MSS_END();
-                    }
-
-                    void reset()
-                    {
-                        state_ = State::WaitForD9;
                     }
 
                 private:
@@ -139,5 +128,6 @@ namespace gubg
         };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

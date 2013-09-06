@@ -13,7 +13,7 @@ namespace gubg
             const static ubyte D9 =   0xd9;
         };
 
-        const size_t NrFlipsPerByte = 7;
+        const unsigned char NrFlipsPerByte = 7;
     }
 }
 
