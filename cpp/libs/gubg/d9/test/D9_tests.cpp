@@ -8,6 +8,8 @@ using namespace gubg::d9;
 using namespace gubg::testing;
 using namespace std;
 
+#define GUBG_MODULE_ "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     string str_(const char *str)
@@ -79,3 +81,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"
