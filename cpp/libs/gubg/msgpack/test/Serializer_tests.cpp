@@ -15,7 +15,7 @@ namespace
                 bool msgpack_serialize(S &s) const
                 {
                     MSS_BEGIN(bool);
-                    MSS(s.writeIdAndAttrCnt(0, 2));
+                    MSS(s.writeIdAndAttrCnt(S::Obj, 2));
                     MSS(s.writeAttribute(0, a_));
                     MSS(s.writeAttribute(1, b_));
                     MSS_END();
@@ -24,13 +24,18 @@ namespace
             int a_;
             string b_;
     };
+
+    struct Ids
+    {
+        enum {Start = 123, Obj};
+    };
 }
 
 int main()
 {
     TEST_TAG(main);
     Obj obj;
-    gubg::msgpack::Serializer<string, 15> s;
+    gubg::msgpack::Serializer<string, Ids, 15> s;
     TEST_OK(s.serialize(obj));
     string buf;
     TEST_OK(s.swap(buf));

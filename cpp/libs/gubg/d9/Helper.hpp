@@ -11,7 +11,7 @@ namespace gubg
             size_t nrDXBytesInBuffer(const String &plain)
             {
                 size_t nr = 0;
-                auto end = plain.end();
+                const auto end = plain.end();
                 for (auto it = plain.begin(); it != end; ++it)
                 {
                     const unsigned char byte = *it;

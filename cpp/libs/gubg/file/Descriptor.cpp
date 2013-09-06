@@ -41,7 +41,7 @@ namespace
     }
 }
 
-#define GUBG_MODULE_ "Descr::Pimpl"
+#define GUBG_MODULE "Descr::Pimpl"
 #include "gubg/log/begin.hpp"
 struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 {
@@ -84,7 +84,7 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     }
     ReturnCode selectNonBlock(EventType &et, AccessMode am)
     {
-        MSS_BEGIN(ReturnCode, STREAM((int)role, (int)type));
+        MSS_BEGIN(ReturnCode, STREAM((int)role, (int)type, desc));
         switch (type)
         {
             case Type::File:
@@ -191,7 +191,7 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 };
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE_ "Descriptor"
+#define GUBG_MODULE "Descriptor"
 #include "gubg/log/begin.hpp"
 Descriptor Descriptor::listen(unsigned short port, const string &ip)
 {
@@ -308,7 +308,7 @@ void Descriptor::stream(ostream &os) const
 }
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE_ "Select"
+#define GUBG_MODULE "Select"
 #include "gubg/log/begin.hpp"
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
@@ -511,7 +511,8 @@ ReturnCode Select::callOperator_(milliseconds *timeout)
             auto lWriteSet = write_set_;
             for (auto p: lWriteSet)
             {
-                if (p->desc == Descriptor::InvalidDesc)
+                if (p->desc != Descriptor::InvalidDesc)
+                    //This thing has a descriptor, so we can use real select on it; in linux, you can select on everything!
                     continue;
                 EventType et;
                 switch (auto rc = p->selectNonBlock(et, AccessMode::Write))

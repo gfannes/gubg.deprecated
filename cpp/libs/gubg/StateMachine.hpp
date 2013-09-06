@@ -6,7 +6,7 @@
 #include "gubg/OnlyOnce.hpp"
 #include "gubg/macro.hpp"
 
-#define GUBG_MODULE_ "StateMachine"
+#define GUBG_MODULE "StateMachine"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

@@ -25,7 +25,6 @@ namespace da
 
                 gubg::file::File base_;
                 gubg::file::File libsDir_;
-                gubg::file::File arduinoDir_;
                 gubg::file::File appsDir_;
                 gubg::file::Forest forest_;
         };

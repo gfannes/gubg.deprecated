@@ -3,40 +3,59 @@
 
 #include "gubg/msgpack/Types.hpp"
 #include "gubg/tmp/SFINAE.hpp"
-#include <string>
 
 namespace gubg
 {
     namespace msgpack
     {
-        class Object_itf
-        {
-            public:
-                virtual void set(AttributeId, Nil_tag) = 0;
-                virtual void set(AttributeId, const std::string &) = 0;
-            private:
-        };
+        template <typename String>
+            class Object_itf
+            {
+                public:
+                    virtual void set(AttributeId, Nil_tag) = 0;
+                    virtual void set(AttributeId, long) = 0;
+                    virtual void set(AttributeId, const String &) = 0;
+                    AttributeId aid;
+                    TypeId tid;
+                private:
+            };
 
-        GUBG_CHECK_FOR_METHOD(CheckSetNil, set, void (U::*)(AttributeId, Nil_tag));
-        GUBG_CHECK_FOR_METHOD(CheckSetString, set, void (U::*)(AttributeId, const std::string &));
-        template <typename T>
-            class Object: public Object_itf
+        template <typename String, typename T>
+            class Object: public Object_itf<String>
         {
+            private:
+                GUBG_CHECK_FOR_METHOD(CheckSetNil, set, void (U::*)(AttributeId, Nil_tag));
+                GUBG_CHECK_FOR_METHOD(CheckSetLong, set, void (U::*)(AttributeId, long));
+                GUBG_CHECK_FOR_METHOD(CheckSetString, set, void (U::*)(AttributeId, const String &));
+
             public:
                 Object(T &t):obj_(t){}
                 virtual void set(AttributeId aid, Nil_tag nil) { typedef typename CheckSetNil<T>::Value HM; set_(HM(), aid, nil); }
-                virtual void set(AttributeId aid, const std::string &str) { typedef typename CheckSetString<T>::Value HM; set_(HM(), aid, str); }
+                virtual void set(AttributeId aid, long v) { typedef typename CheckSetLong<T>::Value HM; set_(HM(), aid, v); }
+                virtual void set(AttributeId aid, const String &str) { typedef typename CheckSetString<T>::Value HM; set_(HM(), aid, str); }
 
             private:
                 void set_(tmp::HasNotMethod, AttributeId aid, Nil_tag nil) { }
                 void set_(tmp::HasMethod, AttributeId aid, Nil_tag nil) { obj_.factory_setMember(aid, nil); }
-                void set_(tmp::HasNotMethod, AttributeId aid, const std::string &str) { }
-                void set_(tmp::HasMethod, AttributeId aid, const std::string &str) { obj_.factory_setMember(aid, str); }
+                void set_(tmp::HasNotMethod, AttributeId aid, long v) { }
+                void set_(tmp::HasMethod, AttributeId aid, long v) { obj_.factory_setMember(aid, v); }
+                void set_(tmp::HasNotMethod, AttributeId aid, const String &str) { }
+                void set_(tmp::HasMethod, AttributeId aid, const String &str) { obj_.factory_setMember(aid, str); }
                 T &obj_;
         };
 
-        template <typename T>
-            Object<T> *wrap(T &t){return new Object<T>(t);}
+        template <typename String, typename T>
+            Object_itf<String> *wrap(T &t)
+            {
+                //We make sure to clear t before deserializing it
+                t = T();
+                return new Object<String, T>(t);
+            }
+        template <typename String, typename T>
+            Object_itf<String> *wrapWithoutClear(T &t)
+            {
+                return new Object<String, T>(t);
+            }
     }
 }
 

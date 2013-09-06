@@ -16,6 +16,7 @@ clean:
 
 fix:
 	cd cpp/libs/gubg && da -f guards -r
+	cd cpp/libs/garf && da -f guards -r
 	cd cpp/libs/iup && da -f guards -r
 	cd cpp/apps/da && da -f guards -r
 
