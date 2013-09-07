@@ -2,6 +2,7 @@
 #define HEADER_gubg_msgpack_Deserialize_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Types.hpp"
+#include "gubg/msgpack/Primitives.hpp"
 #include "gubg/tmp/SFINAE.hpp"
 
 namespace gubg
@@ -36,11 +37,11 @@ namespace gubg
 
             private:
                 void set_(tmp::HasNotMethod, AttributeId aid, Nil_tag nil) { }
-                void set_(tmp::HasMethod, AttributeId aid, Nil_tag nil) { obj_.factory_setMember(aid, nil); }
-                void set_(tmp::HasNotMethod, AttributeId aid, long v) { }
-                void set_(tmp::HasMethod, AttributeId aid, long v) { obj_.factory_setMember(aid, v); }
+                void set_(tmp::HasMethod, AttributeId aid, Nil_tag nil) { obj_.msgpack_set(aid, nil); }
+                void set_(tmp::HasNotMethod, AttributeId aid, long v) {  obj_.msgpack_set(aid, v); }
+                void set_(tmp::HasMethod, AttributeId aid, long v) { obj_.msgpack_set(aid, v); }
                 void set_(tmp::HasNotMethod, AttributeId aid, const String &str) { }
-                void set_(tmp::HasMethod, AttributeId aid, const String &str) { obj_.factory_setMember(aid, str); }
+                void set_(tmp::HasMethod, AttributeId aid, const String &str) { obj_.msgpack_set(aid, str); }
                 T &obj_;
         };
 

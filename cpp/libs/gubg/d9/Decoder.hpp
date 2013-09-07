@@ -4,7 +4,7 @@
 #include "gubg/d9/Codes.hpp"
 #include "gubg/d9/Types.hpp"
 
-#define GUBG_MODULE "Decoder"
+#define GUBG_MODULE_ "Decoder"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -96,6 +96,8 @@ namespace gubg
                         MSS_END();
                     }
 
+                    void d9_error(ReturnCode error){}
+
                 private:
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
@@ -112,13 +114,12 @@ namespace gubg
             class StringDecoder: public Decoder_crtp<StringDecoder<String>, String>
         {
             public:
-                ReturnCode d9_start(){str_.clear(); return ReturnCode::OK;}
+                void d9_start(){str_.clear();}
                 void d9_error(ReturnCode error){}
-                ReturnCode d9_ubyte(ubyte b)
+                void d9_ubyte(ubyte b)
                 {
                     const auto s = str_.size();
                     str_.push_back(b);
-                    return (s+1 == str_.size() ? ReturnCode::OK : ReturnCode::PushBackFailed);
                 }
 
                 String &str(){return str_;}

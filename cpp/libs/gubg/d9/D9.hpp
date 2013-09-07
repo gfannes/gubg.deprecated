@@ -3,7 +3,7 @@
 
 #include "gubg/d9/Codes.hpp"
 #include "gubg/d9/Helper.hpp"
-#include <cassert>
+#include "gubg/cassert.hpp"
 
 #define GUBG_MODULE_ "d9"
 #include "gubg/log/begin.hpp"
@@ -64,6 +64,60 @@ namespace gubg
                 assert((*last & 0xc0) == 0x80);
 
                 assert(it == dst.end());
+                MSS_END();
+            }
+
+        template <typename Header, typename IO>
+            ReturnCode encodeInPlace(Header &hdr, IO &io)
+            {
+                MSS_BEGIN(ReturnCode);
+
+                MSS(io.size() > 0, PlainTooShort);
+
+                //Compute the total size of encoding io
+                const auto nrDx = nrDXBytesInBuffer(io);
+                const size_t nrFlipBytes = nrDx/7+1;
+                const size_t length = 1+nrFlipBytes;
+
+                //Resize the d9 header buffer
+                hdr.resize(length);
+                MSS(hdr.size() == length, ResizeFailed);
+
+                //Create the iterator which will be used to add marker bytes
+                //and keep track of 0xd9 into 0xd8 flipping
+                typename Header::iterator flip = hdr.begin();
+                *flip++ = Byte::D9;
+
+                const typename Header::iterator last = hdr.end()-1;
+                while (flip != last)
+                    *flip++ = 0x00;
+                *flip++ = 0x80;//The last flip byte should start with 0b10******
+
+                flip = hdr.begin()+1;
+                unsigned char flipOffset = 0;
+
+                //Add all bytes to the buffer using it
+                //Translate 0xd9 into 0xd8 and keep track of the flips using flip
+                for (ubyte &ch: io)
+                {
+                    switch ((ubyte)ch)
+                    {
+                        case Byte::D9:
+                            //Fallthrough is intentional
+                            *flip |= (1 << flipOffset);
+                            ch = Byte::D8;
+                        case Byte::D8:
+                            if (++flipOffset >= NrFlipsPerByte)
+                            {
+                                flipOffset = 0;
+                                ++flip;
+                            }
+                            break;
+                    }
+                }
+                //The two MSBits of the last flip should still match 0b10******
+                assert((*last & 0xc0) == 0x80);
+
                 MSS_END();
             }
 

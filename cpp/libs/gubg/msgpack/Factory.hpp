@@ -107,6 +107,8 @@ namespace gubg
                                 if (el.ix == el.length-1)
                                     sm_.process(string_);
                             }
+
+                        void reset() {sm_.process(Reset());}
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
@@ -125,6 +127,7 @@ namespace gubg
                             {
                                 case State::Init:
                                     attrId_ = -1;
+                                    objectsStack_.clear();
                                     objectsStack_.push_back(wrapWithoutClear(receiver_()));
                                     s.changeTo(State::Idle);
                                     break;
@@ -246,7 +249,7 @@ namespace gubg
                         void sm_event(typename SM::State &s, Reset)
                         {
                             S();L("Reset");
-                            s.changeTo(State::Idle);
+                            s.changeTo(State::Init);
                         }
 
                         String string_;

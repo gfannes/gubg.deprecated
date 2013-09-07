@@ -30,6 +30,7 @@ namespace gubg
                         MSS_END();
                     }
                     const Buffer &buffer() const {return buffer_;}
+                    Buffer &buffer() {return buffer_;}
 
                     ReturnCode serialize(long v) { return write(buffer_, v); }
                     ReturnCode serialize(int v) { return write(buffer_, v); }
