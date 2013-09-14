@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_serialization_serialize_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_serialization_serialize_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_serialization_serialize_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_serialization_serialize_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <vector>

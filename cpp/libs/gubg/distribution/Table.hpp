@@ -4,6 +4,7 @@
 #include "gubg/distribution/Engine.hpp"
 #include <vector>
 #include <random>
+#include <algorithm>
 
 #define GUBG_MODULE "Table"
 #include "gubg/log/begin.hpp"
@@ -11,6 +12,30 @@ namespace gubg
 {
     namespace distribution
     {
+        template <typename Container, typename T = typename Container::value_type>
+            void convertToCumul(Container &ctr)
+            {
+                T sum = T();
+                for (auto &cumul: ctr)
+                {
+                    sum += cumul;
+                    cumul = sum;
+                }
+            }
+        template <typename It, typename Container, typename T = typename Container::value_type>
+            bool generateFromUnnormCumul(It &it, const Container &ctr)
+            {
+                S();
+                if (ctr.empty())
+                    return false;
+                std::uniform_real_distribution<T> rng(0.0, ctr.back());
+                const auto rn = rng(gubg::distribution::engine);
+                it = std::upper_bound(ctr.begin(), ctr.end(), rn);
+                if (it == ctr.end())
+                    --it;
+                return true;
+            }
+
         //Class that can generate discrete values according to a given unnormalized distribution
         template <typename T>
             class Table

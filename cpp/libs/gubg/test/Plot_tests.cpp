@@ -1,5 +1,6 @@
 #include "gubg/Plot.hpp"
 #include <array>
+#include <vector>
 #include <thread>
 
 int main()

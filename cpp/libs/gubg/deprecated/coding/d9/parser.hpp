@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_coding_d9_parser_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_coding_d9_parser_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_coding_d9_parser_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_coding_d9_parser_hpp_ALREADY_INCLUDED
 
 //A 2-phase parser:
 // * First, add bytes

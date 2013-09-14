@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_communication_socket_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_communication_socket_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_communication_socket_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_communication_socket_hpp_ALREADY_INCLUDED
 
 #ifdef MINGW32
 #include <winsock.h>

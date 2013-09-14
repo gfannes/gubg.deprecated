@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_coding_d9_package_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_coding_d9_package_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_coding_d9_package_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_coding_d9_package_hpp_ALREADY_INCLUDED
 
 //Represents a d9 package:
 // * Can be setup from a d9 message

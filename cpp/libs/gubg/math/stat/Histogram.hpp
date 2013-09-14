@@ -3,6 +3,8 @@
 
 #include "gubg/OnlyOnce.hpp"
 #include <cassert>
+#include <vector>
+#include <cmath>
 
 #define GUBG_MODULE "Histogram"
 #include "gubg/log/begin.hpp"

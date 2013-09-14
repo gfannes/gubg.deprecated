@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_coding_d9_codes_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_coding_d9_codes_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_coding_d9_codes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_coding_d9_codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

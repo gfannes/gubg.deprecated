@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_communication_comStation_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_communication_comStation_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_communication_comStation_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_communication_comStation_hpp_ALREADY_INCLUDED
 
 #include <list>
 

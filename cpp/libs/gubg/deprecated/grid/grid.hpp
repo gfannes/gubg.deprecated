@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_grid_grid_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_grid_grid_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_grid_grid_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_grid_grid_hpp_ALREADY_INCLUDED
 
 #include <vector>
 

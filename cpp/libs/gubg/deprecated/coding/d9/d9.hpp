@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_coding_d9_d9_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_coding_d9_d9_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_deprecated_coding_d9_d9_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_deprecated_coding_d9_d9_hpp_ALREADY_INCLUDED
 
 //The d9-coding can be used to encode a binary buffer for serial transport. It features:
 // * Space-efficiency, especially if 0xd9 and 0xd8 occur infrequent

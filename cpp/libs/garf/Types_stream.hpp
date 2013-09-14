@@ -1,5 +1,5 @@
-#ifndef aouoau
-#define aouoau
+#ifndef HEADER_garf_Types_stream_hpp_ALREADY_INCLUDED
+#define HEADER_garf_Types_stream_hpp_ALREADY_INCLUDED
 
 #include "garf/Types.hpp"
 #include <ostream>

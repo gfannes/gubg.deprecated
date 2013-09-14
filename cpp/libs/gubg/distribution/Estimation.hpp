@@ -3,6 +3,8 @@
 
 #include "gubg/distribution/Codes.hpp"
 
+#define GUBG_MODULE "Estimation"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace distribution
@@ -26,7 +28,7 @@ namespace gubg
             {
                 MSS_BEGIN(ReturnCode);
                 MSS(!values.empty());
-                mean = 0.0;
+                mean = Mean();
                 for (auto value: values)
                     mean += value;
                 mean /= values.size();
@@ -94,5 +96,6 @@ namespace gubg
             }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif
