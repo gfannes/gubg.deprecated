@@ -1,12 +1,10 @@
 #include "gubg/bayesian/ParticleFilter.hpp"
 #include "gubg/distribution/Gaussian.hpp"
-#include "gubg/distribution/Table.hpp"
 #include "gubg/distribution/Estimation.hpp"
 #include "gubg/Plot.hpp"
 #include "gubg/macro.hpp"
 #include <thread>
 #include <complex>
-#include <cassert>
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -15,10 +13,13 @@ typedef double Control;
 typedef double State;
 typedef double Observation;
 
+//The stochastic volatility model comes from http://www.ece.sunysb.edu/~zyweng/particle.html
+
 class System
 {
     public:
         typedef int Time;
+        typedef ::State State;
 
         typedef vector<Time> TimeAry;
         typedef vector<Control> ControlAry;
@@ -73,53 +74,20 @@ class System
         Observation observation_;
 };
 
-class Filter
+    template <char D, typename Particles>
+void streamParticles(ostream &os, const Particles &particles)
 {
-    public:
-        Filter(const System &system, size_t nr, State initState): system_(system), particles_(nr, initState), weights_(nr, 0.0) {}
-
-        void operator()(Control control, Observation observation)
-        {
-            Particles tmp; tmp.swap(particles_);
-            assert(tmp.size() == weights_.size());
-            Weights::iterator w = weights_.begin();
-            for (auto &p: tmp)
-            {
-                system_.updateState(p, control);
-                *w++ = system_.observation_prob(observation, p);
-            }
-
-            gubg::distribution::convertToCumul(weights_);
-            particles_.resize(tmp.size());
-            Weights::const_iterator it = weights_.begin();
-            for (auto &p: particles_)
-            {
-                gubg::distribution::generateFromUnnormCumul(it, weights_);
-                p = tmp[it-weights_.begin()];
-            }
-        }
-        template <char D>
-            void stream(ostream &os) const
-            {
-                double mean; gubg::distribution::computeMean(mean, particles_);
-                os << mean << D;
-                for (auto p: particles_)
-                    os << p << D;
-            }
-
-    private:
-        const System &system_;
-        typedef vector<State> Particles;
-        Particles particles_;
-        typedef vector<double> Weights;
-        //We add this as a member to reduce allocation and deallocation overhead. This is only used inside operator()()
-        Weights weights_;
-};
+    double mean; gubg::distribution::computeMean(mean, particles);
+    os << mean << D;
+    for (auto p: particles)
+        os << p << D;
+}
 
 int main()
 {
     System s;
-    Filter f(s, 1000, 0.0);
+    typedef gubg::bayesian::ParticleFilter<System> ParticleFilter;
+    ParticleFilter f(s, 1000, 0.0);
     {
         const int Nr = 100;
         ofstream fo("data.csv");
@@ -128,13 +96,13 @@ int main()
             s(0.0);
             f(s.control(), s.observation());
             s.stream<' '>(fo);
-            f.stream<' '>(fo);
+            streamParticles<' '>(fo, f.particles());
             fo << endl;
         }
     }
     {
         ofstream fo("last.csv");
-        f.stream<'\n'>(fo);
+        streamParticles<'\n'>(fo, f.particles());
     }
     gubg::Plot p_state, p_obs;
     p_state.scatter(s.timeAry, s.stateAry);
