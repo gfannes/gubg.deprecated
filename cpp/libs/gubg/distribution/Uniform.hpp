@@ -12,6 +12,10 @@ namespace gubg
             std::uniform_real_distribution<double> rng(0.0, 1.0);
             return rng(gubg::distribution::engine);
         }
+        inline double uniform(double min, double max)
+        {
+            return min + uniform()*(max-min);
+        }
         inline int uniform_int(int min, int max)
         {
             std::uniform_int_distribution<int> rng(min, max);

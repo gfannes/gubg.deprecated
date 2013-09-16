@@ -3,6 +3,7 @@
 
 #include "gubg/math/stat/Histogram.hpp"
 #include <cstdio>
+#include <tuple>
 
 #define GUBG_MODULE "Plot"
 #include "gubg/log/begin.hpp"
@@ -49,9 +50,10 @@ namespace gubg
                         send_(oss.str());
                     }
                     send_("e");
+                    return true;
                 }
             template <typename Vs>
-                bool scatter(const Vs &vs, size_t x, size_t y)
+                void scatter(const Vs &vs, size_t x, size_t y)
                 {
                     send_("plot '-' using 1:2 with points");
                     std::ostringstream oss;
@@ -59,6 +61,20 @@ namespace gubg
                     {
                         oss.str("");
                         oss << v[x] << " " << v[y];
+                        send_(oss.str());
+                    }
+                    send_("e");
+                }
+            template <typename Data, typename Collater>
+                void vectorField(const Data &data, const Collater &collater)
+                {
+                    send_("plot '-' using 1:2:3:4 with vectors");
+                    std::ostringstream oss;
+                    for (const auto &d: data)
+                    {
+                        oss.str("");
+                        auto t = collater(d);
+                        oss << t[0] << ' ' << t[1] << ' ' << t[2] << ' ' << t[3];
                         send_(oss.str());
                     }
                     send_("e");

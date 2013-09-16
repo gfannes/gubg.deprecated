@@ -522,25 +522,6 @@ namespace gubg
         }
 
         template <typename T>
-        double l2Norm(const vector<T> &vec)
-        {
-            double res = 0.0;
-            for (int i=0; i<vec.size(); ++i)
-                res += vec[i]*vec[i];
-            res = sqrt(res);
-            return res;
-        }
-
-        template <typename T>
-        double l2Norm2(const vector<T> &vec)
-        {
-            double res = 0.0;
-            for (int i=0; i<vec.size(); ++i)
-                res += vec[i]*vec[i];
-            return res;
-        }
-
-        template <typename T>
         bool sort(vector<T> &vec)
         {
             sort(vec.begin(),vec.end());

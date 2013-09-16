@@ -2,12 +2,11 @@
 #define HEADER_gubg_math_math_hpp_ALREADY_INCLUDED
 
 #include <iostream>
-
-using namespace std;
+#include <cmath>
 
 namespace gubg
 {
-    namespace Math
+    namespace math
     {
         const double PI=3.141592653589793238462643383279502884197169399375;
     
@@ -51,10 +50,6 @@ namespace gubg
                     return true;
                 }
             double output(double x, double y){return mA*x*y + mB*x + mC*y + mD;}
-            void print()
-                {
-                    cout << "a = " << mA << ", b = " << mB << ", c = " << mC << ", d = " << mD << "" << endl;
-                }
         private:
             // The output of this function is a*x*y + b*x + c*y + d
             double mA;
