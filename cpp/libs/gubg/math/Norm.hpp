@@ -20,6 +20,26 @@ namespace gubg
             {
                 return std::sqrt(l2Norm2(ctr));
             }
+
+        template <typename Lhs, typename Rhs>
+            double l2Dist2(const Lhs &lhs, const Rhs &rhs)
+            {
+                double res = 0.0;
+                assert(lhs.size() == rhs.size());
+                auto it = rhs.begin();
+                double tmp;
+                for (auto l: lhs)
+                {
+                    tmp = (l-*it++);
+                    res += tmp*tmp;
+                }
+                return res;
+            }
+        template <typename Lhs, typename Rhs>
+            double l2Dist(const Lhs &lhs, const Rhs &rhs)
+            {
+                return std::sqrt(l2Dist2(lhs, rhs));
+            }
     }
 }
 

@@ -68,7 +68,7 @@ namespace gubg
             template <typename Data, typename Collater>
                 void vectorField(const Data &data, const Collater &collater)
                 {
-                    send_("plot '-' using 1:2:3:4 with vectors");
+                    send_("plot [0:2] [0:2] '-' using 1:2:3:4 with vectors");
                     std::ostringstream oss;
                     for (const auto &d: data)
                     {
