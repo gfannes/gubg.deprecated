@@ -44,6 +44,7 @@ da::ReturnCode CompileExe::execute(const Options &options)
     //Setup the linker
     Linker linker(exeType_);
     builder.extractLinkSettings(linker.settings);
+    linker.runAfterLinking(options.doRun);
 
     //Link the object files into an exe
     gubg::file::File executable(source_);

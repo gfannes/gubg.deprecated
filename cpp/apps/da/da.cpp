@@ -36,6 +36,7 @@ namespace
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Debug));});
             optionParser.addMandatory("-E", "--exe-release SOURCE", "Compile SOURCE into a release executable",
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Release));});
+            optionParser.addSwitch("-x", "--no-exec", "Do not execute the target", [&options](){options.doRun = false;});
             optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
             optionParser.addMandatory("-t", "--tree TREE", "Add TREE", [&options](string tree){options.trees.push_back(tree);});
             optionParser.addMandatory("-i", "--include PATH", "Include PATH", [&options](string path){options.includes.push_back(path);});

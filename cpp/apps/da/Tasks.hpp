@@ -12,11 +12,12 @@ namespace da
     struct Options
     {
         bool doFix;
+        bool doRun;
 		std::vector<std::string> trees;
 		std::vector<std::string> includes;
 
         Options():
-            doFix(false){}
+            doFix(false), doRun(true){}
     };
     class ITask
     {

@@ -19,6 +19,7 @@ namespace da
                 Linker(ExeType);
 
                 LinkSettings settings;
+                void runAfterLinking(bool b) {doRun_ = b;}
 
                 typedef gubg::file::File ExeFile;
                 typedef gubg::file::File ObjectFile;
@@ -28,6 +29,7 @@ namespace da
             private:
                 std::mutex mutex_;
                 const ExeType exeType_;
+                bool doRun_;
         };
     }
 }

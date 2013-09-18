@@ -10,7 +10,7 @@ using namespace std;
 #define GUBG_MODULE "Linker"
 #include "gubg/log/begin.hpp"
 Linker::Linker(ExeType exeType):
-    exeType_(exeType){}
+    exeType_(exeType), doRun_(false){}
 ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
 {
     MSS_BEGIN(ReturnCode);
@@ -62,60 +62,63 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
     verbose(cmd.str());
     MSS(::system(cmd.str().c_str()) == 0, LinkingFailed);
 
-    //Run our new creation
-    switch (settings.targetPlatform)
+    if (doRun_)
     {
-        case Any:
-        case Host:
-            {
-                cmd.str("");
+        //Run our new creation
+        switch (settings.targetPlatform)
+        {
+            case Any:
+            case Host:
+                {
+                    cmd.str("");
 #ifdef GUBG_LINUX
-                cmd << "./" << exe.name();
+                    cmd << "./" << exe.name();
 #endif
 #ifdef GUBG_MINGW
-                cmd << ".\\" << exe.name();
+                    cmd << ".\\" << exe.name();
 #endif
-                int res;
-                {
-                    SSS(cmd.str());
-                    verbose("---------------------------------------------Start------------------------------------------------------");
-                    res = ::system(cmd.str().c_str());
-                    verbose("---------------------------------------------Stop-------------------------------------------------------");
+                    int res;
+                    {
+                        SSS(cmd.str());
+                        verbose("---------------------------------------------Start------------------------------------------------------");
+                        res = ::system(cmd.str().c_str());
+                        verbose("---------------------------------------------Stop-------------------------------------------------------");
+                    }
+                    if (res != 0)
+                    {
+                        verbose("  =>  ERROR");
+                        MSS_L(RunFailed);
+                    }
+                    verbose("  =>  OK");
                 }
-                if (res != 0)
+                break;
+
+            case Arduino:
                 {
-                    verbose("  =>  ERROR");
-                    MSS_L(RunFailed);
+                    cmd.str("");
+                    auto hex = exe;
+                    hex.setExtension("hex");
+                    cmd << "avr-objcopy -R .eeprom -O ihex " << exe.name() << " " << hex.name();
+                    verbose(cmd.str());
+                    MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
+
+                    cmd.str("");
+                    if (arduino::isUno())
+                        cmd << "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:" << hex.name();
+                    else if (arduino::isMega())
+                        cmd << "avrdude -c stk500v2 -b 115200 -p atmega2560 -P /dev/ttyACM0 -U flash:w:" << hex.name();
+                    else
+                        cmd << "UNEXPECTED ARDUINO";
+                    verbose(cmd.str());
+                    MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
+
+                    cmd.str("");
+                    cmd << "gtkterm";
+                    verbose(cmd.str());
+                    MSS(::system(cmd.str().c_str()) == 0, SerialMonitorFailed);
                 }
-                verbose("  =>  OK");
-            }
-            break;
-
-        case Arduino:
-            {
-                cmd.str("");
-                auto hex = exe;
-                hex.setExtension("hex");
-                cmd << "avr-objcopy -R .eeprom -O ihex " << exe.name() << " " << hex.name();
-                verbose(cmd.str());
-                MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
-
-                cmd.str("");
-                if (arduino::isUno())
-                    cmd << "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:" << hex.name();
-                else if (arduino::isMega())
-                    cmd << "avrdude -c stk500v2 -b 115200 -p atmega2560 -P /dev/ttyACM0 -U flash:w:" << hex.name();
-                else
-                    cmd << "UNEXPECTED ARDUINO";
-                verbose(cmd.str());
-                MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
-
-                cmd.str("");
-                cmd << "gtkterm";
-                verbose(cmd.str());
-                MSS(::system(cmd.str().c_str()) == 0, SerialMonitorFailed);
-            }
-            break;
+                break;
+        }
     }
 
     MSS_END();

@@ -1,4 +1,5 @@
-#include "Messagetypes.h"
+#include "rtb/Commander.hpp"
+#include "gubg/file/File.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -6,7 +7,7 @@ using namespace std;
 
 namespace 
 {
-    const string name = "Spiral";
+    const string name = gubg::file::File(__FILE__).basename();
     const string homeColor = "ff0000";
     const string awayColor = "0000ff";
     const string log = name+".log";
@@ -39,12 +40,12 @@ int main()
     readMessage();
     readMessage();
 
-    cout << "Rotate 2 1" << endl;
+    cout << "Rotate 4 1" << endl;
 
     while (true)
     {
         readMessage();
-        cout << "Shoot 1" << endl;
+        //cout << "Shoot 1" << endl;
     }
 
     return 0;

@@ -1,4 +1,6 @@
 *.o
 *.exe
 *.hex
+*.robot
+*.csv
 cpp/apps/da/da
