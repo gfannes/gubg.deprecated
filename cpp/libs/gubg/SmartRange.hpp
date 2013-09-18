@@ -89,6 +89,21 @@ namespace gubg
                     return find_(needle, pos);
                 }
 
+                bool pop(SmartRange &popped, value_type till)
+                {
+                    popped = *this;
+                    while (!empty())
+                    {
+                        if (front() == till)
+                        {
+                            popped.end_ = begin_++;
+                            return true;
+                        }
+                        ++begin_;
+                    }
+                    return false;
+                }
+
 #if 0
                 template <typename Tokens, typename Splitter>
                 void breakdown(Tokens &tokens, Splitter splitter)
