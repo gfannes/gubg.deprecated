@@ -93,6 +93,14 @@ da::ReturnCode Builder::addTree(const gubg::file::File &tree)
 	MSS_END();
 }
 
+da::ReturnCode Builder::addInclude(const gubg::file::File &inc)
+{
+	MSS_BEGIN(ReturnCode);
+	MSS(!inc.empty());
+    compileSettings_.includePaths.insert(inc);
+	MSS_END();
+}
+
 Headers Builder::headers(Source::Ptr src) const
 {
     const auto it = headersPerSource_.find(src);

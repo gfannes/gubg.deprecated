@@ -22,6 +22,8 @@ da::ReturnCode CompileExe::execute(const Options &options)
     Builder builder;
 	for (auto tree: options.trees)
 		builder.addTree(File(tree));
+	for (auto inc: options.includes)
+		builder.addInclude(File(inc));
     //Detect all header and source dependencies starting from source_
     MSS(builder.process(source_));
 

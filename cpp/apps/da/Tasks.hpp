@@ -13,6 +13,7 @@ namespace da
     {
         bool doFix;
 		std::vector<std::string> trees;
+		std::vector<std::string> includes;
 
         Options():
             doFix(false){}
@@ -36,6 +37,12 @@ namespace std
 			os << "Trees:" << endl;
 			for (auto tree: options.trees)
 				os << tree << endl;
+		}
+		if (!options.includes.empty())
+		{
+			os << "Includes:" << endl;
+			for (auto inc: options.includes)
+				os << inc << endl;
 		}
 		return os;
 	}

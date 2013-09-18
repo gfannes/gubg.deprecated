@@ -20,6 +20,7 @@ namespace da
             void extractCompileSettings(CompileSettings &cs) const {cs = compileSettings_;}
             void extractLinkSettings(LinkSettings &ls) const {packages_.extractLinkSettings(ls);}
 			ReturnCode addTree(const gubg::file::File &);
+			ReturnCode addInclude(const gubg::file::File &);
 
             const Sources &sources() const {return sources_;}
             Headers headers(Source::Ptr) const;
