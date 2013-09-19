@@ -103,6 +103,33 @@ namespace gubg
                     }
                     return false;
                 }
+                bool pop(int &v)
+                {
+                    char *end;
+                    v = std::strtol(data(), &end, 10);
+                    if (data() == end)
+                        return false;
+                    begin_ += (end-data());
+                    return true;
+                }
+                bool pop(long &v)
+                {
+                    char *end;
+                    v = std::strtol(data(), &end, 10);
+                    if (data() == end)
+                        return false;
+                    begin_ += (end-data());
+                    return true;
+                }
+                bool pop(double &v)
+                {
+                    char *end;
+                    v = std::strtod(data(), &end);
+                    if (data() == end)
+                        return false;
+                    begin_ += (end-data());
+                    return true;
+                }
 
 #if 0
                 template <typename Tokens, typename Splitter>
