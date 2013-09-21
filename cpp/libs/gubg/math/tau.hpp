@@ -5,6 +5,7 @@
 
 namespace gubg
 {
+    const double pi = 3.14159265358979323846264338327950288419716939937510;
     namespace tau
     {
         //Variables in this namespace are assumed to be in tau coordinates:

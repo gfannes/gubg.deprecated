@@ -27,7 +27,7 @@ namespace gubg
                     const Particles &particles() const {return particles_;}
 
                     template <typename Control, typename Observation>
-                        void operator()(Control control, Observation observation)
+                        void process(Control control, Observation observation)
                         {
                             S();
                             Particles tmp; tmp.swap(particles_);

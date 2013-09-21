@@ -65,6 +65,26 @@ namespace gubg
                     }
                     send_("e");
                 }
+            //Collater should return [angle, radius]
+            template <typename Data, typename Collater>
+                void polar(const Data &data, const Collater &collater)
+                {
+                    send_("set polar");
+                    send_("set grid polar");
+                    send_("set trange [-pi:pi]");
+                    send_("set rrange [0:10]");
+                    //send_("plot '-' using 1:2 with points");
+                    send_("plot '-' using 1:2:3 with points lc variable");
+                    std::ostringstream oss;
+                    for (const auto &d: data)
+                    {
+                        oss.str("");
+                        auto t = collater(d);
+                        oss << t[0] << ' ' << t[1] << ' ' << t[2];
+                        send_(oss.str());
+                    }
+                    send_("e");
+                }
             template <typename Data, typename Collater>
                 void vectorField(const Data &data, const Collater &collater)
                 {

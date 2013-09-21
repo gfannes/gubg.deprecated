@@ -14,6 +14,21 @@ namespace rtb
 {
     typedef gubg::SmartRange<std::string> Range;
 
+    namespace priv
+    {
+            inline void stream_()
+            {
+                std::cout << std::endl;
+            }
+
+            template <typename A, typename ...Rest>
+                void stream_(const A a, Rest... rest)
+                {
+                    std::cout << a << ' ';
+                    return stream_(rest...);
+                }
+    }
+
     template <typename Receiver>
     class Commander_crtp
     {
@@ -27,17 +42,24 @@ namespace rtb
             std::cout << "RobotOption " << USE_NON_BLOCKING << " " << 0 << std::endl;
         }
 
+            const std::string &name() const {return name_;}
+
             bool process()
             {
                 processMessage_(readMessage_());
                 return continue_;
             }
 
+            void send(const Rotate &msg) const { priv::stream_("Rotate", (int)msg.part, msg.speed); }
+            void send(const RotateTo &msg) const { priv::stream_("RotateTo", (int)msg.part, msg.speed, msg.angle); }
+            void send(const RotateAmount &msg) const { priv::stream_("RotateAmount", (int)msg.part, msg.speed, msg.angle); }
+            void send(const Sweep &msg) const { priv::stream_("Sweep", (int)msg.part, msg.speed, msg.left, msg.right); }
+            void send(const Accelerate &msg) const { priv::stream_("Accelerate", msg.acc); }
+            void send(const Name &msg) const { priv::stream_("Name", msg.name); }
+            void send(const Colour &msg) const { priv::stream_("Colour", msg.home, msg.away); }
+
         private:
             Receiver &receiver_() {return static_cast<Receiver&>(*this);}
-
-            const std::string homeColor = "ff0000";
-            const std::string awayColor = "0000ff";
 
             std::string readMessage_()
             {
@@ -68,6 +90,8 @@ namespace rtb
                 L_CHECK_CMD(Warning);
                 L_CHECK_CMD(GameStarts);
                 L_CHECK_CMD(Radar);
+                L_CHECK_CMD(Collision);
+                L_CHECK_CMD(Info);
                 L_CHECK_CMD(Coordinates);
 #undef L_CHECK_CMD
             }
@@ -95,6 +119,19 @@ namespace rtb
                 cmd.type = (ObjectType)t;
                 args.pop(cmd.angle);
             }
+            void createCommand_(Collision &cmd, Range &args)
+            {
+                int t;
+                args.pop(t);
+                cmd.type = (ObjectType)t;
+                args.pop(cmd.angle);
+            }
+            void createCommand_(Info &cmd, Range &args)
+            {
+                args.pop(cmd.time);
+                args.pop(cmd.speed);
+                args.pop(cmd.cannon);
+            }
             void createCommand_(Coordinates &cmd, Range &args)
             {
                 args.pop(cmd.x);
@@ -114,16 +151,6 @@ namespace rtb
             bool continue_ = true;
             typedef std::chrono::system_clock Clock;
             Clock::time_point prev_;
-#if 0
-    string cmd;
-    int seq;
-    cin >> cmd >> seq;
-    if (seq == 1)
-    {
-        cout << "Name " << name << endl;
-        cout << "Colour " << homeColor << " " << awayColor << endl;
-    }
-#endif
     };
 }
 

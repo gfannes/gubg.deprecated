@@ -92,7 +92,7 @@ int main()
         for (int i = 0; i < Nr; ++i)
         {
             s(0.0);
-            f(s.control(), s.observation());
+            f.process(s.control(), s.observation());
             const double fact = 0.1;
             p.vectorField(f.particles(), [fact](const State &s){return array<double, 4>({s[0][0], s[0][1], fact*s[1][0], fact*s[1][1]});});
             //std::this_thread::sleep_for(std::chrono::seconds(1));

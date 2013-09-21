@@ -3,11 +3,24 @@
 #include "gubg/math/Norm.hpp"
 #include <array>
 #include <vector>
+#include <complex>
 #include <thread>
 using namespace std;
 
 int main()
 {
+    {
+        gubg::Plot p;
+        typedef complex<double> Polar;
+        vector<Polar> polars;
+        for (int i = 0; i < 10000; ++i)
+        {
+            using namespace gubg;
+            polars.push_back(polar(distribution::uniform(0, 1), distribution::uniform(0, 3.1415926)));
+        }
+        p.polar(polars, [](const Polar &pp){return array<double, 2>({arg(pp), abs(pp)});});
+        this_thread::sleep_for(chrono::seconds(10));
+    }
     {
         gubg::Plot p;
         typedef array<double, 2> Coord;

@@ -94,7 +94,7 @@ int main()
         for (int i = 0; i < Nr; ++i)
         {
             s(0.0);
-            f(s.control(), s.observation());
+            f.process(s.control(), s.observation());
             s.stream<' '>(fo);
             streamParticles<' '>(fo, f.particles());
             fo << endl;

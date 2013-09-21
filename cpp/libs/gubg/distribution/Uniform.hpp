@@ -12,6 +12,10 @@ namespace gubg
             std::uniform_real_distribution<double> rng(0.0, 1.0);
             return rng(gubg::distribution::engine);
         }
+        inline bool withProbability(double p)
+        {
+            return uniform() <= p;
+        }
         inline double uniform(double min, double max)
         {
             return min + uniform()*(max-min);
