@@ -5,7 +5,7 @@
 #error You cannot mix normal with nostl mss
 #endif
 #include "gubg/mss/mss_common.hpp"
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 
 namespace gubg
 {

@@ -4,7 +4,7 @@
 //sm_enter() might be called for the init state when it is not really expected: upon checkState() or processing the first event; make sure its enter action is not too harmful
 
 #include "gubg/OnlyOnce.hpp"
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 
 #define GUBG_MODULE "StateMachine"
 #include "gubg/log/begin.hpp"

@@ -42,8 +42,8 @@ namespace
             void commander_event(GameStarts &)
             {
                 log << "START" << endl;
-                const double a = 0.2;
-                //send(Sweep(RobotPart::Radar, 10, -a, a));
+                const double a = 0.5;
+                send(Sweep(RobotPart::Radar, 10, -a, a));
                 send(Accelerate(1));
             }
             void commander_event(Warning &warn)
@@ -56,7 +56,10 @@ namespace
                 if (radar.type == ObjectType::Wall)
                 {
                     const Coord obs = polar(radar.distance, radar.angle);
-                    particleFilter_.process(0, obs);
+                    coords_.push_back(obs);
+                    while (coords_.size() > 10)
+                        coords_.pop_front();
+                    particleFilter_.process(0, coords_);
                     plot_.polar(particleFilter_.particles(), [](const ParticleFilter::State &s){return array<double, 3>({arg(s.coord), abs(s.coord), s.background ? 1 : 2});});
                 }
                 else
@@ -101,6 +104,8 @@ namespace
 
         private:
             typedef complex<double> Coord;
+            typedef std::deque<Coord> Coords;
+            Coords coords_;
             struct WallDetector
             {
                 struct State
@@ -130,6 +135,13 @@ namespace
                     const auto d = abs(p-s.coord);
                     const double lambda = 20.0;
                     return lambda*exp(-lambda*d);
+                }
+                double observation_prob(const Coords &coords, const State &s) const
+                {
+                    vector<double> probs(coords.size(), 0);
+                    auto it = coords.begin();
+                    generate(probs.begin(), probs.end(), [&](){return observation_prob(*it++, s);});
+                    return *max_element(probs.begin(), probs.end());
                 }
             };
             WallDetector wallDetector_;

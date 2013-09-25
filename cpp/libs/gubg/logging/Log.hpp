@@ -1,7 +1,7 @@
 #ifndef HEADER_gubg_logging_Log_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_logging_Log_hpp_ALREADY_INCLUDED
 
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 #include "gubg/logging/Framework.hpp"
 #include <string>
 #include <sstream>

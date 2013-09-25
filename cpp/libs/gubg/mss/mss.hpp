@@ -25,7 +25,7 @@
 #include "gubg/mss/info.hpp"
 #include "gubg/clock/timer.hpp"
 #include "gubg/Location.hpp"
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 #include <memory>
 #include <set>
 #include <iostream>

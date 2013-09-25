@@ -2,7 +2,7 @@
 #include "gubg/distribution/Gaussian.hpp"
 #include "gubg/distribution/Estimation.hpp"
 #include "gubg/Plot.hpp"
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 #include <thread>
 #include <complex>
 #include <iostream>

@@ -1,7 +1,7 @@
 //NO INCLUDE GUARDS HERE
 
 #include "gubg/logging/Framework.hpp"
-#include "gubg/macro.hpp"
+#include "gubg/Macro.hpp"
 #include <iostream>
 
 #define L_L__(prefix, msg) \
