@@ -3,11 +3,16 @@
 
 #include "gubg/Macro.hpp"
 #include "gubg/math/Norm.hpp"
+#include "gubg/distribution/Table.hpp"
+#include "gubg/distribution/Uniform.hpp"
+#include "gubg/distribution/Gaussian.hpp"
 #include <array>
 #include <algorithm>
 #include <complex>
 #include <cassert>
 
+#define GUBG_MODULE "PWD"
+#include "gubg/log/begin.hpp"
 namespace rtb
 {
     namespace pwd
@@ -20,12 +25,14 @@ namespace rtb
                 public:
                     State();
 
+                    static double range() {return Range;}
+
                     template <typename Ctr>
                         bool setDistances(const Ctr &ctr);
                     template <typename Ctr>
                         bool setAngles(const Ctr &ctr);
 
-                    Observation generateObservation() const;
+                    double distance(double angle) const;
 
                 private:
                     bool invariants_() const;
@@ -38,7 +45,26 @@ namespace rtb
                     Angles angles_;
             };
 
-        //Implementation
+        template <typename S>
+            Observation generateGaussianObservation(const S &s, double distance_sigma)
+            {
+                using namespace gubg::distribution;
+                const auto angle = drawUniform(0.0, S::range());
+                const auto distance = s.distance(angle);
+                S();L(STREAM(angle, distance));
+                return std::polar(drawGaussian(distance, distance_sigma), angle);
+            }
+
+        template <typename S>
+            double observation_prob(const S &s, const Observation &obs, double distance_sigma)
+            {
+                const auto angle = std::arg(obs);
+                const auto distance = s.distance(angle);
+                S();L(STREAM(angle, distance));
+                return gubg::distribution::gaussian_prob(std::abs(obs), distance, distance_sigma);
+            }
+
+        //State implementation
         //Publics
 #define L_TEMPLATE template <size_t Nr, double &Range>
 #define L_TYPE State<Nr, Range>
@@ -76,10 +102,24 @@ namespace rtb
                 return true;
             }
         L_TEMPLATE
-            Observation L_TYPE::generateObservation() const
+            double L_TYPE::distance(double angle) const
             {
-                Observation ret;
-                return ret;
+                assert(invariants_());
+
+                auto a = angles_.begin();
+                {
+                    double cumul = 0;
+                    for (; a != angles_.end(); ++a)
+                    {
+                        cumul += *a;
+                        if (angle < cumul)
+                            break;
+                    }
+                    if (a == angles_.end())
+                        --a;
+                }
+
+                return distances_[a - angles_.begin()];
             }
         //Privates
         L_TEMPLATE
@@ -110,5 +150,6 @@ namespace rtb
             }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

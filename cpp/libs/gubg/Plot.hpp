@@ -73,6 +73,25 @@ namespace gubg
                     send_("set grid polar");
                     send_("set trange [-pi:pi]");
                     send_("set rrange [0:10]");
+                    send_("plot '-' using 1:2 with points");
+                    std::ostringstream oss;
+                    for (const auto &d: data)
+                    {
+                        oss.str("");
+                        auto t = collater(d);
+                        oss << t[0] << ' ' << t[1];
+                        send_(oss.str());
+                    }
+                    send_("e");
+                }
+            //Collater should return [angle, radius, label]
+            template <typename Data, typename Collater>
+                void polar_label(const Data &data, const Collater &collater)
+                {
+                    send_("set polar");
+                    send_("set grid polar");
+                    send_("set trange [-pi:pi]");
+                    send_("set rrange [0:10]");
                     //send_("plot '-' using 1:2 with points");
                     send_("plot '-' using 1:2:3 with points lc variable");
                     std::ostringstream oss;

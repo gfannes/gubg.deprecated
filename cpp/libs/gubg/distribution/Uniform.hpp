@@ -7,20 +7,20 @@ namespace gubg
 {
     namespace distribution
     {
-        inline double uniform()
+        inline double drawUniform()
         {
             std::uniform_real_distribution<double> rng(0.0, 1.0);
             return rng(gubg::distribution::engine);
         }
         inline bool withProbability(double p)
         {
-            return uniform() <= p;
+            return drawUniform() <= p;
         }
-        inline double uniform(double min, double max)
+        inline double drawUniform(double min, double max)
         {
-            return min + uniform()*(max-min);
+            return min + drawUniform()*(max-min);
         }
-        inline int uniform_int(int min, int max)
+        inline int drawUniform_int(int min, int max)
         {
             std::uniform_int_distribution<int> rng(min, max);
             return rng(gubg::distribution::engine);

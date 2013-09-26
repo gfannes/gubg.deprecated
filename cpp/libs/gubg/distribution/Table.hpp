@@ -2,6 +2,7 @@
 #define HEADER_gubg_distribution_Table_hpp_ALREADY_INCLUDED
 
 #include "gubg/distribution/Engine.hpp"
+#include "gubg/distribution/Uniform.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -31,6 +32,24 @@ namespace gubg
                 std::uniform_real_distribution<T> rng(0.0, ctr.back());
                 const auto rn = rng(gubg::distribution::engine);
                 it = std::upper_bound(ctr.begin(), ctr.end(), rn);
+                if (it == ctr.end())
+                    --it;
+                return true;
+            }
+        template <typename It, typename Container, typename T>
+            bool generateFromUnnormProb(It &it, const Container &ctr, T sum)
+            {
+                S();
+                if (ctr.empty())
+                    return false;
+                auto prob = drawUniform(0.0, sum);
+                T cumul = 0;
+                for (it = ctr.begin(); it != ctr.end(); ++it)
+                {
+                    cumul += *it;
+                    if (prob < cumul)
+                        break;
+                }
                 if (it == ctr.end())
                     --it;
                 return true;

@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_math_math_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_math_math_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_math_Math_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_Math_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <cmath>
@@ -9,6 +9,8 @@ namespace gubg
     namespace math
     {
         const double PI=3.141592653589793238462643383279502884197169399375;
+        const double TWO_PI=(PI+PI);
+        const double Sqrt2PI = 2.50662827463;
     
         // Compute the a and b values for the linear function y = a*x+b that will map x1 on y1 and x2 on y2.
         // Return false if x1 and x2 are the same (so not enough information is provided to compute a and b)
