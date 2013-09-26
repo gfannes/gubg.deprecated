@@ -9,6 +9,7 @@
 #include <array>
 #include <algorithm>
 #include <complex>
+#include <ostream>
 #include <cassert>
 
 #define GUBG_MODULE "PWD"
@@ -23,9 +24,15 @@ namespace rtb
             class State
             {
                 public:
+                    typedef std::array<double, Nr> Distances;
+                    typedef std::array<double, Nr> Angles;
+
                     State();
 
                     static double range() {return Range;}
+
+                    const Distances &distances() const {return distances_;}
+                    const Angles &angles() const {return angles_;}
 
                     template <typename Ctr>
                         bool setDistances(const Ctr &ctr);
@@ -34,14 +41,14 @@ namespace rtb
 
                     double distance(double angle) const;
 
+                    void stream(std::ostream &) const;
+
                 private:
                     bool invariants_() const;
 
                     void normalizeAngles_();
 
-                    typedef std::array<double, Nr> Distances;
                     Distances distances_;
-                    typedef std::array<double, Nr> Angles;
                     Angles angles_;
             };
 
@@ -63,6 +70,39 @@ namespace rtb
                 S();L(STREAM(angle, distance));
                 return gubg::distribution::gaussian_prob(std::abs(obs), distance, distance_sigma);
             }
+
+        template <typename State_>
+            class Model
+            {
+                public:
+                    typedef State_ State;
+
+                    double distance_sigma = 0.01;
+
+                    void updateState(State &state, int) const
+                    {
+                        {
+                            const double sigma = 0.1;
+                            auto newDistances = state.distances();
+                            gubg::distribution::addGaussianNoise(newDistances, sigma);
+                            gubg::math::liftTo(newDistances, 0.05);
+                            state.setDistances(newDistances);
+                        }
+
+                        {
+                            const double sigma = 0.05;
+                            auto newAngles = state.angles();
+                            gubg::distribution::addGaussianNoise(newAngles, sigma);
+                            gubg::math::liftTo(newAngles, 0.05);
+                            state.setAngles(newAngles);
+                        }
+                    }
+                    double observation_prob(const Observation &obs, const State &state) const
+                    {
+                        return pwd::observation_prob(state, obs, distance_sigma);
+                    }
+                private:
+            };
 
         //State implementation
         //Publics
@@ -121,6 +161,16 @@ namespace rtb
 
                 return distances_[a - angles_.begin()];
             }
+        L_TEMPLATE
+            void L_TYPE::stream(std::ostream &os) const
+            {
+                os << 'D';
+                for (auto d: distances_)
+                    os << d << ',';
+                os << 'A';
+                for (auto a: angles_)
+                    os << a << ',';
+            }
         //Privates
         L_TEMPLATE
             bool L_TYPE::invariants_() const
@@ -151,5 +201,15 @@ namespace rtb
     }
 }
 #include "gubg/log/end.hpp"
+
+namespace std
+{
+    template <size_t Nr, double &Range>
+        ostream &operator<<(ostream &os, const rtb::pwd::State<Nr, Range> &state)
+        {
+            state.stream(os);
+            return os;
+        }
+}
 
 #endif

@@ -1,9 +1,11 @@
 #include "rtb/PWD.hpp"
 #include "gubg/Array.hpp"
+#include "gubg/bayesian/ParticleFilter.hpp"
 #include "gubg/Plot.hpp"
 #include "gubg/Testing.hpp"
 #include <thread>
 using rtb::pwd::State;
+using rtb::pwd::Model;
 using rtb::pwd::Observation;
 using namespace std;
 
@@ -29,9 +31,24 @@ int main()
         const auto p = observation_prob(pwd, obs, 0.01);
         L(STREAM(std::abs(obs), std::arg(obs), p));
     }
+    typedef Model<PWD> M;
+    M m;
+    typedef gubg::bayesian::ParticleFilter<M> PF;
+    PF pf(m, 1000);
+    for (auto obs: obss)
+    {
+        pf.process(0, obs);
+    }
+    {
+        S();
+        for (auto s: pf.particles())
+        {
+            L(s);
+        }
+    }
     gubg::Plot plot;
     plot.polar(obss, [](Observation obs){return gubg::make_array(arg(obs), abs(obs));});
-//    this_thread::sleep_for(chrono::seconds(10));
+    //    this_thread::sleep_for(chrono::seconds(10));
     return 0;
 }
 #include "gubg/log/end.hpp"

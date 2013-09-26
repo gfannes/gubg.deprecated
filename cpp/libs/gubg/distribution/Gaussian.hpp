@@ -23,6 +23,12 @@ namespace gubg
             const double p = (x-m)/s;
             return (1.0/(math::Sqrt2PI*s))*std::exp(-0.5*p*p);
         }
+        template <typename Ctr>
+            void addGaussianNoise(Ctr &ctr, double s)
+            {
+                for (auto &v: ctr)
+                    v += drawGaussian(0.0, s);
+            }
     }
 }
 #include "gubg/log/end.hpp"

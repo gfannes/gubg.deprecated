@@ -11,6 +11,14 @@ namespace gubg
         const double PI=3.141592653589793238462643383279502884197169399375;
         const double TWO_PI=(PI+PI);
         const double Sqrt2PI = 2.50662827463;
+
+        template <typename Ctr, typename T>
+            void liftTo(Ctr &ctr, T t)
+            {
+                for (auto &v: ctr)
+                    if (v < t)
+                        v = t;
+            }
     
         // Compute the a and b values for the linear function y = a*x+b that will map x1 on y1 and x2 on y2.
         // Return false if x1 and x2 are the same (so not enough information is provided to compute a and b)

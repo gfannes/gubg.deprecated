@@ -14,15 +14,15 @@ namespace gubg
 {
     namespace bayesian
     {
-        template <typename System>
+        template <typename Model>
             class ParticleFilter
             {
                 public:
-                    typedef typename System::State State;
+                    typedef typename Model::State State;
                     typedef std::vector<State> Particles;
 
-                    ParticleFilter(const System &system, size_t nr): system_(system), particles_(nr, State()), weights_(nr, 0.0) {}
-                    ParticleFilter(const System &system, size_t nr, State initState): system_(system), particles_(nr, initState), weights_(nr, 0.0) {}
+                    ParticleFilter(const Model &model, size_t nr): model_(model), particles_(nr, State()), weights_(nr, 0.0) {}
+                    ParticleFilter(const Model &model, size_t nr, State initState): model_(model), particles_(nr, initState), weights_(nr, 0.0) {}
 
                     const Particles &particles() const {return particles_;}
 
@@ -35,8 +35,8 @@ namespace gubg
                             Weights::iterator w = weights_.begin();
                             for (auto &p: tmp)
                             {
-                                system_.updateState(p, control);
-                                *w++ = system_.observation_prob(observation, p);
+                                model_.updateState(p, control);
+                                *w++ = model_.observation_prob(observation, p);
                             }
 
                             L(log::hr(weights_));
@@ -54,7 +54,7 @@ namespace gubg
                         }
 
                 private:
-                    const System &system_;
+                    const Model &model_;
                     Particles particles_;
                     typedef std::vector<double> Weights;
                     //We add this as a member to reduce allocation and deallocation overhead. This is only used inside operator()()
