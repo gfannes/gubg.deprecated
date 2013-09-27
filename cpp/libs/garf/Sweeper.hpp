@@ -32,7 +32,7 @@ namespace garf
                 typedef gubg::StateMachine_ftop<Self, State, State::Init> SM;
                 friend class gubg::StateMachine_ftop<Self, State, State::Init>;
                 SM sm_;
-                void sm_enter(State s) { }
+                void sm_enter(typename SM::State &s) { }
                 void sm_exit(State s)
                 {
                     switch (s)
