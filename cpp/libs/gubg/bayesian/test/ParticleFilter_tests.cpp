@@ -107,6 +107,6 @@ int main()
     gubg::Plot p_state, p_obs;
     p_state.scatter(s.timeAry, s.stateAry);
     p_state.scatter(s.timeAry, s.observationAry);
-    //    std::this_thread::sleep_for(std::chrono::seconds(30));
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     return 0;
 }

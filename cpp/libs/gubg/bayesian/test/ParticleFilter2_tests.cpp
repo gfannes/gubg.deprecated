@@ -70,7 +70,7 @@ class System
         {
             if (time_ > 150)
                 return 1;
-            return exp(-0.5*gubg::math::l2Dist2(obs, state[0])/(obs_s_*obs_s_))/obs_s_;
+            return exp(-0.5*gubg::math::l2::distance(obs, state[0])/(obs_s_*obs_s_))/obs_s_;
         }
     private:
         const double obs_s_;
