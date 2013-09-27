@@ -1,0 +1,5 @@
+Pin 30: Servo links
+Pin 31: Servo rechts
+pin 7: Sonar Pulse L
+pin 2: Sonar Pulse R
+pin 8: Sonar Echo
