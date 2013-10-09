@@ -17,21 +17,11 @@ namespace
     typedef da::ReturnCode ReturnCode;
     typedef vector<Token> Tokens;
 
-    class Recursor: public gubg::file::Recursor_crtp<Recursor>
+    class Recursor
     {
-        private:
-            typedef gubg::file::Recursor_crtp<Recursor> Base;
-
         public:
-            Recursor(const Options &options, const File &wd):
-                options_(options), wd_(wd){}
-
-            ReturnCode operator()()
-            {
-                MSS_BEGIN(ReturnCode);
-                MSS(Base::operator()(wd_));
-                MSS_END();
-            }
+            Recursor(const Options &options):
+                options_(options){}
 
             template <typename File>
                 ReturnCode recursor_discoveredFile(const File &file)
@@ -164,7 +154,7 @@ namespace
 da::ReturnCode FixIncludeGuards::execute(const Options &options)
 {
     MSS_BEGIN(ReturnCode);
-    Recursor recursor(options, gubg::file::getcwd());
-    MSS(recursor());
+    Recursor recursor(options);
+    MSS(gubg::file::recurse(recursor));
     MSS_END();
 }

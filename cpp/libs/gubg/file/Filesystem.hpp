@@ -43,51 +43,53 @@ namespace gubg
         //* OK: continue
         //* Skip: skip this file
         //* Stop: stop recursing
-        template <typename Receiver>
-            class Recursor_crtp
-            {
-                public:
-                    ReturnCode operator()(const File &file)
+        namespace priv
+        {
+            template <typename Functor>
+                ReturnCode recurse(Functor &ftor, const File &file)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    typedef decltype(ftor.recursor_discoveredFile(file)) RC;
+                    switch (auto rc = ftor.recursor_discoveredFile(file))
                     {
-                        MSS_BEGIN(ReturnCode);
-                        File ff(file);
-                        MSS(determineType(ff));
-                        MSS(recurse_(ff));
-                        MSS_END();
-                    }
-
-                private:
-                    Receiver &receiver_(){return static_cast<Receiver&>(*this);}
-                    ReturnCode recurse_(const File &file)
-                    {
-                        MSS_BEGIN(ReturnCode);
-                        typedef decltype(receiver_().recursor_discoveredFile(file)) RC;
-                        switch (auto rc = receiver_().recursor_discoveredFile(file))
-                        {
-                            case RC::OK:
+                        case RC::OK:
+                            {
+                                std::vector<File> files;
+                                if (isDirectory(file))
                                 {
-                                    std::vector<File> files;
-                                    if (isDirectory(file))
+                                    MSS(read(files, file));
+                                    for (auto ff: files)
                                     {
-                                        MSS(read(files, file));
-                                        for (auto ff: files)
+                                        switch (auto rc2 = priv::recurse(ftor, ff))
                                         {
-                                            switch (auto rc2 = recurse_(ff))
-                                            {
-                                                case ReturnCode::Stop: MSS_Q(rc2); break;
-                                                default:               MSS(rc2); break;
-                                            }
+                                            case ReturnCode::Stop: MSS_Q(rc2); break;
+                                            default:               MSS(rc2); break;
                                         }
                                     }
                                 }
-                                break;
-                            case RC::Skip:          break;
-                            case RC::Stop: MSS_Q(ReturnCode::Stop); break;
-                            default:       MSS(rc); break;
-                        }
-                        MSS_END();
+                            }
+                            break;
+                        case RC::Skip:          break;
+                        case RC::Stop: MSS_Q(ReturnCode::Stop); break;
+                        default:       MSS(rc); break;
                     }
-            };
+                    MSS_END();
+                }
+        }
+        template <typename Functor>
+            ReturnCode recurse(Functor &ftor, const File &file)
+            {
+                MSS_BEGIN(ReturnCode);
+                File ff(file);
+                MSS(determineType(ff));
+                MSS(priv::recurse(ftor, ff));
+                MSS_END();
+            }
+        template <typename Functor>
+            ReturnCode recurse(Functor &ftor)
+            {
+                return recurse(ftor, getcwd());
+            }
     }
 }
 #include "gubg/log/end.hpp"

@@ -10,7 +10,7 @@ using gubg::file::File;
 
 namespace 
 {
-    struct ParseTree: gubg::file::Recursor_crtp<ParseTree>
+    struct ParseTree
     {
         typedef list<File> Files;
         Files oks;
@@ -42,7 +42,7 @@ int main()
     {
         pt.oks.clear();
         pt.kos.clear();
-        pt(File("/home/gfannes/gubg/cpp"));
+        gubg::file::recurse(pt, File("/home/gfannes/gubg/cpp"));
         L("Nr OK: " << pt.oks.size());
         L("Nr KO: " << pt.kos.size());
     }

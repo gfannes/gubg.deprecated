@@ -1,21 +1,22 @@
-//#define GUBG_LOG
 #include "gubg/Testing.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/l.hpp"
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE_ "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     bool countNrFiles(size_t &count, const File &f)
     {
-        MSS_BEGIN(bool, tree);
+        MSS_BEGIN(bool, f);
         //L("(" << f.type() << ") " << f.name());
         ++count;
         vector<File> files;
         MSS(ReturnCode::OK == read(files, f));
         for (auto ff: files)
-            countNrFiles(count, ff);
+            if (isDirectory(ff))
+                countNrFiles(count, ff);
         MSS_END();
     }
 }
@@ -58,14 +59,14 @@ int main()
                 L("I found " << nrFiles << " files and dirs in " << gubg.name());
             }
             {
-                TEST_TAG(Recursor_crtp);
-                struct Counter: Recursor_crtp<Counter>
+                TEST_TAG(recurse);
+                struct Counter
                 {
                     size_t count;
                     Counter():count(0){}
                     ReturnCode recursor_discoveredFile(const File &file)
                     {
-                        MSS_BEGIN(ReturnCode);
+                        MSS_BEGIN(ReturnCode, file);
                         ++count;
                         //MSS(count < 10, Stop);
                         //MSS(count < 10, Skip);
@@ -73,7 +74,7 @@ int main()
                     }
                 };
                 Counter counter;
-                counter(gubg);
+                recurse(counter, gubg);
                 L("Filecount: " << counter.count);
             }
         }
@@ -96,3 +97,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

@@ -11,7 +11,7 @@ using namespace std;
 //Tree
 namespace 
 {
-    struct FileAdder: Recursor_crtp<FileAdder>
+    struct FileAdder
     {
         Tree &tree;
 
@@ -30,7 +30,7 @@ Tree::Ptr Tree::create(const File &root, const vector<string> &extensions)
 {
     Ptr tree(new Tree(root, extensions));
     FileAdder fileAdder(*tree);
-    fileAdder(root);
+    recurse(fileAdder, root);
     return tree;
 }
 Tree::Tree(const File &root, const Extensions &exts):
