@@ -98,6 +98,11 @@ namespace gubg
                             MSS(rawSize >= 4);
                             rawSize -= 4;
                         }
+                        else if (strange.popString("#x2019;") || strange.popString("#x2026;"))
+                        {
+                            MSS(rawSize >= 7);
+                            rawSize -= 7;
+                        }
                         else
                             MSS_L(UnknownEscape);
                     }
@@ -138,6 +143,11 @@ namespace gubg
                             *dst++ = '\n';
                         else if (strange.popString("#xd;") || strange.popString("#xD;"))
                             *dst++ = '\r';
+                        else if (strange.popString("#x2019;"))
+                            *dst++ = '\'';
+                        else if (strange.popString("#x2026;"))
+							//Elipsis
+                            *dst++ = '.';
                         else
                         {
                             //Should have failed above

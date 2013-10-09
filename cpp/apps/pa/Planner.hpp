@@ -23,13 +23,15 @@ namespace pa
 			categoryName(catName)
 		{
 			using namespace gubg::planning;
-			planning.addWorker("gfa", 0.8);
-			planning.addWorker("wba", 0.5);
+			planning.addWorker("gfa", 0.7);
+			planning.addWorker("wba", 0.4);
 			gubg::OnlyOnce upgradeWBA;
 			for (auto d: workDays(200))
 			{
+#if 0
 				if (d >= Day(2013,8,1) && upgradeWBA())
-					planning.addWorker("wba", 0.8);
+					planning.addWorker("wba", 0.5);
+#endif
 				planning.addDay(d);
 			}
 			for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 18)))
