@@ -60,6 +60,7 @@ Dir.each("./",recursor) do |dir, fn|
 		doCheck = false
 	when reWantedExtensions
 	when /^Makefile/
+	when /^makefile/
 	else
 		doCheck = false
 	end unless options[:all]
