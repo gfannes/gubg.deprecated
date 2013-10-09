@@ -19,13 +19,13 @@ namespace da
         Options():
             doFix(false), doRun(true){}
     };
-    class ITask
+    class Task_itf
     {
         public:
-            typedef std::shared_ptr<ITask> Ptr;
+            typedef std::shared_ptr<Task_itf> Ptr;
             virtual ReturnCode execute(const Options &) = 0;
     };
-    typedef std::list<ITask::Ptr> Tasks;
+    typedef std::list<Task_itf::Ptr> Tasks;
 }
 
 namespace std
@@ -51,5 +51,6 @@ namespace std
 
 #include "da/FixIncludeGuards.hpp"
 #include "da/CompileExe.hpp"
+#include "da/UnitTests.hpp"
 
 #endif

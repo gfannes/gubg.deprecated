@@ -91,7 +91,6 @@ IR ir;
 void setup()
 {
     Serial.begin(9600);
-    sonars = S();
     sonars.init();
     pinMode(13, OUTPUT);
     ir.init();

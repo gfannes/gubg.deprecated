@@ -7,7 +7,7 @@
 
 namespace da
 {
-    class CompileExe: public ITask
+    class CompileExe: public Task_itf
     {
         public:
             static Ptr create(const std::string &source, ExeType exeType){return Ptr(new CompileExe(source, exeType));}

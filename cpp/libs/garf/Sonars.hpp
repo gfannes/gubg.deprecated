@@ -6,6 +6,7 @@
 
 namespace garf
 {
+    //Call init you idiot
     template <int TriggerL, int TriggerR, int Echo, unsigned long Max>
         class Sonars
         {
@@ -14,8 +15,7 @@ namespace garf
                 enum class Which {Left, Right};
 
                 Sonars():
-                    sm_(*this),
-                    prev_(micros()){}
+                    sm_(*this){}
                 void init()
                 {
                     prev_ = micros();
@@ -23,6 +23,7 @@ namespace garf
 
                 State debug_getState() const {return sm_.debug_getState();}
 
+                //Returns true if a sonar reading was observed
                 bool process(Which &w, unsigned long &distance)
                 {
                     bool res = false;
@@ -41,9 +42,9 @@ namespace garf
 
                 typedef gubg::StateMachine_ftop<Sonars, State, State::Init> SM;
                 SM sm_;
-                void sm_enter(State s)
+                void sm_enter(typename SM::State &s)
                 {
-                    switch (s)
+                    switch (s())
                     {
                         case State::Init:
                             pinMode(TriggerL, OUTPUT);

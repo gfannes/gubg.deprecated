@@ -24,7 +24,7 @@ namespace gubg
             public:
                 StateMachine_ftop(Outer &outer): state_(outer) { }
 
-                bool checkState(StateT s) const
+                bool checkState(StateT s)
                 {
                     if (doStart_())
                         state_.outer_.sm_enter(state_);

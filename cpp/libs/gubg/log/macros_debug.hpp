@@ -6,9 +6,9 @@
 
 #define L_L__(prefix, msg) \
     { \
-        std::ostringstream l_gubg_logging_message_oss_; \
-        l_gubg_logging_message_oss_ << l_gubg_logging_scope_.indent() << prefix << msg << std::endl; \
-        gubg::logging::Output::write(l_gubg_logging_message_oss_.str()); \
+        std::ostringstream l_gubg_log_message_oss_; \
+        l_gubg_log_message_oss_ << l_gubg_logging_scope_.indent() << prefix << msg << std::endl; \
+        gubg::logging::Output::write(l_gubg_log_message_oss_.str()); \
     }
 #define L_S__(tag_str, msg) \
     gubg::logging::Scope l_gubg_logging_scope_(GUBG_MODULE, tag_str, true); \

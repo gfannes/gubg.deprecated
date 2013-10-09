@@ -5,7 +5,7 @@
 
 namespace da
 {
-    class FixIncludeGuards: public ITask
+    class FixIncludeGuards: public Task_itf
     {
         public:
             static Ptr create(){return Ptr(new FixIncludeGuards);}
