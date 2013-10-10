@@ -1,8 +1,15 @@
 #include "gubg/msgpack/Factory.hpp"
+#include "gubg/msgpack/Serializer.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/test/Helper.hpp"
 #include <iostream>
 
+struct Ids
+{
+};
+
+#define GUBG_MODULE_ "Work"
+#include "gubg/log/begin.hpp"
 struct Work
 {
     std::string nonce;
@@ -11,8 +18,48 @@ struct Work
     {
         os << STREAM(nonce, msg) << std::endl;
     }
+    template <typename Buffer>
+        bool msgpack_serialize(Buffer &buffer)
+        {
+            MSS_BEGIN(bool);
+            MSS(writeIdAndLength(buffer, 0, 2));
+            MSS(writeMember(buffer, 0, nonce));
+            MSS(writeMember(buffer, 1, msg));
+            MSS_END();
+        }
+    void msgpack_set(gubg::msgpack::AttributeId id, gubg::msgpack::Nil_tag)
+    {
+        S();L("Setting member " << id << " to nil");
+        switch (id)
+        {
+            case 0:
+                nonce.clear();
+                break;
+            case 1:
+                msg.clear();
+                break;
+        }
+    }
+    void msgpack_set(gubg::msgpack::AttributeId id, const std::string &str)
+    {
+        S();L("Setting member " << id << " to str");
+        switch (id)
+        {
+            case 0:
+                nonce.assign(&str[0], str.size());
+                break;
+            case 1:
+                msg.assign(&str[0], str.size());
+                break;
+        }
+    }
+    void msgpack_set(gubg::msgpack::AttributeId id, long v)
+    {
+        S();L("Setting member " << id << " to " << v);
+    }
 };
 Work work;
+#include "gubg/log/end.hpp"
 
 enum class ReturnCode {MSS_DEFAULT_CODES,};
 
@@ -34,55 +81,9 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
         {
             SS(aid, tid);
         }
-        void factory_primitive(unsigned long l)
-        {
-            SS(l);
-        }
-        void factory_primitive(const std::string &str)
-        {
-            SS(str.size());
-        }
-        void factory_primitive(gubg::msgpack::Nil_tag)
-        {
-            S();
-            L("nil");
-        }
-        void factory_setMember(Work &work, AttributeId id, gubg::msgpack::Nil_tag)
-        {
-            S();L("Setting member " << id << " to nil");
-            switch (id)
-            {
-                case 0:
-                    work.nonce.clear();
-                    break;
-                case 1:
-                    work.msg.clear();
-                    break;
-            }
-        }
-        void factory_setMember(Work &work, AttributeId id, const std::string &str)
-        {
-            S();L("Setting member " << id << " to str");
-            switch (id)
-            {
-                case 0:
-                    work.nonce.assign(&str[0], str.size());
-                    break;
-                case 1:
-                    work.msg.assign(&str[0], str.size());
-                    break;
-            }
-        }
-        template <typename Buffer>
-            ReturnCode factory_serialize(Buffer &buffer, const Work &work)
-            {
-                MSS_BEGIN(ReturnCode);
-                MSS(writeIdAndLength(buffer, 0, 2));
-                MSS(writeMember(buffer, 0, work.nonce));
-                MSS(writeMember(buffer, 1, work.msg));
-                MSS_END();
-            }
-    private:
+        void msgpack_set(AttributeId id, gubg::msgpack::Nil_tag) {S();L("???");}
+        void msgpack_set(AttributeId id, const std::string &str) {S();L("???");}
+        void msgpack_set(AttributeId id, long) {S();L("???");}
 };
 #include "gubg/log/end.hpp"
 
@@ -106,7 +107,8 @@ int main()
     work.stream(std::cout);
 
     std::string buffer;
-    f.serialize(buffer, work);
+    gubg::msgpack::Serializer<std::string, Ids, 10> serializer;
+    serializer.serialize(buffer);
     std::cout << gubg::testing::toHex(buffer) << std::endl;
     return 0;
 }

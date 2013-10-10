@@ -203,7 +203,7 @@ namespace gubg
                         }
                         void sm_event(typename SM::State &s, long id)
                         {
-                            S();L("long: " << id);
+                            S();L("long: " << id << " state: " << (int)s());
                             switch (s())
                             {
                                 case State::Idle:
@@ -235,10 +235,11 @@ namespace gubg
                         }
                         void sm_event(typename SM::State &s, const String &str)
                         {
-                            S();L("String: " << str);
+                            S();L("String: " << str << " state: " << (int)s());
                             switch (s())
                             {
                                 case State::Idle:
+                                    L(STREAM(attrId_));
                                     assert(!objectsStack_.empty());
                                     objectsStack_.back()->set(attrId_, str);
                                     return s.changeTo(State::AttributeWasSet);

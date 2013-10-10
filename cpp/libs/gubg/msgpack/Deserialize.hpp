@@ -3,7 +3,6 @@
 
 #include "gubg/msgpack/Types.hpp"
 #include "gubg/msgpack/Primitives.hpp"
-#include "gubg/tmp/SFINAE.hpp"
 
 namespace gubg
 {
@@ -24,24 +23,13 @@ namespace gubg
         template <typename String, typename T>
             class Object: public Object_itf<String>
         {
-            private:
-                GUBG_CHECK_FOR_METHOD(CheckSetNil, set, void (U::*)(AttributeId, Nil_tag));
-                GUBG_CHECK_FOR_METHOD(CheckSetLong, set, void (U::*)(AttributeId, long));
-                GUBG_CHECK_FOR_METHOD(CheckSetString, set, void (U::*)(AttributeId, const String &));
-
             public:
                 Object(T &t):obj_(t){}
-                virtual void set(AttributeId aid, Nil_tag nil) { typedef typename CheckSetNil<T>::Value HM; set_(HM(), aid, nil); }
-                virtual void set(AttributeId aid, long v) { typedef typename CheckSetLong<T>::Value HM; set_(HM(), aid, v); }
-                virtual void set(AttributeId aid, const String &str) { typedef typename CheckSetString<T>::Value HM; set_(HM(), aid, str); }
+                virtual void set(AttributeId aid, Nil_tag nil) { obj_.msgpack_set(aid, nil); }
+                virtual void set(AttributeId aid, long v) { obj_.msgpack_set(aid, v); }
+                virtual void set(AttributeId aid, const String &str) { obj_.msgpack_set(aid, str); }
 
             private:
-                void set_(tmp::HasNotMethod, AttributeId aid, Nil_tag nil) { }
-                void set_(tmp::HasMethod, AttributeId aid, Nil_tag nil) { obj_.msgpack_set(aid, nil); }
-                void set_(tmp::HasNotMethod, AttributeId aid, long v) {  obj_.msgpack_set(aid, v); }
-                void set_(tmp::HasMethod, AttributeId aid, long v) { obj_.msgpack_set(aid, v); }
-                void set_(tmp::HasNotMethod, AttributeId aid, const String &str) { }
-                void set_(tmp::HasMethod, AttributeId aid, const String &str) { obj_.msgpack_set(aid, str); }
                 T &obj_;
         };
 
