@@ -1,11 +1,12 @@
 #include "gubg/Testing.hpp"
 #include "gubg/SmartRange.hpp"
-#include "gubg/l.hpp"
 #include <string>
 #include <list>
 using namespace gubg;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     typedef SmartRange<string> SR;
@@ -82,3 +83,4 @@ int main()
 
     return 0;
 }
+#include "gubg/log/end.hpp"

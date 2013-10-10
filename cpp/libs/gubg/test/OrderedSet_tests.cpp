@@ -1,8 +1,9 @@
 #include "gubg/OrderedSet.hpp"
 #include "gubg/Testing.hpp"
-#include "gubg/l.hpp"
 using namespace gubg;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(OrderedSet);
@@ -14,3 +15,4 @@ int main()
         L(e);
     return 0;
 }
+#include "gubg/log/end.hpp"

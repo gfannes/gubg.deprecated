@@ -1,9 +1,10 @@
 #include "gubg/StateMachine.hpp"
 #include "gubg/Testing.hpp"
-#include "gubg/l.hpp"
 #include <string>
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     class A
@@ -22,7 +23,7 @@ namespace
             SM sm;
             void sm_event(SM::State &s, int e)
             {
-                L("Event " << e << " occured in state " << (int)s());
+                S();L("Event " << e << " occured in state " << (int)s());
                 switch (s())
                 {
                     case State::Idle: s.changeTo(State::Flip); break;
@@ -34,7 +35,7 @@ namespace
             }
             void sm_event(SM::State &s, const string &str)
             {
-                L("Event " << str << " occured in state " << (int)s());
+                S();L("Event " << str << " occured in state " << (int)s());
                 switch (s())
                 {
                     case State::Idle: s.changeTo(State::Flip); break;
@@ -46,12 +47,12 @@ namespace
             }
             void sm_exit(State s)
             {
-                L("Leaving state " << (int)s);
+                S();L("Leaving state " << (int)s);
             }
-            void sm_enter(State s)
+            void sm_enter(SM::State &s)
             {
-                L("Entering state " << (int)s);
-                switch (s)
+                S();L("Entering state " << (int)s());
+                switch (s())
                 {
                     case State::Idle: sm.process(0); break;
                 }
@@ -66,3 +67,4 @@ int main()
     a.process();
     return 0;
 }
+#include "gubg/log/end.hpp"

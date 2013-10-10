@@ -1,5 +1,8 @@
+#include "gubg/OptionParser.hpp"
 #include <iostream>
+using namespace gubg;
 using namespace std;
+
 //ostream &operator<<(ostream &os, const pair<string, bool> &t){return os << "(" << t.first << ", " << t.second << ")";}
 //ostream &operator<<(ostream &os, const pair<string, string> &t){return os << "(" << t.first << ", " << t.second << ")";}
 template <typename T>
@@ -39,10 +42,11 @@ int main(int argc, char **argv)
 
     cout << parser.help();
 
-    OptionParser::Args args = OptionParser::convertArgs(argc, argv);
+    OptionParser::Args args;
+    OptionParser::createArgs(args, argc, argv);
     cout << "Before parsing the args: " << args << endl;
     auto res = parser.parse(args);
-    cout << "Parsing was " << (res ? "OK" : "not OK") << endl;
+    cout << "Parsing was " << (MSS_IS_OK(res) ? "OK" : "not OK") << endl;
     cout << "After parsing the args: " << args << endl;
     cout << "Switches: " << switches << endl;
     cout << "Options: " << options << endl;

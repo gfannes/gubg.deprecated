@@ -1,6 +1,8 @@
 #include "gubg/Testing.hpp"
 #include "gubg/IOBuffer.hpp"
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -18,3 +20,4 @@ int main()
     TEST_EQ(2, buffer.size());
     return 0;
 }
+#include "gubg/log/end.hpp"

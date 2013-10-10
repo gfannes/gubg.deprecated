@@ -16,7 +16,7 @@ int main()
         for (int i = 0; i < 10000; ++i)
         {
             using namespace gubg;
-            polars.push_back(polar(distribution::uniform(0, 1), distribution::uniform(0, 3.1415926)));
+            polars.push_back(polar(distribution::drawUniform(0, 1), distribution::drawUniform(0, 3.1415926)));
         }
         p.polar(polars, [](const Polar &pp){return array<double, 2>({arg(pp), abs(pp)});});
         this_thread::sleep_for(chrono::seconds(10));
@@ -28,9 +28,9 @@ int main()
         for (int i = 0; i < 10000; ++i)
         {
             using namespace gubg;
-            coords.push_back(Coord({distribution::uniform(-1, 1), distribution::uniform(-1, 1)}));
+            coords.push_back(Coord({distribution::drawUniform(-1, 1), distribution::drawUniform(-1, 1)}));
         }
-        p.vectorField(coords, [](const Coord &c){auto n = 30*gubg::math::l2Norm(c); return array<double, 4>({c[0], c[1], -c[1]/n, c[0]/n});});
+        p.vectorField(coords, [](const Coord &c){auto n = 30*gubg::math::l2::norm(c); return array<double, 4>({c[0], c[1], -c[1]/n, c[0]/n});});
         this_thread::sleep_for(chrono::seconds(10));
     }
     {
