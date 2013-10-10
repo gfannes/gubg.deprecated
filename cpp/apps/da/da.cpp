@@ -44,7 +44,7 @@ namespace
             optionParser.addMandatory("-a", "--arduino MODEL", "Arduino model (uno, mega)", [&tasks](string model){da::arduino::setModel(model);});
             optionParser.addMandatory("-t", "--tree TREE", "Add TREE", [&options](string tree){options.trees.push_back(tree);});
             optionParser.addMandatory("-i", "--include PATH", "Include PATH", [&options](string path){options.includes.push_back(path);});
-            optionParser.addSwitch("-u", "--unit-tests", "Unit tests", [&tasks](){addUnitTestTask(tasks);});
+            optionParser.addSwitch("-u", "--unit-tests", "Unit tests (*_tests.cpp, not in deprecated dir)", [&tasks](){addUnitTestTask(tasks);});
             optionParser.addSwitch("-v", "--verbose", "Verbose", [&verbose](){verbose = true;});
 
             OptionParser::Args args;

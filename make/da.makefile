@@ -14,7 +14,7 @@ DA_CPP_FILES := \
 
 GUBG_CPP_FILES := OptionParser file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token
 CPP_FILES := $(patsubst %,cpp/apps/da/%.cpp,$(DA_CPP_FILES)) $(patsubst %,cpp/libs/gubg/%.cpp,$(GUBG_CPP_FILES))
-OBJECT_FILES := $(patsubst %.cpp,%.o,$(CPP_FILES))
+OBJECT_FILES := $(patsubst %.cpp,%.da.o,$(CPP_FILES))
 
 ifeq ($(GUBG_PLATFORM),linux)
 BOOST_HEADERS := $(GUBG_BOOST)
@@ -28,8 +28,8 @@ BOOST_LINK := -lboost_thread -lboost_system -lboost_regex
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := 
 endif
-CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
-#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
+#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
+CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
 LINK_LIBS := $(BOOST_LINK)
 
@@ -53,5 +53,5 @@ da: $(OBJECT_FILES) $(DA_CACHE) $(GUBG_BIN)
 	g++ $(LDFLAGS) -o $(DA_EXE) $(OBJECT_FILES) $(LINK_LIBS)
 	cp $(DA_EXE) $(GUBG_BIN)
 
-%.o: %.cpp $(GUBG_BOOST)
+%.da.o: %.cpp $(GUBG_BOOST)
 	g++ $(CPPFLAGS) -c $< -o $@
