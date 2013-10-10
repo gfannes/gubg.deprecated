@@ -45,14 +45,14 @@ ReturnCode UnitTests::execute(const Options &options)
     Tasks unitTests;
     AddCompileTasks addCompileTasks(unitTests);
     gubg::file::recurse(addCompileTasks);
-    verbose("I found ", unitTests.size(), " unit tests");
+    verbose("I found", unitTests.size(), "unit tests");
     vector<File> failedTests;
     for (auto unitTest: unitTests)
     {
         if (!MSS_IS_OK(unitTest->execute(options)))
             failedTests.push_back(addCompileTasks.sourcePerTest[unitTest]);
     }
-    verbose(failedTests.size(), "/", unitTests.size(), " tests FAILED");
+    verbose(failedTests.size(), "/", unitTests.size(), "tests FAILED");
     for (auto ft: failedTests)
         verbose("\t", ft.name());
     MSS(failedTests.empty());

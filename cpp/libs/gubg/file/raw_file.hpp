@@ -4,9 +4,6 @@
 #include "gubg/tree/raw.hpp"
 #include <string>
 
-#include <iostream>
-#define LOG(msg) std::cout << msg << std::endl
-
 namespace gubg
 {
     namespace file
@@ -25,7 +22,7 @@ namespace gubg
             //The data we keep for a file or directory node
             struct Data
             {
-                ~Data(){LOG("Data::dtor " << name);}
+                ~Data(){}
                 string name;
             };
 

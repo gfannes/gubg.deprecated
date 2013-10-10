@@ -1,9 +1,9 @@
-#define GUBG_LOG
 #include "gubg/Testing.hpp"
 #include "gubg/file/Forest.hpp"
-#include "gubg/l.hpp"
 using namespace gubg::file;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -20,3 +20,4 @@ int main()
     TEST_OK(forest.resolve(resolved, File("cpp/libs/gubg/file/test/Forest_tests.cpp")));
     L(resolved.name());
 }
+#include "gubg/log/end.hpp"

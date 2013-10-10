@@ -3,6 +3,8 @@
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(FileTests);
@@ -71,3 +73,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

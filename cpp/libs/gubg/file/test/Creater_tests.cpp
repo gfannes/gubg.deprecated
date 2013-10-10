@@ -2,6 +2,8 @@
 #include "gubg/file/Creater.hpp"
 using namespace gubg::file;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     class Creater: public gubg::file::Creater_crtp<Creater>
@@ -27,3 +29,4 @@ int main()
     TEST_OK(creater.setCache(File("/tmp")));
     creater({File("/home/gfannes/blabla")}, "abc");
 }
+#include "gubg/log/end.hpp"
