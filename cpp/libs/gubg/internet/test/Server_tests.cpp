@@ -1,9 +1,9 @@
 #include "gubg/Testing.hpp"
 #include "gubg/internet/Socket.hpp"
-#include <iostream>
 using namespace std;
-#define L(m) cout<<m<<endl
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -30,3 +30,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

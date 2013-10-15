@@ -1,9 +1,10 @@
 #include "gubg/msgpack/Builder.hpp"
 #include "gubg/FixedVector.hpp"
-#include "gubg/l.hpp"
 #include "gubg/Testing.hpp"
 using namespace gubg;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     struct A
@@ -41,3 +42,4 @@ int main()
     TEST_TRUE(builder.valid());
     return 0;
 }
+#include "gubg/log/end.hpp"

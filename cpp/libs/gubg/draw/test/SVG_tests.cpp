@@ -1,5 +1,3 @@
-//#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/draw/SVG.hpp"
 #include "gubg/mss.hpp"
 #include <iostream>
@@ -11,6 +9,8 @@ using gubg::draw::PiecewiseLinear;
 using namespace gubg::draw::svg;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     const size_t Width = 800;
@@ -34,10 +34,11 @@ int main()
     svg.add(Circle<double>(450, 60, 70), std::move(Style().setFill(RGB::Blue)));
     svg.add(Rectangle<double>(400, 150, 30, 40));
     svg.add(Line<double>(0, 0, Width-1, Height-1), std::move(Style().setStroke(RGB::Green)));
-    svg.add(PiecewiseLinear<double>({0.0, 100.0, 200.0}, {500.0, 200.0, 500.0}), std::move(Style().setStroke(RGB::Green)));
+    svg.add(PiecewiseLinear<double>(vector<double>({0.0, 100.0, 200.0}), vector<double>({500.0, 200.0, 500.0})), std::move(Style().setStroke(RGB::Green)));
 
     cout << svg;
     ofstream fo("test.svg");
     fo << svg;
     MSS_END();
 }
+#include "gubg/log/end.hpp"

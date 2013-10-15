@@ -1,13 +1,13 @@
 #include "garf/ObjectAvoidance.hpp"
 #include "garf/Sonar.hpp"
 #include "Arduino.h"
-
 using namespace garf;
 
 const int trigger = 7;
 const int echo = 8;
 
-Sonar<7, 8, 200> sonar;
+bool m = true;
+Sonar<7, 8, 200> sonar(m);
 
 void setup()
 {

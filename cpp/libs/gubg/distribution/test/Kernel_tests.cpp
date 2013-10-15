@@ -1,7 +1,7 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/distribution/Kernel.hpp"
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     MSS_BEGIN(int, main);
@@ -9,7 +9,8 @@ int main()
     Kernel kernel;
     std::vector<double> data({1.0, 2.0, 2.5});
     kernel.learn(data);
-    LOG_M(kernel.density(0.0));
-    LOG_M(kernel.density(1.0));
+    L(kernel.density(0.0));
+    L(kernel.density(1.0));
     MSS_END();
 }
+#include "gubg/log/end.hpp"

@@ -1,12 +1,11 @@
 #ifndef HEADER_gubg_bayesian_Table_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_bayesian_Table_hpp_ALREADY_INCLUDED
 
-#define GUBG_LOG
-#include "logging/Log.hpp"
-
 #include <array>
 #include <ostream>
 
+#define GUBG_MODULE "Table"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace bayesian
@@ -48,5 +47,6 @@ std::ostream &operator<<(std::ostream &os, const gubg::bayesian::Table<Nr, Prob>
     table.stream(os);
     return os;
 }
+#include "gubg/log/end.hpp"
 
 #endif

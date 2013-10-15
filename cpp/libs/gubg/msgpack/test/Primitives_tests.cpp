@@ -1,5 +1,3 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/Primitives.hpp"
 #include <string>
@@ -7,6 +5,8 @@ using namespace std;
 using namespace gubg;
 using namespace gubg::testing;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -23,3 +23,4 @@ int main()
     TEST_EQ(1, type.nr);
     return 0;
 }
+#include "gubg/log/end.hpp"

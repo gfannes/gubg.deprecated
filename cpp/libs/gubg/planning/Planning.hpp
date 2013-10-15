@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <algorithm>
 
 #define GUBG_MODULE "Planning"
 #include "gubg/log/begin.hpp"

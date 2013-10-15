@@ -1,8 +1,9 @@
 #include "gubg/Testing.hpp"
 #include "gubg/tmp/TypeList.hpp"
-#include "gubg/l.hpp"
 #include <string>
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(TypeList);
@@ -11,3 +12,4 @@ int main()
     TEST_EQ(2, gubg::tmp::TypeListSize<TL>::Value);
     return 0;
 }
+#include "gubg/log/end.hpp"

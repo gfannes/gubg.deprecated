@@ -6,6 +6,8 @@
 #include <array>
 #include <ostream>
 
+#define GUBG_MODULE "Dirichlet"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace bayesian
@@ -65,6 +67,7 @@ std::ostream &operator<<(std::ostream &os, const gubg::bayesian::Dirichlet<Nr, C
     dirichlet.stream(os);
     return os;
 }
+#include "gubg/log/end.hpp"
 
 #include "gubg/bayesian/Table.hpp"
 

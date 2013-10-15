@@ -1,9 +1,10 @@
 #include "gubg/Testing.hpp"
 #include "gubg/tmp/Inheritance.hpp"
-#include "gubg/l.hpp"
 #include <string>
 using namespace gubg::tmp;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 struct Base1 {};
 struct Base2 {};
 struct Derived1: Base1 {};
@@ -28,3 +29,4 @@ int main()
     TEST_TRUE((Inheritance<Derived_1, Derived_1>::Value));
     return 0;
 }
+#include "gubg/log/end.hpp"

@@ -12,7 +12,7 @@
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE_ "Filesystem"
+#define GUBG_MODULE "Filesystem"
 #include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)

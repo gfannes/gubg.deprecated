@@ -8,6 +8,8 @@ namespace
     typedef gubg::Node<string, string> Node;
 }
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     MSS_BEGIN(int);
@@ -16,3 +18,4 @@ int main()
     root.childs->push_back(Node::createLeaf());
     MSS_END();
 }
+#include "gubg/log/end.hpp"

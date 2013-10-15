@@ -17,6 +17,8 @@ namespace gubg
             return ft;
         }
 
+        bool check() const {return firstTime_;}
+
         void reset(){firstTime_ = true;}
 
         private:

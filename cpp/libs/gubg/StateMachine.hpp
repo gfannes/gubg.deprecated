@@ -24,16 +24,18 @@ namespace gubg
             public:
                 StateMachine_ftop(Outer &outer): state_(outer) { }
 
-                bool checkState(StateT s)
+                bool checkState(const StateT s) const
                 {
-                    if (doStart_())
-                        state_.outer_.sm_enter(state_);
+                    if (doStart_.check())
+                    {
+                        //The state machine is not yet started, we are in no state yet
+                        return false;
+                    }
                     return s == state_.s_;
                 }
+                //Make sure the state machine is processed at least once before calling this
                 StateT debug_getState() const
                 {
-                    if (doStart_())
-                        state_.outer_.sm_enter(state_);
                     return state_.s_;
                 }
 
@@ -64,6 +66,7 @@ namespace gubg
                     void process(const Event &event)
                     {
                         if (doStart_())
+                            //This is the first time we process an event, we still have to enter the initial state
                             state_.outer_.sm_enter(state_);
 
                         state_.outer_.sm_event(state_, event);

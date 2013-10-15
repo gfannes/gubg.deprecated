@@ -14,8 +14,6 @@ using namespace std;
 #include "gubg/log/begin.hpp"
 Builder::Builder()
 {
-    packages_ << Local::create(File(getcwd()));
-
     {
         string str;
         if (env::expand(str, "$GUBG"))
@@ -34,6 +32,8 @@ Builder::Builder()
         if (env::expand(str, "$GUBG_DECODEIT"))
             packages_ << DecodeIt::create(File(str));
     }
+
+    packages_ << Local::create(File(getcwd()));
 
     packages_ << SDL::create(File(""));
     packages_ << Libs::create(File(""));

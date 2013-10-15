@@ -1,14 +1,15 @@
 #include "gubg/Context.hpp"
-#include "gubg/l.hpp"
 using namespace gubg;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     struct C
     {
-        C(){L("ctor");}
-        ~C(){L("dtor");}
+        C(){S();L("ctor");}
+        ~C(){S();L("dtor");}
     };
 }
 
@@ -26,3 +27,4 @@ int main()
     cc = ccc;
     return 0;
 }
+#include "gubg/log/end.hpp"

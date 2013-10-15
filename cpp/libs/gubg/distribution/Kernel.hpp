@@ -1,7 +1,6 @@
 #ifndef HEADER_gubg_distribution_Kernel_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_distribution_Kernel_hpp_ALREADY_INCLUDED
 
-#include <iostream>
 #include "gubg/Location.hpp"
 #include "gubg/distribution/Codes.hpp"
 #include "gubg/distribution/Table.hpp"
@@ -11,6 +10,8 @@
 #include <vector>
 #include <cmath>
 
+#define GUBG_MODULE "Kernel"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace distribution
@@ -25,17 +26,17 @@ namespace gubg
 
                     double density(Domain value) const
                     {
-                        LOG_S(density);
+                        S();
                         if (data_.empty())
                             return 0.0;
                         double sum = 0.0;
                         typename Weights::const_iterator weight = weights_.begin();
                         for (auto data: data_)
                         {
-                            LOG_M(STREAM(data, *weight));
+                            L(STREAM(data, *weight));
                             sum += *(weight++)*scaledKernel_(value-data);
                         }
-                        LOG_M(sum);
+                        L(sum);
                         return sum/weightDistribution_.sum();
                     }
                     double logDensity(Domain &value){return ::log(density(value));}
@@ -136,5 +137,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

@@ -80,7 +80,7 @@ namespace gubg
                 }
                 void threadLoop_()
                 {
-                    LOG_S(threadLoop_);
+                    S();
                     while (true)
                     {
                         Job job;

@@ -15,8 +15,9 @@ namespace garf
                 //mutex == true => mutex is locked
                 Sonar(bool &mutex):
                     sm_(*this),
-                    prev_(micros()),
+                    prev_(0),
                     mutex_(mutex){}
+
                 void init()
                 {
                     prev_ = micros();
@@ -41,9 +42,9 @@ namespace garf
 
                 typedef gubg::StateMachine_ftop<Sonar, State, State::Init> SM;
                 SM sm_;
-                void sm_enter(State s)
+                void sm_enter(typename SM::State &s)
                 {
-                    switch (s)
+                    switch (s())
                     {
                         case State::Init:
                             pinMode(Trigger, OUTPUT);

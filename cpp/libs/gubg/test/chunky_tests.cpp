@@ -1,11 +1,11 @@
 #include "gubg/chunky.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/mss.hpp"
-#include <iostream>
 using namespace gubg;
 using namespace std;
-#define L(m) cout<<m<<endl
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     MSS_BEGIN(int);
@@ -22,3 +22,4 @@ int main()
         L("it: " << *it);
     MSS_END();
 }
+#include "gubg/log/end.hpp"

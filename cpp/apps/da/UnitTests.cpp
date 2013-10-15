@@ -49,6 +49,7 @@ ReturnCode UnitTests::execute(const Options &options)
     vector<File> failedTests;
     for (auto unitTest: unitTests)
     {
+        verbose("Executing a unit test task");
         if (!MSS_IS_OK(unitTest->execute(options)))
             failedTests.push_back(addCompileTasks.sourcePerTest[unitTest]);
     }

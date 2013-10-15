@@ -4,6 +4,8 @@
 using namespace gubg::xml::builder;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     MSS_BEGIN(int);
@@ -22,3 +24,4 @@ int main()
     g.tag("circle").attr("cx", 100).attr("cy", 100).attr("r", 50);
     MSS_END();
 }
+#include "gubg/log/end.hpp"

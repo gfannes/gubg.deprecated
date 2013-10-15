@@ -4,6 +4,8 @@
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/msgpack/Codes.hpp"
 
+#define GUBG_MODULE "msgpack::Read"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace msgpack
@@ -86,5 +88,6 @@ namespace gubg
             ReturnCode read(int &v, const String &str) { return read(v, str, SInteger_tag()); }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

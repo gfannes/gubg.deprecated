@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <string>
 #include <ctime>
+#include <set>
 
 namespace gubg
 {

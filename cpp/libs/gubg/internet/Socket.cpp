@@ -1,13 +1,15 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/internet/Socket.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <unistd.h>
 #include <sstream>
+#include <cstring>
 #include <cassert>
 using namespace std;
 
+#define GUBG_MODULE "Socket"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     const int InvalidFID = -1;
@@ -48,7 +50,7 @@ namespace gubg
                 std::ostringstream oss;
                 oss << port;
                 struct addrinfo hints, *res;
-                ::memset(&hints, 0, sizeof(hints));
+                std::memset(&hints, 0, sizeof(hints));
                 hints.ai_family = AF_UNSPEC;
                 hints.ai_socktype = SOCK_STREAM;
                 hints.ai_flags = AI_PASSIVE;
@@ -89,7 +91,7 @@ namespace gubg
 
                 struct addrinfo hints, *res;
                 int sockfd;
-                ::memset(&hints, 0, sizeof(hints));
+                std::memset(&hints, 0, sizeof(hints));
                 hints.ai_family = AF_UNSPEC; //Use IPv4 or IPv6, whichever
                 hints.ai_socktype = SOCK_STREAM;
                 ostringstream oss;
@@ -139,7 +141,7 @@ namespace gubg
             {
                 if (newState == state)
                     return;
-                LOG_S(changeState_, "Changing state from " << state << " to " << newState);
+                S();L("Changing state from " << state << " to " << newState);
                 state = newState;
             }
         };
@@ -219,3 +221,4 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"

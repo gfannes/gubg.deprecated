@@ -6,6 +6,8 @@
 #include "gubg/tree/dfs/Iterate.hpp"
 #include <string>
 #include <vector>
+#include <list>
+#include <map>
 #include <ostream>
 
 #define GUBG_MODULE "Task"

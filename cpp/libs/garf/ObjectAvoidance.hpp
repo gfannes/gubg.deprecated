@@ -1,6 +1,9 @@
 #ifndef HEADER_garf_ObjectAvoidance_hpp_ALREADY_INCLUDED
 #define HEADER_garf_ObjectAvoidance_hpp_ALREADY_INCLUDED
 
+#include "gubg/StateMachine.hpp"
+#include "Arduino.h"
+
 namespace garf
 {
     template <typename Receiver>
@@ -11,7 +14,7 @@ namespace garf
 
             ObjectAvoidance_crtp():
                 sm_(*this),
-                prev_(micros()){}
+                prev_(0){}
 
             void init()
             {

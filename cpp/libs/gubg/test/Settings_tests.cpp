@@ -6,6 +6,8 @@ enum Key {Name, Includes, Options};
 
 typedef gubg::Settings<Key> Settings;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(Settings);
@@ -23,3 +25,4 @@ int main()
     TEST_TRUE((strs == Settings::Strings({"aaa", "bbb", "ccc"})));
     return 0;
 }
+#include "gubg/log/end.hpp"

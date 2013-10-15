@@ -5,6 +5,8 @@
 #include "gubg/distribution/Engine.hpp"
 #include <random>
 
+#define GUBG_MODULE "Dirichlet"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace distribution
@@ -30,5 +32,6 @@ namespace gubg
         }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

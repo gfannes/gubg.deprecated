@@ -1,10 +1,10 @@
-#define GUBG_LOG
 #include "gubg/env/Variables.hpp"
 #include "gubg/Testing.hpp"
-#include "gubg/l.hpp"
 using namespace gubg::env;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -17,3 +17,4 @@ int main()
     L(v);
     return 0;
 }
+#include "gubg/log/end.hpp"

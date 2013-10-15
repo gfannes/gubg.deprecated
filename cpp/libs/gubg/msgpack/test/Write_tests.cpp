@@ -1,5 +1,3 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include <string>
@@ -7,14 +5,17 @@ using namespace std;
 using namespace gubg;
 using namespace gubg::testing;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     template <typename T>
         string pack(T v)
         {
+            S();
             string str;
             msgpack::write(str, v);
-            LOG_S(pack, toHex(str));
+            L(toHex(str));
             return str;
         }
     string str_(const vector<int> &bytes)
@@ -82,4 +83,5 @@ int main()
         TEST_EQ(str_({0xa3, 0x31, 0x32, 0x33}), pack(std::string("123")));
     }
     return 0;
-}
+}
+#include "gubg/log/end.hpp"

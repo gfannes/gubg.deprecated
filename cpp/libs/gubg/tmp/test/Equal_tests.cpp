@@ -1,9 +1,10 @@
 #include "gubg/Testing.hpp"
 #include "gubg/tmp/Equal.hpp"
-#include "gubg/l.hpp"
 #include <string>
 using namespace gubg::tmp;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 struct T1 {};
 struct T2 {};
 typedef T1 T3;
@@ -25,3 +26,4 @@ int main()
     TEST_FALSE((Equal<T4, T1>::Value));
     return 0;
 }
+#include "gubg/log/end.hpp"

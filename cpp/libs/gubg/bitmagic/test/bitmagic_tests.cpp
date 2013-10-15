@@ -2,6 +2,8 @@
 #include "gubg/bitmagic/bitmagic.hpp"
 using namespace gubg::bitmagic;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -33,3 +35,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

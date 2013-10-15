@@ -1,5 +1,3 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/msgpack/Read.hpp"
 #include <string>
@@ -7,6 +5,8 @@
 using namespace std;
 using namespace gubg;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     string str_(const vector<int> &bytes)
@@ -48,4 +48,5 @@ int main()
         TEST_EQ(-129, i);
     }
     return 0;
-}
+}
+#include "gubg/log/end.hpp"
