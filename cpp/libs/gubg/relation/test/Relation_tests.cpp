@@ -21,6 +21,7 @@ struct C: Shareble<C>, Many<B>, Many<A>
 {
 };
 
+#if 0
 struct DFS: DFS_crtp<DFS, A>
 {
     void dfs_discover(A &a)
@@ -39,6 +40,7 @@ struct DFS2: DFS_crtp<DFS2, A, B>
         S();L("B::" << &b);
     }
 };
+#endif
 
 int main()
 {
@@ -61,6 +63,7 @@ int main()
     TEST_TRUE((Traits<C, A>::CanRelate));
     TEST_TRUE((Traits<C, B>::CanRelate));
 
+#if 0
     DFS dfs;
     dfs.addRelation(a);
     dfs.addRelation(a);
@@ -71,6 +74,7 @@ int main()
     dfs2.Many<A>::addRelation(aa);
     dfs2.Many<B>::addRelation(b);
     dfs2.iterate();
+#endif
     return 0;
 }
 #include "gubg/log/end.hpp"
