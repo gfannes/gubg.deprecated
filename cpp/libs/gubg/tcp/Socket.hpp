@@ -8,9 +8,12 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sstream>
 #include <set>
 
+#define GUBG_MODULE "Socket"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace tcp
@@ -131,7 +134,7 @@ namespace gubg
                     {
                         if (newState == state_)
                             return;
-                        LOG_S(changeState_, "Changing state from " << state_ << " to " << newState);
+                        S();L("Changing state from " << state_ << " to " << newState);
                         state_ = newState;
                     }
 
@@ -142,5 +145,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

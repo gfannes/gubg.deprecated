@@ -1,9 +1,8 @@
 #include "gubg/osi/Physical.hpp"
 #include "gubg/osi/Datalink.hpp"
-#include <iostream>
-using namespace std;
-#define L(m) cout<<m<<endl
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     using gubg::osi::ReturnCode;
@@ -45,6 +44,7 @@ namespace
 
 int main()
 {
+    S();
     Datalink datalink;
     datalink.send("abc");
     for (auto i = 0; i < 10; ++i)
@@ -54,3 +54,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

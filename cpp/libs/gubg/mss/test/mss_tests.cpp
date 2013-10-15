@@ -1,8 +1,8 @@
 #include "gubg/mss.hpp"
-#include <iostream>
 #include "gubg/sleep/sleep.hpp"
-#define LOG(msg) std::cout << msg << std::endl
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 enum class Compare {MSS_DEFAULT_CODES, Smaller, Larger};
 MSS_CODES_BEGIN(Compare);
 MSS_CODE_(Debug, Smaller);
@@ -74,15 +74,6 @@ Compare notImplemented()
     MSS_END_();
 }
 
-ReturnCode allowed()
-{
-    MSS_BEGIN_ALLOW(ReturnCode);
-    MSS_ALLOW(NotSoSerious);
-    MSS_L(NotSoSerious);
-    MSS_L(Serious);
-    MSS_END();
-}
-
 ReturnCode findSomething(){return ReturnCode::NotFound;}
 ReturnCode findSomething2(){return ReturnCode::Error;}
 ReturnCode skip_if()
@@ -90,16 +81,16 @@ ReturnCode skip_if()
     MSS_BEGIN(ReturnCode);
     MSS_SKIP_IF(findSomething(), NotFound)
     {
-        LOG("I found it");
+        L("I found it");
     }
     //Check that we are still following the MSS
     MSS(MSS_RC_VAR.v_);
-    LOG("Could not find it");
+    L("Could not find it");
     MSS_SKIP_IF(findSomething2(), NotFound)
     {
-        LOG("Found it 2");
+        L("Found it 2");
     }
-    LOG("Could not find the second either");
+    L("Could not find the second either");
     MSS_SKIP_IF(compare(1, 2), Larger)
     {
     }
@@ -110,9 +101,9 @@ ReturnCode do_if()
     MSS_BEGIN(ReturnCode);
     MSS_DO_IF(findSomething(), NotFound)
     {
-        LOG("Keep looking");
+        L("Keep looking");
     }
-    LOG("MSS continues");
+    L("MSS continues");
     MSS_END();
 }
 
@@ -142,11 +133,10 @@ int main()
     f_log3();
     notImplemented();
 
-    TEST_EQ_TYPE(int, ReturnCode::Serious, allowed());
-
     skip_if();
     do_if();
 
     time();
     return 0;
 }
+#include "gubg/log/end.hpp"

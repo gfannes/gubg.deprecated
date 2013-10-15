@@ -1,10 +1,9 @@
-//#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/parse/cpp/Parser.hpp"
 #include "gubg/parse/BreakUp.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <cassert>
 #include <cctype>
+#include <cstring>
 #include <sstream>
 using namespace gubg::parse::cpp;
 using namespace std;
@@ -17,7 +16,7 @@ ReturnCode Parser::parse(const gubg::file::File &file)
 
     //Read file into range
     MSS(gubg::file::read(range_, file));
-    LOG_M("I read " << range_.size() << " bytes");
+    L("I read " << range_.size() << " bytes");
 
     MSS(parseNonRecursive_());
 
@@ -77,7 +76,7 @@ namespace
                                return detectedA(Symbol);
                 }
                 static const char symbols[] = ":.;,(){}[]<>=-+*|&^%!?~";
-                if (memchr(symbols, sch, sizeof(symbols)))
+                if (std::memchr(symbols, sch, sizeof(symbols)))
                     return detectedA(Symbol);
                 //These tokens might be ended immediately, we do not return, but will also execute the Detecting part
                 if (isalpha_(sch))

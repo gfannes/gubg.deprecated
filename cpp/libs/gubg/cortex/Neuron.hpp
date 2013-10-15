@@ -5,9 +5,8 @@
 #include <vector>
 #include <cmath>
 
-#include <iostream>
-#define LOG(m) std::cout << m << std::endl
-
+#define GUBG_MODULE "Neuron"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace cortex
@@ -78,5 +77,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

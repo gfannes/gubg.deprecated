@@ -43,7 +43,7 @@ namespace gubg
                 bool distribution_draw(value_type &res)
                 {
                     S();
-                    auto u = distribution::uniform();
+                    auto u = distribution::drawUniform();
                     L(u);
                     size_t ix = 0;
                     for (auto w: weights_)

@@ -5,12 +5,12 @@
 #include "gubg/mss/mss.hpp"
 #endif
 #include "gubg/chrono/Stopwatch.hpp"
-#include "gubg/l.hpp"
 #include <string>
-using namespace std;
 
 //These tests give a bit strange results, maybe due to optimalization, better real-world tests are needed...
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 enum class ReturnCode
 {
     MSS_DEFAULT_CODES,
@@ -233,7 +233,7 @@ ReturnCode switch_exc(int v)
 }
 
 template <unsigned long NrIter, unsigned long Start, unsigned long Stop, typename Function>
-bool test_(Function function, const string &msg)
+bool test_(Function function, const std::string &msg)
 {
     gubg::chrono::Stopwatch<> sw;
     bool ret = true;
@@ -272,3 +272,4 @@ int main()
     test_<100000, 10, 100>(&switch_exc, "sw_exc  ");
     return 0;
 }
+#include "gubg/log/end.hpp"

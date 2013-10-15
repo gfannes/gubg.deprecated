@@ -1,14 +1,12 @@
-//#define GUBG_LOG
 #include "gubg/threading/Processor.hpp"
 #include "gubg/Testing.hpp"
-#include "gubg/l.hpp"
 #include <chrono>
 using namespace std::chrono;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
-    std::mutex lm;
-#define LL(msg) lm.lock(); L(msg); lm.unlock()
     class Job
     {
         public:
@@ -21,9 +19,9 @@ namespace
             void execute()
             {
                 MSS_BEGIN(void, execute);
-                LL("Starting job " << duration_.count());
+                L("Starting job " << duration_.count());
                 std::this_thread::sleep_for(duration_);
-                LL("         job " << duration_.count() << " is done");
+                L("         job " << duration_.count() << " is done");
                 MSS_END();
             }
 
@@ -49,3 +47,4 @@ int main()
     TEST_KO(processor.stop());
     return 0;
 }
+#include "gubg/log/end.hpp"

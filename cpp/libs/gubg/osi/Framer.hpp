@@ -3,6 +3,8 @@
 
 #include "gubg/osi/Codes.hpp"
 
+#define GUBG_MODULE "Framer"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace osi
@@ -48,5 +50,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

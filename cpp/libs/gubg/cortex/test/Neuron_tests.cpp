@@ -1,12 +1,11 @@
 #include "gubg/cortex/Neuron.hpp"
-#include <iostream>
 using namespace gubg::cortex;
-using namespace std;
-#define LOG(m) cout << m << endl
 
 typedef NeuronT<double, TanhTransfer> Neuron;
 typedef vector<Neuron> Neurons;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     MSS_BEGIN(int);
@@ -23,12 +22,13 @@ int main()
     Neuron::FF sum = 0;
     for (int i = 0; i < 10; ++i)
     {
-        LOG("Iteration: " << i);
+        L("Iteration: " << i);
         for (auto neuron = neurons.begin(); neuron != neurons.end(); ++neuron)
             MSS(neuron->compute(output, inputs));
         sum += output;
     }
-    LOG("sum: " << sum);
+    L("sum: " << sum);
     MSS_END();
-    LOG("Finished");
+    L("Finished");
 }
+#include "gubg/log/end.hpp"

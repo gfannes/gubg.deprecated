@@ -1,10 +1,9 @@
 #include "gubg/Testing.hpp"
 #include "gubg/math/Operations.hpp"
-#include <iostream>
-using namespace std;
 using namespace gubg::math;
-#define L(m) cout<<m<<endl
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(math::Operations);
@@ -18,3 +17,4 @@ int main()
     TEST_EQ(0, r);
     return 0;
 }
+#include "gubg/log/end.hpp"

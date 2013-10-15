@@ -3,6 +3,8 @@
 
 #include "gubg/math/Codes.hpp"
 
+#define GUBG_MODULE "Operations"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace math
@@ -32,5 +34,6 @@ namespace gubg
             }
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

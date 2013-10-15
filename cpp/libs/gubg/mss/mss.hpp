@@ -316,16 +316,11 @@ namespace gubg
 #define MSS_BEGIN_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_BEGIN_2,MSS_BEGIN_1)
 #define MSS_BEGIN(...)               MSS_BEGIN_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
-#define MSS_BEGIN_ALLOW(type)        MSS_BEGIN_RC_WRAPPER(type, AllowOtherCodes); \
-                                     S(type)
-
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_mss_elapse_reporter_msg; \
     l_mss_elapse_reporter_msg << msg; \
 gubg::mss::ElapseReporter l_mss_elapse_reporter(GUBG_HERE(), l_mss_elapse_reporter_msg.str()); \
 MSS_BEGIN(t)
-
-#define MSS_ALLOW(v)         MSS_RC_VAR.setAllowed(mss_return_code_type::v)
 
 #define MSS_END()            return MSS_RC_VAR.get()
 #define MSS_FAIL()           gubg_mss_fail_label:

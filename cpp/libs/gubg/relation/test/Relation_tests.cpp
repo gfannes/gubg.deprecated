@@ -1,10 +1,10 @@
 #include "gubg/Testing.hpp"
-#define GUBG_LOG
 #include "gubg/relation/Relation.hpp"
-#include "gubg/l.hpp"
 using namespace gubg::relation;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 template <typename T>
 struct Shareble
 {
@@ -32,11 +32,11 @@ struct DFS2: DFS_crtp<DFS2, A, B>
 {
     void dfs_discover(A &a)
     {
-        L("A::" << &a);
+        S();L("A::" << &a);
     }
     void dfs_discover(B &b)
     {
-        L("B::" << &b);
+        S();L("B::" << &b);
     }
 };
 
@@ -73,3 +73,4 @@ int main()
     dfs2.iterate();
     return 0;
 }
+#include "gubg/log/end.hpp"

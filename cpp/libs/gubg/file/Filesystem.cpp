@@ -238,3 +238,5 @@ gubg::file::File gubg::file::getcwd()
         return File();
     return file;
 }
+
+#include "gubg/log/end.hpp"
