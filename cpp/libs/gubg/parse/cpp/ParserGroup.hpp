@@ -4,7 +4,10 @@
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include <cassert>
 
+#define GUBG_MODULE "ParserGroup"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
 	namespace parse
@@ -195,5 +198,6 @@ namespace gubg
 		}
 	}
 }
+#include "gubg/log/end.hpp"
 
 #endif

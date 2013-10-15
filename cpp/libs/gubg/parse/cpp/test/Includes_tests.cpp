@@ -1,9 +1,10 @@
 #include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
-#include "gubg/l.hpp"
 #define STRING() <string>
 #include STRING()
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     struct Includes: gubg::parse::cpp::Includes_crtp<Includes>
@@ -11,7 +12,7 @@ namespace
         template <typename String, typename Type>
             void includes_detected(const String &str, Type type)
             {
-                L(STREAM(str, (int)type));
+                S();L(STREAM(str, (int)type));
             }
     };
 }
@@ -23,3 +24,4 @@ int main()
     includes.process(gubg::file::File(__FILE__));
     return 0;
 }
+#include "gubg/log/end.hpp"

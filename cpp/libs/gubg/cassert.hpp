@@ -2,7 +2,7 @@
 #define HEADER_gubg_cassert_hpp_ALREADY_INCLUDED
 
 #ifdef ARDUINO
-#include "garf/cassert.hpp"
+#include "gubg/cassert_arduino.hpp"
 #else
 #include <cassert>
 #endif

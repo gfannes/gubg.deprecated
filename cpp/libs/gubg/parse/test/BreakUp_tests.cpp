@@ -1,14 +1,16 @@
 #include "gubg/Testing.hpp"
 #include "gubg/parse/BreakUp.hpp"
-#include "gubg/l.hpp"
 #include <string>
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 struct Breaker
 {
     template <typename It>
     bool operator()(It b, It m, It e)
     {
+        S();
         if (m == e)
         {
             L("Last: " << string(b, m));
@@ -31,3 +33,4 @@ int main()
     gubg::parse::breakUp(str.begin(), str.end(), breaker);
     return 0;
 }
+#include "gubg/log/end.hpp"

@@ -1,5 +1,5 @@
-#ifndef HEADER_garf_cassert_hpp_ALREADY_INCLUDED
-#define HEADER_garf_cassert_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_cassert_arduino_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cassert_arduino_hpp_ALREADY_INCLUDED
 
 #ifndef ARDUINO
 #error This is only meant for arduino

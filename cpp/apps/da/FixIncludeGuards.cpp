@@ -21,7 +21,8 @@ namespace
     {
         public:
             Recursor(const Options &options):
-                options_(options){}
+                options_(options),
+                wd_(getcwd()){}
 
             template <typename File>
                 ReturnCode recursor_discoveredFile(const File &file)

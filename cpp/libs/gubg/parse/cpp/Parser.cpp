@@ -1,6 +1,7 @@
 //#define GUBG_LOG
 #include "gubg/logging/Log.hpp"
 #include "gubg/parse/cpp/Parser.hpp"
+#include "gubg/parse/BreakUp.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <cassert>
 #include <cctype>
@@ -8,13 +9,8 @@
 using namespace gubg::parse::cpp;
 using namespace std;
 
-//#define L_DEBUG
-#ifdef L_DEBUG
-#include "gubg/l.hpp"
-#else
-#define L(m)
-#endif
-
+#define GUBG_MODULE "Parser"
+#include "gubg/log/begin.hpp"
 ReturnCode Parser::parse(const gubg::file::File &file)
 {
     MSS_BEGIN(ReturnCode, parse);
@@ -177,9 +173,7 @@ namespace
         }
         void printToken(char cho, char chc)
         {
-#ifdef L_DEBUG
-            cout << cho << string(token.b, token.e) << chc;
-#endif
+            S();L(cho << string(token.b, token.e) << chc);
         }
         void printToken(char ch)
         {
@@ -203,3 +197,4 @@ ReturnCode Parser::parseNonRecursive_()
 
     MSS_END();
 }
+#include "gubg/log/end.hpp"

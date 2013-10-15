@@ -1,9 +1,6 @@
-# define GUBG_LOG
-//#include "blabla.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/l.hpp"
 #include <vector>
 using namespace gubg::parse::cpp;
 using namespace gubg::parse::cpp::pp;
@@ -12,6 +9,8 @@ using namespace std;
 #define CONCAT(a,b) a ## b
 #define STRINGIFY(a) #a
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int
 m\
 a\
@@ -34,3 +33,4 @@ n\
     int __;
     return 0;
 }
+#include "gubg/log/end.hpp"

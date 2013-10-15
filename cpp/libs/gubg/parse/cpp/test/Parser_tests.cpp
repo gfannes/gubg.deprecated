@@ -4,6 +4,8 @@ using namespace gubg::parse::cpp;
 using namespace gubg::file;
 using namespace std;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(Parser);
@@ -17,3 +19,4 @@ int main()
     /* 123"asdf"///*/
     return 0;
 }
+#include "gubg/log/end.hpp"

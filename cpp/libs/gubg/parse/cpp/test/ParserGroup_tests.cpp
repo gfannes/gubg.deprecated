@@ -1,7 +1,8 @@
 #include "gubg/Testing.hpp"
 #include "gubg/parse/cpp/ParserGroup.hpp"
-#include "gubg/l.hpp"
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 namespace 
 {
     struct Parser: gubg::parse::cpp::ParserGroup_crtp<Parser, gubg::parse::cpp::Identifier_crtp>
@@ -9,7 +10,7 @@ namespace
 	    template <typename String>
             void identifier_detected(const String &str)
             {
-                L(STREAM(str));
+                S();L(STREAM(str));
             }
     };
 }
@@ -20,4 +21,5 @@ int main()
     Parser parser;
     parser(gubg::file::File(__FILE__));
     return 0;
-}
+}
+#include "gubg/log/end.hpp"
