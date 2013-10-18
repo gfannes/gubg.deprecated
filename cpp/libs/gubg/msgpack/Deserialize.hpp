@@ -17,6 +17,7 @@ namespace gubg
                     AttributeId aid;
                     TypeId tid;
 
+                    Fix this, it should be possible to create an empty wrapper
                     Wrapper() {std::memset(&data_, '\0', sizeof(data_));}
                     template <typename T>
                         explicit Wrapper(T &t)

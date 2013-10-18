@@ -214,6 +214,7 @@ namespace gubg
                                 case State::UT_nil_detected:
                                     {
                                         Wrapper_ obj = receiver_().factory_createObject(attrId_, id);
+                                        check if obj is valid
                                         obj.aid = attrId_;
                                         obj.tid = id;
                                         const auto ls = objectsStack_.size();
