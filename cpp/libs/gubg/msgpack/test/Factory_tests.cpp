@@ -68,14 +68,14 @@ enum class ReturnCode {MSS_DEFAULT_CODES,};
 class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
 {
     public:
-        Object_itf *factory_createObject(AttributeId aid, TypeId tid)
+        gubg::msgpack::Wrapper<std::string> factory_createObject(AttributeId aid, TypeId tid)
         {
             SS(aid, tid);
             switch (tid)
             {
                 case 0: return wrap(work);
             }
-            return 0;
+            return gubg::msgpack::Wrapper<std::string>();
         }
         void factory_createdObject(AttributeId aid, TypeId tid)
         {

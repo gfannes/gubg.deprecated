@@ -28,7 +28,7 @@ namespace gubg
                     public:
                         typedef msgpack::TypeId TypeId;
                         typedef msgpack::AttributeId AttributeId;
-                        typedef msgpack::Object_itf<String> Object_itf;
+                        typedef msgpack::Wrapper<String> Wrapper_;
 
                         Factory_crtp():
                             sm_(*this){}
@@ -63,9 +63,9 @@ namespace gubg
                             ReturnCode serialize(Buffer &buffer, const String &str) { return write(buffer, str); }
 
                         template <typename T>
-                            Object_itf *wrap(T &t){return ::gubg::msgpack::wrap<String>(t);}
+                            Wrapper_ wrap(T &t){return ::gubg::msgpack::wrap<String>(t);}
                         template <typename T>
-                            Object_itf *wrapWithoutClear(T &t){return ::gubg::msgpack::wrapWithoutClear<String>(t);}
+                            Wrapper_ wrapWithoutClear(T &t){return ::gubg::msgpack::wrapWithoutClear<String>(t);}
 
                         //Called by the parser, translated basically in events for the state machine
                         template <typename P>
@@ -134,7 +134,7 @@ namespace gubg
                                 case State::AttributeWasSet:
                                     if (attrId_ == -1)
                                         return s.changeTo(State::Idle);
-                                    attrId_ = objectsStack_.back()->aid;
+                                    attrId_ = objectsStack_.back().aid;
                                     return s.changeTo(State::UT_created);
                                     break;
                                 case State::SemanticError:
@@ -171,8 +171,8 @@ namespace gubg
                                     {
                                         case Group::Map:
                                             assert(!objectsStack_.empty());
-                                            attrId_ = objectsStack_.back()->aid;
-                                            receiver_().factory_createdObject(attrId_, objectsStack_.back()->tid);
+                                            attrId_ = objectsStack_.back().aid;
+                                            receiver_().factory_createdObject(attrId_, objectsStack_.back().tid);
                                             objectsStack_.pop_back();
                                             if (attrId_ == -1)
                                                 s.changeTo(State::Idle);
@@ -192,7 +192,7 @@ namespace gubg
                             {
                                 case State::Idle:
                                     assert(!objectsStack_.empty());
-                                    objectsStack_.back()->set(attrId_, nil);
+                                    objectsStack_.back().set(attrId_, nil);
                                     return s.changeTo(State::AttributeWasSet);
                                     break;
                                 case State::UT_map_detected:
@@ -208,16 +208,14 @@ namespace gubg
                             {
                                 case State::Idle:
                                     assert(!objectsStack_.empty());
-                                    objectsStack_.back()->set(attrId_, id);
+                                    objectsStack_.back().set(attrId_, id);
                                     return s.changeTo(State::AttributeWasSet);
                                     break;
                                 case State::UT_nil_detected:
                                     {
-                                        Object_itf *obj = receiver_().factory_createObject(attrId_, id);
-                                        if (!obj)
-                                            break;
-                                        obj->aid = attrId_;
-                                        obj->tid = id;
+                                        Wrapper_ obj = receiver_().factory_createObject(attrId_, id);
+                                        obj.aid = attrId_;
+                                        obj.tid = id;
                                         const auto ls = objectsStack_.size();
                                         objectsStack_.push_back(obj);
                                         if (objectsStack_.size() != ls + 1)
@@ -241,7 +239,7 @@ namespace gubg
                                 case State::Idle:
                                     L(STREAM(attrId_));
                                     assert(!objectsStack_.empty());
-                                    objectsStack_.back()->set(attrId_, str);
+                                    objectsStack_.back().set(attrId_, str);
                                     return s.changeTo(State::AttributeWasSet);
                                     break;
                             }
@@ -255,7 +253,7 @@ namespace gubg
 
                         String string_;
 
-                        typedef FixedVector<Object_itf*, MaxDepth> ObjectStack;
+                        typedef FixedVector<Wrapper<String>, MaxDepth> ObjectStack;
                         ObjectStack objectsStack_;
             };
     }

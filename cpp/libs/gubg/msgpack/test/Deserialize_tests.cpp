@@ -14,24 +14,16 @@ namespace
         void msgpack_set(AttributeId aid, Nil_tag) {S();L(STREAM(aid) << " nil");}
         void msgpack_set(AttributeId aid, const string &v) {S();L(STREAM(aid, v));}
     };
-    Object_itf<string> wrap(A &a)
-    {
-        Object_itf<string> ret;
-        Object<string, A> obj(a);
-        std::memcpy(&ret, &obj, sizeof(obj));
-        return ret;
-    }
 }
 int main()
 {
     TEST_TAG(main);
     A a;
-    Object_itf<string> *ptr = wrap<string>(a);
-    ptr->set(0, 0);
-
-    Object_itf<string> obj = wrap(a);
-    ptr = &obj;
-    ptr->set(0, 0);
+    Wrapper<string> wrapper(a);
+    wrapper.set(0, 0);
+    Wrapper<string> w2 = wrapper;
+    w2.set(0, string("oeuaou"));
+    w2.set(0, 0);
     return 0;
 }
 #include "gubg/log/end.hpp"
