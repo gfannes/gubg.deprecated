@@ -30,7 +30,8 @@ int main()
     ptr->set(0, 0);
 
     Object_itf<string> obj = wrap(a);
-    obj.set(0, 0);
+    ptr = &obj;
+    ptr->set(0, 0);
     return 0;
 }
 #include "gubg/log/end.hpp"
