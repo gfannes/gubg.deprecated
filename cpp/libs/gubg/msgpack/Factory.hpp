@@ -172,7 +172,7 @@ namespace gubg
                                         case Group::Map:
                                             assert(!objectsStack_.empty());
                                             attrId_ = objectsStack_.back().aid;
-                                            receiver_().factory_createdObject(attrId_, objectsStack_.back().tid);
+                                            receiver_().msgpack_createdObject(attrId_, objectsStack_.back().tid);
                                             objectsStack_.pop_back();
                                             if (attrId_ == -1)
                                                 s.changeTo(State::Idle);
@@ -213,8 +213,9 @@ namespace gubg
                                     break;
                                 case State::UT_nil_detected:
                                     {
-                                        Wrapper_ obj = receiver_().factory_createObject(attrId_, id);
-                                        check if obj is valid
+                                        Wrapper_ obj = receiver_().msgpack_createObject(attrId_, id);
+                                        if (!obj.isValid())
+                                            break;
                                         obj.aid = attrId_;
                                         obj.tid = id;
                                         const auto ls = objectsStack_.size();

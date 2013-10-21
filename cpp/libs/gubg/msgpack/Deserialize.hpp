@@ -3,6 +3,7 @@
 
 #include "gubg/msgpack/Types.hpp"
 #include "gubg/msgpack/Primitives.hpp"
+#include "gubg/array.hpp"
 
 #define GUBG_MODULE_ "Deserialize"
 #include "gubg/log/begin.hpp"
@@ -17,16 +18,19 @@ namespace gubg
                     AttributeId aid;
                     TypeId tid;
 
-                    Fix this, it should be possible to create an empty wrapper
-                    Wrapper() {std::memset(&data_, '\0', sizeof(data_));}
+                    Wrapper() {}
                     template <typename T>
                         explicit Wrapper(T &t)
                     {
                         Object<T> obj(t);
-                        std::memcpy(&data_, &obj, sizeof(obj));
+                        const uint8_t *ptr = (uint8_t*)&obj;
+                        for (auto it = data_.begin(); it != data_.end(); ++it)
+                            *it = *ptr++;
                     }
-                    Wrapper(const Wrapper &rhs) {std::memcpy(&data_, &rhs.data_, sizeof(data_));}
-                    Wrapper &operator=(const Wrapper &rhs) {std::memcpy(&data_, &rhs.data_, sizeof(data_));}
+                    Wrapper(const Wrapper &rhs): data_(rhs.data_) {}
+                    Wrapper &operator=(const Wrapper &rhs) {data_ = rhs.data_;}
+
+                    bool isValid() const {return itf_() != 0;}
 
                     void set(AttributeId aid, Nil_tag nil)       {itf_()->set(aid, nil);}
                     void set(AttributeId aid, long v)            {itf_()->set(aid, v);}
@@ -47,8 +51,11 @@ namespace gubg
                             //We will store the address of the wrapped object here
                             void *ptr_;
                     };
-                    Object_itf data_;
-                    Object_itf *itf_() {return &data_;}
+
+                    gubg::array<uint8_t, sizeof(Object_itf)> data_;
+                    //Returns 0 for a default-constructed object
+                    Object_itf *itf_() {return (Object_itf*)data_.data();}
+                    const Object_itf *itf_() const {return (const Object_itf*)data_.data();}
 
                     template <typename T>
                         class Object: public Object_itf
