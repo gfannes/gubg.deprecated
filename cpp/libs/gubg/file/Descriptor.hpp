@@ -31,6 +31,7 @@ namespace gubg
 
                 static Descriptor listen(unsigned short port, const std::string &ip = "");
                 static Descriptor listen(File, AccessMode);
+                static Descriptor listen_stdin();
 
                 ReturnCode accept(Descriptor &);
 
@@ -58,11 +59,11 @@ namespace gubg
 
                 //Calls select() on the added Descriptors
                 //Waits infinitely for a descriptor event
-                ReturnCode operator()() { return callOperator_(0); }
+                ReturnCode process() { return callOperator_(0); }
                 //Waits for the specified timeout, 0 is polling
-                ReturnCode operator()(std::chrono::milliseconds timeout) { return callOperator_(&timeout); }
+                ReturnCode process(std::chrono::milliseconds timeout) { return callOperator_(&timeout); }
                 //Waits for the specified timeout, 0 pointer waits infinitely
-                ReturnCode operator()(const std::chrono::milliseconds *timeout);
+                ReturnCode process(const std::chrono::milliseconds *timeout);
 
                 //Callbacks with typical select-events: a descriptor can be served
                 virtual bool select_ready(Descriptor, EventType) = 0;

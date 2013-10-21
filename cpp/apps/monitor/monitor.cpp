@@ -184,7 +184,9 @@ namespace
         s.add(d, AccessMode::Read);
 
         while (true)
-            s(std::chrono::milliseconds(500));
+        {
+            s.process(std::chrono::milliseconds(500));
+        }
 
         MSS_END();
     }

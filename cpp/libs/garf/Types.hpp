@@ -9,7 +9,7 @@ namespace garf
 {
     struct TypeIds
     {
-        enum {Time, TopInfo};
+        enum {Time, TopInfo, Led};
     };
 
     struct Time
@@ -58,6 +58,26 @@ namespace garf
             {
                 case nrLoops_: nrLoops = v; break;
                 case maxElapse_: maxElapse = v; break;
+            }
+        }
+    };
+
+    struct Led
+    {
+        unsigned char id;
+        enum Mode: unsigned char {On, Off, Slow, Fast};
+        Mode mode;
+
+        enum Attribute {id_, mode_, nr_};
+        void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
+        void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+        {
+            switch (aid)
+            {
+                case id_: id = v; break;
+                case mode_: mode = (Mode)v; break;
             }
         }
     };

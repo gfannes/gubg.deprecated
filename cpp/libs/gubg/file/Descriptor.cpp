@@ -19,7 +19,7 @@ using std::chrono::milliseconds;
 namespace 
 {
     enum class Role { Normal, Acceptor };
-    enum class Type { Socket, File };
+    enum class Type { Socket, File, Stdin };
 
     void translate_(int &flags, AccessMode am)
     {
@@ -103,14 +103,34 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
                         break;
                 }
                 break;
+            case Type::Stdin:
+                switch (role)
+                {
+                    case Role::Acceptor:
+                        MSS_Q(!peer);
+                        et = EventType::Open;
+                        break;
+                    case Role::Normal:
+                        //If a descriptor is present, we should do real select()
+                        MSS(desc == InvalidDesc);
+                        et = EventType::Close;
+                        break;
+                }
+                break;
             default: MSS_L(NotSupported); break;
         }
         MSS_END();
     }
     bool valid() const
     {
-        if (role == Role::Acceptor && type == Type::File)
-            return !fn.empty();
+        if (role == Role::Acceptor)
+        {
+            switch (type)
+            {
+                case Type::File: return !fn.empty(); break;
+                case Type::Stdin: return true; break;
+            }
+        }
         return desc != InvalidDesc;
     }
     ReturnCode acceptSocket(Ptr &pp)
@@ -133,6 +153,17 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         pp.reset(new Pimpl(Role::Normal, Type::File));
         pp->fn = fn;
         pp->desc = d;
+        pp->peer = this;
+        peer = pp.get();
+        MSS_END();
+    }
+    ReturnCode acceptStdin(Ptr &pp)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(!peer, AlreadyAcceptedFile);
+        pp.reset(new Pimpl(Role::Normal, Type::File));
+        pp->fn = fn;
+        pp->desc = STDIN_FILENO;
         pp->peer = this;
         peer = pp.get();
         MSS_END();
@@ -247,6 +278,13 @@ Descriptor Descriptor::listen(File f, AccessMode accessMode)
     translate_(res.pimpl_->accessMode, accessMode);
     return res;
 }
+Descriptor Descriptor::listen_stdin()
+{
+    Descriptor res;
+    res.pimpl_.reset(new Pimpl(Role::Acceptor, Type::Stdin));
+    translate_(res.pimpl_->accessMode, AccessMode::Read);
+    return res;
+}
 
 ReturnCode Descriptor::accept(Descriptor &desc)
 {
@@ -262,6 +300,7 @@ ReturnCode Descriptor::accept(Descriptor &desc)
     {
         case Type::Socket: MSS(me.acceptSocket(pp)); break;
         case Type::File:   MSS(me.acceptFile(pp)); break;
+        case Type::Stdin:  MSS(me.acceptStdin(pp)); break;
         default:           MSS_L(UnknownType); break;
     }
     desc.pimpl_ = pp;
@@ -429,7 +468,7 @@ namespace
             MSS_END();
         }
 }
-ReturnCode Select::operator()(const milliseconds *timeout)
+ReturnCode Select::process(const milliseconds *timeout)
 {
     milliseconds lTimeout;
     //Make sure we are using milliseconds
