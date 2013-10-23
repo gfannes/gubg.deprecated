@@ -3,7 +3,7 @@
 #include <cctype>
 using namespace std;
 
-#define GUBG_MODULE "XMLCoding"
+#define GUBG_MODULE_ "XMLCoding"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -98,7 +98,7 @@ namespace gubg
                             MSS(rawSize >= 4);
                             rawSize -= 4;
                         }
-                        else if (strange.popString("#x2019;") || strange.popString("#x2026;"))
+                        else if (strange.popString("#x2018;") || strange.popString("#x2019;") || strange.popString("#x2026;"))
                         {
                             MSS(rawSize >= 7);
                             rawSize -= 7;
@@ -143,6 +143,8 @@ namespace gubg
                             *dst++ = '\n';
                         else if (strange.popString("#xd;") || strange.popString("#xD;"))
                             *dst++ = '\r';
+                        else if (strange.popString("#x2018;"))
+                            *dst++ = '\'';
                         else if (strange.popString("#x2019;"))
                             *dst++ = '\'';
                         else if (strange.popString("#x2026;"))

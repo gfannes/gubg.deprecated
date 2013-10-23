@@ -17,7 +17,7 @@ map -s <Bslash>aonamespace <Esc>:call ReadString("Namespace name")<CR>-oa{<Esc>-
 
 let hn = hostname()
 let athome = 0
-let indep = 0
+let indep = 1
 if hn == "rii"
 	let athome = 1
 endif

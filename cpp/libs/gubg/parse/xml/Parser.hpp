@@ -8,7 +8,7 @@
 #include <string>
 #include <map>
 
-#define GUBG_MODULE "xml::Parser"
+#define GUBG_MODULE_ "xml::Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -149,6 +149,7 @@ namespace gubg
                             MSS(attr.popCharIf('"'));
                             MSS(attr.popUntil(v, '"'));
                             std::string kk, vv;
+							L(STREAM(k.str(), v.str()));
                             MSS(decode(kk, k.str()));
                             MSS(decode(vv, v.str()));
                             //insert().second returns false if insertion failed (i.e., the attribute was already present)

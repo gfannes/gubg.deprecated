@@ -11,7 +11,7 @@ using namespace pa;
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "LoadMindMap"
+#define GUBG_MODULE_ "LoadMindMap"
 #include "gubg/log/begin.hpp"
 namespace pa
 {

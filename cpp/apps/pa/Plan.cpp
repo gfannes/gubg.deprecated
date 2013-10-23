@@ -7,7 +7,7 @@
 using namespace pa;
 using namespace std;
 
-#define GUBG_MODULE "Plan"
+#define GUBG_MODULE_ "Plan"
 #include "gubg/log/begin.hpp"
 template <typename Task>
 string taskDescription(const Task &task)

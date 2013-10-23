@@ -6,7 +6,7 @@ using namespace pa;
 using gubg::OptionParser;
 using namespace std;
 
-#define GUBG_MODULE "pa"
+#define GUBG_MODULE_ "pa"
 #include "gubg/log/begin.hpp"
 namespace 
 {
