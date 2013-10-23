@@ -9,11 +9,9 @@ namespace
     class MySelect: public Select
     {
         public:
-                virtual bool select_ready(Descriptor d, EventType et)
+                virtual void select_ready(Descriptor d, EventType et)
                 {
                     S();L(d << " is ready " << STREAM((int)et));
-                    //Stop select
-                    return false;
                 }
         private:
     };
@@ -21,18 +19,29 @@ namespace
 int main()
 {
     TEST_TAG(main);
-    if (true)
+    if (false)
     {
         TEST_TAG(file);
         auto d = Descriptor::listen(File("/dev/ttyACM0"), AccessMode::ReadWrite);
         TEST_TRUE(d.valid());
         MySelect s;
         s.add(d, AccessMode::Read);
-        s(std::chrono::seconds(10));
+        s.process(std::chrono::seconds(10));
         Descriptor c;
         d.accept(c);
         TEST_TRUE(c.valid());
-        s(std::chrono::seconds(10));
+        s.process(std::chrono::seconds(10));
+    }
+    if (true)
+    {
+        TEST_TAG(file);
+
+        auto stdin = Descriptor::stdin();
+        TEST_TRUE(stdin.valid());
+
+        MySelect s;
+        s.add(stdin, AccessMode::Read);
+        s.process(std::chrono::seconds(10));
     }
     if (false)
     {
@@ -43,7 +52,7 @@ int main()
         s.add(d, AccessMode::Read);
         for (int i = 0; i < 10; ++i)
         {
-            s(std::chrono::seconds(60));
+            s.process(std::chrono::seconds(60));
             Descriptor c;
             d.accept(c);
         }

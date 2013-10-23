@@ -19,7 +19,7 @@ using std::chrono::milliseconds;
 namespace 
 {
     enum class Role { Normal, Acceptor };
-    enum class Type { Socket, File };
+    enum class Type { Socket, File, Stream };
 
     void translate_(int &flags, AccessMode am)
     {
@@ -109,8 +109,13 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     }
     bool valid() const
     {
-        if (role == Role::Acceptor && type == Type::File)
-            return !fn.empty();
+        if (role == Role::Acceptor)
+        {
+            switch (type)
+            {
+                case Type::File: return !fn.empty(); break;
+            }
+        }
         return desc != InvalidDesc;
     }
     ReturnCode acceptSocket(Ptr &pp)
@@ -133,6 +138,17 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         pp.reset(new Pimpl(Role::Normal, Type::File));
         pp->fn = fn;
         pp->desc = d;
+        pp->peer = this;
+        peer = pp.get();
+        MSS_END();
+    }
+    ReturnCode acceptStdin(Ptr &pp)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS(!peer, AlreadyAcceptedFile);
+        pp.reset(new Pimpl(Role::Normal, Type::File));
+        pp->fn = fn;
+        pp->desc = STDIN_FILENO;
         pp->peer = this;
         peer = pp.get();
         MSS_END();
@@ -247,6 +263,14 @@ Descriptor Descriptor::listen(File f, AccessMode accessMode)
     translate_(res.pimpl_->accessMode, accessMode);
     return res;
 }
+Descriptor Descriptor::stdin()
+{
+    Descriptor res;
+    res.pimpl_.reset(new Pimpl(Role::Normal, Type::Stream));
+    res.pimpl_->desc = 0;
+    translate_(res.pimpl_->accessMode, AccessMode::Read);
+    return res;
+}
 
 ReturnCode Descriptor::accept(Descriptor &desc)
 {
@@ -305,6 +329,14 @@ void Descriptor::stream(ostream &os) const
         return;
     }
     pimpl_->stream(os);
+}
+bool Descriptor::operator<(const Descriptor &rhs) const
+{
+    return pimpl_ < rhs.pimpl_;
+}
+bool Descriptor::operator==(const Descriptor &rhs) const
+{
+    return pimpl_ == rhs.pimpl_;
 }
 #include "gubg/log/end.hpp"
 
@@ -401,7 +433,8 @@ namespace
             }
 
             auto lRds = rds;
-            for (auto p: rds)
+            auto lWds = wds;
+            for (auto p: lRds)
             {
                 L("Checking for a read event: " << Descriptor(p));
                 auto desc = p->desc;
@@ -410,10 +443,9 @@ namespace
                 if (FD_ISSET(desc, &rs))
                 {
                     EventType et; translate_(et, p->role, AccessMode::Read);
-                    MSS(receiver.select_ready(Descriptor(p), et));
+                    receiver.select_ready(Descriptor(p), et);
                 }
             }
-            auto lWds = wds;
             for (auto p: lWds)
             {
                 L("Checking for a write event " << Descriptor(p));
@@ -423,19 +455,19 @@ namespace
                 if (FD_ISSET(desc, &ws))
                 {
                     EventType et; translate_(et, p->role, AccessMode::Write);
-                    MSS(receiver.select_ready(Descriptor(p), et));
+                    receiver.select_ready(Descriptor(p), et);
                 }
             }
             MSS_END();
         }
 }
-ReturnCode Select::operator()(const milliseconds *timeout)
+ReturnCode Select::process(const milliseconds *timeout)
 {
     milliseconds lTimeout;
     //Make sure we are using milliseconds
     if (timeout)
         lTimeout = *timeout;
-    return callOperator_(timeout ? &lTimeout : 0);
+    return process_(timeout ? &lTimeout : 0);
 }
 namespace 
 {
@@ -447,25 +479,33 @@ namespace
     template <typename Set>
         void computeMinMaxDesc_(int &minDesc, int &maxDesc, const Set &r, const Set &w)
         {
+            SS();
             minDesc = maxDesc = Descriptor::InvalidDesc;
             gubg::OnlyOnce setMinDesc;
             {
                 if (!r.empty())
                 {
                     maxDesc = max(maxDesc, (*max_element(r.begin(), r.end(), Compare()))->desc);
+                    auto rMin = (*min_element(r.begin(), r.end(), Compare()))->desc;
                     if (setMinDesc())
-                        minDesc = min(minDesc, (*min_element(r.begin(), r.end(), Compare()))->desc);
+                        minDesc = rMin;
+                    else
+                        minDesc = min(minDesc, rMin);
                 }
                 if (!w.empty())
                 {
                     maxDesc = max(maxDesc, (*max_element(w.begin(), w.end(), Compare()))->desc);
+                    auto wMin = (*min_element(w.begin(), w.end(), Compare()))->desc;
                     if (setMinDesc())
-                        minDesc = min(minDesc, (*min_element(w.begin(), w.end(), Compare()))->desc);
+                        minDesc = wMin;
+                    else
+                        minDesc = min(minDesc, wMin);
                 }
             }
+            LL(minDesc << " " << maxDesc);
         }
 }
-ReturnCode Select::callOperator_(milliseconds *timeout)
+ReturnCode Select::process_(milliseconds *timeout)
 {
     MSS_BEGIN(ReturnCode);
     L(STREAM(read_set_.size(), write_set_.size()));
@@ -504,7 +544,7 @@ ReturnCode Select::callOperator_(milliseconds *timeout)
                 {
                     case ReturnCode::OK:
                         L("Event detected: " << STREAM((int)et));
-                        MSS_(Info, select_ready(Descriptor(p), et));
+                        select_ready(Descriptor(p), et);
                         break;
                 }
             }
@@ -519,7 +559,7 @@ ReturnCode Select::callOperator_(milliseconds *timeout)
                 {
                     case ReturnCode::OK:
                         L("Event detected: " << STREAM((int)et));
-                        MSS_(Info, select_ready(Descriptor(p), et));
+                        select_ready(Descriptor(p), et);
                         break;
                 }
             }

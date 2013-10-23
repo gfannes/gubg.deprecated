@@ -29,7 +29,7 @@ namespace gubg
                     //Emits ParsingFinished when a complete top-level object is parsed
                     ReturnCode process(ubyte b)
                     {
-                        MSS_BEGIN(ReturnCode, std::hex << (int)b);
+                        MSS_BEGIN(ReturnCode);
 
                         bool isNewObject = false;
 

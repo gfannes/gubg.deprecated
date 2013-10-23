@@ -24,7 +24,7 @@ namespace
     class Factory: public gubg::msgpack::Factory_crtp<Factory, string, 5>
     {
         public:
-            Object_itf *factory_createObject(AttributeId aid, TypeId tid)
+            Wrapper_ msgpack_createObject(AttributeId aid, TypeId tid)
             {
                 S();L(STREAM(aid, tid));
                 switch (tid)
@@ -32,9 +32,9 @@ namespace
                     case garf::TypeIds::Time: L("Time");return wrap(time_);
                     case garf::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
                 }
-                return 0;
+                return Wrapper_();
             }
-            void factory_createdObject(AttributeId aid, TypeId tid)
+            void msgpack_createdObject(AttributeId aid, TypeId tid)
             {
                 S();L(STREAM(aid, tid));
                 switch (tid)
@@ -46,6 +46,14 @@ namespace
             void msgpack_set(gubg::msgpack::AttributeId aid, long v)
             {
                 S();L(STREAM(aid, v));
+            }
+            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag)
+            {
+                S();L("nil");
+            }
+            void msgpack_set(gubg::msgpack::AttributeId aid, const string &str)
+            {
+                S();L(STREAM(aid, str));
             }
         private:
             garf::Time time_;
@@ -94,13 +102,16 @@ namespace
             Select():
                 nr(0),
                 mode_(D9_Msgpack),
-                d9Decoder_(factory_){}
+                d9Decoder_(factory_)
+        {
+            add(Descriptor::stdin(), AccessMode::Read);
+        }
 
             void setMode(Mode m) {mode_ = m;}
 
-            virtual bool select_ready(Descriptor d, EventType et)
+            virtual void select_ready(Descriptor d, EventType et)
             {
-                MSS_BEGIN(bool, d << " is ready " << STREAM((int)et));
+                MSS_BEGIN(void, d << " is ready " << STREAM((int)et));
                 L("select_ready " << STREAM(d, (int)et));
                 switch (et)
                 {
@@ -118,18 +129,25 @@ namespace
                         {
                             string buf(16, '\0');
                             MSS(d.read(buf));
-                            switch (mode_)
+                            if (tty_ == d)
                             {
-                                case Raw:
-                                    cout << buf.size() << " " << gubg::testing::toHex(buf) << endl;
-                                    break;
-                                case Msgpack:
-                                    factory_.process(buf);
-                                    break;
-                                case D9_Msgpack:
-                                    for (auto ch: buf)
-                                        d9Decoder_.process(ch);
-                                    break;
+                                switch (mode_)
+                                {
+                                    case Raw:
+                                        cout << buf.size() << " " << gubg::testing::toHex(buf) << endl;
+                                        break;
+                                    case Msgpack:
+                                        factory_.process(buf);
+                                        break;
+                                    case D9_Msgpack:
+                                        for (auto ch: buf)
+                                            d9Decoder_.process(ch);
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                cout << "User typed: " << buf << endl;
                             }
                         }
                         break;
@@ -184,7 +202,9 @@ namespace
         s.add(d, AccessMode::Read);
 
         while (true)
-            s(std::chrono::milliseconds(500));
+        {
+            s.process(std::chrono::milliseconds(500));
+        }
 
         MSS_END();
     }

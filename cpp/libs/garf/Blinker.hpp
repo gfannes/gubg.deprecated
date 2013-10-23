@@ -5,7 +5,7 @@
 
 namespace garf
 {
-    enum class BlinkMode: unsigned char { Flat, Normal, Fast};
+    enum class BlinkMode: unsigned char { On, Off, Normal, Fast};
 
     template <long NormalTimeout_, int LED_ = 13>
     class Blinker
@@ -21,7 +21,7 @@ namespace garf
             static const long LED = LED_;
 
             Blinker():
-                state_((unsigned char)BlinkMode::Flat | StateMask | InitMask),
+                state_((unsigned char)BlinkMode::On | StateMask | InitMask),
                 timeout_(0)
             {
             }
@@ -33,14 +33,19 @@ namespace garf
                 const BlinkMode currentMode = BlinkMode(state_ & ModeMask);
                 if (mode == currentMode)
                     return;
+                bool on = true;
                 switch (mode)
                 {
-                    case BlinkMode::Flat:   timeout_ = 0; break;
-                    case BlinkMode::Normal: timeout_ = NormalTimeout; break;
-                    case BlinkMode::Fast:   timeout_ = FastTimeout; break;
+                    case BlinkMode::On:     timeout_ = 0;             on = true; break;
+                    case BlinkMode::Off:    timeout_ = 0;             on = false; break;
+                    case BlinkMode::Normal: timeout_ = NormalTimeout; on = true; break;
+                    case BlinkMode::Fast:   timeout_ = FastTimeout;   on = true; break;
                 }
-                state_ = ((unsigned char)mode | StateMask);
-                digitalWrite(LED, HIGH);
+                if (on)
+                    state_ = ((unsigned char)mode | StateMask);
+                else
+                    state_ = (unsigned char)mode;
+                digitalWrite(LED, on ? HIGH : LOW);
             }
 
             void process(unsigned int elapse)
@@ -49,9 +54,9 @@ namespace garf
 
                 switch ((BlinkMode)(state_ & ModeMask))
                 {
-                    case BlinkMode::Flat:
-                        return;
-                        break;
+                    case BlinkMode::On:
+                    case BlinkMode::Off:
+                        return; break;
                     case BlinkMode::Normal:
                         while (elapse > timeout_)
                         {
