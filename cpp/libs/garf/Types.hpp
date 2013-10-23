@@ -25,6 +25,9 @@ namespace garf
                 s.template writeAttribute<long>(millis_, millis);
                 return true;
             }
+        void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
         void msgpack_set(gubg::msgpack::AttributeId aid, long v)
         {
             S();L(STREAM(aid, v));
@@ -51,6 +54,9 @@ namespace garf
                 s.template writeAttribute<long>(maxElapse_, maxElapse);
                 return true;
             }
+        void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
         void msgpack_set(gubg::msgpack::AttributeId aid, long v)
         {
             S();L(STREAM(aid, v));

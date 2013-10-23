@@ -35,17 +35,13 @@ int main()
     if (true)
     {
         TEST_TAG(file);
-        auto d = Descriptor::listen_stdin();
-        TEST_TRUE(d.valid());
+
+        auto stdin = Descriptor::stdin();
+        TEST_TRUE(stdin.valid());
+
         MySelect s;
-        s.add(d, AccessMode::Read);
-        s.process(std::chrono::milliseconds(500));
-        Descriptor c;
-        d.accept(c);
-        TEST_TRUE(c.valid());
-        MySelect s2;
-        s2.add(c, AccessMode::Read);
-        s2.process(std::chrono::seconds(10));
+        s.add(stdin, AccessMode::Read);
+        s.process(std::chrono::seconds(10));
     }
     if (false)
     {

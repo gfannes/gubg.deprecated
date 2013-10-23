@@ -330,6 +330,14 @@ void Descriptor::stream(ostream &os) const
     }
     pimpl_->stream(os);
 }
+bool Descriptor::operator<(const Descriptor &rhs) const
+{
+    return pimpl_ < rhs.pimpl_;
+}
+bool Descriptor::operator==(const Descriptor &rhs) const
+{
+    return pimpl_ == rhs.pimpl_;
+}
 #include "gubg/log/end.hpp"
 
 #define GUBG_MODULE "Select"

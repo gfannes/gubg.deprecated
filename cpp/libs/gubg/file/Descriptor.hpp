@@ -45,6 +45,7 @@ namespace gubg
                 bool valid() const;
 
                 bool operator<(const Descriptor &rhs) const;
+                bool operator==(const Descriptor &rhs) const;
 
                 void stream(std::ostream &) const;
 
@@ -70,7 +71,7 @@ namespace gubg
                 virtual void select_ready(Descriptor, EventType) = 0;
 
             private:
-                //This version of the call operator is too dangerous to make public, timeout will be changed
+                //This version of process_ is too dangerous to make public, timeout will be changed
                 ReturnCode process_(std::chrono::milliseconds *timeout);
                 bool invariants_() const;
 
