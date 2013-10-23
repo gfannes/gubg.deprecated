@@ -98,9 +98,9 @@ namespace
 
             void setMode(Mode m) {mode_ = m;}
 
-            virtual bool select_ready(Descriptor d, EventType et)
+            virtual void select_ready(Descriptor d, EventType et)
             {
-                MSS_BEGIN(bool, d << " is ready " << STREAM((int)et));
+                MSS_BEGIN(void, d << " is ready " << STREAM((int)et));
                 L("select_ready " << STREAM(d, (int)et));
                 switch (et)
                 {

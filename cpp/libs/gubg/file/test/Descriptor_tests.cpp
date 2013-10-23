@@ -9,11 +9,9 @@ namespace
     class MySelect: public Select
     {
         public:
-                virtual bool select_ready(Descriptor d, EventType et)
+                virtual void select_ready(Descriptor d, EventType et)
                 {
                     S();L(d << " is ready " << STREAM((int)et));
-                    //Stop select
-                    return false;
                 }
         private:
     };
