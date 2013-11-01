@@ -21,7 +21,8 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
         {
             switch (tid)
             {
-                case garf::TypeIds::Led: return wrap(led);
+                case garf::TypeIds::Led:
+                    return wrap(led);
             }
             return gubg::msgpack::Wrapper<my::String>();
         }
@@ -31,9 +32,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
             {
                 case garf::TypeIds::Led:
                     if (led.id == 13)
-                    {
-                        g_blinker.setPattern(0xaa);
-                    }
+                        g_blinker.setPattern(led.pattern);
                     break;
             }
         }
@@ -49,6 +48,7 @@ void setup()
 {
     Serial.begin(9600);
     g_blinker.setPattern(0xf0);
+    factory.led.id = 0;
 }
 
 void loop()

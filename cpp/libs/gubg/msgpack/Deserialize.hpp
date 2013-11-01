@@ -27,8 +27,8 @@ namespace gubg
                         for (auto it = data_.begin(); it != data_.end(); ++it)
                             *it = *ptr++;
                     }
-                    Wrapper(const Wrapper &rhs): data_(rhs.data_) {}
-                    Wrapper &operator=(const Wrapper &rhs) {data_ = rhs.data_;}
+                    Wrapper(const Wrapper &rhs): aid(rhs.aid), tid(rhs.tid), data_(rhs.data_) {}
+                    Wrapper &operator=(const Wrapper &rhs) {aid = rhs.aid; tid = rhs.tid; data_ = rhs.data_;}
 
                     bool isValid() const {return itf_() != 0;}
 

@@ -149,12 +149,14 @@ namespace
                             else
                             {
                                 cout << "User typed: " << buf << endl;
-                                size_t nrWritten;
+
                                 gubg::msgpack::Serializer<std::string, garf::TypeIds, 3> serializer;
-                                garf::Led led; led.id = 13; led.pattern = 0xaa;
+                                garf::Led led; led.id = 13; led.pattern = 0x7f;
                                 serializer.serialize(led);
+
+                                size_t nrWritten;
                                 tty_.write(nrWritten, serializer.buffer());
-                                cout << "I wrote " << nrWritten << " bytes" << endl;
+                                cout << "I wrote " << nrWritten << " bytes: " << gubg::testing::toHex(serializer.buffer()) << endl;
                             }
                         }
                         break;
