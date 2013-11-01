@@ -13,11 +13,12 @@ class CycleMode: public garf::Metronome_crtp<CycleMode, 2000>
         CycleMode(): mode_(0) {}
         void metronome_tick()
         {
-            switch (++mode_ % 3)
+            switch (++mode_ % 4)
             {
-                case 0: g_blinker.set(garf::BlinkMode::Flat); break;
-                case 1: g_blinker.set(garf::BlinkMode::Normal); break;
-                case 2: g_blinker.set(garf::BlinkMode::Fast); break;
+                case 0: g_blinker.set(garf::BlinkMode::On); break;
+                case 1: g_blinker.set(garf::BlinkMode::Off); break;
+                case 2: g_blinker.set(garf::BlinkMode::Normal); break;
+                case 3: g_blinker.set(garf::BlinkMode::Fast); break;
             }
         }
     private:
