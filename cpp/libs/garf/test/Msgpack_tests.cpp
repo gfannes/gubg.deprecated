@@ -12,7 +12,7 @@ namespace my
     typedef gubg::FixedVector<char, 10> String;
 }
 
-garf::Blinker<100, 13> g_blinker;
+garf::Blinker<100> g_blinker;
 
 class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
 {
@@ -32,7 +32,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
                 case garf::TypeIds::Led:
                     if (led.id == 13)
                     {
-                        g_blinker.set(garf::BlinkMode::Fast);
+                        g_blinker.setPattern(0xaa);
                     }
                     break;
             }
@@ -48,6 +48,7 @@ Factory factory;
 void setup()
 {
     Serial.begin(9600);
+    g_blinker.setPattern(0xf0);
 }
 
 void loop()

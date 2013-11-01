@@ -13,7 +13,7 @@ Elapser g_elapser;
 
 //This blinker is used to show the online/offline status
 //We blink 10 times per second
-typedef garf::Blinker<200> Blinker;
+typedef garf::Blinker<100> Blinker;
 Blinker g_blinker;
 
 garf::Motor<6, 5> g_leftMotor;
@@ -26,13 +26,13 @@ struct OOStatus: garf::OOStatus_crtp<OOStatus, 1000>
 {
     void oostatus_online()
     {
-        g_blinker.set(garf::BlinkMode::Normal);
+        g_blinker.setPattern(0xf0);
     }
     void oostatus_offline()
     {
         g_leftMotor.setSpeed(0);
         g_rightMotor.setSpeed(0);
-        g_blinker.set(garf::BlinkMode::Fast);
+        g_blinker.setPattern(0xaa);
     }
 };
 OOStatus g_oostatus;
@@ -153,8 +153,7 @@ long i;
 void setup()
 {
     g_elapser = Elapser();
-    g_blinker = Blinker();
-    g_blinker.set(garf::BlinkMode::Flat);
+    g_blinker.setPattern(0x01);
     garf::busyProcess<1000>(g_blinker);
     Serial.begin(9600);
     g_oostatus.setup();

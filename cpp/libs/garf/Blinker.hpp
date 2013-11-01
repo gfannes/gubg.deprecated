@@ -10,7 +10,7 @@ namespace garf
     class Blinker: public Metronome_crtp<Blinker<Period, LED_>, Period>
     {
         public:
-            typedef unsigned short Pattern;
+            typedef uint8_t Pattern;
 
             static const int LED = LED_;
 
@@ -55,7 +55,7 @@ namespace garf
             //If ix_ == InvalidIX, initialization is still needed
             static const unsigned char InvalidIX_ = 0xff;
             unsigned char ix_ = InvalidIX_;
-            Pattern pattern_ = 0x0000;
+            Pattern pattern_ = 0;
     };
 }
 

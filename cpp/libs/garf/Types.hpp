@@ -71,10 +71,17 @@ namespace garf
     struct Led
     {
         unsigned char id;
-        enum Mode: unsigned char {On, Off, Slow, Fast};
-        Mode mode;
+        uint8_t pattern;
 
-        enum Attribute {id_, mode_, nr_};
+        enum Attribute {id_, pattern_, nr_};
+        template <typename S>
+            bool msgpack_serialize(S &s) const
+            {
+                s.writeIdAndAttrCnt(S::Led, nr_);
+                s.template writeAttribute<long>(id_, id);
+                s.template writeAttribute<long>(pattern_, pattern);
+                return true;
+            }
         void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
         template <typename String>
             void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
@@ -83,7 +90,7 @@ namespace garf
             switch (aid)
             {
                 case id_: id = v; break;
-                case mode_: mode = (Mode)v; break;
+                case pattern_: pattern = v; break;
             }
         }
     };

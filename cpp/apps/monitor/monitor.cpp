@@ -3,6 +3,7 @@
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Descriptor.hpp"
 #include "gubg/msgpack/Factory.hpp"
+#include "gubg/msgpack/Serializer.hpp"
 #include "gubg/d9/Decoder.hpp"
 #include "gubg/Testing.hpp"
 #include "garf/Types.hpp"
@@ -148,6 +149,12 @@ namespace
                             else
                             {
                                 cout << "User typed: " << buf << endl;
+                                size_t nrWritten;
+                                gubg::msgpack::Serializer<std::string, garf::TypeIds, 3> serializer;
+                                garf::Led led; led.id = 13; led.pattern = 0xaa;
+                                serializer.serialize(led);
+                                tty_.write(nrWritten, serializer.buffer());
+                                cout << "I wrote " << nrWritten << " bytes" << endl;
                             }
                         }
                         break;
