@@ -1,15 +1,23 @@
 #include "gubg/mss.hpp"
-#include "gubg/msgpack/Write.hpp"
+#include "gubg/msgpack/Serializer.hpp"
+#include "gubg/d9/D9.hpp"
 #include "gubg/testing/Testing.hpp"
 #include "gubg/tty/Endpoint.hpp"
 #include "gubg/Timer.hpp"
-#include "gubg/l.hpp"
+#include "garf/Types.hpp"
 #include "SDL/SDL.h"
 #include <iostream>
+#include <thread>
 using namespace gubg;
 using namespace std;
 
-enum class ReturnCode {MSS_DEFAULT_CODES, NoJoystickFound, CouldNotOpenJoystick};
+#define GUBG_MODULE_ "Rover"
+#include "gubg/log/begin.hpp"
+enum class ReturnCode
+{
+    MSS_DEFAULT_CODES,
+    NoJoystickFound, CouldNotOpenJoystick
+};
 
 namespace 
 {
@@ -28,11 +36,27 @@ namespace
     class KeepAlive: public gubg::Timer_crtp<KeepAlive>
     {
         public:
+            garf::pod::Motor motor;
+
             KeepAlive(Arduino &arduino):arduino_(arduino){}
             void timer_expired()
             {
-                //L("Stay awake man");
-                arduino_.send("\xd9\xc0");
+                S();
+                if (false)
+                {
+                    L("Stay awake man");
+                    arduino_.send("\xd9\x80\xc0");
+                }
+                else
+                {
+                    gubg::msgpack::Serializer<std::string, garf::pod::TypeIds, 5> serializer;
+                    serializer.serialize(motor);
+                    std::string msg;
+                    gubg::d9::encode(msg, serializer.buffer());
+                    //L(testing::toHex(msg));
+                    arduino_.send(msg);
+                }
+
                 reset();
             }
         private:
@@ -63,10 +87,9 @@ ReturnCode poll()
 
     Arduino arduino;
     KeepAlive keepAlive(arduino);
-    keepAlive.setTimeout(std::chrono::milliseconds(500));
+    keepAlive.setTimeout(std::chrono::milliseconds(100));
 
     vector<int> directions(2);
-    vector<int> motors(2);
 
     while (!quit)
     {
@@ -95,14 +118,8 @@ ReturnCode poll()
                         directions[1] = event.jaxis.value;
                         break;
                 }
-                motors[0] = (-directions[0]-directions[1])/1200;
-                motors[1] = (+directions[0]-directions[1])/1200;
-                string motors_msgpack;
-                msgpack::write(motors_msgpack, motors);
-                ostringstream oss;
-                oss << "\xd9" << motors_msgpack;
-                //L(testing::toHex(oss.str()));
-                arduino.send(oss.str());
+                keepAlive.motor.left = (+directions[0]-directions[1])/800;
+                keepAlive.motor.right = (-directions[0]-directions[1])/800;
             }
         }
     }
@@ -121,3 +138,4 @@ int main()
 {
     return (mss::isOK(main_()) ? 0 : -1);
 }
+#include "gubg/log/end.hpp"

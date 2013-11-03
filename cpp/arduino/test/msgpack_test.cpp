@@ -21,7 +21,7 @@ class SendTime: public garf::Metronome_crtp<SendTime, 1000>
         }
     private:
         gubg::FixedVector<uint8_t, 4> d9Header_;
-        gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, garf::TypeIds, 2> serializer_;
+        gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, garf::pod::TypeIds, 2> serializer_;
 };
 SendTime g_sendTime;
 

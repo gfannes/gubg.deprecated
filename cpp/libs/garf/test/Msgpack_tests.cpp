@@ -21,7 +21,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
         {
             switch (tid)
             {
-                case garf::TypeIds::Led:
+                case garf::pod::TypeIds::Led:
                     return wrap(led);
             }
             return gubg::msgpack::Wrapper<my::String>();
@@ -30,7 +30,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
         {
             switch (tid)
             {
-                case garf::TypeIds::Led:
+                case garf::pod::TypeIds::Led:
                     if (led.id == 13)
                         g_blinker.setPattern(led.pattern);
                     break;

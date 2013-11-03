@@ -96,6 +96,9 @@ namespace gubg
 #define MSS_END() \
     return MSS_RC_VAR.get()
 
+//Normally, MSS_RC_VAR.get() is OK
+#define MSS_RETURN_OK()      return MSS_RC_VAR.get()
+
 #define MSS_DIRECT(v) \
     do { \
         if (!MSS_RC_VAR.set(v)) \

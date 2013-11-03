@@ -109,6 +109,7 @@ namespace gubg
                             }
 
                         void reset() {sm_.process(Reset());}
+
                     private:
                         Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
