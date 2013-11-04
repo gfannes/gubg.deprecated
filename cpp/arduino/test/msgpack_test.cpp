@@ -1,5 +1,6 @@
 #include "garf/Elapser.hpp"
 #include "garf/Metronome.hpp"
+#include "garf/Blinker.hpp"
 #include "garf/Time.hpp"
 #include "garf/Types.hpp"
 #include "gubg/msgpack/Serializer.hpp"
@@ -7,6 +8,8 @@
 
 typedef garf::Elapser Elapser;
 Elapser g_elapser;
+typedef garf::Blinker<100> Blinker;
+Blinker g_blinker;
 
 class SendTime: public garf::Metronome_crtp<SendTime, 1000>
 {
@@ -28,10 +31,12 @@ SendTime g_sendTime;
 void setup()
 {
     Serial.begin(9600);
+    g_blinker.setPattern(0xf0);
 }
 
 void loop()
 {
     g_elapser.process();
+    g_blinker.process(g_elapser.elapse());
     g_sendTime.process(g_elapser.elapse());
 }

@@ -7,9 +7,9 @@ namespace garf
 {
     namespace time
     {
-        Time now()
+        pod::Time now()
         {
-            Time res;
+            pod::Time res;
             res.millis = millis();
             return res;
         }

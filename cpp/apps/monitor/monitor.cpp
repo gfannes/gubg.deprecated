@@ -30,8 +30,8 @@ namespace
                 S();L(STREAM(aid, tid));
                 switch (tid)
                 {
-                    case garf::TypeIds::Time: L("Time");return wrap(time_);
-                    case garf::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
+                    case garf::pod::TypeIds::Time: L("Time");return wrap(time_);
+                    case garf::pod::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
                 }
                 return Wrapper_();
             }
@@ -40,8 +40,8 @@ namespace
                 S();L(STREAM(aid, tid));
                 switch (tid)
                 {
-                    case garf::TypeIds::Time: std::cout << time_ << std::endl; break;
-                    case garf::TypeIds::TopInfo: std::cout << topInfo_ << std::endl; break;
+                    case garf::pod::TypeIds::Time: std::cout << time_ << std::endl; break;
+                    case garf::pod::TypeIds::TopInfo: std::cout << topInfo_ << std::endl; break;
                 }
             }
             void msgpack_set(gubg::msgpack::AttributeId aid, long v)
@@ -57,8 +57,8 @@ namespace
                 S();L(STREAM(aid, str));
             }
         private:
-            garf::Time time_;
-            garf::TopInfo topInfo_;
+            garf::pod::Time time_;
+            garf::pod::TopInfo topInfo_;
     };
 }
 #include "gubg/log/end.hpp"
@@ -150,8 +150,8 @@ namespace
                             {
                                 cout << "User typed: " << buf << endl;
 
-                                gubg::msgpack::Serializer<std::string, garf::TypeIds, 3> serializer;
-                                garf::Led led; led.id = 13; led.pattern = 0x7f;
+                                gubg::msgpack::Serializer<std::string, garf::pod::TypeIds, 3> serializer;
+                                garf::pod::Led led; led.id = 13; led.pattern = 0x7f;
                                 serializer.serialize(led);
 
                                 size_t nrWritten;
