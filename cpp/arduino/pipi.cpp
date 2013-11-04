@@ -5,6 +5,8 @@
 using namespace gubg;
 using namespace std;
 
+#define GUBG_MODULE "pipi"
+#include "gubg/log/begin.hpp"
 enum class ReturnCode {MSS_DEFAULT_CODES, };
 
 namespace 
@@ -54,3 +56,4 @@ int main()
 {
     return (MSS_IS_OK(main_()) ? 0 : -1);
 }
+#include "gubg/log/end.hpp"
