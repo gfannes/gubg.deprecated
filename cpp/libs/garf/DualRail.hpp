@@ -7,7 +7,7 @@ namespace garf
 {
     enum class Role {Master, Slave};
 
-    template <int Bit0, int Bit1, Role R>
+    template <int Bit0, int Bit1, typename Buffer>
         class DualRail
         {
             public:
@@ -21,94 +21,111 @@ namespace garf
                     return digitalRead(Bit0) && digitalRead(Bit1);
                 }
 
-                bool sendBits_block(const void *data, size_t nrBits)
+                Buffer &buffer() {return buffer_;}
+
+                bool send()
                 {
-                    sm_.process(GrabLine());
-                    if (!sm_.checkState(State::ReadyToSend))
-                        return false;
-                    uint8_t byte = 0;
-                    //Does not matter which line we pull down the first time, the should both be low
-                    bool bit = false;
-                    for (size_t ix = 0; ix < nrBits; ++ix)
-                    {
-                        //Make sure the previous bit is pulled down again since there are more bits to send
-                        digitalWrite((bit ? Bit1 : Bit0), false);
-                        delayMicroseconds(1);
-
-                        //Compute which line should pulse
-                        const auto subix = ix%8;
-                        if (subix == 0)
-                            byte = ((const uint8_t*)data)[ix/8];
-                        bit = (byte & (1 << subix));
-
-                        //Set line to high; if this was the last bit, it has to stay high, else, the next round will pull it down again
-                        digitalWrite((bit ? Bit1 : Bit0), true);
-                        delayMicroseconds(1);
-                    }
-                    //Bring the other line high too
-                    digitalWrite((bit ? Bit0 : Bit1), true);
-                    sm_.process(ReleaseLine());
-                    return true;
+                    sm_.process(DataIsReadyForSending());
+                    return sm_.checkState(State::RequestToSend);
                 }
 
                 void process()
                 {
-                    sm_.process(Initialize());
+                    do
+                    {
+                        sm_.process(Process());
+                    }
+                    while (sm_.checkState(State::Sending));
                 }
 
             private:
                 DATA_EVENT(Initialize);
-                DATA_EVENT(GrabLine);
-                DATA_EVENT(ReleaseLine);
-                enum class State {Idle, ReadyToSend};
-                typedef gubg::StateMachine_ftop<DualRail<Bit0, Bit1, R>, State, State::Idle> SM;
-                friend class gubg::StateMachine_ftop<DualRail<Bit0, Bit1, R>, State, State::Idle>;
+                DATA_EVENT(DataIsReadyForSending);
+                DATA_EVENT(Process);
+                enum class State {Idle, RequestToSend, PeerIsPresent, GetReady, Sending};
+                typedef gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle> SM;
+                friend class gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle>;
                 SM sm_;
-                void sm_exit(State s) { }
+                void sm_exit(State s)
+                {
+                    switch (s)
+                    {
+                        case State::GetReady:
+                            //Take control of Bit1-line and pull down
+                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                            //Pull down Bit0 too
+                            digitalWrite(Bit0, false);
+                            break;
+                    }
+                }
                 void sm_enter(typename SM::State &s)
                 {
                     switch (s())
                     {
                         case State::Idle:
+                            //Release both lines with internal pull-ups enabled
                             pinMode(Bit0, INPUT); digitalWrite(Bit0, true);
                             pinMode(Bit1, INPUT); digitalWrite(Bit1, true);
                             break;
+                        case State::RequestToSend:
+                            //Take control of Bit0-line and pull down
+                            digitalWrite(Bit0, false); pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
+                            byteIX_ = 0;
+                            bitIX_ = 0;
+                            break;
+                        case State::PeerIsPresent:
+                            //Peer pulled-down Bit1, indicating he is present
+                            s.changeTo(State::GetReady);
+                            break;
+                        case State::GetReady:
+                            //Bit0-line up to indicate to peer we saw its presence and are about to take control of Bit1-line
+                            //too and will start sending
+                            digitalWrite(Bit0, true);
+                            s.changeTo(State::Sending);
+                            break;
+                        case State::Sending:
+                            break;
                     }
                 }
-                void sm_event(typename SM::State &s, Initialize) {}
-                void sm_event(typename SM::State &s, GrabLine)
+                void sm_event(typename SM::State &s, DataIsReadyForSending)
                 {
-                    if (s() != State::Idle)
-                        return;
-                    if (!digitalRead(Bit0) || !digitalRead(Bit1))
-                        //Too late, peer already Grabbed the line
-                        return;
-                    if (R == Role::Master)
+                    switch (s())
                     {
-                        pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
-                        while (!digitalRead(Bit1))
-                        {
-                            //Peer is trying to grab the line at the same time. But we are master, so peer should back-off
-                        }
-                        pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                        case State::Idle:
+                            if (!buffer_.empty())
+                                s.changeTo(State::RequestToSend);
+                            break;
                     }
-                    if (R == Role::Slave)
-                    {
-                        pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
-                        if (!digitalRead(Bit0))
-                        {
-                            //Peer is trying to grab the line at the same time. We are slave, so we should back-off
-                            pinMode(Bit1, INPUT); digitalWrite(Bit1, true);
-                            return;
-                        }
-                        pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
-                    }
-                    s.changeTo(State::ReadyToSend);
                 }
-                void sm_event(typename SM::State &s, ReleaseLine)
+                void sm_event(typename SM::State &s, Process)
                 {
-                    s.changeTo(State::Idle);
+                    switch (s())
+                    {
+                        case State::RequestToSend:
+                            if (digitalRead(Bit1) == false)
+                                s.changeTo(State::PeerIsPresent);
+                            break;
+                        case State::Sending:
+                            {
+                                const int line = (buffer_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
+                                digitalWrite(line, true);
+                                ++bitIX_;
+                                if (bitIX_ == 8)
+                                {
+                                    ++byteIX_;
+                                    bitIX_ = 0;
+                                }
+                                digitalWrite(line, false);
+                                if (byteIX_ == buffer_.size())
+                                    s.changeTo(State::Idle);
+                            }
+                            break;
+                    }
                 }
+
+                Buffer buffer_;
+                size_t byteIX_ = 0;
+                uint8_t bitIX_ = 0;
         };
 }
 
