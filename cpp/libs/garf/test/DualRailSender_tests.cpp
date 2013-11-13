@@ -10,23 +10,26 @@ namespace my
     typedef gubg::FixedVector<uint8_t, 20> String;
 }
 
-struct Sender: garf::Metronome_crtp<Sender, 1000>
+struct Sender: garf::DualRail<Sender, 11, 12, my::String>, garf::Metronome_crtp<Sender, 100>
 {
     Sender()
     {
-        dr_.tx().push_back(0xc0);
-        dr_.tx().push_back(0x5a);
+        const char *msg = "Hello world!";
+        for (int i = 0; i < 12; ++i)
+            DualRail::tx().push_back(msg[i]);
+        //for (; msg != '\0'; ++msg)
+            //DualRail::tx().push_back(*(const uint8_t*)msg);
     }
     void process(unsigned int elapse)
     {
-        dr_.process();
+        DualRail::process();
         Metronome_crtp::process(elapse);
     }
     void metronome_tick()
     {
-        dr_.send();
+        DualRail::send();
     }
-    garf::DualRail<11, 12, my::String> dr_;
+    void dualrail_received(const my::String &) {}
 };
 Sender sender;
 
@@ -43,5 +46,4 @@ void loop()
     digitalWrite(13, true);
     sender.process(elapser.elapse());
     digitalWrite(13, false);
-    delay(1);
 }

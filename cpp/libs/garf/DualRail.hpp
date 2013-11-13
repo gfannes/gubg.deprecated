@@ -8,7 +8,7 @@ namespace garf
 {
     enum class Role {Master, Slave};
 
-    template <int Bit0, int Bit1, typename Buffer>
+    template <typename Receiver, int Bit0, int Bit1, typename Buffer>
         class DualRail
         {
             public:
@@ -40,12 +40,14 @@ namespace garf
                 }
 
             private:
+                Receiver &receiver_() {return static_cast<Receiver&>(*this);}
+
                 DATA_EVENT(Initialize);
                 DATA_EVENT(DataIsReadyForSending);
                 DATA_EVENT(Process);
-                enum class State {Idle = 0, RequestToSend = 1, PeerIsPresent = 2, GetReady = 3, Sending = 4, AcknowledgeRequestToSend = 5, WaitForSilence = 6, Silence = 7, Error = 8};
-                typedef gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle> SM;
-                friend class gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle>;
+                enum class State {Idle = 0, RequestToSend = 1, PeerIsPresent = 2, GetReady = 3, Sending = 4, AcknowledgeRequestToSend = 5, WaitForSilence = 6, Silence = 7, ReceivedMessage = 8, Error = 9};
+                typedef gubg::StateMachine_ftop<DualRail<Receiver, Bit0, Bit1, Buffer>, State, State::Idle> SM;
+                friend class gubg::StateMachine_ftop<DualRail<Receiver, Bit0, Bit1, Buffer>, State, State::Idle>;
                 SM sm_;
                 bool busyProcess_;
                 void sm_exit(State s)
@@ -82,14 +84,16 @@ namespace garf
                             //Release both lines with internal pull-ups enabled
                             pinMode(Bit0, INPUT_PULLUP);
                             pinMode(Bit1, INPUT_PULLUP);
-                            delay(500);
+                            rx_.clear();
+                            rxBitIX_ = 0;
+                            //delay(500);
                             break;
 
                         case State::RequestToSend:
                             //Take control of Bit0-line and pull down
                             digitalWrite(Bit0, false); pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
-                            byteIX_ = 0;
-                            bitIX_ = 0;
+                            txByteIX_ = 0;
+                            txBitIX_ = 0;
                             break;
                         case State::PeerIsPresent:
                             //Peer pulled-down Bit1, indicating he is present
@@ -114,6 +118,11 @@ namespace garf
                         case State::WaitForSilence:
                         case State::Silence:
                             busyProcess_ = true;
+                            break;
+
+                        case State::ReceivedMessage:
+                            receiver_().dualrail_received(rx_);
+                            s.changeTo(State::Idle);
                             break;
 
                         case State::Error:
@@ -148,10 +157,10 @@ namespace garf
                             break;
                         case State::Sending:
                             {
-                                const int line = (tx_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
+                                const int line = (tx_[txByteIX_] & (1 << txBitIX_)) ? Bit1 : Bit0; 
                                 
                                 //We are still in silence
-                                delay(100);
+                                delay(1);
 
                                 //Start the pulse
                                 digitalWrite(line, true);
@@ -159,14 +168,14 @@ namespace garf
                                 auto &led = leds_[(line == Bit0) ? 6 : 7];
                                 led.on();
 #endif
-                                delay(400);
-                                ++bitIX_;
-                                if (bitIX_ == 8)
+                                delay(1);
+                                ++txBitIX_;
+                                if (txBitIX_ == 8)
                                 {
-                                    ++byteIX_;
-                                    bitIX_ = 0;
+                                    ++txByteIX_;
+                                    txBitIX_ = 0;
                                 }
-                                if (byteIX_ == tx_.size())
+                                if (txByteIX_ == tx_.size())
                                     //Pulse will never end, other line will come high too
                                     s.changeTo(State::Idle);
                                 else
@@ -195,7 +204,14 @@ namespace garf
                                     //Both lines are up, we are idle again
                                     digitalWrite(13, false);
                                     if (s() == State::WaitForSilence)
-                                        s.changeTo(State::Idle);
+                                    {
+                                        if (rxBitIX_ != 0)
+                                            //We currently only allow messages with a multiple of 8 bits
+                                            s.changeTo(State::Error);
+                                        else
+                                            //We received a correct message
+                                            s.changeTo(State::ReceivedMessage);
+                                    }
                                     else
                                         //Oops, we missed the last bit, both lines should not go up together
                                         s.changeTo(State::Error);
@@ -210,6 +226,13 @@ namespace garf
                                 {
                                     //We were in silence and one line just went up: we received a bit
                                     s.changeTo(State::WaitForSilence);
+                                    if (rxBitIX_ == 0)
+                                        rx_.push_back(b1 ? 0x01 : 0x00);
+                                    else if (b1)
+                                        rx_.back() |= (1 << rxBitIX_);
+                                    ++rxBitIX_;
+                                    if (rxBitIX_ == 8)
+                                        rxBitIX_ = 0;
                                     pinMode(13, OUTPUT);
                                     digitalWrite(13, b0);
                                 }
@@ -219,10 +242,11 @@ namespace garf
                 }
 
                 Buffer tx_;
-                size_t byteIX_ = 0;
-                uint8_t bitIX_ = 0;
+                size_t txByteIX_ = 0;
+                uint8_t txBitIX_ = 0;
 
                 Buffer rx_;
+                uint8_t rxBitIX_ = 0;
 
 #ifdef DR_DEBUG
                 static const int NrLEDs = 9;
