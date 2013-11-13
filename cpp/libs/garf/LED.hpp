@@ -24,6 +24,11 @@ namespace garf
                 if (initialize_(vcc_, gnd_))
                     digitalWrite(vcc_, false);
             }
+            void set(bool b)
+            {
+                if (initialize_(vcc_, gnd_))
+                    digitalWrite(vcc_, b);
+            }
         private:
             //Returns true if correctly initialized (now or in some call before this)
             bool initialize_(uint8_t vcc, uint8_t gnd)

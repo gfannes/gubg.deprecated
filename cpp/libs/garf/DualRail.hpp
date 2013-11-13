@@ -22,12 +22,18 @@ namespace garf
                     return digitalRead(Bit0) && digitalRead(Bit1);
                 }
 
-                Buffer &tx() {return tx_;}
-
-                bool send()
+                bool send(const void *data, size_t len)
                 {
-                    sm_.process(DataIsReadyForSending());
-                    return sm_.checkState(State::RequestToSend);
+                    if (!data || len == 0)
+                        return false;
+                    if (sm_.checkState(State::RequestToSend))
+                        return false;
+                    sm_.process(IndicateRequestToSend());
+                    if (!sm_.checkState(State::RequestToSend))
+                        return false;
+                    for (size_t i = 0; i < len; ++i)
+                        buffer_.push_back(((const uint8_t *)(data))[i]);
+                    return true;
                 }
 
                 void process()
@@ -43,7 +49,7 @@ namespace garf
                 Receiver &receiver_() {return static_cast<Receiver&>(*this);}
 
                 DATA_EVENT(Initialize);
-                DATA_EVENT(DataIsReadyForSending);
+                DATA_EVENT(IndicateRequestToSend);
                 DATA_EVENT(Process);
                 enum class State {Idle = 0, RequestToSend = 1, PeerIsPresent = 2, GetReady = 3, Sending = 4, AcknowledgeRequestToSend = 5, WaitForSilence = 6, Silence = 7, ReceivedMessage = 8, Error = 9};
                 typedef gubg::StateMachine_ftop<DualRail<Receiver, Bit0, Bit1, Buffer>, State, State::Idle> SM;
@@ -52,9 +58,6 @@ namespace garf
                 bool busyProcess_;
                 void sm_exit(State s)
                 {
-#ifdef DR_DEBUG
-                    leds_[(int)s].off();
-#endif
                     switch (s)
                     {
                         case State::GetReady:
@@ -66,16 +69,26 @@ namespace garf
                             pinMode(Bit1, INPUT_PULLUP);
                             break;
                     }
+#ifdef DR_DEBUG
+                    leds_[(int)s].off();
+                    led0_.set(digitalRead(Bit0));
+                    led1_.set(digitalRead(Bit1));
+#endif
                 }
                 void sm_enter(typename SM::State &s)
                 {
 #ifdef DR_DEBUG
-                    if (s() == State::Idle)
+                    if (doAttach_)
                     {
                         for (int i = 0; i < NrLEDs; ++i)
                             leds_[i].attach(22+2*i, 23+2*i);
+                        led0_.attach(2, 3);
+                        led1_.attach(4, 5);
+                        doAttach_ = false;
                     }
                     leds_[(int)s()].on();
+                    led0_.set(digitalRead(Bit0));
+                    led1_.set(digitalRead(Bit1));
 #endif
                     busyProcess_ = false;
                     switch (s())
@@ -84,16 +97,15 @@ namespace garf
                             //Release both lines with internal pull-ups enabled
                             pinMode(Bit0, INPUT_PULLUP);
                             pinMode(Bit1, INPUT_PULLUP);
-                            rx_.clear();
-                            rxBitIX_ = 0;
+                            buffer_.clear();
+                            byteIX_ = 0;
+                            bitIX_ = 0;
                             //delay(500);
                             break;
 
                         case State::RequestToSend:
                             //Take control of Bit0-line and pull down
                             digitalWrite(Bit0, false); pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
-                            txByteIX_ = 0;
-                            txBitIX_ = 0;
                             break;
                         case State::PeerIsPresent:
                             //Peer pulled-down Bit1, indicating he is present
@@ -121,7 +133,7 @@ namespace garf
                             break;
 
                         case State::ReceivedMessage:
-                            receiver_().dualrail_received(rx_);
+                            receiver_().dualrail_received(buffer_);
                             s.changeTo(State::Idle);
                             break;
 
@@ -130,19 +142,27 @@ namespace garf
                             s.changeTo(State::Idle);
                             break;
                     }
+#ifdef DR_DEBUG
+                    //if (!busyProcess_)
+                      //  delay(100);
+#endif
                 }
-                void sm_event(typename SM::State &s, DataIsReadyForSending)
+                void sm_event(typename SM::State &s, IndicateRequestToSend)
                 {
                     switch (s())
                     {
                         case State::Idle:
-                            if (!tx_.empty() && digitalRead(Bit0) && digitalRead(Bit1))
+                            if (digitalRead(Bit0) && digitalRead(Bit1))
                                 s.changeTo(State::RequestToSend);
                             break;
                     }
                 }
                 void sm_event(typename SM::State &s, Process)
                 {
+#ifdef DR_DEBUG
+                    led0_.set(digitalRead(Bit0));
+                    led1_.set(digitalRead(Bit1));
+#endif
                     switch (s())
                     {
                         case State::Idle:
@@ -157,25 +177,28 @@ namespace garf
                             break;
                         case State::Sending:
                             {
-                                const int line = (tx_[txByteIX_] & (1 << txBitIX_)) ? Bit1 : Bit0; 
+                                const int halfBitDelay = 10;
+                                const int line = (buffer_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
                                 
                                 //We are still in silence
-                                delay(1);
+                                delay(halfBitDelay);
 
                                 //Start the pulse
                                 digitalWrite(line, true);
 #ifdef DR_DEBUG
-                                auto &led = leds_[(line == Bit0) ? 6 : 7];
-                                led.on();
+                                if (line == Bit0)
+                                    led0_.on();
+                                else
+                                    led1_.on();
 #endif
-                                delay(1);
-                                ++txBitIX_;
-                                if (txBitIX_ == 8)
+                                delay(halfBitDelay);
+                                ++bitIX_;
+                                if (bitIX_ == 8)
                                 {
-                                    ++txByteIX_;
-                                    txBitIX_ = 0;
+                                    ++byteIX_;
+                                    bitIX_ = 0;
                                 }
-                                if (txByteIX_ == tx_.size())
+                                if (byteIX_ == buffer_.size())
                                     //Pulse will never end, other line will come high too
                                     s.changeTo(State::Idle);
                                 else
@@ -183,7 +206,10 @@ namespace garf
                                     //Pulse is over
                                     digitalWrite(line, false);
 #ifdef DR_DEBUG
-                                    led.off();
+                                if (line == Bit0)
+                                    led0_.off();
+                                else
+                                    led1_.off();
 #endif
                                 }
                             }
@@ -205,7 +231,7 @@ namespace garf
                                     digitalWrite(13, false);
                                     if (s() == State::WaitForSilence)
                                     {
-                                        if (rxBitIX_ != 0)
+                                        if (bitIX_ != 0)
                                             //We currently only allow messages with a multiple of 8 bits
                                             s.changeTo(State::Error);
                                         else
@@ -226,13 +252,13 @@ namespace garf
                                 {
                                     //We were in silence and one line just went up: we received a bit
                                     s.changeTo(State::WaitForSilence);
-                                    if (rxBitIX_ == 0)
-                                        rx_.push_back(b1 ? 0x01 : 0x00);
+                                    if (bitIX_ == 0)
+                                        buffer_.push_back(b1 ? 0x01 : 0x00);
                                     else if (b1)
-                                        rx_.back() |= (1 << rxBitIX_);
-                                    ++rxBitIX_;
-                                    if (rxBitIX_ == 8)
-                                        rxBitIX_ = 0;
+                                        buffer_.back() |= (1 << bitIX_);
+                                    ++bitIX_;
+                                    if (bitIX_ == 8)
+                                        bitIX_ = 0;
                                     pinMode(13, OUTPUT);
                                     digitalWrite(13, b0);
                                 }
@@ -241,16 +267,16 @@ namespace garf
                     }
                 }
 
-                Buffer tx_;
-                size_t txByteIX_ = 0;
-                uint8_t txBitIX_ = 0;
-
-                Buffer rx_;
-                uint8_t rxBitIX_ = 0;
+                Buffer buffer_;
+                size_t byteIX_ = 0;
+                uint8_t bitIX_ = 0;
 
 #ifdef DR_DEBUG
-                static const int NrLEDs = 9;
+                static const int NrLEDs = 10;
+                bool doAttach_ = true;
                 garf::LED leds_[NrLEDs];
+                garf::LED led0_;
+                garf::LED led1_;
 #endif
         };
 }
