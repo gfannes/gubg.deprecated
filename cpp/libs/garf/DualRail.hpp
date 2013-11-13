@@ -2,6 +2,7 @@
 #define HEADER_garf_DualRail_hpp_ALREADY_INCLUDED
 
 #include "gubg/StateMachine.hpp"
+#include "garf/LED.hpp"
 
 namespace garf
 {
@@ -21,7 +22,7 @@ namespace garf
                     return digitalRead(Bit0) && digitalRead(Bit1);
                 }
 
-                Buffer &buffer() {return buffer_;}
+                Buffer &tx() {return tx_;}
 
                 bool send()
                 {
@@ -35,38 +36,55 @@ namespace garf
                     {
                         sm_.process(Process());
                     }
-                    while (sm_.checkState(State::Sending));
+                    while (busyProcess_);
                 }
 
             private:
                 DATA_EVENT(Initialize);
                 DATA_EVENT(DataIsReadyForSending);
                 DATA_EVENT(Process);
-                enum class State {Idle, RequestToSend, PeerIsPresent, GetReady, Sending};
+                enum class State {Idle = 0, RequestToSend = 1, PeerIsPresent = 2, GetReady = 3, Sending = 4, AcknowledgeRequestToSend = 5, WaitForSilence = 6, Silence = 7, Error = 8};
                 typedef gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle> SM;
                 friend class gubg::StateMachine_ftop<DualRail<Bit0, Bit1, Buffer>, State, State::Idle>;
                 SM sm_;
+                bool busyProcess_;
                 void sm_exit(State s)
                 {
+#ifdef DR_DEBUG
+                    leds_[(int)s].off();
+#endif
                     switch (s)
                     {
                         case State::GetReady:
-                            //Take control of Bit1-line and pull down
-                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
-                            //Pull down Bit0 too
+                            //GetReady pulse is over, pull Bit0-line down into a silence
                             digitalWrite(Bit0, false);
+                            break;
+                        case State::AcknowledgeRequestToSend:
+                            //Release the Bit1-line, peer needs it for communication
+                            pinMode(Bit1, INPUT_PULLUP);
                             break;
                     }
                 }
                 void sm_enter(typename SM::State &s)
                 {
+#ifdef DR_DEBUG
+                    if (s() == State::Idle)
+                    {
+                        for (int i = 0; i < NrLEDs; ++i)
+                            leds_[i].attach(22+2*i, 23+2*i);
+                    }
+                    leds_[(int)s()].on();
+#endif
+                    busyProcess_ = false;
                     switch (s())
                     {
                         case State::Idle:
                             //Release both lines with internal pull-ups enabled
-                            pinMode(Bit0, INPUT); digitalWrite(Bit0, true);
-                            pinMode(Bit1, INPUT); digitalWrite(Bit1, true);
+                            pinMode(Bit0, INPUT_PULLUP);
+                            pinMode(Bit1, INPUT_PULLUP);
+                            delay(500);
                             break;
+
                         case State::RequestToSend:
                             //Take control of Bit0-line and pull down
                             digitalWrite(Bit0, false); pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
@@ -78,12 +96,29 @@ namespace garf
                             s.changeTo(State::GetReady);
                             break;
                         case State::GetReady:
-                            //Bit0-line up to indicate to peer we saw its presence and are about to take control of Bit1-line
-                            //too and will start sending
+                            //Take control of Bit1-line and pull down
+                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                            //Bit0-line up to indicate to peer we saw its presence and have taken control of the Bit1-line
                             digitalWrite(Bit0, true);
                             s.changeTo(State::Sending);
                             break;
                         case State::Sending:
+                            busyProcess_ = true;
+                            break;
+
+                        case State::AcknowledgeRequestToSend:
+                            //Take control of Bit1-line and pull down to acknowledge the RequestToSend
+                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                            busyProcess_ = true;
+                            break;
+                        case State::WaitForSilence:
+                        case State::Silence:
+                            busyProcess_ = true;
+                            break;
+
+                        case State::Error:
+                            delay(1000);
+                            s.changeTo(State::Idle);
                             break;
                     }
                 }
@@ -92,7 +127,7 @@ namespace garf
                     switch (s())
                     {
                         case State::Idle:
-                            if (!buffer_.empty())
+                            if (!tx_.empty() && digitalRead(Bit0) && digitalRead(Bit1))
                                 s.changeTo(State::RequestToSend);
                             break;
                     }
@@ -101,31 +136,98 @@ namespace garf
                 {
                     switch (s())
                     {
+                        case State::Idle:
+                            if (digitalRead(Bit0) == false)
+                                //Peer pulled the Bit0-line down, he wants to start sending. To acknowledge
+                                //this, we will pull down the Bit1-line
+                                s.changeTo(State::AcknowledgeRequestToSend);
+                            break;
                         case State::RequestToSend:
                             if (digitalRead(Bit1) == false)
                                 s.changeTo(State::PeerIsPresent);
                             break;
                         case State::Sending:
                             {
-                                const int line = (buffer_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
+                                const int line = (tx_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
+                                
+                                //We are still in silence
+                                delay(100);
+
+                                //Start the pulse
                                 digitalWrite(line, true);
+#ifdef DR_DEBUG
+                                auto &led = leds_[(line == Bit0) ? 6 : 7];
+                                led.on();
+#endif
+                                delay(400);
                                 ++bitIX_;
                                 if (bitIX_ == 8)
                                 {
                                     ++byteIX_;
                                     bitIX_ = 0;
                                 }
-                                digitalWrite(line, false);
-                                if (byteIX_ == buffer_.size())
+                                if (byteIX_ == tx_.size())
+                                    //Pulse will never end, other line will come high too
                                     s.changeTo(State::Idle);
+                                else
+                                {
+                                    //Pulse is over
+                                    digitalWrite(line, false);
+#ifdef DR_DEBUG
+                                    led.off();
+#endif
+                                }
+                            }
+                            break;
+
+                        case State::AcknowledgeRequestToSend:
+                            if (digitalRead(Bit0) == true)
+                                //Bit0 went up, we have to release Bit1 asap, communication will start very soon now
+                                s.changeTo(State::WaitForSilence);
+                            break;
+                        case State::WaitForSilence:
+                        case State::Silence:
+                            {
+                                const bool b0 = digitalRead(Bit0);
+                                const bool b1 = digitalRead(Bit1);
+                                if (b0 && b1)
+                                {
+                                    //Both lines are up, we are idle again
+                                    digitalWrite(13, false);
+                                    if (s() == State::WaitForSilence)
+                                        s.changeTo(State::Idle);
+                                    else
+                                        //Oops, we missed the last bit, both lines should not go up together
+                                        s.changeTo(State::Error);
+                                }
+                                else if (!b0 && !b1)
+                                {
+                                    //Both lines are down, this is a silence
+                                    digitalWrite(13, false);
+                                    s.changeTo(State::Silence);
+                                }
+                                else if (s() == State::Silence)
+                                {
+                                    //We were in silence and one line just went up: we received a bit
+                                    s.changeTo(State::WaitForSilence);
+                                    pinMode(13, OUTPUT);
+                                    digitalWrite(13, b0);
+                                }
                             }
                             break;
                     }
                 }
 
-                Buffer buffer_;
+                Buffer tx_;
                 size_t byteIX_ = 0;
                 uint8_t bitIX_ = 0;
+
+                Buffer rx_;
+
+#ifdef DR_DEBUG
+                static const int NrLEDs = 9;
+                garf::LED leds_[NrLEDs];
+#endif
         };
 }
 

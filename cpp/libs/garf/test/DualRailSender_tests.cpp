@@ -1,4 +1,5 @@
 #include "Arduino.h"
+#define DR_DEBUG
 #include "garf/DualRail.hpp"
 #include "garf/Metronome.hpp"
 #include "garf/Elapser.hpp"
@@ -13,8 +14,8 @@ struct Sender: garf::Metronome_crtp<Sender, 1000>
 {
     Sender()
     {
-        dr_.buffer().push_back('0xc0');
-        dr_.buffer().push_back('0x5a');
+        dr_.tx().push_back(0xc0);
+        dr_.tx().push_back(0x5a);
     }
     void process(unsigned int elapse)
     {
@@ -38,5 +39,9 @@ void setup()
 void loop()
 {
     elapser.process();
+    pinMode(13, OUTPUT);
+    digitalWrite(13, true);
     sender.process(elapser.elapse());
+    digitalWrite(13, false);
+    delay(1);
 }
