@@ -1,0 +1,7 @@
+garf todo
+=========
+
+== DualRail
+* Event point when transmission is over
+* Event point for errors
+* Faster using direct port abuse
