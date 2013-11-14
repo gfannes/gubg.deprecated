@@ -66,7 +66,7 @@ namespace garf
                             break;
                         case State::AcknowledgeRequestToSend:
                             //Release the Bit1-line, peer needs it for communication
-                            release_<Bit1>();
+                            releaseLine_<Bit1>();
                             break;
                     }
 #ifdef DR_DEBUG
@@ -99,8 +99,8 @@ namespace garf
                     {
                         case State::Idle:
                             //Release both lines with internal pull-ups enabled
-                            release_<Bit0>();
-                            release_<Bit1>();
+                            releaseLine_<Bit0>();
+                            releaseLine_<Bit1>();
                             buffer_.clear();
                             byteIX_ = 0;
                             bitIX_ = 0;
@@ -109,7 +109,7 @@ namespace garf
 
                         case State::RequestToSend:
                             //Take control of Bit0-line and pull down
-                            digitalWrite(Bit0, false); pinMode(Bit0, OUTPUT); digitalWrite(Bit0, false);
+                            grabLine_<Bit0>();
                             break;
                         case State::PeerIsPresent:
                             //Peer pulled-down Bit1, indicating he is present
@@ -117,7 +117,7 @@ namespace garf
                             break;
                         case State::GetReady:
                             //Take control of Bit1-line and pull down
-                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                            grabLine_<Bit1>();
                             //Bit0-line up to indicate to peer we saw its presence and have taken control of the Bit1-line
                             digitalWrite(Bit0, true);
                             delay_();
@@ -129,7 +129,7 @@ namespace garf
 
                         case State::AcknowledgeRequestToSend:
                             //Take control of Bit1-line and pull down to acknowledge the RequestToSend
-                            digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
+                            grabLine_<Bit1>();
                             busyProcess_ = true;
                             break;
                         case State::WaitForSilence:
@@ -284,13 +284,19 @@ namespace garf
 #endif
                 }
                 template <int Bit>
-                    void release_()
+                    void releaseLine_()
                     {
 #if 1
                         pinMode(Bit, INPUT_PULLUP);
 #else
                         pinMode(Bit, INPUT); digitalWrite(Bit, true);
 #endif
+                    }
+                template <int Bit>
+                    void grabLine_()
+                    {
+                        pinMode(Bit, OUTPUT);
+                        digitalWrite(Bit, false);
                     }
 
                 Buffer buffer_;
