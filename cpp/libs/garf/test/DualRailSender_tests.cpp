@@ -29,6 +29,8 @@ garf::Elapser elapser;
 
 void setup()
 {
+    Serial.begin(9600);
+    Serial.write("Starting\n\r");
 }
 
 void loop()

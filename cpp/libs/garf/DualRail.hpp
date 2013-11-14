@@ -66,7 +66,7 @@ namespace garf
                             break;
                         case State::AcknowledgeRequestToSend:
                             //Release the Bit1-line, peer needs it for communication
-                            pinMode(Bit1, INPUT_PULLUP);
+                            release_<Bit1>();
                             break;
                     }
 #ifdef DR_DEBUG
@@ -77,6 +77,10 @@ namespace garf
                 }
                 void sm_enter(typename SM::State &s)
                 {
+#if 0
+                    Serial.print("Changing state to ");
+                    Serial.println((int)s());
+#endif
 #ifdef DR_DEBUG
                     if (doAttach_)
                     {
@@ -95,8 +99,8 @@ namespace garf
                     {
                         case State::Idle:
                             //Release both lines with internal pull-ups enabled
-                            pinMode(Bit0, INPUT_PULLUP);
-                            pinMode(Bit1, INPUT_PULLUP);
+                            release_<Bit0>();
+                            release_<Bit1>();
                             buffer_.clear();
                             byteIX_ = 0;
                             bitIX_ = 0;
@@ -116,6 +120,7 @@ namespace garf
                             digitalWrite(Bit1, false); pinMode(Bit1, OUTPUT); digitalWrite(Bit1, false);
                             //Bit0-line up to indicate to peer we saw its presence and have taken control of the Bit1-line
                             digitalWrite(Bit0, true);
+                            delay_();
                             s.changeTo(State::Sending);
                             break;
                         case State::Sending:
@@ -159,7 +164,7 @@ namespace garf
                 }
                 void sm_event(typename SM::State &s, Process)
                 {
-#ifdef DR_DEBUG
+#ifdef DR_DEBUG_
                     led0_.set(digitalRead(Bit0));
                     led1_.set(digitalRead(Bit1));
 #endif
@@ -177,11 +182,10 @@ namespace garf
                             break;
                         case State::Sending:
                             {
-                                const int halfBitDelay = 10;
                                 const int line = (buffer_[byteIX_] & (1 << bitIX_)) ? Bit1 : Bit0; 
                                 
                                 //We are still in silence
-                                delay(halfBitDelay);
+                                delay_();
 
                                 //Start the pulse
                                 digitalWrite(line, true);
@@ -191,7 +195,7 @@ namespace garf
                                 else
                                     led1_.on();
 #endif
-                                delay(halfBitDelay);
+                                delay_();
                                 ++bitIX_;
                                 if (bitIX_ == 8)
                                 {
@@ -199,8 +203,11 @@ namespace garf
                                     bitIX_ = 0;
                                 }
                                 if (byteIX_ == buffer_.size())
+                                {
                                     //Pulse will never end, other line will come high too
                                     s.changeTo(State::Idle);
+                                    delay_();
+                                }
                                 else
                                 {
                                     //Pulse is over
@@ -266,6 +273,25 @@ namespace garf
                             break;
                     }
                 }
+
+                void delay_()
+                {
+#if 1
+                    delay(1);
+#else
+                    //This still works, going to 100us causes a lot of error, it is too fast for the current implementation
+                    delayMicroseconds(500);
+#endif
+                }
+                template <int Bit>
+                    void release_()
+                    {
+#if 1
+                        pinMode(Bit, INPUT_PULLUP);
+#else
+                        pinMode(Bit, INPUT); digitalWrite(Bit, true);
+#endif
+                    }
 
                 Buffer buffer_;
                 size_t byteIX_ = 0;
