@@ -3,6 +3,7 @@
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Descriptor.hpp"
 #include "gubg/msgpack/Factory.hpp"
+#include "gubg/msgpack/Serializer.hpp"
 #include "gubg/d9/Decoder.hpp"
 #include "gubg/Testing.hpp"
 #include "garf/Types.hpp"
@@ -29,8 +30,8 @@ namespace
                 S();L(STREAM(aid, tid));
                 switch (tid)
                 {
-                    case garf::TypeIds::Time: L("Time");return wrap(time_);
-                    case garf::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
+                    case garf::pod::TypeIds::Time: L("Time");return wrap(time_);
+                    case garf::pod::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
                 }
                 return Wrapper_();
             }
@@ -39,8 +40,8 @@ namespace
                 S();L(STREAM(aid, tid));
                 switch (tid)
                 {
-                    case garf::TypeIds::Time: std::cout << time_ << std::endl; break;
-                    case garf::TypeIds::TopInfo: std::cout << topInfo_ << std::endl; break;
+                    case garf::pod::TypeIds::Time: std::cout << time_ << std::endl; break;
+                    case garf::pod::TypeIds::TopInfo: std::cout << topInfo_ << std::endl; break;
                 }
             }
             void msgpack_set(gubg::msgpack::AttributeId aid, long v)
@@ -56,8 +57,8 @@ namespace
                 S();L(STREAM(aid, str));
             }
         private:
-            garf::Time time_;
-            garf::TopInfo topInfo_;
+            garf::pod::Time time_;
+            garf::pod::TopInfo topInfo_;
     };
 }
 #include "gubg/log/end.hpp"
@@ -148,6 +149,14 @@ namespace
                             else
                             {
                                 cout << "User typed: " << buf << endl;
+
+                                gubg::msgpack::Serializer<std::string, garf::pod::TypeIds, 3> serializer;
+                                garf::pod::Led led; led.id = 13; led.pattern = 0x7f;
+                                serializer.serialize(led);
+
+                                size_t nrWritten;
+                                tty_.write(nrWritten, serializer.buffer());
+                                cout << "I wrote " << nrWritten << " bytes: " << gubg::testing::toHex(serializer.buffer()) << endl;
                             }
                         }
                         break;

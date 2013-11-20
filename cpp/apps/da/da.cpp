@@ -22,10 +22,8 @@ namespace
         else
             DA_FINALIZE_ERROR("Unknown fix task " << STREAM(name));
     }
-    void addUnitTestTask(Tasks &tasks)
-    {
-        tasks.push_back(UnitTests::create());
-    }
+    void addUnitTestTask(Tasks &tasks) { tasks.push_back(UnitTests::create()); }
+    void addWebSiteTask(Tasks &tasks) { tasks.push_back(WebSite::create()); }
 
     ReturnCode main_(int argc, char **argv)
     {
@@ -48,6 +46,7 @@ namespace
             optionParser.addMandatory("-t", "--tree TREE", "Add TREE", [&options](string tree){options.trees.push_back(tree);});
             optionParser.addMandatory("-i", "--include PATH", "Include PATH", [&options](string path){options.includes.push_back(path);});
             optionParser.addSwitch("-u", "--unit-tests", "Unit tests (*_tests.cpp, not in deprecated dir)", [&tasks](){addUnitTestTask(tasks);});
+            optionParser.addSwitch("-w", "--web-site", "Build website", [&tasks](){addWebSiteTask(tasks);});
             optionParser.addSwitch("-v", "--verbose", "Verbose", [&verbose](){verbose = true;});
 
             OptionParser::Args args;

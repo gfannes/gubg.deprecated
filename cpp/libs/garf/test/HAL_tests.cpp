@@ -4,7 +4,7 @@
 
 typedef garf::Elapser Elapser;
 Elapser g_elapser;
-typedef garf::Blinker<200> Blinker;
+typedef garf::Blinker<100> Blinker;
 Blinker g_blinker;
 
 int i;
@@ -12,8 +12,7 @@ int i;
 void setup()
 {
     g_elapser = Elapser();
-    g_blinker = Blinker();
-    g_blinker.set(garf::BlinkMode::Normal);
+    g_blinker.setPattern(0xf0);
     Serial.begin(9600);
     i = 0;
 }

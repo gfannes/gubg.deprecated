@@ -5,7 +5,7 @@
 #include "gubg/d9/Helper.hpp"
 #include "gubg/cassert.hpp"
 
-#define GUBG_MODULE_ "d9"
+#define GUBG_MODULE "d9"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

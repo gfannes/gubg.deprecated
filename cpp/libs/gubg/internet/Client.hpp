@@ -3,6 +3,8 @@
 
 #include "gubg/internet/Socket.hpp"
 
+#define GUBG_MODULE "Client"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace internet
@@ -30,5 +32,6 @@ namespace gubg
         };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif

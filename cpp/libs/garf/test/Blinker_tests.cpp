@@ -4,20 +4,21 @@
 
 typedef garf::Elapser Elapser;
 Elapser g_elapser;
-typedef garf::Blinker<200> Blinker;
+typedef garf::Blinker<100> Blinker;
 Blinker g_blinker;
 
-class CycleMode: public garf::Metronome_crtp<CycleMode, 2000>
+class CycleMode: public garf::Metronome_crtp<CycleMode, 5000>
 {
     public:
         CycleMode(): mode_(0) {}
         void metronome_tick()
         {
-            switch (++mode_ % 3)
+            switch (++mode_ % 4)
             {
-                case 0: g_blinker.set(garf::BlinkMode::Flat); break;
-                case 1: g_blinker.set(garf::BlinkMode::Normal); break;
-                case 2: g_blinker.set(garf::BlinkMode::Fast); break;
+                case 0: g_blinker.setPattern(0xaa); break;
+                case 1: g_blinker.setPattern(0xcc); break;
+                case 2: g_blinker.setPattern(0xf0); break;
+                case 3: g_blinker.setPattern(0xfe); break;
             }
         }
     private:

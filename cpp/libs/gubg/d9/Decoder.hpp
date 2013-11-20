@@ -12,8 +12,8 @@ namespace gubg
     {
         //CRTP decoder
         //Receiver should provide:
-        // * ReturnCode d9_start() => OK
-        // * ReturnCode d9_ubyte(ubyte b) => ContentComplete or OK
+        // * void d9_start()
+        // * void d9_ubyte(ubyte b)
         // * void d9_error(ReturnCode error)
         //FlipsT is a normal template parameter which specifies how the flip bytes are cached
         template <typename Receiver, typename FlipsT>

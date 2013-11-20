@@ -53,5 +53,6 @@ namespace std
 #include "da/FixNewLines.hpp"
 #include "da/CompileExe.hpp"
 #include "da/UnitTests.hpp"
+#include "da/WebSite.hpp"
 
 #endif

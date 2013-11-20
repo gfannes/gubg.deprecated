@@ -4,17 +4,20 @@
 #include "garf/Types.hpp"
 #include <ostream>
 
-namespace std
+namespace garf
 {
-    inline ostream &operator<<(ostream &os, const garf::Time &t)
+    namespace pod
     {
-        os << "Time: " << t.millis << " ms";
-        return os;
-    }
-    inline ostream &operator<<(ostream &os, const garf::TopInfo &ti)
-    {
-        os << "TopInfo: nrLoops:" << ti.nrLoops << ", maxElapse:" << ti.maxElapse;
-        return os;
+        inline std::ostream &operator<<(std::ostream &os, const Time &t)
+        {
+            os << "Time: " << t.millis << " ms";
+            return os;
+        }
+        inline std::ostream &operator<<(std::ostream &os, const TopInfo &ti)
+        {
+            os << "TopInfo: nrLoops:" << ti.nrLoops << ", maxElapse:" << ti.maxElapse;
+            return os;
+        }
     }
 }
 

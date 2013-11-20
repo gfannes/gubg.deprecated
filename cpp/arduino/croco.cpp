@@ -1,5 +1,3 @@
-#define GUBG_LOG
-#include "gubg/logging/Log.hpp"
 #include "gubg/Testing.hpp"
 #include "gubg/internet/Client.hpp"
 #include "gubg/internet/Endpoint.hpp"
@@ -13,6 +11,8 @@
 using namespace gubg;
 using namespace std;
 
+#define GUBG_MODULE_ "croco"
+#include "gubg/log/begin.hpp"
 enum class ReturnCode {MSS_DEFAULT_CODES, NoJoystickFound, CouldNotOpenJoystick};
 
 namespace 
@@ -24,12 +24,12 @@ namespace
                 Endpoint_crtp(socket) { }
             bool endpoint_receive(const string &msg)
             {
-                LOG_S(endpoint_receive, "Received " << msg.size() << " bytes");
+                S();L("Received " << msg.size() << " bytes");
                 return true;
             }
             bool endpoint_closed()
             {
-                LOG_S(endpoint_closed, "Connection was closed");
+                S();L("Connection was closed");
                 return true;
             }
     };
@@ -43,7 +43,7 @@ namespace
         public:
             void timer_expired()
             {
-                pipi->send("\xd9\xc0");
+                pipi->send("\xd9\x80\xc0");
                 reset();
             }
         private:
@@ -86,6 +86,7 @@ ReturnCode poll()
 
     while (!quit)
     {
+        S();
         keepAlive.process();
 
         SDL_Event event;
@@ -136,4 +137,4 @@ int main()
 {
     return (mss::isOK(main_()) ? 0 : -1);
 }
-
+#include "gubg/log/end.hpp"

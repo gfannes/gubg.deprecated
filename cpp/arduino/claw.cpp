@@ -1,6 +1,5 @@
-//@#platform.target:=arduino#@
 #include "Arduino.h"
-#include "Servo.h"
+#include "Servo/Servo.h"
 
 namespace 
 {

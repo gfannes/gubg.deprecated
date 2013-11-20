@@ -11,8 +11,8 @@
 ** Benefit of msgpack type info and small binary footprint
 
 == Format
-11011001 (0bbbbbbb)* (10bbbbbb)* (0xd9-free content)
-|-0xd9-| |      flip bits      | |-----------------|
+11011001 (0bbbbbbb)* (10bbbbbb) (0xd9-free content)
+|-0xd9-| |      flip bits     | |-----------------|
 
 == Examples
 * "abc":          0xd9 0x80      0xa3 0x61 0x62 0x63 => 6 bytes

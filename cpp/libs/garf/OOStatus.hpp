@@ -3,14 +3,11 @@
 
 namespace garf
 {
+    //TODO::Convert this to a timer crtp
     template <typename Receiver, long Timeout>
         class OOStatus_crtp
         {
             public:
-                OOStatus_crtp():
-                    isOnline_(false),
-                    timeout_(Timeout){}
-
                 //Call this in setup to make sure Receiver will get the oostatus_offline() message
                 void setup()
                 {
@@ -50,8 +47,8 @@ namespace garf
             private:
                 Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
-                bool isOnline_;
-                long timeout_;
+                bool isOnline_ = false;
+                long timeout_ = Timeout;
         };
 }
 

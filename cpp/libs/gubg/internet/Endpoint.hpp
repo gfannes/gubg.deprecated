@@ -6,7 +6,10 @@
 #include <thread>
 #include <mutex>
 #include <memory>
+#include <cassert>
 
+#define GUBG_MODULE "Endpoint"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace internet
@@ -125,5 +128,6 @@ namespace gubg
             };
     }
 }
+#include "gubg/log/end.hpp"
 
 #endif
