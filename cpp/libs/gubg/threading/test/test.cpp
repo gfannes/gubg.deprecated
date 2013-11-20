@@ -1,8 +1,6 @@
-#include "threading/InstanceCounter.hpp"
-#include "threading/Queue.hpp"
-#include "Testing.hpp"
-#define GUBG_LOG
-#include "logging/Log.hpp"
+#include "gubg/threading/InstanceCounter.hpp"
+#include "gubg/threading/Queue.hpp"
+#include "gubg/Testing.hpp"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -10,21 +8,21 @@ using namespace std;
 struct Thread: gubg::InstanceCounter<Thread>
 {
     Thread():
-        thread_(boost::ref(*this)){}
+        thread_(std::ref(*this)){}
     void operator()()
     {
         {
-            boost::mutex::scoped_lock lock(countMutex);
+            std::lock_guard<std::mutex> lock(countMutex);
             ++count;
         }
         delete this;
     }
-    boost::thread thread_;
+    std::thread thread_;
     static int count;
-    static boost::mutex countMutex;
+    static std::mutex countMutex;
 };
 int Thread::count = 0;
-boost::mutex Thread::countMutex;
+std::mutex Thread::countMutex;
 
 struct Message
 {
@@ -32,33 +30,39 @@ struct Message
         continue_(c){}
     int continue_;
 };
+#define GUBG_MODULE "Producer"
+#include "gubg/log/begin.hpp"
 typedef gubg::threading::Queue<Message> QueueT;
 struct Producer: gubg::InstanceCounter<Producer>
 {
     Producer(int nrMessages, QueueT &queue):
         nrMessages_(nrMessages),
         queue_(queue),
-        thread_(boost::ref(*this)){}
+        thread_(std::ref(*this)){}
     void operator()()
     {
-        LOG_S(Producer, "Starting up");
+        S();L("Starting up");
         for (int i = 0; i < nrMessages_; ++i)
             queue_.push(unique_ptr<Message>(new Message(true)));
-        LOG_M("Time the go");
+        L("Time the go");
         delete this;
     }
     int nrMessages_;
     QueueT &queue_;
-    boost::thread thread_;
+    std::thread thread_;
 };
+#include "gubg/log/end.hpp"
+
+#define GUBG_MODULE "Consumer"
+#include "gubg/log/begin.hpp"
 struct Consumer: gubg::InstanceCounter<Consumer>
 {
     Consumer(QueueT &queue):
         queue_(queue),
-        thread_(boost::ref(*this)){}
+        thread_(std::ref(*this)){}
     void operator()()
     {
-        LOG_S(Consumer, "Starting up");
+        S();L("Starting up");
         try
         {
             while (true)
@@ -71,17 +75,20 @@ struct Consumer: gubg::InstanceCounter<Consumer>
         }
         catch (QueueT::Closed &)
         {
-            LOG_M("The queue is closed");
+            L("The queue is closed");
         }
-        LOG_M("Time the go");
+        L("Time the go");
         delete this;
     }
     QueueT &queue_;
-    boost::thread thread_;
+    std::thread thread_;
     static int messageCount;
 };
+#include "gubg/log/end.hpp"
 int Consumer::messageCount = 0;
 
+#define GUBG_MODULE "test"
+#include "gubg/log/begin.hpp"
 int main()
 {
     TEST_TAG(main);
@@ -117,3 +124,4 @@ int main()
     }
     return 0;
 }
+#include "gubg/log/end.hpp"

@@ -3,6 +3,7 @@
 using std::string;
 //We don't use std::regex, it seems to be alpha
 #define L_USE_BOOST_REGEX
+//#define L_USE_STD_REGEX
 #ifdef L_USE_STD_REGEX
 #include <regex>
 using namespace std;

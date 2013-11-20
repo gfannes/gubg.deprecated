@@ -1,6 +1,0 @@
-#ifndef _vix_icpp_init_stub
-#define _vix_icpp_init_stub
-#include "CtrlCore/init"
-#include "gubg/init"
-#include "GridCtrl/init"
-#endif

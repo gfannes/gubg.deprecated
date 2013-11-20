@@ -2,11 +2,11 @@
 #define HEADER_gubg_logging_Framework_hpp_ALREADY_INCLUDED
 
 #include "gubg/Singleton.hpp"
-#include "boost/thread/thread.hpp"
-#include "boost/thread/tss.hpp"
-#include "boost/algorithm/string/join.hpp"
 #include <iostream>
+#include <sstream>
 #include <memory>
+#include <thread>
+#include <vector>
 
 namespace gubg
 {
@@ -16,8 +16,8 @@ namespace gubg
         {
             static void write(const std::string &str)
             {
-                static boost::mutex mutex;
-                boost::mutex::scoped_lock lock(mutex);
+                static std::mutex mutex;
+                std::lock_guard<std::mutex> lock(mutex);
                 std::cout << str;
             }
         };
@@ -25,16 +25,16 @@ namespace gubg
         {
             public:
                 Scope(const char *module, const char *name, bool verboseDtor):
-                    threadId_(boost::this_thread::get_id()),
+                    threadId_(std::this_thread::get_id()),
                     verboseDtor_(verboseDtor)
             {
-                auto &nameStack = gubg::Singleton<boost::thread_specific_ptr<NameStack>>::instance();
-                if (!(nameStack_ = nameStack.get()))
+                thread_local NameStack *nameStack = 0;
+                if (!(nameStack_ = nameStack))
                 {
                     std::ostringstream oss;
                     oss << "Thread " << threadId_ << " logs for the first time" << std::endl;
                     Output::write(oss.str());
-                    nameStack.reset(nameStack_ = new NameStack);
+                    nameStack = nameStack_ = new NameStack;
                 }
                 nameStack_->push_back(Name(module, name));
             }
@@ -80,7 +80,7 @@ namespace gubg
                     Name(const char *m, const char *n): module(m), name(n){}
                 };
                 typedef std::vector<Name> NameStack;
-                boost::thread::id threadId_;
+                std::thread::id threadId_;
                 bool verboseDtor_;
                 NameStack *nameStack_;
                 std::unique_ptr<std::string> indent_;

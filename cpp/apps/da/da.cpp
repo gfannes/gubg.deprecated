@@ -18,7 +18,7 @@ namespace
 		else if (name == "guards")
             tasks.push_back(FixIncludeGuards::create());
 		else if (name == "newlines")
-            tasks.push_back(FixNewLines::create());
+            tasks.push_back(FixNewlines::create());
         else
             DA_FINALIZE_ERROR("Unknown fix task " << STREAM(name));
     }

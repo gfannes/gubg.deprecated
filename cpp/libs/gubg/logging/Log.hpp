@@ -34,7 +34,7 @@
 #define LOG_M_(level, msg) LOG_M_ ## level(msg)
 
 #ifndef GUBG_MODULE
-#define GUBG_MODULE "?"
+#error You have to specify GUBG_MODULE as a string
 #endif
 namespace
 {

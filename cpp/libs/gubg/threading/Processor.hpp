@@ -2,11 +2,10 @@
 #define HEADER_gubg_threading_Processor_hpp_ALREADY_INCLUDED
 
 #include "gubg/threading/Codes.hpp"
-#include "gubg/thread.hpp"
-#include "gubg/mutex.hpp"
-#include "gubg/condition_variable.hpp"
 #include <memory>
 #include <queue>
+#include <thread>
+#include <condition_variable>
 
 #define GUBG_MODULE "Processor"
 #include "gubg/log/begin.hpp"
