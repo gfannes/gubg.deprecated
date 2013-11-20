@@ -1,5 +1,4 @@
 " Cpp mappings
-map -l <Bslash>aiSTREAM()<Esc><Bslash>ai
 map -y <Bslash>aa" <<  << "<Esc><Bslash>a4hi
 
 " include ""
@@ -12,8 +11,14 @@ map -g <Bslash>ai#ifndef <Esc>:call ReadString("Path to header")<CR>$by$o#define
 map -b -o<Bslash>aa{<Esc>-oa}<Esc><Bslash>ak$
 " class
 map -c <Bslash>aoclass <Esc>:call ReadString("Class name")<CR>-oa{<Esc>-oapublic:<Esc>-oaprivate:<Esc>-oa};<Esc><Bslash>akk$
+" struct
+map -C <Bslash>aostruct <Esc>:call ReadString("Struct name")<CR>-oa{<Esc>-oa};<Esc><Bslash>ak$
 " namespace
 map -s <Bslash>aonamespace <Esc>:call ReadString("Namespace name")<CR>-oa{<Esc>-oa}<Esc><Bslash>ak$
+" switch
+map -S <Bslash>aoswitch (<Esc>:call ReadString("Switcher")<CR>A)<Esc>o{<Esc>ocase : break;<Esc>o}<Esc><Bslash>akhhhhhhh
+" for
+map -f <Bslash>aofor (<Esc>:call ReadString("Type")<CR>A::iterator it = <Esc>:call ReadString("Container")<CR>A.begin(); it != .end(); ++it)<Esc>o{<Esc>o}<Esc><Bslash>akhhhhhhh
 
 let hn = hostname()
 let athome = 0
@@ -34,6 +39,7 @@ if athome
 	map -m <Bslash>ajOMSS();<Esc><Bslash>ahi
 	map -v <Bslash>aoReturnCode<Esc>o{<Esc>oMSS_BEGIN(ReturnCode);<Esc>oMSS_END();<Esc>o}<Esc>kkkk<Bslash>aA 
 else
+    map -l <Bslash>ao#define ID_NAME "<Esc>:call ReadString("Indep debug name")<CR>A"<Esc>o#include "indep/debug/begin.h"<Esc>o#include "indep/debug/end.h"<Esc><Bslash>ak$
 	if indep
 		" INDEP_MSS
 		map -n <Bslash>ajOINDEP_MSS_BEGIN(ReturnCode);<Esc>oINDEP_MSS_END();<Esc><Bslash>ak$

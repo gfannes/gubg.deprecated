@@ -3,7 +3,7 @@
 #include <cctype>
 using namespace std;
 
-#define GUBG_MODULE_ "XMLCoding"
+#define GUBG_MODULE "XMLCoding"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

@@ -50,6 +50,7 @@ namespace std
 }
 
 #include "da/FixIncludeGuards.hpp"
+#include "da/FixNewLines.hpp"
 #include "da/CompileExe.hpp"
 #include "da/UnitTests.hpp"
 

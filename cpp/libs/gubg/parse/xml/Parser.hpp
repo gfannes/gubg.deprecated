@@ -8,7 +8,7 @@
 #include <string>
 #include <map>
 
-#define GUBG_MODULE_ "xml::Parser"
+#define GUBG_MODULE "xml::Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

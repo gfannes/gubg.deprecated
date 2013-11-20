@@ -14,8 +14,11 @@ namespace
 {
     void addFixTask(Tasks &tasks, const string &name)
     {
-        if (name == "guards")
+		if (false) {}
+		else if (name == "guards")
             tasks.push_back(FixIncludeGuards::create());
+		else if (name == "newlines")
+            tasks.push_back(FixNewLines::create());
         else
             DA_FINALIZE_ERROR("Unknown fix task " << STREAM(name));
     }
@@ -34,7 +37,7 @@ namespace
         {
             OptionParser optionParser("Develop assistent");
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){DA_FINALIZE_OK(optionParser.help());});
-            optionParser.addMandatory("-f", "--fix TYPE", "Fix something (e.g., guards)", [&tasks](string v){addFixTask(tasks, v);});
+            optionParser.addMandatory("-f", "--fix TYPE", "Fix something (guards, newlines)", [&tasks](string v){addFixTask(tasks, v);});
             optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
             optionParser.addMandatory("-e", "--exe-debug SOURCE", "Compile SOURCE into a debug executable",
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Debug));});
