@@ -1,6 +1,6 @@
 #include "gubg/Platform.hpp"
-#include "boost/filesystem.hpp"
-#include "boost/thread/mutex.hpp"
+//#include "boost/filesystem.hpp"
+#include <mutex>
 #include <fstream>
 
 #ifdef GUBG_LINUX
@@ -20,7 +20,7 @@ namespace
     //4k is the intel page size
     const size_t MaxPath = 4096;
     char page[MaxPath];
-    boost::mutex pageMutex;
+    std::mutex pageMutex;
 }
 
 namespace gubg
@@ -59,6 +59,7 @@ namespace gubg
         return res;
     }
 
+	/*
     bool createDirectory(const string &p)
     {
         return boost::filesystem::create_directory(p);
@@ -87,10 +88,11 @@ namespace gubg
         }
         return true;
     }
+	*/
 
     string getCurrentWorkingDirectory()
     {
-        boost::mutex::scoped_lock lock(pageMutex);
+        std::lock_guard<std::mutex> lock(pageMutex);
         page[0] = '\0';
         auto tmp = ::getcwd(page, MaxPath);
         return page;

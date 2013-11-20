@@ -1,6 +1,10 @@
 #include "gubg/testing/TestMgr.hpp"
 #include "gubg/OnlyOnce.hpp"
-#include "boost/thread/tss.hpp"
+#ifdef USE_BOOST_TSS 
+//#include "boost/thread/tss.hpp"
+#else
+#include <thread>
+#endif
 #include <memory>
 #include <mutex>
 #include "gubg/nullptr.hpp"
@@ -16,7 +20,11 @@ namespace
 
     //This will hold the thread-specific root tag
     void doNothing(gubg::testing::TestTag*){}
+#ifdef USE_BOOST_TSS 
     boost::thread_specific_ptr<TestTag> rootTag(doNothing);
+#else
+	thread_local TestTag *rootTag = 0;
+#endif
 }
 
 //Statistics methods
@@ -47,6 +55,7 @@ TestTag::TestTag(const string &tag):
     tag_(tag),
     root_(nullptr)
 {
+#ifdef USE_BOOST_TSS 
     if (nullptr == rootTag.get())
     {
         rootTag.reset(this);
@@ -56,17 +65,37 @@ TestTag::TestTag(const string &tag):
     {
         root_ = rootTag.get()->root_;
     }
+#else
+	if (!rootTag)
+	{
+		rootTag = this;
+		root_ = new ThreadStats;
+	}
+	else
+	{
+		root_ = rootTag->root_;
+	}
+#endif
     root_->addTag(tag_);
 }
 TestTag::~TestTag()
 {
     root_->popTag();
+#ifdef USE_BOOST_TSS 
     if (this == rootTag.get())
     {
         TestMaster::instance().report(*(const ThreadStats *)root_);
         delete root_;
         rootTag.reset(nullptr);
     }
+#else
+    if (this == rootTag)
+    {
+        TestMaster::instance().report(*(const ThreadStats *)root_);
+        delete root_;
+        rootTag = 0;
+    }
+#endif
 }
 void TestTag::addResult(TestResult result)
 {
