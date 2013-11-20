@@ -11,7 +11,7 @@ namespace da
         public:
            static Ptr create() { return Ptr(new UnitTests); }
 
-            virtual ReturnCode execute(const Options &);
+           virtual ReturnCode execute(const Options &);
         private:
     };
 }

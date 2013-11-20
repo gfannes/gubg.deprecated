@@ -6,7 +6,7 @@ da-help:
 
 DA_CPP_FILES := \
 	da \
-	FixIncludeGuards CompileExe FileCache Arduino UnitTests \
+	FixIncludeGuards CompileExe FileCache Arduino UnitTests WebSite \
 	build/Builder build/Header build/Headers build/Source build/Sources \
 	package/Packages package/Local package/Boost package/Nana package/Arduino package/GUBG package/SDL package/DecodeIt package/Libs package/Forest \
 	compile/Compiler \
