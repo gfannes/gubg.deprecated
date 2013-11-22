@@ -3,15 +3,16 @@
 #define GUBG_MODULE "Logging unit test"
 #include "gubg/logging/Log.hpp"
 #include "gubg/threading/InstanceCounter.hpp"
-#include "boost/thread/mutex.hpp"
-using namespace boost;
+#include <thread>
+using std::thread;
+using std::ref;
 
 namespace
 {
     struct Thread: gubg::InstanceCounter<Thread>
     {
-        Thread():
-            thread_(ref(*this)){}
+        Thread(): thread_(ref(*this)){}
+		~Thread() {thread_.detach();}
 
         void operator()()
         {
@@ -48,7 +49,6 @@ int main()
         LOG_S(threadLauncher, "Launching " << NrThreads << " threads");
         for (int i = 0; i < NrThreads; ++i)
             new Thread;
-        while (Thread::nrInstances() > 0)
-            ;
+        while (Thread::nrInstances() > 0) {}
     }
 }

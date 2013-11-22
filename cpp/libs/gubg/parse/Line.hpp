@@ -14,6 +14,7 @@ namespace gubg
 			enum End {None, Unix, Dos, OldMac};
 			End end;
 		};
+		const char *to_s(Line::End);
 
 		typedef std::vector<Line> Lines;
 
@@ -21,6 +22,9 @@ namespace gubg
 
 		std::string join(const Lines &);
 		std::string join(const Lines &, Line::End);
+
+		//Return false if no single end is used (None is allowed)
+		bool analyseEnds(Line::End &, const Lines &);
 	}
 }
 

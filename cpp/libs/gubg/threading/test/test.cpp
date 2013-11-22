@@ -7,8 +7,8 @@ using namespace std;
 
 struct Thread: gubg::InstanceCounter<Thread>
 {
-    Thread():
-        thread_(std::ref(*this)){}
+    Thread(): thread_(std::ref(*this)) {}
+    ~Thread() {thread_.detach();}
     void operator()()
     {
         {
@@ -39,6 +39,7 @@ struct Producer: gubg::InstanceCounter<Producer>
         nrMessages_(nrMessages),
         queue_(queue),
         thread_(std::ref(*this)){}
+	~Producer() {thread_.detach();}
     void operator()()
     {
         S();L("Starting up");
@@ -60,6 +61,7 @@ struct Consumer: gubg::InstanceCounter<Consumer>
     Consumer(QueueT &queue):
         queue_(queue),
         thread_(std::ref(*this)){}
+	~Consumer() {thread_.detach();}
     void operator()()
     {
         S();L("Starting up");
@@ -87,7 +89,7 @@ struct Consumer: gubg::InstanceCounter<Consumer>
 #include "gubg/log/end.hpp"
 int Consumer::messageCount = 0;
 
-#define GUBG_MODULE "test"
+#define GUBG_MODULE_ "test"
 #include "gubg/log/begin.hpp"
 int main()
 {
