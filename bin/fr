@@ -36,7 +36,7 @@ recursor = Proc.new do |dir|
 	case File.basename(dir)
 	when /^\./
 		false
-	when /^(html)|(docs)|(data)$/
+	when /^(html)|(docs)$/
 		false
 	else
 		true
@@ -73,6 +73,7 @@ Dir.each("./",recursor) do |dir, fn|
 			path[pwd] = ''
 			lines = str.split("\n")
 			lines.each_with_index do |line, ix|
+				#puts("#{ix}\t#{line}")
 				if line[lookFor]
 					case options[:operation]
 					when :show

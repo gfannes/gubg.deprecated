@@ -2,6 +2,7 @@
 #include "pa/Model.hpp"
 #include "gubg/tree/dfs/Iterate.hpp"
 #include <fstream>
+#include <algorithm>
 using namespace pa;
 using namespace std;
 

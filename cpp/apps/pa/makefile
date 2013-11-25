@@ -1,6 +1,6 @@
 .PHONY: doitall fix
 doitall: $(GUBG_BIN)
-	da -e pa.cpp
+	da -E pa.cpp
 ifeq ($(GUBG_PLATFORM),linux)
 	cp pa.exe $(GUBG_BIN)/pa
 endif

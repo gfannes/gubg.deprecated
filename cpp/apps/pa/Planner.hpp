@@ -41,6 +41,7 @@ namespace pa
 				planning.absence("wba", d);
 			planning.absence("wba", Day(2013, 8, 16));
 #endif
+			planning.absence("wba", Day(2013, 11, 28));
 
 			{
 				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));
@@ -52,6 +53,13 @@ namespace pa
 					planning.absence("gfa", d);
 					planning.absence("wba", d);
 				}
+			}
+
+			//Quality week
+			for (auto d: dayRange(Day(2014, 3, 31), Day(2014, 4, 4)))
+			{
+				planning.absence("gfa", d);
+				planning.absence("wba", d);
 			}
 		}
 
