@@ -25,6 +25,12 @@ int main()
 {
     TEST_TAG(FilesystemTests);
     {
+        TEST_TAG(resolve);
+        File file(".");
+        TEST_OK(resolve(file));
+        L(file);
+    }
+    {
         TEST_TAG(getcwd);
         L(gubg::file::getcwd().name());
     }

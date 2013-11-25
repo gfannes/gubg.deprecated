@@ -4,6 +4,7 @@
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/hash/MD5.hpp"
+#include <sstream>
 
 #define GUBG_MODULE "Creater"
 #include "gubg/log/begin.hpp"

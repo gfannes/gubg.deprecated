@@ -61,10 +61,11 @@ ReturnCode Forest::add(const File &root, const Tree::Extensions &extensions)
 
 Forest::Files Forest::allFiles() const
 {
+    assert(invariants_());
+
     Files files;
     for (auto tree: trees_)
     {
-        assert((bool)tree);
         for (const auto &f: tree->files())
             files.push_back(f);
     }
@@ -72,6 +73,8 @@ Forest::Files Forest::allFiles() const
 }
 Forest::Files Forest::allFiles(const Tree::Extensions &exts) const
 {
+    assert(invariants_());
+
     //Setup a lookup set
     set<string> extensions;
     for (auto e: exts)
@@ -80,7 +83,6 @@ Forest::Files Forest::allFiles(const Tree::Extensions &exts) const
     Files files;
     for (auto tree: trees_)
     {
-        assert((bool)tree);
         for (const auto &f: tree->files())
         {
             if (extensions.count(f.extension()))
@@ -91,10 +93,11 @@ Forest::Files Forest::allFiles(const Tree::Extensions &exts) const
 }
 Forest::Files Forest::allRoots() const
 {
+    assert(invariants_());
+
     Files files;
     for (auto tree: trees_)
     {
-        assert((bool)tree);
         files.push_back(tree->root());
     }
     return files;
@@ -106,9 +109,10 @@ ReturnCode Forest::resolve(File &resolved, const File &partial, const size_t ove
 }
 ReturnCode Forest::resolve(File &resolved, File &root, const File &partial, const size_t overlap) const
 {
+    assert(invariants_());
+
     for (auto tree: trees_)
     {
-        assert((bool)tree);
         File wanted = tree->root();
         size_t ol = overlap;
         while (ol > 0)
@@ -136,4 +140,12 @@ bool Forest::contains(const File &wf) const
         if (wf.name() == f.name())
             return true;
     return false;
+}
+
+bool Forest::invariants_() const
+{
+    for (auto tree: trees_)
+        if (!tree)
+            return false;
+    return true;
 }

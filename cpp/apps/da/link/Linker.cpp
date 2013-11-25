@@ -1,5 +1,6 @@
 #include "da/link/Linker.hpp"
 #include "da/Arduino.hpp"
+#include "gubg/Platform.hpp"
 #include <sstream>
 #include <stdlib.h>
 #include <cassert>

@@ -6,186 +6,180 @@
 #include <vector>
 #include <ostream>
 
-namespace gubg
-{
-    namespace file
+namespace gubg { namespace file {
+
+    class File
     {
-        class File
-        {
-            public:
-                enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
-                typedef std::string Name;
-                static const char Delimiter;// = '/';
+        public:
+            enum Type {Unknown, Directory, Regular, Symbolic, FIFO};
+            typedef std::string Name;
+            static const char Delimiter;// = '/';
 
-                File()                            :type_(Unknown)                        {}
-                File(const Name & name)           :type_(Unknown), name_(name)           {canonicalize_();}
-                File(      Name &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
-                File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
-                File(      Name &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
+            File()                            :type_(Unknown)                        {}
+            File(const Name & name)           :type_(Unknown), name_(name)           {canonicalize_();}
+            File(      Name &&name)           :type_(Unknown), name_(std::move(name)){canonicalize_();}
+            File(const Name & name, Type type):type_(type),    name_(name)           {canonicalize_();}
+            File(      Name &&name, Type type):type_(type),    name_(std::move(name)){canonicalize_();}
 
-                bool operator==(const File &rhs) const
+            bool operator==(const File &rhs) const
+            {
+                return type_ == rhs.type_ && name_ == rhs.name_;
+            }
+            bool operator<(const File &rhs) const
+            {
+                return std::make_pair(name_, type_) < std::make_pair(rhs.name_, rhs.type_);
+            }
+
+            bool empty() const {return name_.empty();}
+
+            void clear()
+            {
+                type_ = Unknown;
+                name_.clear();
+            }
+
+            //Getters
+            Name name() const {return name_;}
+            Type type()        const {return type_;}
+            std::string extension() const
+            {
+                if (type() != Regular && type() != Unknown)
+                    return "";
+                auto ixdot = name_.rfind('.');
+                if (ixdot == std::string::npos)
+                    return "";
+                auto ixdelim = name_.rfind(Delimiter);
+                if (ixdelim != std::string::npos && ixdot < ixdelim)
+                    return "";
+                return name_.substr(ixdot+1);
+            }
+            Name basename() const
+            {
+                auto ix = name_.rfind(Delimiter);
+                return name_.substr((ix == std::string::npos ? 0 : ix+1));
+            }
+
+            //Setters
+            File &setName(const Name & name){name_ = name;            canonicalize_(); return *this;}
+            File &setName(      Name &&name){name_ = std::move(name); canonicalize_(); return *this;}
+            File &setType(Type type)               {type_ = type;            return *this;}
+            File &setExtension(const std::string &ext)
+            {
+                if (type() == Regular || type() == Unknown)
                 {
-                    return type_ == rhs.type_ && name_ == rhs.name_;
+                    const auto oldExt = extension();
+                    name_.resize(name_.size() - oldExt.size());
+                    if (name_.empty() || name_.back() != '.')
+                        name_ += '.';
+                    name_ += ext;
                 }
-                bool operator<(const File &rhs) const
-                {
-                    return std::make_pair(name_, type_) < std::make_pair(rhs.name_, rhs.type_);
-                }
+                return *this;
+            }
 
-				bool empty() const {return name_.empty();}
+            bool popBasename(std::string &bn)
+            {
+                auto ix = name_.rfind(Delimiter);
+                if (ix == std::string::npos)
+                    return false;
+                bn = name_.substr(ix+1);
+                name_.resize(ix);
+                return true;
+            }
+            bool popBasename()
+            {
+                auto ix = name_.rfind(Delimiter);
+                if (ix == std::string::npos)
+                    return false;
+                name_.resize(ix);
+                return true;
+            }
 
-                void clear()
-                {
-                    type_ = Unknown;
-                    name_.clear();
-                }
+            bool popRoot(std::string &root)
+            {
+                auto ix = name_.find(Delimiter);
+                if (ix == std::string::npos)
+                    return false;
+                root = name_.substr(0, ix);
+                name_ = name_.substr(ix+1);
+                return true;
+            }
+            bool popRoot()
+            {
+                auto ix = name_.find(Delimiter);
+                if (ix == std::string::npos)
+                    return false;
+                name_ = name_.substr(ix+1);
+                return true;
+            }
 
-                //Getters
-                Name name() const {return name_;}
-                Type type()        const {return type_;}
-                std::string extension() const
-                {
-                    if (type() != Regular && type() != Unknown)
-                        return "";
-                    auto ixdot = name_.rfind('.');
-                    if (ixdot == std::string::npos)
-                        return "";
-                    auto ixdelim = name_.rfind(Delimiter);
-                    if (ixdelim != std::string::npos && ixdot < ixdelim)
-                        return "";
-                    return name_.substr(ixdot+1);
-                }
-                Name basename() const
-                {
-                    auto ix = name_.rfind(Delimiter);
-                    return name_.substr((ix == std::string::npos ? 0 : ix+1));
-                }
+            //Append a part to the current File
+            File &operator<<(const std::string &name)
+            {
+                if (name.empty())
+                    return *this;
 
-                //Setters
-                File &setName(const Name & name){name_ = name;            canonicalize_(); return *this;}
-                File &setName(      Name &&name){name_ = std::move(name); canonicalize_(); return *this;}
-                File &setType(Type type)               {type_ = type;            return *this;}
-                File &setExtension(const std::string &ext)
+                if (name_.empty())
                 {
-                    if (type() == Regular || type() == Unknown)
-                    {
-                        const auto oldExt = extension();
-                        name_.resize(name_.size() - oldExt.size());
-                        if (name_.empty() || name_.back() != '.')
-                            name_ += '.';
-                        name_ += ext;
-                    }
+                    name_ = name;
                     return *this;
                 }
 
-                bool popBasename(std::string &bn)
+                if (name_.back() == Delimiter)
                 {
-                    auto ix = name_.rfind(Delimiter);
-                    if (ix == std::string::npos)
-                        return false;
-                    bn = name_.substr(ix+1);
-                    name_.resize(ix);
-                    return true;
-                }
-                bool popBasename()
-                {
-                    auto ix = name_.rfind(Delimiter);
-                    if (ix == std::string::npos)
-                        return false;
-                    name_.resize(ix);
-                    return true;
-                }
-
-                bool popRoot(std::string &root)
-                {
-                    auto ix = name_.find(Delimiter);
-                    if (ix == std::string::npos)
-                        return false;
-                    root = name_.substr(0, ix);
-                    name_ = name_.substr(ix+1);
-                    return true;
-                }
-                bool popRoot()
-                {
-                    auto ix = name_.find(Delimiter);
-                    if (ix == std::string::npos)
-                        return false;
-                    name_ = name_.substr(ix+1);
-                    return true;
-                }
-
-                //Append a part to the current File
-                File &operator<<(const std::string &name)
-                {
-                    if (name.empty())
-                        return *this;
-
-                    if (name_.empty())
-                    {
-                        name_ = name;
-                        return *this;
-                    }
-
-                    if (name_.back() == Delimiter)
-                    {
-                        if (name.front() == Delimiter)
-                            name_ += name.substr(1);
-                        else
-                            name_ += name;
-                    }
+                    if (name.front() == Delimiter)
+                        name_ += name.substr(1);
                     else
-                    {
-                        if (name.front() == Delimiter)
-                            name_ += name;
-                        else
-                            name_ += Delimiter + name;
-                    }
-                    return *this;
+                        name_ += name;
                 }
-
-                File relative(const File &wd) const
+                else
                 {
-                    const auto nameParts = string_algo::split<std::vector>(name(), Delimiter);
-                    const auto wdParts = string_algo::split<std::vector>(wd.name(), Delimiter);
-                    auto nameIt = nameParts.begin();
-                    auto wdIt = wdParts.begin();
-                    File file;
-                    while (nameIt != nameParts.end() && wdIt != wdParts.end())
-                    {
-                        if (*nameIt != *wdIt)
-                            break;
-                        ++nameIt;
-                        ++wdIt;
-                    }
-                    //Step up the required levels, if any
-                    for (; wdIt != wdParts.end(); ++wdIt)
-                        file << "..";
-                    //Step down, if any
-                    for (; nameIt != nameParts.end(); ++nameIt)
-                        file << *nameIt;
-                    return file;
+                    if (name.front() == Delimiter)
+                        name_ += name;
+                    else
+                        name_ += Delimiter + name;
                 }
+                return *this;
+            }
 
-            private:
-                void canonicalize_()
+            File relative(const File &wd) const
+            {
+                const auto nameParts = string_algo::split<std::vector>(name(), Delimiter);
+                const auto wdParts = string_algo::split<std::vector>(wd.name(), Delimiter);
+                auto nameIt = nameParts.begin();
+                auto wdIt = wdParts.begin();
+                File file;
+                while (nameIt != nameParts.end() && wdIt != wdParts.end())
                 {
-                    for (auto &ch: name_)
-                        if (ch == '\\')
-                            ch = '/';
+                    if (*nameIt != *wdIt)
+                        break;
+                    ++nameIt;
+                    ++wdIt;
                 }
+                //Step up the required levels, if any
+                for (; wdIt != wdParts.end(); ++wdIt)
+                    file << "..";
+                //Step down, if any
+                for (; nameIt != nameParts.end(); ++nameIt)
+                    file << *nameIt;
+                return file;
+            }
 
-                Type type_;
-                Name name_;
-        };
-    }
-}
+        private:
+            void canonicalize_()
+            {
+                for (auto &ch: name_)
+                    if (ch == '\\')
+                        ch = '/';
+            }
 
-namespace std
-{
-    inline ostream &operator<<(ostream &os, const gubg::file::File &f)
+            Type type_;
+            Name name_;
+    };
+    inline std::ostream &operator<<(std::ostream &os, const File &f)
     {
         return os << f.name();
     }
-}
+
+} }
 
 #endif

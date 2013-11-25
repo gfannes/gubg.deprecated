@@ -101,12 +101,13 @@ namespace gubg
                 typedef std::map<Key, std::shared_ptr<Info>> InfoPerKey;
                 std::shared_ptr<InfoPerKey> infoPerKey_;
         };
-}
-template <typename Key>
-std::ostream &operator<<(std::ostream &os, const gubg::Settings<Key> &settings)
-{
-    settings.stream(os);
-    return os;
+
+    template <typename Key>
+        std::ostream &operator<<(std::ostream &os, const Settings<Key> &settings)
+        {
+            settings.stream(os);
+            return os;
+        }
 }
 
 #endif

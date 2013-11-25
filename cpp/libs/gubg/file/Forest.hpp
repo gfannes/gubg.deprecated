@@ -47,6 +47,8 @@ namespace gubg
                 bool contains(const File &) const;
 
             private:
+                bool invariants_() const;
+
                 std::vector<Tree::Ptr> trees_;
         };
     }

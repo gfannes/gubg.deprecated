@@ -85,9 +85,10 @@ da::ReturnCode Builder::process(const SourceFile &source)
     MSS_END();
 }
 
-da::ReturnCode Builder::addTree(const gubg::file::File &tree)
+da::ReturnCode Builder::addTree(gubg::file::File tree)
 {
 	MSS_BEGIN(ReturnCode);
+    MSS(resolve(tree));
 	MSS(!tree.empty());
 	forest_->addTree(tree);
 	MSS_END();
