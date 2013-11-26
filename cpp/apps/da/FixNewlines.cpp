@@ -1,7 +1,9 @@
 #include "da/FixNewlines.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/parse/Line.hpp"
 #include <vector>
 #include <cassert>
+#include <iostream>
 using namespace da;
 using namespace gubg::file;
 using namespace std;
@@ -33,8 +35,35 @@ namespace
             ReturnCode fixNewLines_(const File &file)
             {
                 MSS_BEGIN(ReturnCode, STREAM(file.name()));
-                            //if (options_.doFix)
-                              //  MSS(write(content_(), header));
+				string content;
+				MSS(read(content, file));
+				auto lines = gubg::line::split(content);
+				gubg::line::Line::End end;
+				bool doFix = false;
+				if (analyseEnds(end, lines))
+				{
+					//One line ending found
+					if (end != gubg::line::Line::Unix)
+					{
+						cout << file << ": " << gubg::line::to_s(end) << " line ending found" << endl;
+						doFix = true;
+					}
+				}
+				else
+				{
+					//Mixed line endings found
+					doFix = true;
+					cout << file << ": mixed line endings found" << endl;
+				}
+				if (doFix)
+				{
+					if (options_.doFix)
+					{
+						content = gubg::line::join(lines, gubg::line::Line::Unix);
+						MSS(write(content, file));
+					}
+				}
+
                 MSS_END();
             }
             const Options &options_;
