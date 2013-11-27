@@ -19,14 +19,16 @@ OBJECT_FILES := $(patsubst %.cpp,%.da.o,$(CPP_FILES))
 ifeq ($(GUBG_PLATFORM),linux)
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := -pthread
+LDFLAGS_PLATFORM := -lpthread
 endif
 ifeq ($(GUBG_PLATFORM),win32)
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := 
+LDFLAGS_PLATFORM := 
 endif
 #CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
 CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
-LDFLAGS := -std=c++0x
+LDFLAGS := -std=c++0x $(LDFLAGS_PLATFORM)
 LINK_LIBS := 
 
 .PHONY: da-clean
