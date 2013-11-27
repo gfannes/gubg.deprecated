@@ -70,7 +70,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
     public:
         gubg::msgpack::Wrapper<std::string> msgpack_createObject(AttributeId aid, TypeId tid)
         {
-            SS(aid, tid);
+            SS();LL(STREAM(aid, tid));
             switch (tid)
             {
                 case 0: return wrap(work);
@@ -79,7 +79,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
         }
         void msgpack_createdObject(AttributeId aid, TypeId tid)
         {
-            SS(aid, tid);
+            SS();LL(STREAM(aid, tid));
         }
         void msgpack_set(AttributeId id, gubg::msgpack::Nil_tag) {S();L("???");}
         void msgpack_set(AttributeId id, const std::string &str) {S();L("???");}
