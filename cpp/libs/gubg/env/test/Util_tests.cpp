@@ -1,9 +1,12 @@
 #include "gubg/env/Util.hpp"
 #include "gubg/Testing.hpp"
+
+#include <regex>
+
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE "test"
+#define GUBG_MODULE_ "test"
 #include "gubg/log/begin.hpp"
 int main()
 {

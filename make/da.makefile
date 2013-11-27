@@ -12,26 +12,22 @@ DA_CPP_FILES := \
 	compile/Compiler \
 	link/Linker \
 
-GUBG_CPP_FILES := OptionParser file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token
+GUBG_CPP_FILES := OptionParser file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line
 CPP_FILES := $(patsubst %,cpp/apps/da/%.cpp,$(DA_CPP_FILES)) $(patsubst %,cpp/libs/gubg/%.cpp,$(GUBG_CPP_FILES))
 OBJECT_FILES := $(patsubst %.cpp,%.da.o,$(CPP_FILES))
 
 ifeq ($(GUBG_PLATFORM),linux)
-BOOST_HEADERS := $(GUBG_BOOST)
-BOOST_LIBS := $(GUBG_BOOST)/stage/lib
-BOOST_LINK := -L$(BOOST_LIBS) -lboost_thread -lboost_system -lboost_regex
-CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs -I$(BOOST_HEADERS)
+CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := -pthread
 endif
 ifeq ($(GUBG_PLATFORM),win32)
-BOOST_LINK := -lboost_thread -lboost_system -lboost_regex
 CPP_INCLUDE_PATHS := -Icpp/apps -Icpp/libs
 CPPFLAGS_PLATFORM := 
 endif
-CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
-#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
+#CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) -g -DGUBG_DEBUG
+CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS)
 LDFLAGS := -std=c++0x
-LINK_LIBS := $(BOOST_LINK)
+LINK_LIBS := 
 
 .PHONY: da-clean
 da-clean:
