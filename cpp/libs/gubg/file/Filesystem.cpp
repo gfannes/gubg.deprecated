@@ -4,11 +4,16 @@
 #include <cstdio>
 #include <cstring>
 #include <cstddef>
-#include <stdlib.h>
 #ifdef GUBG_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#endif
+#ifdef GUBG_LINUX
+#include <stdlib.h>
+#endif
+#ifdef GUBG_MINGW
+#include "Windows.h"
 #endif
 using namespace gubg::file;
 using namespace std;
@@ -188,7 +193,13 @@ ReturnCode gubg::file::resolve(File &file)
 {
     MSS_BEGIN(ReturnCode);
     char buffer[PATH_MAX];
+#ifdef GUBG_LINUX
     MSS(::realpath(file.name().c_str(), buffer));
+#endif
+#ifdef GUBG_MINGW
+	const auto len = ::GetFullPathName(file.name().c_str(), PATH_MAX, buffer, 0);
+    MSS(len < PATH_MAX);
+#endif
     file.setName(buffer);
     MSS(determineType(file));
     MSS_END();
