@@ -1,9 +1,9 @@
 #ifndef HEADER_gubg_Async_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_Async_hpp_ALREADY_INCLUDED
 
-#include "gubg/mutex.hpp"
-#include "gubg/thread.hpp"
-#include "gubg/condition_variable.hpp"
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <queue>
 #include <vector>
 #include <cassert>
@@ -37,7 +37,7 @@ namespace gubg
                 void join()
                 {
                     {
-                        std::unique_lock<std::mutex> lock(mutex_);
+                        std::unique_lock<Mutex> lock(mutex_);
                         quit_ = true;
                     }
                     signal_.notify_all();
@@ -55,7 +55,7 @@ namespace gubg
                 void clearJobs()
                 {
                     {
-                        std::unique_lock<std::mutex> lock(mutex_);
+                        std::unique_lock<Mutex> lock(mutex_);
                         Jobs jobs;
                         jobs_.swap(jobs);
                     }
@@ -66,7 +66,7 @@ namespace gubg
                     void addJob(JobT job)
                     {
                         {
-                            std::lock_guard<std::mutex> lock(mutex_);
+                            std::lock_guard<Mutex> lock(mutex_);
                             jobs_.push(job);
                         }
                         signal_.notify_one();
@@ -85,7 +85,7 @@ namespace gubg
                     {
                         Job job;
                         {
-                            std::unique_lock<std::mutex> lock(mutex_);
+                            std::unique_lock<Mutex> lock(mutex_);
                             while (jobs_.empty())
                             {
                                 if (quit_)
@@ -107,7 +107,8 @@ namespace gubg
 
                 typedef std::queue<Job> Jobs;
                 Jobs jobs_;
-                std::mutex mutex_;
+                typedef std::mutex Mutex;
+                Mutex mutex_;
                 std::condition_variable signal_;
         };
 }

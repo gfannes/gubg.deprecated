@@ -4,6 +4,7 @@
 #include "gubg/math/stat/Histogram.hpp"
 #include <cstdio>
 #include <tuple>
+#include <sstream>
 
 #define GUBG_MODULE "Plot"
 #include "gubg/log/begin.hpp"
