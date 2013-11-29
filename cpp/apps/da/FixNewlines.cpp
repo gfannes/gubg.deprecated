@@ -1,11 +1,11 @@
 #include "da/FixNewlines.hpp"
 #include "gubg/file/Filesystem.hpp"
-#include "gubg/parse/Line.hpp"
 #include <vector>
 #include <cassert>
 #include <iostream>
 using namespace da;
 using namespace gubg::file;
+using namespace gubg::line;
 using namespace std;
 
 #define GUBG_MODULE "FixNewlines"
@@ -17,8 +17,9 @@ namespace
     class Recursor
     {
         public:
-            Recursor(const Options &options):
+            Recursor(const Options &options, Line::End wantedEnd):
                 options_(options),
+				wantedEnd_(wantedEnd),
                 wd_(getcwd()){}
 
             template <typename File>
@@ -26,7 +27,7 @@ namespace
                 {
                     MSS_BEGIN(ReturnCode);
                     const auto ext = file.extension();
-                    if (ext == "hpp" || ext == "h" || ext == "cpp" || ext == "c")
+                    if (ext == "hpp" || ext == "h" || ext == "cpp" || ext == "c" || ext == "rb")
                         MSS(fixNewLines_(file));
                     MSS_END();
                 }
@@ -37,13 +38,13 @@ namespace
                 MSS_BEGIN(ReturnCode, STREAM(file.name()));
 				string content;
 				MSS(read(content, file));
-				auto lines = gubg::line::split(content);
-				gubg::line::Line::End end;
+				auto lines = split(content);
+				Line::End end;
 				bool doFix = false;
 				if (analyseEnds(end, lines))
 				{
 					//One line ending found
-					if (end != gubg::line::Line::Unix)
+					if (end != wantedEnd_)
 					{
 						cout << file << ": " << gubg::line::to_s(end) << " line ending found" << endl;
 						doFix = true;
@@ -59,7 +60,7 @@ namespace
 				{
 					if (options_.doFix)
 					{
-						content = gubg::line::join(lines, gubg::line::Line::Unix);
+						content = join(lines, wantedEnd_);
 						MSS(write(content, file));
 					}
 				}
@@ -67,6 +68,7 @@ namespace
                 MSS_END();
             }
             const Options &options_;
+			const Line::End wantedEnd_;
             const File wd_;
     };
 }
@@ -74,7 +76,7 @@ namespace
 da::ReturnCode FixNewlines::execute(const Options &options)
 {
     MSS_BEGIN(ReturnCode);
-    Recursor recursor(options);
+    Recursor recursor(options, wantedEnd_);
     MSS(gubg::file::recurse(recursor));
     MSS_END();
 }

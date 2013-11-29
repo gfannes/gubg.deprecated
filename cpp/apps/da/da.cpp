@@ -17,8 +17,10 @@ namespace
 		if (false) {}
 		else if (name == "guards")
             tasks.push_back(FixIncludeGuards::create());
-		else if (name == "newlines")
-            tasks.push_back(FixNewlines::create());
+		else if (name == "unix")
+            tasks.push_back(FixNewlines::create(gubg::line::Line::Unix));
+		else if (name == "dos")
+            tasks.push_back(FixNewlines::create(gubg::line::Line::Dos));
         else
             DA_FINALIZE_ERROR("Unknown fix task " << STREAM(name));
     }
@@ -35,7 +37,7 @@ namespace
         {
             OptionParser optionParser("Develop assistent");
             optionParser.addSwitch("-h", "--help", "Displays this help", [&optionParser](){DA_FINALIZE_OK(optionParser.help());});
-            optionParser.addMandatory("-f", "--fix TYPE", "Fix something (guards, newlines)", [&tasks](string v){addFixTask(tasks, v);});
+            optionParser.addMandatory("-f", "--fix TYPE", "Fix something (guards, unix, dos)", [&tasks](string v){addFixTask(tasks, v);});
             optionParser.addSwitch("-r", "--real", "Fix for real", [&options](){options.doFix = true;});
             optionParser.addMandatory("-e", "--exe-debug SOURCE", "Compile SOURCE into a debug executable",
                     [&tasks](string source){tasks.push_back(CompileExe::create(source, ExeType::Debug));});
