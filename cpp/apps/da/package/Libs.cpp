@@ -1,4 +1,5 @@
 #include "da/package/Libs.hpp"
+#include "da/package/PkgConfig.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include <string>
 using namespace da::package;
@@ -24,6 +25,13 @@ da::ReturnCode Libs::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
     if (partial.name() == "ev++.h")
     {
         linkSettings_.libraries.insert("ev");
+        MSS_QL(RecognisedHeader);
+    }
+    if (partial.name() == "gtkmm.h")
+    {
+        const auto pkg = "gtkmm-3.0";
+        MSS(insertIncludePathsForPackage(compileSettings_.includePaths, pkg));
+        MSS(insertLibrariesForPackage(linkSettings_.libraries, pkg));
         MSS_QL(RecognisedHeader);
     }
     MSS_QL(UnknownHeader);

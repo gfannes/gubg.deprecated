@@ -5,6 +5,8 @@ using namespace da;
 using namespace gubg::string_algo;
 using namespace std;
 
+#define GUBG_MODULE "PkgConfig"
+#include "gubg/log/begin.hpp"
 ReturnCode da::package::insertIncludePathsForPackage(IncludePaths &ips, const std::string &pkg)
 {
     MSS_BEGIN(ReturnCode);
@@ -55,3 +57,4 @@ ReturnCode da::package::insertLibrariesForPackage(Libraries &libraries, const st
 
     MSS_END();
 }
+#include "gubg/log/end.hpp"

@@ -8,7 +8,7 @@ DA_CPP_FILES := \
 	da \
 	FixIncludeGuards CompileExe FileCache Arduino UnitTests WebSite FixNewlines \
 	build/Builder build/Header build/Headers build/Source build/Sources \
-	package/Packages package/Local package/Boost package/Nana package/Arduino package/GUBG package/SDL package/DecodeIt package/Libs package/Forest \
+	package/Packages package/Local package/Boost package/Nana package/Arduino package/GUBG package/SDL package/DecodeIt package/Libs package/Forest package/PkgConfig \
 	compile/Compiler \
 	link/Linker \
 
@@ -51,5 +51,5 @@ da: $(OBJECT_FILES) $(DA_CACHE) $(GUBG_BIN)
 	g++ $(LDFLAGS) -o $(DA_EXE) $(OBJECT_FILES) $(LINK_LIBS)
 	cp $(DA_EXE) $(GUBG_BIN)
 
-%.da.o: %.cpp $(GUBG_BOOST)
+%.da.o: %.cpp
 	g++ $(CPPFLAGS) -c $< -o $@
