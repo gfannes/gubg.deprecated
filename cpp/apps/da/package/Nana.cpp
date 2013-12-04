@@ -13,8 +13,8 @@ Nana::Nana(const File &base):
     libDir_(base),
     incDir_(base)
 {
-    libDir_ << "build/bin";
-    incDir_ << "include";
+    libDir_ << "Nana.Cpp11/build/bin";
+    incDir_ << "Nana.Cpp11/include";
 }
 
 bool Nana::exists() const
