@@ -1,4 +1,4 @@
-#include "gubg/Array.hpp"
+#include "gubg/array_util.hpp"
 #include "gubg/Testing.hpp"
 
 #define GUBG_MODULE "test"
