@@ -48,6 +48,10 @@ da::ReturnCode Packages::resolveHeader(File &resolvedHeader, SourceFiles &sister
 				L("Header " << partial << " was resolved by " << pkg->name() << " into " << resolvedHeader);
 				MSS_RETURN_OK();
 				break;
+			case ReturnCode::RecognisedHeader:
+				L("Header was recognised by " << pkg->name());
+				MSS_Q(rc);
+				break;
 			case ReturnCode::UnknownHeader:
 				break;
 			default:
