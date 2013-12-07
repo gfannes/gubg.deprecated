@@ -5,10 +5,6 @@
 #include <sstream>
 using namespace std;
 
-std::ostream &operator<<(std::ostream &os, const gubg::testing::SourceLocation &location)
-{
-    return os << location.filename << ":" << location.lineNr;
-}
 std::ostream &operator<<(std::ostream &os, const std::nullptr_t &ptr)
 {
     return os << "nullptr";
@@ -29,6 +25,11 @@ namespace gubg
 {
     namespace testing
     {
+		std::ostream &operator<<(std::ostream &os, const SourceLocation &location)
+		{
+			return os << location.filename << ":" << location.lineNr;
+		}
+
         template <>
             std::string toString_<nullptr_t>(const nullptr_t &p){return "nullptr";}
 

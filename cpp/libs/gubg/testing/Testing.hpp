@@ -14,14 +14,6 @@
 
 #define GUBG_MODULE "Testing"
 #include "gubg/log/begin.hpp"
-namespace gubg
-{
-    namespace testing
-    {
-        struct SourceLocation;
-    }
-}
-std::ostream &operator<<(std::ostream &os, const gubg::testing::SourceLocation &location);
 std::ostream &operator<<(std::ostream &os, const std::nullptr_t &);
 
 namespace gubg
@@ -85,6 +77,7 @@ namespace gubg
             unsigned int lineNr;
         };
 #define HERE() gubg::testing::SourceLocation(__FILE__, __LINE__)
+		std::ostream &operator<<(std::ostream &os, const SourceLocation &location);
 
         template <typename T>
             std::string toString_(const T &t)

@@ -3,18 +3,23 @@
 
 #include <nana/deploy.hpp>
 #include <algorithm>
+#include <sstream>
 
 namespace rinle
 {
     namespace view
     {
-        template <typename String>
-            void convert(nana::string &dst, const String &src)
-            {
-                dst.resize(src.size());
-                std::copy(src.begin(), src.end(), dst.begin());
-            }
-    }
+		inline void convert(nana::string &dst, const std::string &src)
+		{
+			dst.resize(src.size());
+			std::copy(src.begin(), src.end(), dst.begin());
+		}
+		inline void convert(nana::string &dst, int nr)
+		{
+			std::ostringstream oss; oss << nr;
+			convert(dst, oss.str());
+		}
+	}
 }
 
 #endif

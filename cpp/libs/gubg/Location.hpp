@@ -7,21 +7,22 @@
 
 namespace gubg
 {
-    struct Location
-    {
-        Location():
-            file(0), nr(0){}
-        Location(const char *f, int n):
-            file(f), nr(n){}
-        const char *file;
-        int nr;
-    };
-}
-inline std::ostream &operator<<(std::ostream &os, const gubg::Location &location)
-{
-    if (!location.file)
-        return os << "Unknown location";
-    return os << location.file << ":" << location.nr;
+	struct Location
+	{
+		Location():
+			file(0), nr(0){}
+		Location(const char *f, int n):
+			file(f), nr(n){}
+		const char *file;
+		int nr;
+	};
+
+	inline std::ostream &operator<<(std::ostream &os, const Location &location)
+	{
+		if (!location.file)
+			return os << "Unknown location";
+		return os << location.file << ":" << location.nr;
+	}
 }
 
 #endif
