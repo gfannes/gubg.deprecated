@@ -19,6 +19,13 @@ fix:
 	cd cpp/libs/garf && da -f guards -r
 	cd cpp/libs/iup && da -f guards -r
 	cd cpp/apps/da && da -f guards -r
+	cd cpp/apps/pa && da -f guards -r
+	cd cpp/apps/rinle && da -f guards -r
+	cd cpp/apps/meta && da -f guards -r
+	cd cpp/apps/monitor && da -f guards -r
+	cd cpp/apps/robocont && da -f guards -r
+	cd cpp/apps/vix && da -f guards -r
+	cd cpp/rtb && da -f guards -r
 
 da:
 	$(GUBG_MAKE) da -f make/da.makefile -j $(GUBG_NUMBER_CPU)

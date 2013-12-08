@@ -1,5 +1,5 @@
-#ifndef imageData_hpp
-#define imageData_hpp
+#ifndef HEADER_gubg_cpp_nn_imageData_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cpp_nn_imageData_hpp_ALREADY_INCLUDED
 
 #include <iostream>
 #include <vector>

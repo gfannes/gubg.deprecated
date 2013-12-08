@@ -1,5 +1,5 @@
-#ifndef HEADER_rbc_Main_hpp_ALREADY_INCLUDED
-#define HEADER_rbc_Main_hpp_ALREADY_INCLUDED
+#ifndef HEADER_robocont_rbc_Main_hpp_ALREADY_INCLUDED
+#define HEADER_robocont_rbc_Main_hpp_ALREADY_INCLUDED
 
 #include "nana/gui/wvl.hpp"
 #include "nana/gui/place.hpp"

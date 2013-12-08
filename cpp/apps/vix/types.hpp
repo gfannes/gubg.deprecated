@@ -1,5 +1,5 @@
-#ifndef vix_types_hpp
-#define vix_types_hpp
+#ifndef HEADER_vix_types_hpp_ALREADY_INCLUDED
+#define HEADER_vix_types_hpp_ALREADY_INCLUDED
 
 #include "SFML/Graphics.hpp"
 

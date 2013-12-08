@@ -16,6 +16,15 @@ namespace rinle
 	{
 		inline void run() {nana::gui::exec();}
 
+        namespace color
+        {
+            auto background = 0x222222;
+            auto normal = 0xcccccc;
+            auto selected = 0x224422;
+            auto keyword = 0xaa3333;
+            auto identifier = 0x33aa33;
+        }
+
 		class Window
 		{
 			public:
@@ -24,17 +33,28 @@ namespace rinle
 					wnd_(nana::rectangle(0, 0, width_, height_))
 			{
 				wnd_.caption(STR("Rinle"));
+                wnd_.background(color::background);
 				wnd_.show();
 
-				const auto labelHeight = height_/NrRows;
-				for (int i = 0; i < NrRows; ++i)
+				const auto labelHeight = height_/nrRows_;
+				for (int i = 0; i < nrRows_; ++i)
 				{
 					using std::make_shared;
 					using nana::gui::label;
 					using nana::rectangle;
 					const int LineNrWidth = 30;
-					lineNrs_.push_back(make_shared<label>(wnd_, rectangle(0, i*labelHeight, LineNrWidth, labelHeight)));
-					lines_.push_back(  make_shared<label>(wnd_, rectangle(LineNrWidth, i*labelHeight, width_, labelHeight)));
+                    {
+                        auto lbl = make_shared<label>(wnd_, rectangle(0, i*labelHeight, LineNrWidth, labelHeight));
+                        lbl->format(true);
+                        lbl->background(color::background);
+                        lineNrs_.push_back(lbl);
+                    }
+                    {
+                        auto lbl = make_shared<label>(wnd_, rectangle(LineNrWidth, i*labelHeight, width_, labelHeight));
+                        lbl->format(true);
+                        lbl->background(color::background);
+                        lines_.push_back(lbl);
+                    }
 				}
 			}
 
@@ -47,10 +67,10 @@ namespace rinle
 						Iterator begin = lines.begin();
 						int skipBefore = 0;
 						const auto beforeSize = focus - lines.begin();
-						if (beforeSize < FocusRow)
-							skipBefore = FocusRow - beforeSize;
+						if (beforeSize < focusRow_)
+							skipBefore = focusRow_ - beforeSize;
 						else
-							begin += beforeSize - FocusRow;
+							begin += beforeSize - focusRow_;
 
 						auto line = lines_.begin();
 						auto lineNr = lineNrs_.begin();
@@ -61,18 +81,19 @@ namespace rinle
 								--skipBefore;
 								continue;
 							}
+                            //Line nrs
 							{
 								nana::string str;
 								if (begin != lines.end())
-									convert(str, begin - lines.begin());
+									convertLineNr_(str, begin - lines.begin());
 								(*lineNr)->caption(str);
 							}
+                            //Line itself
 							{
 								nana::string str;
 								if (begin != lines.end())
-									convert_(str, *begin);
+									convertTokens_(str, *begin);
 								(*line)->caption(str);
-								(*line)->foreground(0xff0000);
 							}
 
 							if (begin != lines.end())
@@ -81,17 +102,35 @@ namespace rinle
 					}
 
 			private:
+                void convertLineNr_(nana::string &dst, int nr)
+                {
+                    std::ostringstream oss;
+                    oss << "<size=" << fontSize_ << ">" << nr << "</>";
+                    convert(dst, oss.str());
+                }
 				template <typename Tokens>
-					void convert_(nana::string &dst, const Tokens &tokens)
+					void convertTokens_(nana::string &dst, const Tokens &tokens)
 					{
 						std::ostringstream oss;
+                        oss << "<size=" << fontSize_ << ", color=" << color::normal << ">";
 						for (auto token: tokens)
-							oss << "(" << token.range.content() << ")";
+                        {
+                            bool doClose = false;
+                            if (false) {}
+                            else if (token.isSelected)   {doClose = true; oss << "<color=" << color::selected << ">";}
+                            else if (token.isKeyword)    {doClose = true; oss << "<color=" << color::keyword << ">";}
+                            else if (token.isIdentifier) {doClose = true; oss << "<color=" << color::identifier << ">";}
+							oss << token.range.content();
+                            if (doClose)
+                                oss << "</>";
+                        }
+                        oss << "</>";
 						convert(dst, oss.str());
 					}
 
-				static const int NrRows = 40;
-				static const int FocusRow = 15;
+                const int fontSize_ = 14;
+				const int nrRows_ = 30;
+				const int focusRow_ = 15;
 				const int width_;
 				const int height_;
 				nana::gui::form wnd_;

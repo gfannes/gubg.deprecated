@@ -1,5 +1,5 @@
-#ifndef vix_model_hpp
-#define vix_model_hpp
+#ifndef HEADER_vix_model_hpp_ALREADY_INCLUDED
+#define HEADER_vix_model_hpp_ALREADY_INCLUDED
 
 #include "codes.hpp"
 #include <string>

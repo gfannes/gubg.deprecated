@@ -1,5 +1,5 @@
-#ifndef meta_parsing_Parser_hpp
-#define meta_parsing_Parser_hpp
+#ifndef HEADER_meta_parsing_Parser_hpp_ALREADY_INCLUDED
+#define HEADER_meta_parsing_Parser_hpp_ALREADY_INCLUDED
 
 #include "parsing/Structure.hpp"
 #include "gubg/Exception.hpp"

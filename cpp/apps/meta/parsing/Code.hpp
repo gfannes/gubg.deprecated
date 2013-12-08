@@ -1,5 +1,5 @@
-#ifndef meta_parsing_Code_hpp
-#define meta_parsing_Code_hpp
+#ifndef HEADER_meta_parsing_Code_hpp_ALREADY_INCLUDED
+#define HEADER_meta_parsing_Code_hpp_ALREADY_INCLUDED
 
 #include "gubg/Exception.hpp"
 #include "boost/range/iterator_range.hpp"

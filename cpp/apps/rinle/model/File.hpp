@@ -5,6 +5,7 @@
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
+#include "gubg/parse/cpp/Keywords.hpp"
 #include <string>
 
 #define GUBG_MODULE_ "Window"
@@ -13,10 +14,21 @@ namespace rinle
 {
     namespace model
     {
+        typedef gubg::SmartRange<std::string> Range;
+
+        struct Token
+        {
+            bool isSelected = false;
+            bool isKeyword = false;
+            bool isIdentifier = false;
+            Range range;
+        };
+
         class File
         {
             public:
-				typedef std::vector<gubg::parse::cpp::pp::Token> Tokens;
+				typedef std::vector<gubg::parse::cpp::pp::Token> PPTokens;
+				typedef std::vector<Token> Tokens;
 				typedef std::vector<Tokens> Lines;
 
                 File(const std::string &path): path_(path) {load_();}
@@ -35,24 +47,30 @@ namespace rinle
                     MSS(gubg::file::read(content, path_));
 
 					using namespace gubg::parse::cpp;
-					pp::Lexer<Tokens> lexer;
+					pp::Lexer<PPTokens> lexer;
 					Range range(std::move(content));
 					MSS(lexer.tokenize(range));
 
 					lines_.push_back(Tokens());
 					for (auto token: lexer.tokens())
 					{
+                        Token t; t.range = token.range;
 						switch (token.type)
 						{
 							case pp::Token::LineFeed:
 								lines_.push_back(Tokens());
+                                continue;
 								break;
 							case pp::Token::CarriageReturn:
+                                continue;
 								break;
-							default:
-								lines_.back().push_back(token);
-								break;
+							case pp::Token::Identifier:
+                                t.isIdentifier = true;
+                                break;
 						}
+                        if (gubg::parse::cpp::isKeyword(t.range))
+                            t.isKeyword = true;
+                        lines_.back().push_back(t);
 					}
 
 					MSS_END();

@@ -1,5 +1,5 @@
-#ifndef vix_view_hpp
-#define vix_view_hpp
+#ifndef HEADER_vix_view_hpp_ALREADY_INCLUDED
+#define HEADER_vix_view_hpp_ALREADY_INCLUDED
 
 #include "SFML/Graphics.hpp"
 

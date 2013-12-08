@@ -1,5 +1,5 @@
-#ifndef meta_Exit_hpp
-#define meta_Exit_hpp
+#ifndef HEADER_meta_Exit_hpp_ALREADY_INCLUDED
+#define HEADER_meta_Exit_hpp_ALREADY_INCLUDED
 
 #include <string>
 

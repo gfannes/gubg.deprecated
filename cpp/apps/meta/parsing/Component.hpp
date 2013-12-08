@@ -1,5 +1,5 @@
-#ifndef meta_parsing_Component_hpp
-#define meta_parsing_Component_hpp
+#ifndef HEADER_meta_parsing_Component_hpp_ALREADY_INCLUDED
+#define HEADER_meta_parsing_Component_hpp_ALREADY_INCLUDED
 
 #include "boost/range/iterator_range.hpp"
 #include <list>

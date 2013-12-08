@@ -1,5 +1,5 @@
-#ifndef ring_Ring_hpp
-#define ring_Ring_hpp
+#ifndef HEADER_gubg_cpp_experiments_ring_Ring_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_cpp_experiments_ring_Ring_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/tau.hpp"
 #include <array>

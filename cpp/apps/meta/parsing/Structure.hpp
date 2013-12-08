@@ -1,5 +1,5 @@
-#ifndef meta_parsing_Structure_hpp
-#define meta_parsing_Structure_hpp
+#ifndef HEADER_meta_parsing_Structure_hpp_ALREADY_INCLUDED
+#define HEADER_meta_parsing_Structure_hpp_ALREADY_INCLUDED
 
 #include "parsing/Token.hpp"
 #include "parsing/Component.hpp"

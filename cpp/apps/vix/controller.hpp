@@ -1,5 +1,5 @@
-#ifndef vix_controller_hpp
-#define vix_controller_hpp
+#ifndef HEADER_vix_controller_hpp_ALREADY_INCLUDED
+#define HEADER_vix_controller_hpp_ALREADY_INCLUDED
 
 #include "model.hpp"
 #include "view.hpp"

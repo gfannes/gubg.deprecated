@@ -1,5 +1,5 @@
-#ifndef vix_codes_hpp
-#define vix_codes_hpp
+#ifndef HEADER_vix_codes_hpp_ALREADY_INCLUDED
+#define HEADER_vix_codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

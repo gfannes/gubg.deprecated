@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_Array_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_Array_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_array_util_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_array_util_hpp_ALREADY_INCLUDED
 
 #include <array>
 

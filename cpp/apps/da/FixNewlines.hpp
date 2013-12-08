@@ -1,5 +1,5 @@
-#ifndef HEADER_da_FixNewLines_hpp_ALREADY_INCLUDED
-#define HEADER_da_FixNewLines_hpp_ALREADY_INCLUDED
+#ifndef HEADER_da_FixNewlines_hpp_ALREADY_INCLUDED
+#define HEADER_da_FixNewlines_hpp_ALREADY_INCLUDED
 
 #include "da/Tasks.hpp"
 #include "gubg/parse/Line.hpp"

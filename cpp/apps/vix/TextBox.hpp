@@ -1,5 +1,5 @@
-#ifndef vix_TextBox_hpp
-#define vix_TextBox_hpp
+#ifndef HEADER_vix_TextBox_hpp_ALREADY_INCLUDED
+#define HEADER_vix_TextBox_hpp_ALREADY_INCLUDED
 
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics.hpp"
