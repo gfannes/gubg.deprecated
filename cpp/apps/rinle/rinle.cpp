@@ -1,12 +1,17 @@
-#include "rinle/model/File.hpp"
+#include "rinle/presenter/Commander.hpp"
 #include "rinle/view/Window.hpp"
+#include "rinle/model/File.hpp"
 
 int main()
 {
-    rinle::view::Window window;
     rinle::model::File file(__FILE__);
-    auto lines = file.lines();
-    window.showLines(lines, lines.cbegin());
+    rinle::view::Window window;
+	rinle::presenter::Commander commander;
+
+	window.addObserver(commander.observer);
+	commander.addObserver(file.observer);
+	file.addObserver(window.observer);
+
     rinle::view::run();
     return 0;
 } 
