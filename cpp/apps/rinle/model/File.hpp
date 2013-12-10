@@ -65,6 +65,8 @@ namespace rinle
 					{
 						++row;
 						col = 0;
+                        if (row < lines.size() && col < lines[row].size())
+                            break;
 					}
 				}
 				return *this;
@@ -114,6 +116,10 @@ namespace rinle
 				return *this;
 			}
 		};
+        inline std::ostream &operator<<(std::ostream &os, const Location &l)
+        {
+            return os << "Location(" << l.row << ", " << l.col << ")";
+        }
 
         class File: public gubg::pattern::Observable<Screen>
         {
@@ -138,8 +144,13 @@ namespace rinle
 					switch (command.type)
 					{
 						case Command::Proceed:
-							begin_ += command.x;
-							end_ += command.x;
+                            {
+                                S();
+                                L(STREAM(begin_, end_));
+                                begin_ += command.x;
+                                end_ += command.x;
+                                L(STREAM(begin_, end_));
+                            }
 							break;
 					}
 					computeSelection_();

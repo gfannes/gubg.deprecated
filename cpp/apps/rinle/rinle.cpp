@@ -12,6 +12,7 @@ int main()
 	commander.addObserver(file.observer);
 	file.addObserver(window.observer);
 
+//comment
     rinle::view::run();
     return 0;
 } 

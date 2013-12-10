@@ -84,7 +84,6 @@ namespace rinle
 					{
 						assert(lines_.size() == lineNrs_.size());
 
-						S();L(STREAM(lines.size(), focus));
 						auto begin = lines.begin();
 						int skipBefore = 0;
 						if (focus < focusRow_)
@@ -96,7 +95,6 @@ namespace rinle
 						auto lineNr = lineNrs_.begin();
 						for (; line != lines_.end() && lineNr != lineNrs_.end(); ++line, ++lineNr)
 						{
-							S();L(line - lines_.begin());
 							if (skipBefore > 0)
 							{
 								--skipBefore;
@@ -111,7 +109,6 @@ namespace rinle
 							}
 							//Line itself
 							{
-								S();
 								nana::string str;
 								if (begin != lines.end())
 									convertTokens_(str, *begin);
@@ -121,7 +118,6 @@ namespace rinle
 							if (begin != lines.end())
 								++begin;
 						}
-						L("end");
 					}
 
 				void notify(Screen screen) { showLines(screen.lines, screen.focus); }
@@ -129,9 +125,7 @@ namespace rinle
 
 				void handleCharEvent(const nana::gui::eventinfo &ei)
 				{
-					S();L("Received event: " << ei.identifier);
 					assert(ei.identifier == nana::gui::events::key_char::identifier);
-					L("This is a \'" << ei.keyboard.key << "\'");
 					notifyObservers(ei.keyboard.key);
 				}
 
@@ -145,7 +139,6 @@ namespace rinle
 				template <typename Tokens>
 					void convertTokens_(nana::string &dst, const Tokens &tokens)
 					{
-						S();
 						std::ostringstream oss;
 						oss << "<size=" << fontSize_ << ", color=" << color::normal << ">";
 						for (auto token: tokens)
@@ -160,7 +153,6 @@ namespace rinle
 								oss << "</>";
 						}
 						oss << "</>";
-						L(oss.str());
 						convert(dst, oss.str());
 					}
 
