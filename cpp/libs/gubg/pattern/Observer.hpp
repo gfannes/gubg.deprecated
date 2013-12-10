@@ -1,5 +1,5 @@
-#ifndef gubg_pattern_Observer
-#define gubg_pattern_Observer
+#ifndef HEADER_gubg_pattern_Observer_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pattern_Observer_hpp_ALREADY_INCLUDED
 
 #include <set>
 

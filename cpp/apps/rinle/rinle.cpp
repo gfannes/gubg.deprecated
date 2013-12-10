@@ -1,18 +1,14 @@
-#include "rinle/presenter/Commander.hpp"
+#include "rinle/model/Model.hpp"
 #include "rinle/view/Window.hpp"
-#include "rinle/model/File.hpp"
+#include "rinle/presenter/Presenter.hpp"
 
 int main()
 {
-    rinle::model::File file(__FILE__);
-    rinle::view::Window window;
-	rinle::presenter::Commander commander;
+    rinle::model::Model model;
+    rinle::view::Window window(model);
+	rinle::presenter::Presenter presenter(model, window);
+    presenter.setCurrent(rinle::File(__FILE__));
 
-	window.addObserver(commander.observer);
-	commander.addObserver(file.observer);
-	file.addObserver(window.observer);
-
-//comment
     rinle::view::run();
     return 0;
 } 

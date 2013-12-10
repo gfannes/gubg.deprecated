@@ -8,6 +8,7 @@
 #include "gubg/parse/cpp/Keywords.hpp"
 #include "gubg/pattern/Observer.hpp"
 #include <string>
+#include <cassert>
 
 #define GUBG_MODULE_ "Window"
 #include "gubg/log/begin.hpp"
@@ -121,43 +122,52 @@ namespace rinle
             return os << "Location(" << l.row << ", " << l.col << ")";
         }
 
-        class File: public gubg::pattern::Observable<Screen>
+        class FileInfo
         {
             public:
+                typedef std::shared_ptr<FileInfo> Ptr;
 				typedef std::vector<gubg::parse::cpp::pp::Token> PPTokens;
 
-				File(const std::string &path):
-					path_(path),
-					begin_(lines_), end_(lines_),
-					observer(*this)
-			{
-				load_();
-			}
+                static Ptr create(const File &path) {return Ptr(new FileInfo(path));}
 
-				Lines lines() const
+                File path() const {return path_;}
+                size_t selectionStart() const {return begin_.row;}
+
+				const Lines &lines() const
 				{
 					return lines_;
 				}
 
-				void notify(Command command)
-				{
-					switch (command.type)
-					{
-						case Command::Proceed:
-                            {
-                                S();
-                                L(STREAM(begin_, end_));
-                                begin_ += command.x;
-                                end_ += command.x;
-                                L(STREAM(begin_, end_));
-                            }
-							break;
-					}
-					computeSelection_();
-				}
-				gubg::pattern::Observer_ftop<File, Command> observer;
+                bool getLines(Lines &lines, size_t startLine, size_t nrLines) const
+                {
+                    lines.clear();
+                    for (size_t i = 0; i < nrLines; ++i)
+                    {
+                        const auto ix = startLine + i;
+                        if (ix >= lines_.size())
+                            break;
+                        lines.push_back(lines_[ix]);
+                    }
+                    return true;
+                }
+
+                void proceed(int nrSteps)
+                {
+                    begin_ += nrSteps;
+                    end_ += nrSteps;
+                    if (begin_ == end_)
+                        ++end_;
+                    computeSelection_();
+                }
 
 			private:
+				FileInfo(const File &path):
+					path_(path),
+					begin_(lines_), end_(lines_)
+			{
+				load_();
+			}
+
 				ReturnCode load_()
 				{
 					MSS_BEGIN(ReturnCode);
@@ -201,7 +211,6 @@ namespace rinle
 				{
 					for (auto it = Location(lines_); it != it.end(); ++it)
 						it->isSelected = (begin_ <= it && it < end_);
-					notifyObservers(Screen(lines_, begin_.row));
 				}
 
 				gubg::file::File path_;

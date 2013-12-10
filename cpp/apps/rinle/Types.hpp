@@ -1,11 +1,14 @@
-#ifndef rinle_types
-#define rinle_types
+#ifndef HEADER_rinle_Types_hpp_ALREADY_INCLUDED
+#define HEADER_rinle_Types_hpp_ALREADY_INCLUDED
 
 #include "gubg/SmartRange.hpp"
+#include "gubg/file/File.hpp"
 #include <vector>
 
 namespace rinle
 {
+    typedef gubg::file::File File;
+
 	struct Command
 	{
 		enum Type {Proceed};

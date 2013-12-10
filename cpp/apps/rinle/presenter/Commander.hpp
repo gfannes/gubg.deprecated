@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu_Commander_aoeuaoeu
-#define aoeuaoeu_Commander_aoeuaoeu
+#ifndef HEADER_rinle_presenter_Commander_hpp_ALREADY_INCLUDED
+#define HEADER_rinle_presenter_Commander_hpp_ALREADY_INCLUDED
 
 #include "rinle/Types.hpp"
 #include "gubg/pattern/Observer.hpp"
@@ -10,11 +10,11 @@ namespace rinle
 {
 	namespace presenter
 	{
-
+        template <typename Outer>
 		class Commander: public gubg::pattern::Observable<Command>
 		{
 			public:
-				Commander(): observer(*this) {}
+				Commander(Outer &outer): outer_(outer), observer(*this) {}
 				gubg::pattern::Observer_ftop<Commander, char> observer;
 
 				void notify(char ch)
@@ -22,18 +22,13 @@ namespace rinle
 					S();L(ch);
 					switch (ch)
 					{
-						case 'n': proceed_(1); break;
-						case 'o': proceed_(-1); break;
+						case 'n': outer_.proceed_(1); break;
+						case 'o': outer_.proceed_(-1); break;
 					}
 				}
 
 			private:
-				void proceed_(int nrSteps)
-				{
-					Command command(Command::Proceed);
-					command.x = nrSteps;
-					notifyObservers(command);
-				}
+                Outer &outer_;
 		};
 	}
 }
