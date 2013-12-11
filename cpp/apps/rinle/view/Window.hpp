@@ -32,11 +32,11 @@ namespace rinle
                     S();L(STREAM(file, focus));
                     size_t startLine = 0;
                     size_t emptyLines = 0;
-                    if (focus > focusRow_)
-                        startLine = (focus - focusRow_);
+                    if (focus > layout_.focusRow)
+                        startLine = (focus - layout_.focusRow);
                     else
-                        emptyLines = (focusRow_ - focus);
-                    size_t nrLines = (nrRows_ - focusRow_) + (focus - startLine);
+                        emptyLines = (layout_.focusRow - focus);
+                    size_t nrLines = (layout_.nrRows - layout_.focusRow) + (focus - startLine);
                     Lines lines;
                     model_.getLines(lines, file, startLine, nrLines);
 
@@ -72,32 +72,13 @@ namespace rinle
                             ++begin;
                     }
                 }
-#if 0
-                template <typename Lines>
-                    void showLines(const Lines &lines, size_t focus)
-                    {
-                        assert(lines_.size() == lineNrs_.size());
-
-                        auto begin = lines.begin();
-                        int skipBefore = 0;
-                        if (focus < focusRow_)
-                            skipBefore = focusRow_ - focus;
-                        else
-                            begin += focus - focusRow_;
-
-                    }
-#endif
 
             private:
                 void convertLineNr_(nana::string &dst, int nr) const;
                 void convertTokens_(nana::string &dst, const Tokens &tokens) const;
 
                 const model::Model &model_;
-                const int fontSize_ = layout::FontSize;
-                const int nrRows_ = layout::NrRows;
-                const int focusRow_ = layout::FocusRow;
-                const int width_ = layout::Width;
-                const int height_ = layout::Height;
+				Layout layout_;
                 nana::gui::form wnd_;
                 std::vector<std::shared_ptr<nana::gui::label>> lineNrs_;
                 std::vector<std::shared_ptr<nana::gui::label>> lines_;

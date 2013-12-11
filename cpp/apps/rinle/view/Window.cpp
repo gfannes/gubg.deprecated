@@ -6,7 +6,7 @@ using std::ostringstream;
 
 Window::Window(const model::Model &model):
     model_(model),
-    wnd_(nana::rectangle(0, 0, width_, height_))
+    wnd_(nana::rectangle(0, 0, layout_.width, layout_.height))
 {
     wnd_.caption(STR("Rinle"));
     wnd_.background(color::background);
@@ -14,8 +14,8 @@ Window::Window(const model::Model &model):
     wnd_.show();
 
     //Prepare the lines and line number labels
-    const auto labelHeight = height_/nrRows_;
-    for (int i = 0; i < nrRows_; ++i)
+    const auto labelHeight = layout_.height/layout_.nrRows;
+    for (int i = 0; i < layout_.nrRows; ++i)
     {
         using std::make_shared;
         using nana::gui::label;
@@ -28,7 +28,7 @@ Window::Window(const model::Model &model):
             lineNrs_.push_back(lbl);
         }
         {
-            auto lbl = make_shared<label>(wnd_, rectangle(LineNrWidth, i*labelHeight, width_, labelHeight));
+            auto lbl = make_shared<label>(wnd_, rectangle(LineNrWidth, i*labelHeight, layout_.width, labelHeight));
             lbl->format(true);
             lbl->background(color::background);
             lines_.push_back(lbl);
@@ -44,13 +44,13 @@ void Window::handleCharEvent(const nana::gui::eventinfo &ei)
 void Window::convertLineNr_(nana::string &dst, int nr) const
 {
     ostringstream oss;
-    oss << "<size=" << fontSize_ << ", color=" << color::weak << ">" << nr << "</>";
+    oss << "<size=" << layout_.fontSize << ", font=\"" << layout_.font << "\", color=" << color::weak << ">" << nr << "</>";
     convert(dst, oss.str());
 }
 void Window::convertTokens_(nana::string &dst, const Tokens &tokens) const
 {
     ostringstream oss;
-    oss << "<size=" << fontSize_ << ", color=" << color::normal << ">";
+    oss << "<size=" << layout_.fontSize << ", font=\"" << layout_.font << "\", color=" << color::normal << ">";
     for (auto token: tokens)
     {
         bool doClose = false;
