@@ -1,7 +1,7 @@
 echo "== Setting environment variables"
 . $GUBG/bash/gubg_env.sh
 echo "== Configuring packages"
-. $GUBG_BASH/boost.sh
+#. $GUBG_BASH/boost.sh
 . $GUBG_BASH/iup.sh
 . $GUBG_BASH/arduino.sh
 . $GUBG_BASH/nana.sh
