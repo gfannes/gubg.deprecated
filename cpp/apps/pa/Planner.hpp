@@ -40,14 +40,16 @@ namespace pa
 			for (auto d: dayRange(Day(2013, 7, 22), Day(2013, 8, 2)))
 				planning.absence("wba", d);
 			planning.absence("wba", Day(2013, 8, 16));
-#endif
 			planning.absence("wba", Day(2013, 11, 28));
+#endif
 
 			{
 				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));
-	//			verlof.push_back(Day(2013, 8, 15));
+#ifdef PAST
+				verlof.push_back(Day(2013, 8, 15));
 				verlof.push_back(Day(2013, 11, 1));
 				verlof.push_back(Day(2013, 11, 11));
+#endif
 				for (auto d: verlof)
 				{
 					planning.absence("gfa", d);

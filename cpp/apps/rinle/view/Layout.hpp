@@ -7,22 +7,22 @@ namespace rinle
 {
     namespace view
     {
-		namespace layout
+		struct Layout
 		{
 #ifdef GUBG_MINGW
-			const int Width = 1580;
-			const int Height = 1100;
-			const int FontSize = 14;
-			const int NrRows = 40;
-			const int FocusRow = 15;
+			const int width = 1580;
+			const int height = 1100;
+			const int nrRows = 40;
+			const int focusRow = 15;
 #else
-			const int Width = 1365;
-			const int Height = 800;
-			const int FontSize = 14;
-			const int NrRows = 30;
-			const int FocusRow = 15;
+			const int width = 1365;
+			const int height = 800;
+			const int nrRows = 30;
+			const int focusRow = 15;
 #endif
-		}
+			const int fontSize = 14;
+			const char *font = "Consolas";
+		};
     }
 }
 
