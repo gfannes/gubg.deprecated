@@ -1,5 +1,5 @@
-#ifndef aoeuaouepage
-#define aoeuaouepage
+#ifndef HEADER_rinle_view_Page_hpp_ALREADY_INCLUDED
+#define HEADER_rinle_view_Page_hpp_ALREADY_INCLUDED
 
 #include "rinle/view/Colors.hpp"
 #include "rinle/view/Font.hpp"

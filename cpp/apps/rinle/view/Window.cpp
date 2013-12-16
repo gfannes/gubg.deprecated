@@ -13,8 +13,8 @@ namespace
 Window::Window(const model::Model &model):
     model_(model),
     wnd_(nana::rectangle(0, 0, layout_.width, layout_.height)),
-	page_(wnd_, nana::rectangle(0, 0, layout_.width, pageFrac*layout_.height), 0.2, 0.1, 40),
-	scroller_(wnd_, nana::rectangle(0, pageFrac*layout_.height, layout_.width, scrollerFrac*layout_.height), 6)
+	page(wnd_, nana::rectangle(0, 0, layout_.width, pageFrac*layout_.height), 0.2, 0.1, 40),
+	scroller(wnd_, nana::rectangle(0, pageFrac*layout_.height, layout_.width, scrollerFrac*layout_.height), 6)
 {
     wnd_.caption(STR("Rinle"));
     wnd_.background(color::background);

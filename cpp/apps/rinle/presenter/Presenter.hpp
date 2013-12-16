@@ -7,42 +7,41 @@
 
 #define GUBG_MODULE_ "Presenter"
 #include "gubg/log/begin.hpp"
-namespace rinle
-{
-    namespace presenter
+namespace rinle { namespace presenter {
+
+    class Presenter
     {
-        class Presenter
+        public:
+            Presenter(model::Model &model, view::Window &wnd):
+                model_(model), wnd_(wnd),
+                commander_(*this)
         {
-            public:
-                Presenter(model::Model &model, view::Window &wnd):
-                    model_(model), wnd_(wnd),
-                    commander_(*this)
+            wnd_.signal.connect(commander_.slot);
+        }
+
+            void setCurrent(File file)
             {
-                wnd_.addObserver(commander_.observer);
+                model_.load(file);
+                model_.connect(wnd_.page);
             }
 
-                void setCurrent(File file)
-                {
-                    model_.load(file);
-                }
+            void proceed_(int nrSteps)
+            {
+                S();
+                model_.proceed(nrSteps);
+                auto info = model_.getCurrent();
+                if (!info)
+                    return;
+                wnd_.show(info->path(), info->selectionStart());
+            }
 
-				void proceed_(int nrSteps)
-				{
-                    S();
-                    model_.proceed(nrSteps);
-                    auto info = model_.getCurrent();
-                    if (!info)
-                        return;
-                    wnd_.show(info->path(), info->selectionStart());
-				}
+        private:
+            model::Model &model_;
+            view::Window &wnd_;
+            Commander<Presenter> commander_;
+    };
 
-            private:
-                model::Model &model_;
-                view::Window &wnd_;
-                Commander<Presenter> commander_;
-        };
-    }
-}
+} }
 #include "gubg/log/end.hpp"
 
 #endif

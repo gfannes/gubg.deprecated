@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu
-#define aoeuaoeu
+#ifndef HEADER_gubg_pattern_SignalSlot_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_pattern_SignalSlot_hpp_ALREADY_INCLUDED
 
 #include <mutex>
 #include <vector>

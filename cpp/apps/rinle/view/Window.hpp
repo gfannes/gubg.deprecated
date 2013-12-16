@@ -82,8 +82,10 @@ namespace rinle
                 const model::Model &model_;
 				Layout layout_;
                 nana::gui::form wnd_;
-				Page page_;
-				Scroller scroller_;
+
+            public:
+				Page page;
+				Scroller scroller;
         };
     }
 }
