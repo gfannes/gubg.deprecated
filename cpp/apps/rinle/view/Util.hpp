@@ -1,7 +1,8 @@
 #ifndef HEADER_rinle_view_Util_hpp_ALREADY_INCLUDED
 #define HEADER_rinle_view_Util_hpp_ALREADY_INCLUDED
 
-#include <nana/deploy.hpp>
+#include "nana/gui/wvl.hpp"
+#include "nana/deploy.hpp"
 #include <algorithm>
 #include <sstream>
 
@@ -9,6 +10,8 @@ namespace rinle
 {
     namespace view
     {
+		inline void run() {nana::gui::exec();}
+
 		inline void convert(nana::string &dst, const std::string &src)
 		{
 			dst.resize(src.size());

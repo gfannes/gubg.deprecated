@@ -9,6 +9,9 @@ namespace rinle
         {
             const unsigned int background = 0x222222;
             const unsigned int normal = 0xcccccc;
+            const unsigned int error = 0xff5555;
+            const unsigned int warning = 0xffff55;
+            const unsigned int ok = 0x55ff55;
             const unsigned int weak = 0x888888;
             const unsigned int selected = 0x882288;
             const unsigned int keyword = 0xaa3333;

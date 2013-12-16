@@ -4,6 +4,8 @@
 #include <mutex>
 #include <vector>
 
+#define GUBG_MODULE "SignalSlot"
+#include "gubg/log/begin.hpp"
 namespace gubg { namespace pattern {
 
     template <typename Msg>
@@ -22,6 +24,7 @@ namespace gubg { namespace pattern {
 
                 private:
                     friend class Signal<Msg>;
+                    void connect_(Signal<Msg> *);
                     void disconnect_(Signal<Msg> *);
 
                     typedef Signal<Msg> *SignalPtr;
@@ -74,6 +77,7 @@ namespace gubg { namespace pattern {
     template <typename Msg>
         Signal<Msg>::~Signal()
         {
+			S();
             LockGuard lg(mutex_);
             for (auto slot: slots_)
                 slot->disconnect_(this);
@@ -81,13 +85,17 @@ namespace gubg { namespace pattern {
     template <typename Msg>
         void Signal<Msg>::emit(Msg msg)
         {
+			S();
             LockGuard lg(mutex_);
             //We take a copy of the slots, this allows new slots to be added as a result of processing. This is also the reason
             //why a Signal uses a recursive mutex, new slots might be added recursively.
             //Make sure no slots are removed though during processing.
             Slots slots = slots_;
             for (auto slot: slots)
+			{
+				L("Calling process on " << slot);
                 slot->process(msg);
+			}
         }
     template <typename Msg>
         template <typename Slot>
@@ -95,6 +103,7 @@ namespace gubg { namespace pattern {
         {
             LockGuard lg(mutex_);
             slots_.push_back(&slot);
+			slot.connect_(this);
         }
     template <typename Msg>
         void Signal<Msg>::disconnect_(priv::Slot_itf<Msg> *slot)
@@ -117,11 +126,21 @@ namespace gubg { namespace pattern {
         template <typename Msg>
             Slot_itf<Msg>::~Slot_itf()
             {
+				S();L("I am dying: " << this);
                 //TODO::I have the feeling this could lead to deadlocks, make sure there is always a fixed
                 //order between getting our mutex and the one from signal during the disconnect_() call
                 LockGuard lg(mutex_);
                 for (auto signal: signals_)
+				{
+					L("Disconnecting myself (" << this << ") from signal " << signal);
                     signal->disconnect_(this);
+				}
+            }
+        template <typename Msg>
+            void Slot_itf<Msg>::connect_(Signal<Msg> *signal)
+            {
+                LockGuard lg(mutex_);
+				signals_.push_back(signal);
             }
         template <typename Msg>
             void Slot_itf<Msg>::disconnect_(Signal<Msg> *signal)
@@ -147,5 +166,6 @@ namespace gubg { namespace pattern {
         }
 
 } }
+#include "gubg/log/end.hpp"
 
 #endif

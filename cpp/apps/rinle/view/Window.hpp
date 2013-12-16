@@ -2,14 +2,12 @@
 #define HEADER_rinle_view_Window_hpp_ALREADY_INCLUDED
 
 #include "rinle/Types.hpp"
-#include "rinle/view/Util.hpp"
-#include "rinle/view/Colors.hpp"
 #include "rinle/view/Layout.hpp"
+#include "rinle/view/Page.hpp"
+#include "rinle/view/Scroller.hpp"
 #include "rinle/model/Model.hpp"
-#include "gubg/pattern/Observer.hpp"
-#include <nana/gui/wvl.hpp>
-#include <nana/gui/widgets/button.hpp>
-#include <nana/gui/widgets/label.hpp>
+#include "gubg/pattern/SignalSlot.hpp"
+#include "nana/gui/widgets/form.hpp"
 #include <memory>
 
 #define GUBG_MODULE_ "Window"
@@ -18,15 +16,16 @@ namespace rinle
 {
 	namespace view
 	{
-		inline void run() {nana::gui::exec();}
-
-		class Window: public gubg::pattern::Observable<char>
+		class Window
 		{
 			public:
 				Window(const model::Model &);
 
+				gubg::pattern::Signal<char> signal;
+
 				void handleCharEvent(const nana::gui::eventinfo &);
 
+				/*
                 void show(const File &file, size_t focus)
                 {
                     S();L(STREAM(file, focus));
@@ -72,16 +71,19 @@ namespace rinle
                             ++begin;
                     }
                 }
+				*/
 
             private:
+				/*
                 void convertLineNr_(nana::string &dst, int nr) const;
                 void convertTokens_(nana::string &dst, const Tokens &tokens) const;
+				*/
 
                 const model::Model &model_;
 				Layout layout_;
                 nana::gui::form wnd_;
-                std::vector<std::shared_ptr<nana::gui::label>> lineNrs_;
-                std::vector<std::shared_ptr<nana::gui::label>> lines_;
+				Page page_;
+				Scroller scroller_;
         };
     }
 }

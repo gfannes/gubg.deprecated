@@ -4,43 +4,30 @@ using rinle::view::Window;
 using namespace rinle;
 using std::ostringstream;
 
+namespace 
+{
+	const double pageFrac = 0.8;
+	const double scrollerFrac = (1.0-pageFrac);
+}
+
 Window::Window(const model::Model &model):
     model_(model),
-    wnd_(nana::rectangle(0, 0, layout_.width, layout_.height))
+    wnd_(nana::rectangle(0, 0, layout_.width, layout_.height)),
+	page_(wnd_, nana::rectangle(0, 0, layout_.width, pageFrac*layout_.height), 0.2, 0.1, 40),
+	scroller_(wnd_, nana::rectangle(0, pageFrac*layout_.height, layout_.width, scrollerFrac*layout_.height), 6)
 {
     wnd_.caption(STR("Rinle"));
     wnd_.background(color::background);
     wnd_.make_event<nana::gui::events::key_char>(*this, &Window::handleCharEvent);
     wnd_.show();
-
-    //Prepare the lines and line number labels
-    const auto labelHeight = layout_.height/layout_.nrRows;
-    for (int i = 0; i < layout_.nrRows; ++i)
-    {
-        using std::make_shared;
-        using nana::gui::label;
-        using nana::rectangle;
-        const int LineNrWidth = 30;
-        {
-            auto lbl = make_shared<label>(wnd_, rectangle(0, i*labelHeight, LineNrWidth, labelHeight));
-            lbl->format(true);
-            lbl->background(color::background);
-            lineNrs_.push_back(lbl);
-        }
-        {
-            auto lbl = make_shared<label>(wnd_, rectangle(LineNrWidth, i*labelHeight, layout_.width, labelHeight));
-            lbl->format(true);
-            lbl->background(color::background);
-            lines_.push_back(lbl);
-        }
-    }
 }
 void Window::handleCharEvent(const nana::gui::eventinfo &ei)
 {
     assert(ei.identifier == nana::gui::events::key_char::identifier);
-    notifyObservers(ei.keyboard.key);
+    signal.emit(ei.keyboard.key);
 }
 
+/*
 void Window::convertLineNr_(nana::string &dst, int nr) const
 {
     ostringstream oss;
@@ -65,3 +52,4 @@ void Window::convertTokens_(nana::string &dst, const Tokens &tokens) const
     oss << "</>";
     convert(dst, oss.str());
 }
+*/
