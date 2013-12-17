@@ -12,6 +12,20 @@ namespace rinle { namespace model {
     class Model
     {
         public:
+            template <typename Slot>
+                void connectCurrent(Slot &slot)
+                {
+                    current_->signal.connect(slot);
+                    current_->refresh();
+                }
+            template <typename Slot>
+                void connectLog(Slot &slot)
+                {
+                    logger.connect(slot);
+                }
+            gubg::pattern::Signal<std::string> logger;
+
+            /*
             bool getLines(Lines &lines, const File file, size_t startLine, size_t nrLines) const
             {
                 S();L(STREAM(file, startLine, nrLines));
@@ -22,6 +36,7 @@ namespace rinle { namespace model {
                 const auto &info = *it->second;
                 return info.getLines(lines, startLine, nrLines);
             }
+            */
 
             FileInfo::Ptr getCurrent() const { return current_; }
 
@@ -37,7 +52,10 @@ namespace rinle { namespace model {
                 assert(invariants_());
                 auto &info = infoPerFile_[file];
                 if (!info)
+                {
                     info = FileInfo::create(file);
+                    logger.emit("Loaded new file");
+                }
                 current_ = info;
                 assert(invariants_());
             }

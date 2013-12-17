@@ -1,35 +1,14 @@
 #ifndef HEADER_rinle_view_Page_hpp_ALREADY_INCLUDED
 #define HEADER_rinle_view_Page_hpp_ALREADY_INCLUDED
 
+#include "rinle/Types.hpp"
 #include "rinle/view/Colors.hpp"
 #include "rinle/view/Font.hpp"
 #include "gubg/pattern/SignalSlot.hpp"
 #include "nana/gui/widgets/label.hpp"
 #include <string>
-#include <bitset>
 
 namespace rinle { namespace view {
-
-	const size_t Selected = 0;
-	const size_t Keyword = 1;
-	const size_t Identifier = 2;
-	typedef std::bitset<3> Flags;
-	typedef std::pair<std::string, Flags> Token;
-	typedef std::vector<Token> Tokens;
-	struct PageData
-	{
-		typedef std::pair<std::string, Tokens> Line;
-		typedef std::vector<Line> Lines;
-
-		std::string title;
-		Lines lines;
-	};
-	class PageSrc_itf
-	{
-		public:
-			//Fills in the page data struct
-			virtual void getPageData(PageData &) const = 0;
-	};
 
 	//A page listens for a notification and will get the data via a callback
 	class Page

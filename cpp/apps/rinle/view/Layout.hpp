@@ -15,9 +15,9 @@ namespace rinle
 			const int nrRows = 40;
 			const int focusRow = 15;
 #else
-			const int width = 1365;
-			const int height = 800;
-			const int nrRows = 30;
+			const int width = 500;
+			const int height = 300;
+			const int nrRows = 15;
 			const int focusRow = 15;
 #endif
 			const int fontSize = 14;

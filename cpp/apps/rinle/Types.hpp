@@ -1,9 +1,11 @@
 #ifndef HEADER_rinle_Types_hpp_ALREADY_INCLUDED
 #define HEADER_rinle_Types_hpp_ALREADY_INCLUDED
 
-#include "gubg/SmartRange.hpp"
 #include "gubg/file/File.hpp"
+#include "gubg/AString.hpp"
 #include <vector>
+#include <string>
+#include <bitset>
 
 namespace rinle
 {
@@ -17,24 +19,22 @@ namespace rinle
 		Command(Type t): type(t) {}
 	};
 
-	typedef gubg::SmartRange<std::string> Range;
-
-	struct Token
+	struct PageData
 	{
-		bool isSelected = false;
-		bool isKeyword = false;
-		bool isIdentifier = false;
-		Range range;
-	};
-	typedef std::vector<Token> Tokens;
-	typedef std::vector<Tokens> Lines;
+        enum Flags { Selected, Keyword, Identifier, Nr };
+        typedef gubg::AString<Flags> AString;
+        typedef std::pair<std::string, std::vector<AString>> Line;
+        typedef std::vector<Line> Lines;
 
-	struct Screen
-	{
-		const Lines &lines;
-		size_t focus;
-		Screen(const Lines &l, size_t f): lines(l), focus(f) {}
-	};
+        std::string title;
+        Lines lines;
+    };
+    class PageSrc_itf
+    {
+        public:
+            //Fills in the page data struct
+            virtual void getPageData(PageData &) const = 0;
+    };
 }
 
 #endif

@@ -1,5 +1,6 @@
 #include "rinle/model/Model.hpp"
 #include "rinle/view/Window.hpp"
+#include "rinle/view/Util.hpp"
 #include "rinle/presenter/Presenter.hpp"
 
 int main()

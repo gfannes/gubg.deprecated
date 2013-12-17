@@ -41,19 +41,19 @@ namespace rinle { namespace view {
 				std::ostringstream oss;
 				{
 					oss << "<size=" << fontSize_ << ">";
-					for (const auto &token: line->second)
+					for (const auto &astr: line->second)
 					{
 						auto clr = color::normal;
 						{
-							const Flags &flags = token.second;
-							if (flags[Selected])
+							const auto &flags = astr.flags;
+							if (flags[PageData::Selected])
 								clr = color::selected;
-							else if (flags[Keyword])
+							else if (flags[PageData::Keyword])
 								clr = color::keyword;
-							else if (flags[Identifier])
+							else if (flags[PageData::Identifier])
 								clr = color::identifier;
 						}
-						oss << "<color=" << clr << ">" << token.first << "</>";
+						oss << "<color=" << clr << ">" << astr << "</>";
 					}
 					oss << "</>";
 				}

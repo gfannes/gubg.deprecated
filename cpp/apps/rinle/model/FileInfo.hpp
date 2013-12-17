@@ -2,12 +2,14 @@
 #define HEADER_rinle_model_FileInfo_hpp_ALREADY_INCLUDED
 
 #include "rinle/Codes.hpp"
-#include "rinle/model/Location.hpp"
+#include "rinle/model/Types.hpp"
+#include "rinle/model/LineNavigator.hpp"
+#include "gubg/SmartRange.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
 #include "gubg/parse/cpp/Keywords.hpp"
-#include "gubg/pattern/Observer.hpp"
+#include "gubg/pattern/SignalSlot.hpp"
 #include <string>
 #include <cassert>
 
@@ -15,48 +17,95 @@
 #include "gubg/log/begin.hpp"
 namespace rinle { namespace model {
 
-    class FileInfo
+    class FileInfo: public PageSrc_itf
     {
         public:
             typedef std::shared_ptr<FileInfo> Ptr;
-            typedef std::vector<gubg::parse::cpp::pp::Token> PPTokens;
 
             static Ptr create(const File &path) {return Ptr(new FileInfo(path));}
 
-            File path() const {return path_;}
-            size_t selectionStart() const {return begin_.row;}
-
-            const Lines &lines() const
+            void refresh() {signal.emit(*this);}
+			typedef const PageSrc_itf &Msg;
+            gubg::pattern::Signal<Msg> signal;
+            virtual void getPageData(PageData &pd) const
             {
-                return lines_;
-            }
+                typedef PageData::AString AString;
+                S();L(path());
+                pd.title = path().name();
 
-            bool getLines(Lines &lines, size_t startLine, size_t nrLines) const
-            {
-                lines.clear();
-                for (size_t i = 0; i < nrLines; ++i)
+                //Lookup the ix where selection_ starts
+                size_t ix;
+                if (!lineNavigator_.getLineIX(ix, selection_.begin))
                 {
-                    const auto ix = startLine + i;
-                    if (ix >= lines_.size())
-                        break;
-                    lines.push_back(lines_[ix]);
+                    //This selection_ is not known, we assume the file is empty
+                    for (auto &dstLine: pd.lines)
+                    {
+                        AString astr("... empty file ...");
+                        dstLine.second.push_back(astr);
+                    }
+                    return;
                 }
-                return true;
+
+                //Get the first line of the selection_, we will use it as a start point to fill the PageData lines
+                auto srcLine = lineNavigator_.set(Range(selection_.begin, selection_.begin));
+                bool foundBegin = false, foundEnd = false;
+                for (auto &dstLine: pd.lines)
+                {
+                    if (!srcLine.empty())
+                    {
+                        //The border: set the line number, note that we pre-increment to convert ix into a line number
+                        {
+                            std::ostringstream oss; oss << ++ix;
+                            dstLine.first = oss.str();
+                        }
+                        //The body
+                        {
+                            std::ostringstream oss;
+                            auto tmpLine = srcLine;
+                            while (!tmpLine.empty())
+                            {
+                                auto &token = tmpLine.front();
+                                if (&token == &*selection_.begin)
+                                    foundBegin = true;
+                                if (&token == &*selection_.end)
+                                    foundEnd = true;
+                                AString astr(token.toString());
+                                if (foundBegin && !foundEnd)
+                                    astr.flags.set(PageData::Selected);
+                                else if (token.type == Token::Identifier)
+                                    astr.flags.set(gubg::parse::cpp::isKeyword(token.range) ? PageData::Keyword : PageData::Identifier);
+                                dstLine.second.push_back(astr);
+                                tmpLine.popFront();
+                            }
+                        }
+                        if (!lineNavigator_.forward(srcLine))
+                            srcLine = Range();
+                    }
+                }
             }
+
+            File path() const {return path_;}
 
             void proceed(int nrSteps)
             {
-                begin_ += nrSteps;
-                end_ += nrSteps;
-                if (begin_ == end_)
-                    ++end_;
-                computeSelection_();
+                selection_ = lineNavigator_.set(Range(selection_.begin, selection_.begin));
+                while (nrSteps > 0)
+                {
+                    lineNavigator_.forward(selection_);
+                    --nrSteps;
+                }
+                while (nrSteps < 0)
+                {
+                    lineNavigator_.backward(selection_);
+                    ++nrSteps;
+                }
+                signal.emit(*this);
             }
 
         private:
-            FileInfo(const File &path):
-                path_(path),
-                begin_(lines_), end_(lines_)
+            FileInfo(const File &path)
+                : path_(path)
+                  ,lineNavigator_(tokens_)
         {
             load_();
         }
@@ -68,48 +117,25 @@ namespace rinle { namespace model {
                 std::string content;
                 MSS(gubg::file::read(content, path_));
 
-                using namespace gubg::parse::cpp;
-                pp::Lexer<PPTokens> lexer;
+                typedef gubg::SmartRange<std::string> Range;
                 Range range(std::move(content));
+                gubg::parse::cpp::pp::Lexer<Tokens> lexer;
                 MSS(lexer.tokenize(range));
 
-                lines_.push_back(Tokens());
-                for (auto token: lexer.tokens())
-                {
-                    Token t; t.range = token.range;
-                    switch (token.type)
-                    {
-                        case pp::Token::LineFeed:
-                            lines_.push_back(Tokens());
-                            continue;
-                            break;
-                        case pp::Token::CarriageReturn:
-                            continue;
-                            break;
-                        case pp::Token::Identifier:
-                            t.isIdentifier = true;
-                            break;
-                    }
-                    if (gubg::parse::cpp::isKeyword(t.range))
-                        t.isKeyword = true;
-                    lines_.back().push_back(t);
-                }
+                tokens_ = lexer.tokens();
+                lineNavigator_.refresh();
 
-                ++end_;
-                computeSelection_();
+                selection_.begin = selection_.end = tokens_.begin();
+                if (selection_.end != tokens_.end())
+                    ++selection_.end;
 
                 MSS_END();
             }
-            void computeSelection_()
-            {
-                for (auto it = Location(lines_); it != it.end(); ++it)
-                    it->isSelected = (begin_ <= it && it < end_);
-            }
 
             gubg::file::File path_;
-            Lines lines_;
-            Location begin_;
-            Location end_;
+            Tokens tokens_;
+            Range selection_;
+            LineNavigator lineNavigator_;
     };
 
 } }
