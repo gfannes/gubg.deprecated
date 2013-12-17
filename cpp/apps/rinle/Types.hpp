@@ -21,7 +21,7 @@ namespace rinle
 
 	struct PageData
 	{
-        enum Flags { Selected, Keyword, Identifier, Nr };
+        enum Flags { Locus, Selected, Keyword, Identifier, Nr };
         typedef gubg::AString<Flags> AString;
         typedef std::pair<std::string, std::vector<AString>> Line;
         typedef std::vector<Line> Lines;

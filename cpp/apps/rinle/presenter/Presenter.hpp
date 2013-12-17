@@ -42,11 +42,17 @@ namespace rinle { namespace presenter {
                 wnd_.show(info->path(), info->selectionStart());
                 */
             }
+            void toggleRubber_()
+            {
+                enableRubber_ = !enableRubber_;
+                model_.getCurrent()->setRubber(enableRubber_);
+            }
 
         private:
             gubg::pattern::Signal<std::string> logger;
             model::Model &model_;
             view::Window &wnd_;
+            bool enableRubber_ = false;
             Commander<Presenter> commander_;
     };
 

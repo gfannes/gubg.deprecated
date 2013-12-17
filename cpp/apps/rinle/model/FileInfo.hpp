@@ -11,6 +11,7 @@
 #include "gubg/parse/cpp/Keywords.hpp"
 #include "gubg/pattern/SignalSlot.hpp"
 #include <string>
+#include <memory>
 #include <cassert>
 
 #define GUBG_MODULE_ "Window"
@@ -24,6 +25,15 @@ namespace rinle { namespace model {
 
             static Ptr create(const File &path) {return Ptr(new FileInfo(path));}
 
+            void setRubber(bool on)
+            {
+                if (on)
+                    rubber_.reset(new Range(locus_));
+                else
+                    rubber_.reset();
+                refresh();
+            }
+
             void refresh() {signal.emit(*this);}
 			typedef const PageSrc_itf &Msg;
             gubg::pattern::Signal<Msg> signal;
@@ -33,11 +43,11 @@ namespace rinle { namespace model {
                 S();L(path());
                 pd.title = path().name();
 
-                //Lookup the ix where selection_ starts
+                //Lookup the ix where locus_ starts
                 size_t ix;
-                if (!lineNavigator_.getLineIX(ix, selection_.begin))
+                if (!lineNavigator_.getLineIX(ix, locus_.begin))
                 {
-                    //This selection_ is not known, we assume the file is empty
+                    //This locus_ is not known, we assume the file is empty
                     for (auto &dstLine: pd.lines)
                     {
                         AString astr("... empty file ...");
@@ -46,8 +56,8 @@ namespace rinle { namespace model {
                     return;
                 }
 
-                //Get the first line of the selection_, we will use it as a start point to fill the PageData lines
-                auto srcLine = lineNavigator_.set(Range(selection_.begin, selection_.begin));
+                //Get the first line of the locus_, we will use it as a start point to fill the PageData lines
+                auto srcLine = lineNavigator_.set(Range(locus_.begin, locus_.begin));
                 bool foundBegin = false, foundEnd = false;
                 for (auto &dstLine: pd.lines)
                 {
@@ -65,13 +75,13 @@ namespace rinle { namespace model {
                             while (!tmpLine.empty())
                             {
                                 auto &token = tmpLine.front();
-                                if (&token == &*selection_.begin)
+                                if (&token == &*locus_.begin)
                                     foundBegin = true;
-                                if (&token == &*selection_.end)
+                                if (&token == &*locus_.end)
                                     foundEnd = true;
                                 AString astr(token.toString());
                                 if (foundBegin && !foundEnd)
-                                    astr.flags.set(PageData::Selected);
+                                    astr.flags.set(PageData::Locus);
                                 else if (token.type == Token::Identifier)
                                     astr.flags.set(gubg::parse::cpp::isKeyword(token.range) ? PageData::Keyword : PageData::Identifier);
                                 dstLine.second.push_back(astr);
@@ -88,15 +98,15 @@ namespace rinle { namespace model {
 
             void proceed(int nrSteps)
             {
-                selection_ = lineNavigator_.set(Range(selection_.begin, selection_.begin));
+                locus_ = lineNavigator_.set(Range(locus_.begin, locus_.begin));
                 while (nrSteps > 0)
                 {
-                    lineNavigator_.forward(selection_);
+                    lineNavigator_.forward(locus_);
                     --nrSteps;
                 }
                 while (nrSteps < 0)
                 {
-                    lineNavigator_.backward(selection_);
+                    lineNavigator_.backward(locus_);
                     ++nrSteps;
                 }
                 signal.emit(*this);
@@ -125,16 +135,17 @@ namespace rinle { namespace model {
                 tokens_ = lexer.tokens();
                 lineNavigator_.refresh();
 
-                selection_.begin = selection_.end = tokens_.begin();
-                if (selection_.end != tokens_.end())
-                    ++selection_.end;
+                locus_.begin = locus_.end = tokens_.begin();
+                if (locus_.end != tokens_.end())
+                    ++locus_.end;
 
                 MSS_END();
             }
 
             gubg::file::File path_;
             Tokens tokens_;
-            Range selection_;
+            Range locus_;
+            std::shared_ptr<Range> rubber_;
             LineNavigator lineNavigator_;
     };
 

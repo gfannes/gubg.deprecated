@@ -21,6 +21,7 @@ namespace rinle { namespace presenter {
                     {
                         case 'n': outer_.proceed_(1); break;
                         case 'o': outer_.proceed_(-1); break;
+                        case ' ': outer_.toggleRubber_(); break;
                     }
                 }
                 gubg::pattern::Slot<Commander, char> slot;

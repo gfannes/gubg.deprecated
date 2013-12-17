@@ -44,16 +44,19 @@ namespace rinle { namespace view {
 					for (const auto &astr: line->second)
 					{
 						auto clr = color::normal;
+                        bool bold = true;
 						{
 							const auto &flags = astr.flags;
-							if (flags[PageData::Selected])
-								clr = color::selected;
-							else if (flags[PageData::Keyword])
-								clr = color::keyword;
-							else if (flags[PageData::Identifier])
+							if (flags[PageData::Identifier])
 								clr = color::identifier;
+							if (flags[PageData::Keyword])
+								clr = color::keyword;
+							if (flags[PageData::Locus])
+								clr = color::selected;
+                            if (flags[PageData::Selected])
+                                bold = true;
 						}
-						oss << "<color=" << clr << ">" << astr << "</>";
+						oss << "<color=" << clr << (bold ? ", bold=true" : "") << ">" << astr << "</>";
 					}
 					oss << "</>";
 				}
