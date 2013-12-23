@@ -66,11 +66,18 @@ namespace rinle { namespace model {
 				auto lix = info->second.ix;
 				if (ix)
 					*ix = lix;
-				return getLine_(lix);
+				return getLine(lix);
             }
+			Range getLine(size_t ix) const
+			{
+				if (ix >= lines_.size())
+					return Range();
+				return lines_[ix];
+			}
 
 			bool forward(Range &range) const
 			{
+                S();
 				size_t ix;
 				if (getLine(&ix, range.begin()).empty())
 					return false;
@@ -81,6 +88,7 @@ namespace rinle { namespace model {
 			}
 			bool backward(Range &range) const
 			{
+                S();
 				size_t ix;
 				if (getLine(&ix, range.begin()).empty())
 					return false;
@@ -113,12 +121,6 @@ namespace rinle { namespace model {
 				if (lines_.back().empty())
 					lines_.pop_back();
 				L(STREAM(infoPerToken_.size()));
-			}
-			Range getLine_(size_t ix) const
-			{
-				if (ix >= lines_.size())
-					return Range();
-				return lines_[ix];
 			}
 
 			struct Info

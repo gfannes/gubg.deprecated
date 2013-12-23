@@ -30,6 +30,7 @@ namespace rinle { namespace presenter {
 
             void move_(model::Direction dir)
             {
+                S();L((int)dir);
                 model_.move(dir);
             }
             void toggleRubber_()

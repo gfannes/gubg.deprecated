@@ -46,22 +46,29 @@ namespace rinle { namespace model {
 
                 //Lookup the line and ix where locus_ starts
                 size_t ix;
-				Range line = lineNavigator_.getLine(&ix, locus_.begin());
-                if (line.empty())
                 {
-                    //This locus_ is not known, we assume the file is empty
-                    for (auto &dstLine: pd.lines)
+                    auto line = lineNavigator_.getLine(&ix, locus_.begin());
+                    if (line.empty())
                     {
-                        AString astr("... empty file ...");
-                        dstLine.second.push_back(astr);
+                        //This locus_ is not known, we assume the file is empty
+                        for (auto &dstLine: pd.lines)
+                        {
+                            AString astr("... empty file ...");
+                            dstLine.second.push_back(astr);
+                        }
+                        return;
                     }
-                    return;
                 }
+                //We try to keep the start of the locus_ at 1/4th of the screen
+                const auto focusIX = ix;
+                ix = (ix < pd.lines.size()/4) ? 0 : ix-pd.lines.size()/4;
+                L(ix);
 
                 //Get the first line of the locus_, we will use it as a start point to fill the PageData lines
                 bool foundBegin = false, foundEnd = false;
                 for (auto &dstLine: pd.lines)
                 {
+                    auto line = lineNavigator_.getLine(ix);
                     if (!line.empty())
                     {
                         //The border: set the line number, note that we pre-increment to convert ix into a line number
@@ -89,8 +96,6 @@ namespace rinle { namespace model {
                                 tmpLine.popFront();
                             }
                         }
-                        if (!lineNavigator_.forward(line))
-                            line.clear();
                     }
                 }
             }

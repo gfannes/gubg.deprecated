@@ -83,9 +83,8 @@ namespace rinle { namespace presenter {
 					CommandPtr cmd;
 					switch (dir)
 					{
-						case model::Forward:
-						case model::Backward:
-							cmd.reset(new Command([&](){outer_.move_(dir);})); break; 
+                        case model::Forward: cmd.reset(new Command([&](){outer_.move_(model::Forward);})); break; 
+                        case model::Backward: cmd.reset(new Command([&](){outer_.move_(model::Backward);})); break; 
 					}
 					return cmd;
 				}
