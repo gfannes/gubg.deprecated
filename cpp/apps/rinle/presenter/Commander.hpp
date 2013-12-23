@@ -67,7 +67,7 @@ namespace rinle { namespace presenter {
 					if (cmd_ == "t")
 						return navmode_(model::ByToken);
 					if (cmd_ == "l")
-						return navmode_(model::ByToken);
+						return navmode_(model::ByLine);
 					return nothing;
 				}
 				CommandPtr clear_()
@@ -83,8 +83,8 @@ namespace rinle { namespace presenter {
 					CommandPtr cmd;
 					switch (dir)
 					{
-                        case model::Forward: cmd.reset(new Command([&](){outer_.move_(model::Forward);})); break; 
-                        case model::Backward: cmd.reset(new Command([&](){outer_.move_(model::Backward);})); break; 
+						case model::Forward:
+						case model::Backward: cmd.reset(new Command([&, dir](){outer_.move_(dir);})); break; 
 					}
 					return cmd;
 				}
@@ -94,7 +94,7 @@ namespace rinle { namespace presenter {
 				}
 				CommandPtr navmode_(model::NavigatorMode mode)
 				{
-					return CommandPtr(new Command([&](){outer_.navmode_(mode);}));
+					return CommandPtr(new Command([&, mode](){outer_.navmode_(mode);}));
 				}
 
 				Outer &outer_;
