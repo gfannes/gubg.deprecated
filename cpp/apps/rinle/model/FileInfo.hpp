@@ -4,6 +4,7 @@
 #include "rinle/Codes.hpp"
 #include "rinle/model/Types.hpp"
 #include "rinle/model/LineNavigator.hpp"
+#include "rinle/model/TokenNavigator.hpp"
 #include "gubg/SmartRange.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -43,9 +44,10 @@ namespace rinle { namespace model {
                 S();L(path());
                 pd.title = path().name();
 
-                //Lookup the ix where locus_ starts
+                //Lookup the line and ix where locus_ starts
                 size_t ix;
-                if (!lineNavigator_.getLineIX(ix, locus_.begin))
+				Range line = lineNavigator_.getLine(&ix, locus_.begin());
+                if (line.empty())
                 {
                     //This locus_ is not known, we assume the file is empty
                     for (auto &dstLine: pd.lines)
@@ -57,11 +59,10 @@ namespace rinle { namespace model {
                 }
 
                 //Get the first line of the locus_, we will use it as a start point to fill the PageData lines
-                auto srcLine = lineNavigator_.set(Range(locus_.begin, locus_.begin));
                 bool foundBegin = false, foundEnd = false;
                 for (auto &dstLine: pd.lines)
                 {
-                    if (!srcLine.empty())
+                    if (!line.empty())
                     {
                         //The border: set the line number, note that we pre-increment to convert ix into a line number
                         {
@@ -71,53 +72,61 @@ namespace rinle { namespace model {
                         //The body
                         {
                             std::ostringstream oss;
-                            auto tmpLine = srcLine;
+                            auto tmpLine = line;
                             while (!tmpLine.empty())
                             {
-                                auto &token = tmpLine.front();
-                                if (&token == &*locus_.begin)
+                                auto &ot = tmpLine.front();
+                                if (&ot == &*locus_.begin())
                                     foundBegin = true;
-                                if (&token == &*locus_.end)
+                                if (&ot == &*locus_.end())
                                     foundEnd = true;
-                                AString astr(token.toString());
+                                AString astr(ot.token.toString());
                                 if (foundBegin && !foundEnd)
                                     astr.flags.set(PageData::Locus);
-                                else if (token.type == Token::Identifier)
-                                    astr.flags.set(gubg::parse::cpp::isKeyword(token.range) ? PageData::Keyword : PageData::Identifier);
+                                else if (ot.token.type == Token::Identifier)
+                                    astr.flags.set(gubg::parse::cpp::isKeyword(ot.token.range) ? PageData::Keyword : PageData::Identifier);
                                 dstLine.second.push_back(astr);
                                 tmpLine.popFront();
                             }
                         }
-                        if (!lineNavigator_.forward(srcLine))
-                            srcLine = Range();
+                        if (!lineNavigator_.forward(line))
+                            line.clear();
                     }
                 }
             }
 
             File path() const {return path_;}
 
-            void proceed(int nrSteps)
+            void move(Direction dir)
             {
-                locus_ = lineNavigator_.set(Range(locus_.begin, locus_.begin));
-                while (nrSteps > 0)
-                {
-                    lineNavigator_.forward(locus_);
-                    --nrSteps;
-                }
-                while (nrSteps < 0)
-                {
-                    lineNavigator_.backward(locus_);
-                    ++nrSteps;
-                }
-                signal.emit(*this);
+				if (!navigator_)
+					return;
+				if (navigator_->move(locus_, dir))
+					signal.emit(*this);
             }
+			void setMode(NavigatorMode mode)
+			{
+				Navigator *nav = nullptr;
+				switch (mode)
+				{
+					case ByLine: nav = &lineNavigator_; break;
+					case ByToken: nav = &tokenNavigator_; break;
+				}
+				if (nav != navigator_)
+				{
+					navigator_ = nav;
+					locus_ = navigator_->set(Range(locus_.begin(), locus_.begin()));
+				}
+			}
 
         private:
             FileInfo(const File &path)
                 : path_(path)
                   ,lineNavigator_(tokens_)
+                  ,tokenNavigator_(tokens_)
         {
             load_();
+			setMode(ByLine);
         }
 
             ReturnCode load_()
@@ -127,17 +136,24 @@ namespace rinle { namespace model {
                 std::string content;
                 MSS(gubg::file::read(content, path_));
 
-                typedef gubg::SmartRange<std::string> Range;
-                Range range(std::move(content));
-                gubg::parse::cpp::pp::Lexer<Tokens> lexer;
-                MSS(lexer.tokenize(range));
-
-                tokens_ = lexer.tokens();
+				{
+					typedef gubg::SmartRange<std::string> Range;
+					typedef std::vector<Token> Tokens;
+					Range range(std::move(content));
+					gubg::parse::cpp::pp::Lexer<Tokens> lexer;
+					MSS(lexer.tokenize(range));
+					for (auto it = lexer.tokens().begin(); it != lexer.tokens().end(); ++it)
+					{
+						OrderedToken ot(*it, it-lexer.tokens().begin());
+						tokens_.push_back(ot);
+					}
+				}
                 lineNavigator_.refresh();
 
-                locus_.begin = locus_.end = tokens_.begin();
-                if (locus_.end != tokens_.end())
-                    ++locus_.end;
+				auto locusEnd = tokens_.begin();
+				if (locusEnd != tokens_.end())
+					++locusEnd;
+				locus_ = Range(tokens_.begin(), locusEnd);
 
                 MSS_END();
             }
@@ -147,6 +163,8 @@ namespace rinle { namespace model {
             Range locus_;
             std::shared_ptr<Range> rubber_;
             LineNavigator lineNavigator_;
+            TokenNavigator tokenNavigator_;
+			Navigator *navigator_ = nullptr;
     };
 
 } }

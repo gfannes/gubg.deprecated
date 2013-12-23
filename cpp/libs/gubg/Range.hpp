@@ -28,6 +28,14 @@ namespace gubg
                 //Requires operator<()
                 bool contains(Iterator) const;
 
+				Iterator begin() const;
+				Iterator end() const;
+
+				void begin(Iterator);
+				void end(Iterator);
+				
+				void clear();
+
             private:
                 Iterator begin_;
                 Iterator end_;
@@ -72,12 +80,37 @@ namespace gubg
                 return false;
             return it < end_;
         }
-    //Free functions
-    template <typename Container>
-        Range<typename Container::iterator> make_range(Container &container)
-        {
-            return Range<typename Container::iterator>(container);
-        }
+    template <typename Iterator_>
+		Iterator_ Range<Iterator_>::begin() const
+		{
+			return begin_;
+		}
+    template <typename Iterator_>
+		Iterator_ Range<Iterator_>::end() const
+		{
+			return end_;
+		}
+    template <typename Iterator_>
+		void Range<Iterator_>::begin(Iterator b)
+		{
+			begin_ = b;
+		}
+    template <typename Iterator_>
+		void Range<Iterator_>::end(Iterator e)
+		{
+			end_ = e;
+		}
+    template <typename Iterator_>
+		void Range<Iterator_>::clear()
+		{
+			*this = Range();
+		}
+	//Free functions
+	template <typename Container>
+		Range<typename Container::iterator> make_range(Container &container)
+		{
+			return Range<typename Container::iterator>(container);
+		}
 }
 
 #endif

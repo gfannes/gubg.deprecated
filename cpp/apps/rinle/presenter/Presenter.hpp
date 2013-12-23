@@ -19,6 +19,7 @@ namespace rinle { namespace presenter {
             wnd_.signal.connect(commander_.slot);
             model_.connectLog(wnd_.scroller.slot);
             logger.connect(wnd_.scroller.slot);
+            commander_.logger.connect(wnd_.scroller.slot);
         }
 
             void setCurrent(File file)
@@ -27,25 +28,18 @@ namespace rinle { namespace presenter {
                 model_.connectCurrent(wnd_.page.slot);
             }
 
-            void proceed_(int nrSteps)
+            void move_(model::Direction dir)
             {
-                S();
-                {
-                    std::ostringstream oss; oss << "Proceeding " << nrSteps;
-                    logger.emit(oss.str());
-                }
-                model_.proceed(nrSteps);
-                /*
-                auto info = model_.getCurrent();
-                if (!info)
-                    return;
-                wnd_.show(info->path(), info->selectionStart());
-                */
+                model_.move(dir);
             }
             void toggleRubber_()
             {
                 enableRubber_ = !enableRubber_;
                 model_.getCurrent()->setRubber(enableRubber_);
+            }
+            void navmode_(model::NavigatorMode mode)
+            {
+                model_.navmode(mode);
             }
 
         private:

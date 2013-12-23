@@ -40,11 +40,17 @@ namespace rinle { namespace model {
 
             FileInfo::Ptr getCurrent() const { return current_; }
 
-            void proceed(int nrSteps)
+            void move(Direction dir)
             {
                 if (!current_)
                     return;
-                current_->proceed(nrSteps);
+                current_->move(dir);
+            }
+            void navmode(NavigatorMode mode)
+            {
+                if (!current_)
+                    return;
+                current_->setMode(mode);
             }
 
             void load(const File &file)
