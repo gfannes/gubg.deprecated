@@ -10,8 +10,8 @@ namespace rinle
 		class Navigator
 		{
 			public:
-				virtual Range set(const Range &) const = 0;
-				virtual bool move(Range &, Direction) const = 0;	
+				virtual bool set(Range &) const = 0;
+				virtual bool move(Range &, Direction) = 0;	
 
 			protected:
 				Navigator(Tokens &tokens): tokens_(tokens) {}

@@ -3,8 +3,9 @@
 
 #include "rinle/Codes.hpp"
 #include "rinle/model/Types.hpp"
-#include "rinle/model/LineNavigator.hpp"
 #include "rinle/model/TokenNavigator.hpp"
+#include "rinle/model/ScopeNavigator.hpp"
+#include "rinle/model/LineNavigator.hpp"
 #include "gubg/SmartRange.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -114,21 +115,26 @@ namespace rinle { namespace model {
 				Navigator *nav = nullptr;
 				switch (mode)
 				{
-					case ByLine: nav = &lineNavigator_; break;
 					case ByToken: nav = &tokenNavigator_; break;
+					case ByScope: nav = &scopeNavigator_; break;
+					case ByLine: nav = &lineNavigator_; break;
 				}
+				if (!nav)
+					return;
 				if (nav != navigator_)
 				{
 					navigator_ = nav;
-					locus_ = navigator_->set(Range(locus_.begin(), locus_.begin()));
+					navigator_->set(locus_);
+					signal.emit(*this);
 				}
 			}
 
         private:
             FileInfo(const File &path)
                 : path_(path)
-                  ,lineNavigator_(tokens_)
                   ,tokenNavigator_(tokens_)
+                  ,scopeNavigator_(tokens_)
+                  ,lineNavigator_(tokens_)
         {
             load_();
 			setMode(ByLine);
@@ -154,6 +160,7 @@ namespace rinle { namespace model {
 					}
 				}
                 lineNavigator_.refresh();
+				scopeNavigator_.refresh();
 
 				auto locusEnd = tokens_.begin();
 				if (locusEnd != tokens_.end())
@@ -167,8 +174,9 @@ namespace rinle { namespace model {
             Tokens tokens_;
             Range locus_;
             std::shared_ptr<Range> rubber_;
-            LineNavigator lineNavigator_;
             TokenNavigator tokenNavigator_;
+            ScopeNavigator scopeNavigator_;
+            LineNavigator lineNavigator_;
 			Navigator *navigator_ = nullptr;
     };
 

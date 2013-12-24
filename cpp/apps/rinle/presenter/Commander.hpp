@@ -58,16 +58,26 @@ namespace rinle { namespace presenter {
 						return clear_();
 					if (cmd_ == "qq")
 						return quit_();
+
+					if (cmd_ == " ")
+						return toggleRubber_();
+
 					if (cmd_ == "n")
 						return move_(model::Forward);
 					if (cmd_ == "o")
 						return move_(model::Backward);
-					if (cmd_ == " ")
-						return toggleRubber_();
 					if (cmd_ == "t")
+						return move_(model::In);
+					if (cmd_ == "e")
+						return move_(model::Out);
+
+					if (cmd_ == "b")
 						return navmode_(model::ByToken);
-					if (cmd_ == "l")
+					if (cmd_ == "m")
+						return navmode_(model::ByScope);
+					if (cmd_ == "w")
 						return navmode_(model::ByLine);
+
 					return nothing;
 				}
 				CommandPtr clear_()
@@ -78,19 +88,13 @@ namespace rinle { namespace presenter {
 				{
 					return CommandPtr(new Command([&](){std::cout << "User requested to exit. Bye." << std::endl; nana::gui::API::exit();}));
 				}
-				CommandPtr move_(model::Direction dir)
-				{
-					CommandPtr cmd;
-					switch (dir)
-					{
-						case model::Forward:
-						case model::Backward: cmd.reset(new Command([&, dir](){outer_.move_(dir);})); break; 
-					}
-					return cmd;
-				}
 				CommandPtr toggleRubber_()
 				{
 					return CommandPtr(new Command([&](){outer_.toggleRubber_();}));
+				}
+				CommandPtr move_(model::Direction dir)
+				{
+					return CommandPtr(new Command([&, dir](){outer_.move_(dir);}));
 				}
 				CommandPtr navmode_(model::NavigatorMode mode)
 				{

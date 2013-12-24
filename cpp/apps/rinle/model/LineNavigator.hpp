@@ -15,39 +15,62 @@ namespace rinle { namespace model {
 			LineNavigator(Tokens &tokens): Navigator(tokens) {}
 
 			//Navigator API
-            virtual Range set(const Range &range) const
+            virtual bool set(Range &range) const
 			{
 				S();
+
+				if (range.empty())
+				{
+					if (lines_.empty())
+					{
+						L("This is an empty document");
+						return false;
+					}
+					range = lines_.front();
+					return true;
+				}
 
 				auto info = infoPerToken_.find(&range.front());
 				if (info == infoPerToken_.end())
 				{
 					L("Nothing known about the front of this range");
-					return Range();
+					range = lines_.front();
+					return true;
 				}
 
-				Range ret;
-				//We set a failsafe end for the range at first
-				ret = Range(info->second.begin, tokens_.end());
-
-				//We try to find a better end for the range: proceed the end of the previous range
-				//to the next line
-				for (auto betterEnd = range.end(); betterEnd != tokens_.end(); ++betterEnd)
+				range = Range(info->second.begin, info->second.begin);
+				size_t size = size_;
+				for (; range.end() != tokens_.end(); range.end(std::next(range.end())))
 				{
-					if (betterEnd->token.type != gubg::parse::cpp::pp::Token::LineFeed)
+					if (range.end()->token.type != gubg::parse::cpp::pp::Token::LineFeed)
 						continue;
-					//We found a more suitable end for the range
-					ret.end(++betterEnd);
-					break;
+					L("Decreasing size from " << size);
+					--size;
+					if (size == 0)
+					{
+						L("We found the end of the range");
+						range.end(std::next(range.end()));
+						break;
+					}
 				}
-				return ret;
+				return true;
 			}
-			virtual bool move(Range &range, Direction dir) const
+			virtual bool move(Range &range, Direction dir)
 			{
 				switch (dir)
 				{
-					case Forward: return forward(range); break;
-					case Backward: return backward(range); break;
+					case Forward:  return forward_(range); break;
+					case Backward: return backward_(range); break;
+					case Out:
+								   size_ *= 2;
+								   return set(range);
+								   break;
+					case In:
+								   if (size_ == 1)
+									   return false;
+								   size_ /= 2;
+								   return set(range);
+								   break;
 				}
 				return false;
 			}
@@ -75,29 +98,6 @@ namespace rinle { namespace model {
 				return lines_[ix];
 			}
 
-			bool forward(Range &range) const
-			{
-                S();
-				size_t ix;
-				if (getLine(&ix, range.begin()).empty())
-					return false;
-				if (ix+1 >= lines_.size())
-					return false;
-				range = lines_[ix+1];
-				return true;
-			}
-			bool backward(Range &range) const
-			{
-                S();
-				size_t ix;
-				if (getLine(&ix, range.begin()).empty())
-					return false;
-				if (ix == 0)
-					return false;
-				range = lines_[ix-1];
-				return true;
-			}
-
 		private:
 			void recompute_()
 			{
@@ -122,6 +122,43 @@ namespace rinle { namespace model {
 					lines_.pop_back();
 				L(STREAM(infoPerToken_.size()));
 			}
+			bool forward_(Range &range) const
+			{
+                S();
+				size_t ix;
+				if (getLine(&ix, range.begin()).empty())
+					return false;
+				assert(!lines_.empty());
+				ix += size_;
+				if (ix >= lines_.size())
+					ix = lines_.size()-1;
+
+				auto ixe = ix+size_-1;
+				if (ixe >= lines_.size())
+					ixe = lines_.size()-1;
+				range.begin(lines_[ix].begin());
+				range.end(lines_[ixe].end());
+				return true;
+			}
+			bool backward_(Range &range) const
+			{
+                S();
+				size_t ix;
+				if (getLine(&ix, range.begin()).empty())
+					return false;
+				assert(!lines_.empty());
+				if (size_ >= ix)
+					ix = 0;
+				else
+					ix -= size_;
+
+				auto ixe = ix+size_-1;
+				if (ixe >= lines_.size())
+					ixe = lines_.size()-1;
+				range.begin(lines_[ix].begin());
+				range.end(lines_[ixe].end());
+				return true;
+			}
 
 			struct Info
 			{
@@ -132,6 +169,7 @@ namespace rinle { namespace model {
 			InfoPerToken infoPerToken_;
 			typedef std::vector<Range> Lines;
 			Lines lines_;
+			size_t size_ = 1;
 	};
 
 } }

@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_tree_tree_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_tree_tree_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_tree_deprecated_tree_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_tree_deprecated_tree_hpp_ALREADY_INCLUDED
 
 #include <memory>
 #include <vector>

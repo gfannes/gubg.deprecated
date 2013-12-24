@@ -26,7 +26,7 @@ namespace pa
 			planning.addWorker("gfa", 0.7);
 			planning.addWorker("wba", 0.4);
 			gubg::OnlyOnce upgradeWBA;
-			for (auto d: workDays(200))
+			for (auto d: workDays(300))
 			{
 #if 0
 				if (d >= Day(2013,8,1) && upgradeWBA())
@@ -82,7 +82,7 @@ namespace pa
 				MSS(planning.getLastDay(day));
 				root->setDeadline(day);
 			}
-			planning.plan(*root);
+			MSS(planning.plan(*root));
 
 			MSS_END();
 		}

@@ -21,7 +21,7 @@ namespace rinle { namespace model {
 	typedef gubg::Range<Tokens::iterator> Range;
 
 	enum Direction {Forward, Backward, In, Out};
-	enum NavigatorMode {ByLine, ByToken};
+	enum NavigatorMode {ByToken, ByScope, ByLine};
 
 } }
 
