@@ -3,10 +3,10 @@
 
 #include "rinle/Codes.hpp"
 #include "rinle/model/Types.hpp"
+#include "rinle/model/Tokens.hpp"
 #include "rinle/model/TokenNavigator.hpp"
 #include "rinle/model/ScopeNavigator.hpp"
 #include "rinle/model/LineNavigator.hpp"
-#include "gubg/SmartRange.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/cpp/pp/Lexer.hpp"
@@ -147,18 +147,8 @@ namespace rinle { namespace model {
                 std::string content;
                 MSS(gubg::file::read(content, path_));
 
-				{
-					typedef gubg::SmartRange<std::string> Range;
-					typedef std::vector<Token> Tokens;
-					Range range(std::move(content));
-					gubg::parse::cpp::pp::Lexer<Tokens> lexer;
-					MSS(lexer.tokenize(range));
-					for (auto it = lexer.tokens().begin(); it != lexer.tokens().end(); ++it)
-					{
-						OrderedToken ot(*it, it-lexer.tokens().begin());
-						tokens_.push_back(ot);
-					}
-				}
+                MSS(tokenize(tokens_, std::move(content)));
+
                 lineNavigator_.refresh();
 				scopeNavigator_.refresh();
 
