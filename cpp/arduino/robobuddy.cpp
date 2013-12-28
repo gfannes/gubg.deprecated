@@ -4,7 +4,7 @@
 #include "garf/ObjectAvoidance.hpp"
 #include "garf/IRSensor.hpp"
 #include "Arduino.h"
-#include "HMC5883L/HMC5883L.h"
+//#include "HMC5883L/HMC5883L.h"
 
 using namespace garf;
 
@@ -16,9 +16,9 @@ extern "C"
 	#include "Wire/utility/twi.c"
 }
 // Reference the HMC5883L Compass Library
-#include "HMC5883L/HMC5883L.h"
-#include "HMC5883L/HMC5883L.cpp"
-HMC5883L compass;
+//#include "HMC5883L/HMC5883L.h"
+//#include "HMC5883L/HMC5883L.cpp"
+//HMC5883L compass;
 
 
 const int servo = 9;
@@ -118,6 +118,7 @@ void setup()
      */
 }
 // Output the data down the serial port.
+#if 0
 void Output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)
 {
    Serial.print("Raw:\t");
@@ -140,6 +141,7 @@ void Output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float
    Serial.print(headingDegrees);
    Serial.println(" Degrees   \t");
 }
+#endif
 
 void loop()
 {
@@ -193,20 +195,14 @@ void loop()
         {
             case S::Which::Left:
                 distance_l = distance;
-/*
-                Serial.print(distance);
-                Serial.println("");
-                */
                 break;
             case S::Which::Right:
                 distance_r = distance;
-/*
-                Serial.print("               ");
-                Serial.print(distance);
-                Serial.println("");
-                */
                 break;
         }
+        Serial.print((int)wh);
+        Serial.print(distance);
+        Serial.println("");
     }
     oa.process();
 

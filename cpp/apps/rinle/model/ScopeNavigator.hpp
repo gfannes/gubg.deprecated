@@ -17,27 +17,62 @@ namespace rinle
 				virtual bool set(Range &range) const
 				{
 					S();
-					if (!root_)
+					if (!locus_)
 						return false;
-					range = root_->data.range;
+					range = locus_->data.range;
 					return true;
 				}
 				virtual bool move(Range &range, Direction dir)
 				{
-					return false;
+                    switch (dir)
+                    {
+                        case Direction::Forward:
+                            {
+                                auto ch = nextSibbling(locus_);
+                                if (ch)
+                                    locus_ = ch;
+                            }
+                            break;
+                        case Direction::Backward:
+                            {
+                                auto ch = prevSibbling(locus_);
+                                if (ch)
+                                    locus_ = ch;
+                            }
+                            break;
+                        case Direction::In:
+                            if (!locus_->childs.empty())
+                                locus_ = locus_->childs.front();
+                            break;
+                        case Direction::Out:
+                            {
+                                auto p = locus_->parent();
+                                if (p)
+                                    locus_ = p;
+                            }
+                            break;
+                        default:
+                            return false;
+                            break;
+                    }
+                    range = locus_->data.range;
+					return true;
 				}
 
 				void refresh()
 				{
 					recompute_();
+                    locus_ = root_;
 				}
 
 			private:
 				void recompute_()
 				{
+                    S();
 					root_ = syntax::createTree(tokens_);
 				}
 				syntax::Node::Ptr root_;
+				syntax::Node::Ptr locus_;
 		};
 	}
 }

@@ -32,10 +32,10 @@ namespace garf
 
             typedef gubg::StateMachine_ftop<ObjectAvoidance_crtp, State, State::Forward> SM;
             SM sm_;
-            void sm_enter(State s)
+            void sm_enter(typename SM::State &s)
             {
                 timer_ = 0;
-                switch (s)
+                switch (s())
                 {
                     case State::Forward:
                         receiver_().oa_left(100);

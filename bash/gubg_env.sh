@@ -19,3 +19,4 @@ export GUBG_NUMBER_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export GUBG_PLATFORM=linux
 export RUBYLIB=$GUBG/ruby
 export PATH=/usr/lib/colorgcc/bin:$PATH:$GUBG_BIN:$GUBG/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib

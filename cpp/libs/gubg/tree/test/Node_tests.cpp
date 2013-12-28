@@ -22,8 +22,8 @@ int main()
 	TEST_TRUE(root);
 	root->data.name = "aoeaou";
 	root->data.i = 42;
-	root->addChild(Node::create());
-	root->addChild(Node::create());
+	addChild(root, Node::create());
+	addChild(root, Node::create());
 	TEST_EQ(2, root->nrChilds());
 	return 0;
 }
