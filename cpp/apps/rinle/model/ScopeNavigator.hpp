@@ -69,7 +69,13 @@ namespace rinle
 				void recompute_()
 				{
                     S();
-					root_ = syntax::createTree(tokens_);
+					syntax::Creater creater(tokens_);
+					if (!MSS_IS_OK(creater()))
+					{
+						L("Could not create the syntax tree");
+						return;
+					}
+					root_ = creater.root;
 				}
 				syntax::Node::Ptr root_;
 				syntax::Node::Ptr locus_;

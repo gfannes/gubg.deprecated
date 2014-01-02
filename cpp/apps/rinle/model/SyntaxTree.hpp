@@ -36,67 +36,98 @@ namespace rinle { namespace model { namespace syntax {
         private:
     };
 
-	inline Node::Ptr createTree(Tokens &tokens)
+	class Creater
 	{
-        SS();
-		auto root = Node::create();
-		root->data.range = Range(tokens);
-        Tokens::iterator it = tokens.begin();
-        for (; it != tokens.end() && it->token.isWhitespace(); ++it)
-        {
-        }
-        auto n = Node::create(root);
-        for (; it != tokens.end(); ++it)
-        {
-            SS();
-            if (!n)
-            {
-                LL("n is null");
-            }
-            else if (it->token.isWhitespace())
-            {
-                LL("Whitespace");
-                n->data.range.end(std::next(it));
-                continue;
-            }
-            else if (isSymbol(it->token, '(') || isSymbol(it->token, '{'))
-            {
-                LL("Opening an new range");
-                auto nn = Node::create(n->parent());
-                nn->data.range = Range(it, it);
-                n = Node::create(nn);
-                n->data.range = Range(it, std::next(it));
-            }
-            else if (isSymbol(it->token, ')') || isSymbol(it->token, '}'))
-            {
-                LL("Closing a range");
-                n = Node::create(n->parent());
-                n->data.range = Range(it, std::next(it));
-                for (; it != tokens.end(); ++it)
-                {
-                    if (!it->token.isWhitespace())
-                        break;
-                    n->data.range.end(std::next(it));
-                }
-                n = n->parent();
-                if (n)
-                    n->data.range.end(std::next(it));
-            }
-            else
-            {
-                LL("Other: " << it->token.toString());
-                n = Node::create(n->parent());
-                n->data.range = Range(it, std::next(it));
-            }
-        }
+		public:
+			Node::Ptr root;
 
-        {
-            Printer printer;
-            gubg::tree::dfs::iterate_ptr(*root, printer);
-        }
+			Creater(Tokens &tokens): tokens_(tokens) {}
 
-		return root;
-	}
+			ReturnCode operator()()
+			{
+				MSS_BEGIN(ReturnCode);
+
+				MSS(createRoot_());
+
+				MSS(groupTokenWhitespace_());
+
+				{
+					Printer printer;
+					gubg::tree::dfs::iterate_ptr(*root, printer);
+				}
+
+				MSS_END();
+			}
+
+		private:
+			ReturnCode createRoot_()
+			{
+				MSS_BEGIN(ReturnCode);
+				root = Node::create();
+				root->data.range = Range(tokens_);
+				MSS_END();
+			}
+			ReturnCode groupTokenWhitespace_()
+			{
+				MSS_BEGIN(ReturnCode);
+
+				Tokens::iterator it = tokens_.begin();
+				for (; it != tokens_.end() && it->token.isWhitespace(); ++it)
+				{
+				}
+				auto n = Node::create(root);
+				for (; it != tokens_.end(); ++it)
+				{
+					S();
+					if (!n)
+					{
+						L("n is null");
+					}
+					else if (it->token.isWhitespace())
+					{
+						L("Whitespace");
+						n->data.range.end(std::next(it));
+						continue;
+					}
+					else if (isSymbol(it->token, '(') || isSymbol(it->token, '{'))
+					{
+						L("Opening an new range");
+						auto nn = Node::create(n->parent());
+						nn->data.range = Range(it, it);
+						n = Node::create(nn);
+						n->data.range = Range(it, std::next(it));
+					}
+					else if (isSymbol(it->token, ')') || isSymbol(it->token, '}'))
+					{
+						L("Closing a range");
+						n = Node::create(n->parent());
+						n->data.range = Range(it, std::next(it));
+						for (; it != tokens_.end(); ++it)
+						{
+							if (!it->token.isWhitespace())
+								break;
+							n->data.range.end(std::next(it));
+						}
+						n = n->parent();
+						if (n)
+							n->data.range.end(std::next(it));
+					}
+					else
+					{
+						L("Other: " << it->token.toString());
+						n = Node::create(n->parent());
+						n->data.range = Range(it, std::next(it));
+					}
+				}
+
+				root->childs.erase(root->childs.begin());
+
+				MSS_END();
+			}
+
+			Tokens &tokens_;
+			Node::Ptr n_;
+	};
 
 } } }
 #include "gubg/log/end.hpp"
