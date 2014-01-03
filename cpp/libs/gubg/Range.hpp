@@ -27,6 +27,7 @@ namespace gubg
 
                 //Requires operator<()
                 bool contains(Iterator) const;
+                bool contains(std::function<bool(const typename Iterator::value_type &)>) const;
 
 				Iterator begin() const;
 				Iterator end() const;
@@ -81,36 +82,44 @@ namespace gubg
             return it < end_;
         }
     template <typename Iterator_>
-		Iterator_ Range<Iterator_>::begin() const
-		{
-			return begin_;
-		}
+        bool Range<Iterator_>::contains(std::function<bool(const typename Iterator::value_type &)> ftor) const
+        {
+            for (auto it = begin_; it != end_; ++it)
+                if (ftor(*it))
+                    return true;
+            return false;
+        }
     template <typename Iterator_>
-		Iterator_ Range<Iterator_>::end() const
-		{
-			return end_;
-		}
+        Iterator_ Range<Iterator_>::begin() const
+        {
+            return begin_;
+        }
     template <typename Iterator_>
-		void Range<Iterator_>::begin(Iterator b)
-		{
-			begin_ = b;
-		}
+        Iterator_ Range<Iterator_>::end() const
+        {
+            return end_;
+        }
     template <typename Iterator_>
-		void Range<Iterator_>::end(Iterator e)
-		{
-			end_ = e;
-		}
+        void Range<Iterator_>::begin(Iterator b)
+        {
+            begin_ = b;
+        }
     template <typename Iterator_>
-		void Range<Iterator_>::clear()
-		{
-			*this = Range();
-		}
-	//Free functions
-	template <typename Container>
-		Range<typename Container::iterator> make_range(Container &container)
-		{
-			return Range<typename Container::iterator>(container);
-		}
+        void Range<Iterator_>::end(Iterator e)
+        {
+            end_ = e;
+        }
+    template <typename Iterator_>
+        void Range<Iterator_>::clear()
+        {
+            *this = Range();
+        }
+    //Free functions
+    template <typename Container>
+        Range<typename Container::iterator> make_range(Container &container)
+        {
+            return Range<typename Container::iterator>(container);
+        }
 }
 
 #endif

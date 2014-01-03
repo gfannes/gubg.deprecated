@@ -42,7 +42,18 @@ namespace rinle
                             break;
                         case Direction::In:
                             if (!locus_->childs.empty())
-                                locus_ = locus_->childs.front();
+                            {
+                                switch (locus_->data.type)
+                                {
+                                    case syntax::Scope:
+                                        assert(locus_->childs.size() >= 2);
+                                        locus_ = locus_->childs[1];
+                                        break;
+                                    default:
+                                        locus_ = locus_->childs.front();
+                                        break;
+                                }
+                            }
                             break;
                         case Direction::Out:
                             {
