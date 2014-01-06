@@ -32,9 +32,10 @@ namespace gubg { namespace planning {
 		{
 			public:
 				Printer(std::ostream &os):os_(os){}
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (p.empty())
 							os_ << n.fullName() << std::endl;
 						else
@@ -52,8 +53,8 @@ namespace gubg { namespace planning {
 						}
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
 					}
 			private:
@@ -62,30 +63,32 @@ namespace gubg { namespace planning {
 		class DistributeWorkers
 		{
 			public:
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (!n.workers && !p.empty())
 							n.workers = p.back()->workers;
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
 					}
 		};
 		class DistributeDeadline
 		{
 			public:
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (!n.deadline && !p.empty())
 							n.deadline = p.back()->deadline;
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
 					}
 		};
@@ -95,9 +98,10 @@ namespace gubg { namespace planning {
 				mutable bool same;
 				mutable Deadline deadline;
 				CheckDeadlines():same(true){}
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (!deadline)
 							deadline = n.deadline;
 						else if (deadline != n.deadline)
@@ -107,23 +111,25 @@ namespace gubg { namespace planning {
 						}
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
 					}
 		};
 		class AggregateSweat
 		{
 			public:
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						n.cumulSweat = n.sweat;
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (p.empty())
 							return;
 						p.back()->cumulSweat += n.cumulSweat;
@@ -132,17 +138,18 @@ namespace gubg { namespace planning {
 		class AggregateStartStop
 		{
 			public:
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						if (p.empty())
 							return;
-						N &parent = *p.back();
+						auto &parent = *p.back();
 						if (!parent.start.isValid() || n.start < parent.start)
 							parent.start = n.start;
 						if (!parent.stop.isValid() || parent.stop < n.stop)
@@ -153,11 +160,12 @@ namespace gubg { namespace planning {
 		{
 			public:
 				CollectTasksPerDeadline(TasksPerDeadline &tpd):tpd_(tpd){}
-				template <typename N, typename P>
-					bool open(N &n, P &p) const
+				template <typename NPtr, typename P>
+					bool open(NPtr ptr, P &p) const
 					{
+						auto &n = *ptr;
 						CheckDeadlines checkDeadlines;
-						tree::dfs::iterate_ptr(n, checkDeadlines);
+						tree::dfs::iterate_ptr(ptr, checkDeadlines);
 						if (checkDeadlines.same)
 						{
 							tpd_.insert(std::make_pair(n.deadline, n.shared_from_this()));
@@ -165,8 +173,8 @@ namespace gubg { namespace planning {
 						}
 						return true;
 					}
-				template <typename N, typename P>
-					void close(N &n, P &p) const
+				template <typename NPtr, typename P>
+					void close(NPtr ptr, P &p) const
 					{
 					}
 			private:
@@ -236,25 +244,25 @@ namespace gubg { namespace planning {
 
 			void distributeWorkers()
 			{
-				tree::dfs::iterate_ptr(*this, priv::DistributeWorkers());
+				tree::dfs::iterate_ptr(this, priv::DistributeWorkers());
 			}
 			void distributeDeadlines()
 			{
-				tree::dfs::iterate_ptr(*this, priv::DistributeDeadline());
+				tree::dfs::iterate_ptr(this, priv::DistributeDeadline());
 			}
 			void aggregateSweat()
 			{
-				tree::dfs::iterate_ptr(*this, priv::AggregateSweat());
+				tree::dfs::iterate_ptr(this, priv::AggregateSweat());
 			}
 			void aggregateStartStop()
 			{
-				tree::dfs::iterate_ptr(*this, priv::AggregateStartStop());
+				tree::dfs::iterate_ptr(this, priv::AggregateStartStop());
 			}
 
 			TasksPerDeadline tasksPerDeadline()
 			{
 				TasksPerDeadline tpd;
-				tree::dfs::iterate_ptr(*this, priv::CollectTasksPerDeadline(tpd));
+				tree::dfs::iterate_ptr(this, priv::CollectTasksPerDeadline(tpd));
 				return tpd;
 			}
 
@@ -262,7 +270,7 @@ namespace gubg { namespace planning {
 
 			void stream(std::ostream &os) const
 			{
-				tree::dfs::iterate_ptr(*this, priv::Printer(os));
+				tree::dfs::iterate_ptr(this, priv::Printer(os));
 			}
 
 			Name fullName() const
