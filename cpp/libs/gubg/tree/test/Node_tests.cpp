@@ -1,6 +1,7 @@
 #include "gubg/tree/Node.hpp"
 #include "gubg/Testing.hpp"
 #include <string>
+#include <vector>
 
 namespace 
 {
@@ -17,7 +18,7 @@ namespace
 int main()
 {
 	TEST_TAG(main);
-	typedef gubg::tree::Node<Data> Node;
+	typedef gubg::tree::Node<Data, std::vector> Node;
 	auto root = Node::create();
 	TEST_TRUE(root);
 	root->data.name = "aoeaou";
