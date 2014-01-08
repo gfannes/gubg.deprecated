@@ -104,17 +104,36 @@ ReturnCode Linker::operator()(const ExeFile &exe, const ObjectFiles &objects)
                     MSS(::system(cmd.str().c_str()) == 0, AvrObjCopyFailed);
 
                     cmd.str("");
+#ifdef GUBG_LINUX
+					const auto port = "/dev/ttyACM0";
+#endif
+#ifdef GUBG_MINGW
+					const auto port = "COM10";
+#endif
                     if (arduino::isUno())
-                        cmd << "avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:" << hex.name();
+                        cmd << "avrdude -c arduino -p m328p -P " << port << " -U flash:w:" << hex.name();
                     else if (arduino::isMega())
-                        cmd << "avrdude -c stk500v2 -b 115200 -p atmega2560 -P /dev/ttyACM0 -U flash:w:" << hex.name();
+					{
+#ifdef GUBG_LINUX
+						const auto programmer = "stk500v2";
+#endif
+#ifdef GUBG_MINGW
+						const auto programmer = "wiring";
+#endif
+                        cmd << "avrdude -c " << programmer << " -b 115200 -p atmega2560 -P " << port << " -U flash:w:" << hex.name();
+					}
                     else
                         cmd << "UNEXPECTED ARDUINO";
                     verbose(cmd.str());
                     MSS(::system(cmd.str().c_str()) == 0, AvrDudeFailed);
 
                     cmd.str("");
+#ifdef GUBG_LINUX
                     cmd << "gtkterm";
+#endif
+#ifdef GUBG_MINGW
+                    cmd << "putty -serial com10";
+#endif
                     verbose(cmd.str());
                     MSS(::system(cmd.str().c_str()) == 0, SerialMonitorFailed);
                 }

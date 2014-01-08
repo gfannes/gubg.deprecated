@@ -22,7 +22,7 @@ map -f <Bslash>aofor (<Esc>:call ReadString("Type")<CR>A::iterator it = <Esc>:ca
 
 let hn = hostname()
 let athome = 0
-let indep = 1
+let indep = 0
 if hn == "rii"
 	let athome = 1
 endif
