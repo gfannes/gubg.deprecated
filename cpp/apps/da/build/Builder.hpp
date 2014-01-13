@@ -6,10 +6,11 @@
 #include "da/build/Sources.hpp"
 #include "da/build/Headers.hpp"
 #include "da/package/Packages.hpp"
+#include "gubg/Verbose.hpp"
 
 namespace da
 {
-    class Builder
+    class Builder: public gubg::Verbose<true>
     {
         public:
             Builder();

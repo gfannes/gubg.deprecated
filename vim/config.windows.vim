@@ -4,7 +4,7 @@ if hostname() ==? "GET11029"
 	set gfn=Courier:h12:cANSI
 else
 	set lines=50 columns=190
-	set gfn=Courier:h12:cANSI
+	set gfn=Courier\ New:h12:cANSI
 endif
 set tabstop=4
 set shiftwidth=4

@@ -12,7 +12,7 @@ using namespace std;
 void Forest::addTree(const File &tree)
 {
 	S();L("Adding tree " << tree.name());
-    forest_.add(tree, {"cpp", "hpp"});
+    forest_.add(tree, {"cpp", "hpp", "h"});
 }
 
 bool Forest::exists() const

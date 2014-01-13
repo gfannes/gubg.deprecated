@@ -64,7 +64,12 @@ da::ReturnCode Builder::process(const SourceFile &source)
 
         Headers headers;
         SourceFiles sisterFiles;
-        MSS(src->searchForHeaders(headers, sisterFiles, packages_));
+		{
+			const auto rc = src->searchForHeaders(headers, sisterFiles, packages_);
+			if (!MSS_IS_OK(rc))
+				verbose("Could not search", src->file().name(), "for headers.");
+			MSS(rc);
+		}
         headersPerSource_[src] = headers;
         packages_.extractCompileSettings(compileSettings_);
 
