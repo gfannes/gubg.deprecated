@@ -1,5 +1,5 @@
-#ifndef aoeuaou
-#define aoeuaou
+#ifndef HEADER_gubg_log_Level_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_log_Level_hpp_ALREADY_INCLUDED
 
 //In the Message logging framework, a static level is attached to a Message instance,
 //the Module type, and the Stream type. If the combined message and moduled level is

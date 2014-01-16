@@ -53,7 +53,7 @@ ReturnCode UnitTests::execute(const Options &options)
         if (!MSS_IS_OK(unitTest->execute(options)))
             failedTests.push_back(addCompileTasks.sourcePerTest[unitTest]);
     }
-    verbose(failedTests.size(), "/", unitTests.size(), "tests FAILED");
+    verbose(failedTests.size(), "/", unitTests.size(), "tests FAILED compilation");
     for (auto ft: failedTests)
         verbose("\t", ft.name());
     MSS(failedTests.empty());

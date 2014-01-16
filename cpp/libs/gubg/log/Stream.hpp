@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu
-#define aoeuaoeu
+#ifndef HEADER_gubg_log_Stream_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_log_Stream_hpp_ALREADY_INCLUDED
 
 //Stream functionality meant to be used with Message
 
