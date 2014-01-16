@@ -2,20 +2,26 @@
 #define HEADER_gubg_log_Message_hpp_ALREADY_INCLUDED
 
 #include <iostream>
+#include <fstream>
 #include <memory>
+#include <mutex>
+#include "gubg/log/Stream.hpp"
+#include "gubg/log/Level.hpp"
 
 //The principles of this logging framework are:
-//* A Module type represents how logging should happen for some module, an instance provides the necessary means
-//* A Stream type represents a single destination (cout, file with some name, ...), an instance provides this actual stream
+//* A log message is represented by the Message template, the Module template parameters provides
+//  it with the necessary context info. I provides the necessary logic to determine _if_ logging
+//  should happen, and should be short-lived, hence its typical placement on the stack
+//* A _Module type_ represents how logging should happen for some module
+//* A _Module instance_ is only created when actual logging should happen and follows the life time of Message
+//  This instance should have a streamable _os_ member, and can provide Module-level specifics like a header/footer
+//* A _Stream type_ represents a single destination (cout, file with some name, ...)
+//* A _Stream instance_ provides this actual stream and can provide extra things like locking
+//  since it too follows the life time of a Message
 //* Logging levels should be attached to _types_, the Level traits template can help with this
 //
-//* A log message follows the lifetime of Message, which is typically placed on the stack
-//* If Module::doLog(level) determines actual logging should happen, an instance of Module is created
-//** It should have an std::ostream member called os
-//** Its ctor/dtor can add a header/footer to the log message, RAII-style
-//
 //Most of the time, the Module class inherits from a Stream to provide it with its os member
-//Also, the doLog() can be provided by inheriting from LeveledStream<Stream>, which gives you
+//Also, the doLog() static method can be provided by inheriting from LeveledStream<Stream>, which gives you
 //the flexibilicy to use the Level<>s attached to Module and Stream, in combination with the
 //level of the Message itself
 
@@ -64,6 +70,7 @@ namespace gubg { namespace log {
                 }
 
             private:
+                //An instance of Message is meant to have typical stack life time, hence no copying allowed
                 Message(const Message &) = delete;
                 Message(Message &&) = delete;
                 Message &operator=(const Message &) = delete;
@@ -71,50 +78,6 @@ namespace gubg { namespace log {
 
                 //To optimize logging, you could try to replace this with something based on placement-new
                 std::unique_ptr<Module> mod_;
-        };
-
-    //Helper traits template that attaches an int value of 0 to every type by default
-    template <typename T>
-        struct Level
-        {
-            static int value;
-        };
-    template <typename T>
-        int Level<T>::value = 0;
-
-    //Provides a stream with the default level mechanics: the combined log and module level should at least equal the stream level
-    template <typename Stream>
-        struct LeveledStream: Stream
-    {
-        template <typename Module>
-            static bool doLog(int level)
-            {
-                return level + Level<Module>::value >= Level<Stream>::value;
-            }
-    };
-
-    //Streams
-    struct Cout
-    {
-        std::ostream &os = std::cout;
-    };
-
-    //Some basic doLog() implementations
-    struct Always
-    {
-        template <typename Module>
-            static bool doLog(int) {return true;}
-    };
-    struct Never
-    {
-        template <typename Module>
-            static bool doLog(int) {return false;}
-    };
-    template <int Lvl>
-        struct IfAboveLevel
-        {
-            template <typename Module>
-                static bool doLog(int lvl) {return lvl >= Lvl;}
         };
 
 } }

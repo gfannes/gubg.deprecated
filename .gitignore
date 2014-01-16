@@ -3,4 +3,6 @@
 *.hex
 *.robot
 *.csv
+*.log
+*.tmp
 cpp/apps/da/da
