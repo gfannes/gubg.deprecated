@@ -14,11 +14,13 @@ map -c <Bslash>aoclass <Esc>:call ReadString("Class name")<CR>-oa{<Esc>-oapublic
 " struct
 map -C <Bslash>aostruct <Esc>:call ReadString("Struct name")<CR>-oa{<Esc>-oa};<Esc><Bslash>ak$
 " namespace
-map -s <Bslash>aonamespace <Esc>:call ReadString("Namespace name")<CR>-oa{<Esc>-oa}<Esc><Bslash>ak$
+map -s <Bslash>aAnamespace <Esc>:call ReadString("Namespace name")<CR>A { <Esc>-oa}<Esc>J<Bslash>ak$
 " switch
 map -S <Bslash>aoswitch (<Esc>:call ReadString("Switcher")<CR>A)<Esc>o{<Esc>ocase : break;<Esc>o}<Esc><Bslash>akhhhhhhh
 " for
 map -f <Bslash>aofor (<Esc>:call ReadString("Type")<CR>A::iterator it = <Esc>:call ReadString("Container")<CR>A.begin(); it != .end(); ++it)<Esc>o{<Esc>o}<Esc><Bslash>akhhhhhhh
+" template
+map -t <Bslash>aotemplate <typename <Esc>:call ReadString("Type")<CR>A><Esc><Bslash>a$
 
 let hn = hostname()
 let athome = 0
