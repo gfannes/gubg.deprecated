@@ -26,7 +26,7 @@ namespace gubg
 {
 	namespace line
 	{
-		const char *to_s(Line::End end)
+		const char *to_hr(Line::End end)
 		{
 			switch (end)
 			{
@@ -37,6 +37,16 @@ namespace gubg
 				L_CASE(OldMac);
 			}
 			return "Unknow line end";
+		}
+		const char *to_s(Line::End end)
+		{
+			switch (end)
+			{
+                case Line::Unix: return "\x0a";
+                case Line::Dos: return "\x0d\x0a";
+                case Line::OldMac: return "\x0d";
+			}
+			return "";
 		}
 
 		Lines split(const string &txt)

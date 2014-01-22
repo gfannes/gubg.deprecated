@@ -4,28 +4,27 @@
 #include <string>
 #include <vector>
 
-namespace gubg
-{
-	namespace line
-	{
-		struct Line
-		{
-			std::string txt;
-			enum End {None, Unix, Dos, OldMac};
-			End end;
-		};
-		const char *to_s(Line::End);
+namespace gubg { namespace line {
 
-		typedef std::vector<Line> Lines;
+    struct Line
+    {
+        std::string txt;
+        enum End {None, Unix, Dos, OldMac};
+        End end;
+    };
+    const char *to_hr(Line::End);
+    const char *to_s(Line::End);
 
-		Lines split(const std::string &txt);
+    typedef std::vector<Line> Lines;
 
-		std::string join(const Lines &);
-		std::string join(const Lines &, Line::End);
+    Lines split(const std::string &txt);
 
-		//Return false if no single end is used (None is allowed)
-		bool analyseEnds(Line::End &, const Lines &);
-	}
-}
+    std::string join(const Lines &);
+    std::string join(const Lines &, Line::End);
+
+    //Return false if no single end is used (None is allowed)
+    bool analyseEnds(Line::End &, const Lines &);
+
+} }
 
 #endif
