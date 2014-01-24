@@ -10,7 +10,7 @@ using namespace gubg::file;
 using gubg::file::File;
 using namespace std;
 
-#define GUBG_MODULE "Builder"
+#define GUBG_MODULE_ "Builder"
 #include "gubg/log/begin.hpp"
 Builder::Builder()
 {
@@ -48,6 +48,7 @@ Builder::Builder()
 da::ReturnCode Builder::process(const SourceFile &source)
 {
     MSS_BEGIN(ReturnCode);
+	L(source.name());
 
     sources_.clear();
 
@@ -61,6 +62,7 @@ da::ReturnCode Builder::process(const SourceFile &source)
             //This source file is already used
             continue;
         auto src = sources_.add(srcfile);
+		S();L("Processing " << src->file().name());
 
         Headers headers;
         SourceFiles sisterFiles;
@@ -82,9 +84,12 @@ da::ReturnCode Builder::process(const SourceFile &source)
                     break;
                 default: MSS(rc); break;
             }
-            for (auto sisterFile: sisterFiles)
-                staging.push(sisterFile);
         }
+		for (auto sisterFile: sisterFiles)
+		{
+			L("Staging " << sisterFile.name() << " to the queue");
+			staging.push(sisterFile);
+		}
     }
 
     MSS_END();

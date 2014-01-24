@@ -60,7 +60,7 @@ namespace gubg
             std::string help() const;
 
             typedef std::list<std::string> Args;
-            static ReturnCode createArgs(Args &, int argc, char **argv);
+            static Args createArgs(int argc, char **argv);
 
             ReturnCode parse(Args &args, bool stripExe = true);
 

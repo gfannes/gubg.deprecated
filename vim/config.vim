@@ -61,3 +61,6 @@ source $GUBG/vim/cscope_maps.vim
 source $GUBG/vim/git.vim
 
 :au FocusLost * silent! wa
+
+set ignorecase
+set smartcase

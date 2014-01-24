@@ -65,20 +65,34 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
     ostringstream cmd;
     {
         std::lock_guard<std::mutex> lock(mutex_);
+
+		string compiler;
+		{
+			const auto ext = src.extension();
+			if (false) {}
+			else if (ext == "c")   { compiler = "gcc "; }
+			else if (ext == "cpp") { compiler = "g++ -std=c++11 -pthread "; }
+			switch (exeType_)
+			{
+				case ExeType::Debug:   compiler += "-g "; break;
+				case ExeType::Release: compiler += "-O3 "; break;
+				default: assert(false); break;
+			}
+		}
+
+		string buildConfig;
+		switch (exeType_)
+		{
+			case ExeType::Debug: buildConfig = "-DGUBG_DEBUG "; break;
+			case ExeType::Release: buildConfig = "-DGUBG_RELEASE "; break;
+			default: assert(false); break;
+		}
+
         switch (settings.targetPlatform)
         {
             case Any:
             case Host:
-                switch (exeType_)
-                {
-                    case ExeType::Debug:
-                        cmd << "g++ -std=c++11 -g -pthread -c -DGUBG_DEBUG ";
-                        break;
-                    case ExeType::Release:
-                        cmd << "g++ -std=c++11 -O3 -pthread -c -DGUBG_RELEASE ";
-                        break;
-                    default: assert(false); break;
-                }
+				cmd << compiler << "-c " << buildConfig;
                 break;
             case Arduino:
                 if (arduino::isUno())

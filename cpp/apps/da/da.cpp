@@ -1,3 +1,8 @@
+//!@#adoc
+//da is the _development assistent_ from gubg, it is a versatile build tool.
+//Principles:
+//* No external dependencies, only a C++11 compiler is needed
+//* Extensive caching of build targets based on specifying _all_ dependencies, the hash is used as the key in the cache
 #include "da/Codes.hpp"
 #include "da/Tasks.hpp"
 #include "da/Finalize.hpp"
@@ -51,8 +56,7 @@ namespace
             optionParser.addSwitch("-w", "--web-site", "Build website", [&tasks](){addWebSiteTask(tasks);});
             optionParser.addSwitch("-v", "--verbose", "Verbose", [&verbose](){verbose = true;});
 
-            OptionParser::Args args;
-            MSS(OptionParser::createArgs(args, argc, argv));
+            auto args = OptionParser::createArgs(argc, argv);
             MSS(optionParser.parse(args));
         }
 

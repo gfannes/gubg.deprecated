@@ -12,10 +12,12 @@ using namespace std;
 GUBG::GUBG(const File &base):
     base_(base),
     libsDir_(base),
-    appsDir_(base)
+    appsDir_(base),
+    luaDir_(base)
 {
     libsDir_ << "cpp/libs";
     appsDir_ << "cpp/apps";
+    luaDir_ << "c/lua-5.2.3";
 
     File gubg(libsDir_);
     gubg << "gubg";
@@ -51,6 +53,21 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         if (p.popRoot(root))
             MSS_Q(root != "boost", RecognisedHeader);
     }
+
+	if (partial.name() == "lua.hpp")
+	{
+		L("This lua is mine");
+		resolvedHeader = luaDir_; resolvedHeader << "lua.hpp";
+		compileSettings_.includePaths.insert(luaDir_);
+
+		vector<string> files = {"lapi", "lauxlib", "lbaselib", "lbitlib", "lcode", "lcorolib", "lctype", "ldblib", "ldebug", "ldo", "ldump", "lfunc", "lgc", "linit", "liolib", "llex", "lmathlib", "lmem", "loadlib", "lobject", "lopcodes", "loslib", "lparser", "lstate", "lstring", "lstrlib", "ltable", "ltablib", "ltm", "lundump", "lvm", "lzio"};
+		for (auto file: files)
+		{
+			auto f = luaDir_; f << (file+".c");
+			sisterFiles.insert(f);
+		}
+		MSS_RETURN_OK();
+	}
 
     File root;
     MSS_Q(forest_.resolve(resolvedHeader, root, partial, 1), UnknownHeader);

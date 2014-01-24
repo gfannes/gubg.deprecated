@@ -13,14 +13,15 @@ MSS_CODES_END();
 OptionParser::OptionParser(const string &caption):
     caption_(caption){}
 
-OptionParser::ReturnCode OptionParser::createArgs(Args &args, int argc, char **argv)
+OptionParser::Args OptionParser::createArgs(int argc, char **argv)
 {
-    MSS_BEGIN(ReturnCode);
-    MSS(argc >= 0, IllegalArgument);
-    MSS(argv, IllegalArgument);
-    for (int i = 0; i < argc; ++i)
-        args.push_back(argv[i]);
-    MSS_END();
+	Args args;
+	if (argv)
+	{
+		for (int i = 0; i < argc; ++i)
+			args.push_back(argv[i]);
+	}
+	return args;
 }
 
 OptionParser::ReturnCode OptionParser::parse(Args &args, bool stripExe)

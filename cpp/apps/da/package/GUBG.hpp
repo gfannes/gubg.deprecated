@@ -26,6 +26,7 @@ namespace da
                 gubg::file::File base_;
                 gubg::file::File libsDir_;
                 gubg::file::File appsDir_;
+                gubg::file::File luaDir_;
                 gubg::file::Forest forest_;
         };
     }
