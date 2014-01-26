@@ -20,6 +20,25 @@ using namespace std;
 
 namespace rip { 
 
+    class HashMgr
+    {
+        public:
+            typedef MD5::Hash Hash;
+            ReturnCode hash(Hash &h, const File &f) const
+            {
+                MSS_BEGIN(ReturnCode);
+                string content;
+                MSS(read(content, f));
+                MD5 md5;
+                md5 << content;
+                h = md5.hash();
+                MSS_END();
+            }
+
+        private:
+    };
+    HashMgr hashMgr;
+
     struct Prerequisites
     {
         typedef std::map<File, MD5::Hash> HashPerFile;
@@ -39,7 +58,10 @@ namespace rip {
     ReturnCode process(const File src, const File &dep)
     {
         MSS_BEGIN(ReturnCode);
+
         Prerequisites prereq;
+        MSS(hashMgr.hash(prereq.hashPerFile[src], src));
+
         const auto newContent = prereq.serialize();
         bool writeNewContent = false;
         string oldContent;
