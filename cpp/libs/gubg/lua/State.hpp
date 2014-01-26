@@ -5,7 +5,17 @@
 #include <memory>
 #include <string>
 
+extern "C"
+{
+	struct lua_State;
+}
+
 namespace gubg { namespace lua { 
+
+	extern "C"
+	{
+		typedef int (*Function) (lua_State *L);
+	}
 
 	class State
 	{
@@ -15,6 +25,8 @@ namespace gubg { namespace lua {
 			ReturnCode execute(const std::string &code);
 
 			ReturnCode get(long &, const std::string &name) const;
+
+			ReturnCode registerFunction(Function, const std::string &name);
 
 		private:
 			struct Pimpl;

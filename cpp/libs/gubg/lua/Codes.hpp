@@ -8,6 +8,7 @@ namespace gubg { namespace lua {
 	enum class ReturnCode
 	{
 		MSS_DEFAULT_CODES,
+		CompileError, RuntimeError,
 	};
 
 } } 

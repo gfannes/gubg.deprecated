@@ -29,8 +29,8 @@ namespace gubg { namespace lua {
 	{
 		MSS_BEGIN(ReturnCode);
 		CHECK_AND_LOCK(pimpl_);
-		MSS(luaL_loadstring(s, code.c_str()) == 0);
-		MSS(lua_pcall(s, 0, 0, 0) == 0);
+		MSS(luaL_loadstring(s, code.c_str()) == 0, CompileError);
+		MSS(lua_pcall(s, 0, 0, 0) == 0, RuntimeError);
 		MSS_END();
 	}
 	ReturnCode State::get(long &v, const std::string &name) const
@@ -46,6 +46,14 @@ namespace gubg { namespace lua {
 		L(lua_gettop(s));
 		lua_pop(s, 1);
 		L(lua_gettop(s));
+		MSS_END();
+	}
+	ReturnCode State::registerFunction(Function function, const std::string &name)
+	{
+		MSS_BEGIN(ReturnCode);
+		CHECK_AND_LOCK(pimpl_);
+		lua_pushcfunction(s, (lua_CFunction)function);
+		lua_setglobal(s, name.c_str());
 		MSS_END();
 	}
 

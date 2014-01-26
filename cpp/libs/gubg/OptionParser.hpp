@@ -19,6 +19,8 @@ namespace gubg
             OptionParser(const std::string &caption);
 
             //shortHand example: "-h"
+            //longHand example: "--help"
+			//lambda is called without arguments
             template <typename Lambda>
                 void addSwitch(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
                 {
@@ -27,7 +29,9 @@ namespace gubg
                     addHelpLine_(shortHand, longHand, description);
                 }
 
-            //longHand can be of the form: "--<option> <name>"
+            //longHand can be of the form: "--<option>" or "--<option> <name>"
+			//<name> is optional
+			//lambda is called with <name> or "" as argument
             template <typename Lambda>
                 void addOptional(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
                 {
@@ -42,7 +46,9 @@ namespace gubg
                     addHelpLine_(shortHand, longHand, description);
                 }
 
-            //longHand can be of the form: "--<option> <name>"
+            //longHand has to be of the form: "--<option> <name>"
+			//<name> is mandatory
+			//lambda is called with <name> as argument
             template <typename Lambda>
                 void addMandatory(const std::string &shortHand, const std::string &longHand, const std::string &description, Lambda lambda)
                 {
