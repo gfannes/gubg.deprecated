@@ -3,12 +3,16 @@
 #include "rip/Codes.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/file/Forest.hpp"
 #include "gubg/lua/State.hpp"
 #include "gubg/hash/MD5.hpp"
+#include "gubg/parse/cpp/Includes.hpp"
 #include "lua.hpp"
 #include <iostream>
 #include <cstdlib>
 #include <map>
+#include <set>
+#include <queue>
 #include <sstream>
 using namespace gubg;
 using namespace gubg::hash;
@@ -19,6 +23,102 @@ using namespace std;
 #include "gubg/log/begin.hpp"
 
 namespace rip { 
+
+    struct IncludeResolver
+    {
+        Forest forest;
+        ReturnCode resolve(File &f, const string &inc)
+        {
+            MSS_BEGIN(ReturnCode);
+            L(inc);
+            MSS_Q(forest.resolve(f, inc));
+            MSS_END();
+        }
+    };
+    IncludeResolver includeResolver;
+
+    typedef set<string> IncludeSet;
+    struct IncludeExtractor: parse::cpp::Includes_crtp<IncludeExtractor>
+    {
+        void includes_detected(const string &str, parse::cpp::IncludeType type)
+        {
+            includeSet.insert(str);
+        }
+        IncludeSet includeSet;
+    };
+
+    ReturnCode extractIncludes(IncludeSet &includeSet, const File &f)
+    {
+        MSS_BEGIN(ReturnCode);
+        IncludeExtractor extractor;
+        MSS(extractor.process(f));
+        extractor.includeSet.swap(includeSet);
+        MSS_END();
+    }
+
+    typedef set<File> FileSet;
+    class DependencyMgr
+    {
+        public:
+            ReturnCode getDirectDependencies(FileSet &files, const File &src)
+            {
+                MSS_BEGIN(ReturnCode);
+                L(src);
+                files.clear();
+                IncludeSet includeSet;
+                MSS(extractIncludes(includeSet, src));
+                L(STREAM(includeSet.size()));
+                for (const auto &inc: includeSet)
+                {
+                    File f;
+                    if (MSS_IS_OK(includeResolver.resolve(f, inc)))
+                        files.insert(f);
+                }
+                L(STREAM(files.size()));
+                MSS_END();
+            }
+            //src will be added to files as well
+            ReturnCode getRecursiveDependencies(FileSet &files, const File &src)
+            {
+                MSS_BEGIN(ReturnCode);
+                L(src);
+                files.clear();
+                typedef std::queue<File> Queue;
+                Queue queue; queue.push(src);
+                while (!queue.empty())
+                {
+                    const auto f = queue.front(); queue.pop();
+                    if (files.count(f))
+                        //We already have this file
+                        continue;
+                    FileSet directDeps;
+                    MSS(getDirectDependencies(directDeps, f));
+                    for (auto ff: directDeps)
+                        queue.push(ff);
+                    files.insert(f);
+                }
+                L(STREAM(files.size()));
+                MSS_END();
+            }
+        private:
+    };
+    DependencyMgr dependencyMgr;
+
+    struct Prerequisites
+    {
+        typedef std::map<File, MD5::Hash> HashPerFile;
+        HashPerFile hashPerFile;
+
+        string serialize() const
+        {
+            ostringstream oss;
+            for (const auto &pair: hashPerFile)
+            {
+                oss << MD5::to_hex(pair.second) << " " << pair.first << endl;
+            }
+            return oss.str();
+        }
+    };
 
     class HashMgr
     {
@@ -39,28 +139,17 @@ namespace rip {
     };
     HashMgr hashMgr;
 
-    struct Prerequisites
-    {
-        typedef std::map<File, MD5::Hash> HashPerFile;
-        HashPerFile hashPerFile;
-
-        string serialize() const
-        {
-            ostringstream oss;
-            for (const auto &pair: hashPerFile)
-            {
-                oss << pair.first << " " << MD5::to_hex(pair.second) << endl;
-            }
-            return oss.str();
-        }
-    };
-
     ReturnCode process(const File src, const File &dep)
     {
         MSS_BEGIN(ReturnCode);
 
         Prerequisites prereq;
-        MSS(hashMgr.hash(prereq.hashPerFile[src], src));
+        FileSet files;
+        MSS(dependencyMgr.getRecursiveDependencies(files, src));
+        for (const auto &f: files)
+        {
+            MSS(hashMgr.hash(prereq.hashPerFile[f], f));
+        }
 
         const auto newContent = prereq.serialize();
         bool writeNewContent = false;
@@ -122,7 +211,8 @@ namespace rip {
 
     struct Options
     {
-        gubg::file::File input;
+        File input;
+        vector<File> trees;
     };
     ostream &operator<<(ostream &os, const Options &options)
     {
@@ -145,12 +235,17 @@ namespace rip {
             OptionParser op("Recursive include processor");
             op.addSwitch("-h", "--help", "Displays this help", [&](){finalize(op.help(), 0);});
             op.addMandatory("-i", "--input", "Input file with lua process({src=\"...\", dep=\"...\"}) calls", [&](const string &fn){options.input = fn;});
+            op.addMandatory("-t", "--tree", "Add tree", [&](const string &fn){options.trees.push_back(fn);});
             MSS(op.parse(args));
         }
+
         cout << "options:" << endl << options << endl;
         MSS(!options.input.empty(), InputNotSpecified);
         string input_content;
         MSS(file::read(input_content, options.input), InputFileNotFound);
+
+        for (auto tree: options.trees)
+            includeResolver.forest.add(tree, {"cpp", "hpp"});
 
         auto ls = lua::State::create();
         MSS(ls.registerFunction(process_lua, "process"));
