@@ -7,6 +7,7 @@
 #include "gubg/lua/State.hpp"
 #include "gubg/hash/MD5.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
+#include "gubg/chrono/Stopwatch.hpp"
 #include "lua.hpp"
 #include <iostream>
 #include <cstdlib>
@@ -64,9 +65,16 @@ namespace rip {
             {
                 MSS_BEGIN(ReturnCode);
                 L(src);
+				auto it = directsPerFile_cache_.find(src);
+				if (it != directsPerFile_cache_.end())
+				{
+					files = it->second;
+					MSS_RETURN_OK();
+				}
                 files.clear();
                 IncludeSet includeSet;
-                MSS(extractIncludes(includeSet, src));
+                if (!MSS_IS_OK(extractIncludes(includeSet, src)))
+					cout << "rip error: could not extract includes from " << src << endl;
                 L(STREAM(includeSet.size()));
                 for (const auto &inc: includeSet)
                 {
@@ -75,6 +83,7 @@ namespace rip {
                         files.insert(f);
                 }
                 L(STREAM(files.size()));
+				directsPerFile_cache_[src] = files;
                 MSS_END();
             }
             //src will be added to files as well
@@ -100,7 +109,11 @@ namespace rip {
                 L(STREAM(files.size()));
                 MSS_END();
             }
+
         private:
+			//We cache the direct dependencies, making sure we do the reading and parsing only once
+			typedef std::map<File, FileSet> DirectsPerFile;
+			DirectsPerFile directsPerFile_cache_;
     };
     DependencyMgr dependencyMgr;
 
@@ -124,18 +137,30 @@ namespace rip {
     {
         public:
             typedef MD5::Hash Hash;
-            ReturnCode hash(Hash &h, const File &f) const
+            ReturnCode hash(Hash &h, const File &f)
             {
                 MSS_BEGIN(ReturnCode);
+
+				auto it = hashPerFile_cache_.find(f);
+				if (it != hashPerFile_cache_.end())
+				{
+					h = it->second;
+					MSS_RETURN_OK();
+				}
+
                 string content;
                 MSS(read(content, f));
                 MD5 md5;
                 md5 << content;
                 h = md5.hash();
+
+				hashPerFile_cache_[f] = h;
                 MSS_END();
             }
 
         private:
+			typedef std::map<File, Hash> HashPerFile;
+			HashPerFile hashPerFile_cache_;
     };
     HashMgr hashMgr;
 
@@ -147,9 +172,9 @@ namespace rip {
         FileSet files;
         MSS(dependencyMgr.getRecursiveDependencies(files, src));
         for (const auto &f: files)
-        {
-            MSS(hashMgr.hash(prereq.hashPerFile[f], f));
-        }
+			//We do not use MSS, if it fails, our prereq will have a zero hash
+			//This could happen if f does not exist; we chose to be robust
+            hashMgr.hash(prereq.hashPerFile[f], f);
 
         const auto newContent = prereq.serialize();
         bool writeNewContent = false;
@@ -211,6 +236,7 @@ namespace rip {
 
     struct Options
     {
+		bool verbose = false;
         File input;
         vector<File> trees;
     };
@@ -234,18 +260,20 @@ namespace rip {
             auto args = OptionParser::createArgs(argc, argv);
             OptionParser op("Recursive include processor");
             op.addSwitch("-h", "--help", "Displays this help", [&](){finalize(op.help(), 0);});
+            op.addSwitch("-v", "--verbose", "Be verbose", [&](){options.verbose = true;});
             op.addMandatory("-i", "--input", "Input file with lua process({src=\"...\", dep=\"...\"}) calls", [&](const string &fn){options.input = fn;});
             op.addMandatory("-t", "--tree", "Add tree", [&](const string &fn){options.trees.push_back(fn);});
             MSS(op.parse(args));
         }
 
-        cout << "options:" << endl << options << endl;
+		if (options.verbose)
+			cout << "options:" << endl << options << endl;
         MSS(!options.input.empty(), InputNotSpecified);
         string input_content;
         MSS(file::read(input_content, options.input), InputFileNotFound);
 
         for (auto tree: options.trees)
-            includeResolver.forest.add(tree, {"cpp", "hpp"});
+            includeResolver.forest.add(tree, {"cpp", "hpp", "h"});
 
         auto ls = lua::State::create();
         MSS(ls.registerFunction(process_lua, "process"));
@@ -258,7 +286,13 @@ namespace rip {
 
 int main(int argc, char **argv)
 {
-    const auto rc = rip::main(argc, argv);
+	gubg::chrono::Stopwatch<> sw;
+	const auto rc = rip::main(argc, argv);
+	{
+		using namespace std::chrono;
+		sw.mark();
+		cout << "rip took " << duration_cast<milliseconds>(sw.total_elapse()).count() << "ms" << endl;
+	}
     if (!MSS_IS_OK(rc))
     {
         cout << "ERROR: ";
