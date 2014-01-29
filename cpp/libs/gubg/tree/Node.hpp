@@ -1,137 +1,188 @@
 #ifndef HEADER_gubg_tree_Node_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_tree_Node_hpp_ALREADY_INCLUDED
 
+#include "gubg/cnt_ptr.hpp"
 #include <memory>
+#include <cassert>
 
-namespace gubg { namespace tree {
+#define GUBG_MODULE "N"
+#include "gubg/log/begin.hpp"
+namespace gubg { namespace tree { 
 
-#if defined(L_TEMPLATE) || defined(L_SELF) || defined(L_TEMPLATE_SCOPE)
-#error Helper macros are already in use
+	namespace impl { 
+		template <typename Data>
+		struct Node
+		{
+#if 1
+			typedef std::shared_ptr<Node> Ptr;
+			typedef std::weak_ptr<Node> WPtr;
+#else
+			typedef gubg::cnt_ptr<Node> Ptr;
+			typedef gubg::cnt_ptr<Node> WPtr;
 #endif
+			//Childs
+			Ptr first;
+			Ptr last;
+			//Siblings
+			Ptr prev;
+			Ptr next;
+			//Parent
+			WPtr parent;
+			//Data
+			Data data;
 
-#define L_TEMPLATE template <typename Data, template <typename T, typename A> class Container>
-#define L_SELF Node<Data, Container>
-#define L_TEMPLATE_SCOPE L_TEMPLATE auto L_SELF
+			bool has_child() const {assert(invariants_()); return (bool)first;}
 
-	L_TEMPLATE
-		class Node;
+			bool invariants_() const
+			{
+				assert((first and last) or (!first and !last));
+				return true;
+			}
+		};
+	} 
 
-	//We need this as a free function because we have to set a weak_ptr from child to parent
-	L_TEMPLATE
-		void addChild(const std::shared_ptr<L_SELF> &parent, const std::shared_ptr<L_SELF> &child);
-	L_TEMPLATE
-		auto nextSibbling(const std::shared_ptr<L_SELF> &node) -> typename L_SELF::Ptr;
-	L_TEMPLATE
-		auto prevSibbling(const std::shared_ptr<L_SELF> &node) -> typename L_SELF::Ptr;
-
-	L_TEMPLATE
+	template <typename Data>
 		class Node
 		{
 			public:
-				typedef L_SELF Self;
-				typedef std::shared_ptr<Self> Ptr;
-				typedef std::weak_ptr<Self> WPtr;
-				typedef Container<Ptr, std::allocator<Ptr>> Childs;
+				static Node create()
+				{
+					Node n;
+					n.impl_.reset(new Node_i);
+					return n;
+				}
 
-				Data data;
-				Childs childs;
-				Ptr parent();
+				operator bool () const {return (bool)impl_;}
 
-				static Ptr create();
-				static Ptr create(Ptr p);
-				static Ptr create(WPtr p);
+				//Make sure the node is valid (using operator bool) before trying to call any of the following methods
 
-				size_t nrChilds() const;
+				size_t nrChilds() const
+				{
+					assert(impl_);
+					assert(impl_->invariants_());
+					size_t nr = 0;
+					auto ch = impl_->first;
+					while (ch)
+					{
+						++nr;
+						ch = ch->next;
+					}
+					return nr;
+				}
+
+				Node firstChild() const
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+					Node n;
+					n.impl_ = si.first;
+					return n;
+				}
+				Node lastChild() const
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+					Node n;
+					n.impl_ = si.last;
+					return n;
+				}
+				Node nextSibling() const
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+					Node n;
+					n.impl_ = si.next;
+					return n;
+				}
+				Node prevSibling() const
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+					Node n;
+					n.impl_ = si.prev;
+					return n;
+				}
+
+				void pushChild(Node ch)
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+
+					assert(ch.impl_);
+					Node_i &chi = *ch.impl_;
+					assert(chi.invariants_());
+
+					chi.parent = impl_;
+					chi.next.reset();
+					if (si.has_child())
+					{
+						L("We already have at least one child");
+						chi.prev = si.last;
+						si.last->next = ch.impl_;
+						si.last = ch.impl_;
+					}
+					else
+					{
+						L("This is the first child of self");
+						chi.prev.reset();
+						si.first = ch.impl_;
+						si.last = ch.impl_;
+					}
+
+					assert(si.invariants_());
+				}
+				Node shiftChild()
+				{
+					S();
+					assert(impl_);
+					Node_i &si = *impl_;
+					assert(si.invariants_());
+
+					Node n;
+
+					if (si.has_child())
+					{
+						L("We have at least one child");
+						n.impl_ = si.first;
+						{
+							auto &ni = *n.impl_;
+							ni.parent.reset();
+							//This is the first child, it should not have a prev sibling
+							assert(not ni.prev);
+							//There might be a next though, which should not be lost
+							si.first = ni.next;
+							ni.next.reset();
+						}
+						//Make sure we adhere to the invariants
+						if (si.first)
+							si.first->prev.reset();
+						else
+							si.last.reset();
+					}
+
+					assert(si.invariants_());
+					assert((not n.impl_) or n.impl_->invariants_());
+					return n;
+				}
+
+				Data &      data()       {assert(impl_); return impl_->data;}
+				const Data &data() const {assert(impl_); return impl_->data;}
 
 			private:
-				Node(){}
-
-				friend void addChild<Data, Container>(const std::shared_ptr<L_SELF> &, const std::shared_ptr<L_SELF> &);
-				WPtr parent_;
+				typedef impl::Node<Data> Node_i;
+				typename Node_i::Ptr impl_;
 		};
-
-	//Implementation of methods
-	L_TEMPLATE_SCOPE::create() -> Ptr
-	{
-		return Ptr(new Node);
-	}
-	L_TEMPLATE_SCOPE::create(L_SELF::Ptr p) -> Ptr
-	{
-		auto ch = create();
-		addChild(p, ch);
-		return ch;
-	}
-	L_TEMPLATE_SCOPE::create(L_SELF::WPtr p) -> Ptr
-	{
-		return create(p.lock());
-	}
-	L_TEMPLATE_SCOPE::parent() -> Ptr
-	{
-		return parent_.lock();
-	}
-	L_TEMPLATE_SCOPE::nrChilds() const -> size_t
-	{
-		return childs.size();
-	}
-
-	//Implementation of free functions
-	L_TEMPLATE
-		void addChild(const std::shared_ptr<L_SELF> &parent, const std::shared_ptr<L_SELF> &child)
-		{
-			if (!parent || !child)
-				return;
-			parent->childs.push_back(child);
-			child->parent_ = parent; 
-		}
-	L_TEMPLATE
-		auto nextSibbling(const std::shared_ptr<L_SELF> &node) -> typename L_SELF::Ptr
-		{
-			typename L_SELF::Ptr nothing;
-			if (!node)
-				return nothing;
-			auto p = node->parent_.lock();
-			if (!p)
-				return nothing;
-			auto end = p->childs.end();
-			for (auto it = p->childs.begin(); it != end; ++it)
-			{
-				if (node == *it)
-				{
-					++it;
-					if (it != end)
-						return *it;
-					return nothing;
-				}
-			}
-			return nothing;
-		}
-	L_TEMPLATE
-		auto prevSibbling(const std::shared_ptr<L_SELF> &node) -> typename L_SELF::Ptr
-		{
-			typename L_SELF::Ptr nothing;
-			if (!node)
-				return nothing;
-			auto p = node->parent_.lock();
-			if (!p)
-				return nothing;
-			auto end = p->childs.rend();
-			for (auto it = p->childs.rbegin(); it != end; ++it)
-			{
-				if (node == *it)
-				{
-					++it;
-					if (it != end)
-						return *it;
-					return nothing;
-				}
-			}
-			return nothing;
-		}
-
-#undef L_TEMPLATE
-#undef L_SELF
-#undef L_TEMPLATE_SCOPE
-
-} }
+} } 
+#include "gubg/log/end.hpp"
 
 #endif
