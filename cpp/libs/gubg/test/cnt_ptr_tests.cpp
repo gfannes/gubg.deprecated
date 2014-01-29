@@ -16,6 +16,7 @@ int main()
     TEST_TAG(main);
 
     typedef gubg::cnt_ptr<Data> Ptr;
+    typedef gubg::track_ptr<Data> WPtr;
     L(STREAM(sizeof(Ptr)));
 
     {
@@ -64,6 +65,22 @@ int main()
         (*ptr).i = 42;
         ptr.reset();
         TEST_EQ(42, (*ptr2).i);
+    }
+    TEST_EQ(0, Data::nrInstances());
+
+    {
+        Ptr ptr(new Data);
+        ptr->i = 42;
+        WPtr wp;
+        WPtr wptr(ptr);
+        TEST_TRUE(wptr.lock());
+        {
+            Ptr ptr2 = wptr.lock();
+            ptr2->i = 1234;
+        }
+        TEST_EQ(1234, ptr->i);
+        ptr.reset();
+        TEST_FALSE(wptr.lock());
     }
     TEST_EQ(0, Data::nrInstances());
 

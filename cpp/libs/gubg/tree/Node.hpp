@@ -13,12 +13,13 @@ namespace gubg { namespace tree {
 		template <typename Data>
 		struct Node
 		{
-#if 1
+#if 0
 			typedef std::shared_ptr<Node> Ptr;
 			typedef std::weak_ptr<Node> WPtr;
 #else
+            //No point in trying to make this thread-safe, so why lose time and memory on mutexes?
 			typedef gubg::cnt_ptr<Node> Ptr;
-			typedef gubg::cnt_ptr<Node> WPtr;
+			typedef gubg::track_ptr<Node> WPtr;
 #endif
 			//Childs
 			Ptr first;

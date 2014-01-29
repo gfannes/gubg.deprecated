@@ -98,7 +98,7 @@ int main()
         L("tree::impl<Data> " << sizeof(gubg::tree::impl::Node<Data>));
         L("mutex " << sizeof(std::mutex));
 	}
-    getc(stdin);
+    //getc(stdin);
 
 	return 0;
 }
