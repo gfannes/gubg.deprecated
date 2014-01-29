@@ -41,6 +41,7 @@ namespace pa
 				planning.absence("wba", d);
 			planning.absence("wba", Day(2013, 8, 16));
 			planning.absence("wba", Day(2013, 11, 28));
+			planning.absence("wba", Day(2014, 1, 30));
 #endif
 
 			{

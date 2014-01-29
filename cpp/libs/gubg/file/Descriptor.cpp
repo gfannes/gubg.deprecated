@@ -1,11 +1,20 @@
 #include "gubg/file/Descriptor.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/Platform.hpp"
+
+#ifdef GUBG_LINUX
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <netdb.h>
-#include <fcntl.h>
 #include <unistd.h>
+#endif
+#ifdef GUBG_MINGW
+#include <Winsock2.h>
+#include <WS2tcpip.h>
+#endif
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <chrono>
 #include <thread>
 #include <cassert>
@@ -16,8 +25,52 @@ using namespace gubg::file;
 using namespace std;
 using std::chrono::milliseconds;
 
+namespace gubg { namespace file { 
+    const char *to_hr(EventType et)
+    {
+        switch (et)
+        {
+#define L_CASE(n) case EventType::n: return #n
+            L_CASE(Read);
+            L_CASE(Write);
+            L_CASE(Open);
+            L_CASE(Close);
+#undef L_CASE
+        }
+        return "Unknown EventType";
+    }
+} } 
+
 namespace 
 {
+
+#ifdef GUBG_MINGW
+    struct InitializeWSA
+    {
+        bool ok = false;
+
+        InitializeWSA()
+        {
+#define WSA_MAKEWORD(x, y) ((y) * 256 + (x))
+            WORD version_required = WSA_MAKEWORD(1, 1);
+            WSADATA wsaData;
+            if (::WSAStartup(version_required, &wsaData) != 0)
+                return;
+
+            if (LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1)
+                return;
+
+            ok = true;
+        }
+        ~InitializeWSA()
+        {
+            if (ok)
+                ::WSACleanup();
+        }
+    };
+    InitializeWSA initializeWSA;
+#endif
+
     enum class Role { Normal, Acceptor };
     enum class Type { Socket, File, Stream };
 
@@ -29,6 +82,7 @@ namespace
             L_CASE(Read, O_RDONLY);
             L_CASE(Write, O_WRONLY);
             L_CASE(ReadWrite, O_RDWR);
+#undef L_CASE
         }
     }
     void translate_(EventType &et, Role role, AccessMode am)
@@ -41,7 +95,7 @@ namespace
     }
 }
 
-#define GUBG_MODULE "Descr::Pimpl"
+#define GUBG_MODULE_ "Descr::Pimpl"
 #include "gubg/log/begin.hpp"
 struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 {
@@ -161,7 +215,15 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         MSS(role == Role::Normal);
         MSS(desc != InvalidDesc);
 
+#ifdef GUBG_LINUX
         const auto s = ::read(desc, &buffer[0], buffer.size());
+#endif
+#ifdef GUBG_MINGW
+        //Mingw currently only supports reading from a socket
+        MSS(type == Type::Socket);
+        const auto s = ::recv(desc, &buffer[0], buffer.size(), 0);
+#endif
+        L("I read " << s << " bytes");
         if (s == 0)
         {
             clear();
@@ -207,7 +269,7 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 };
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE "Descriptor"
+#define GUBG_MODULE_ "Descriptor"
 #include "gubg/log/begin.hpp"
 Descriptor Descriptor::listen(unsigned short port, const string &ip)
 {
@@ -263,12 +325,17 @@ Descriptor Descriptor::listen(File f, AccessMode accessMode)
     translate_(res.pimpl_->accessMode, accessMode);
     return res;
 }
-Descriptor Descriptor::stdin()
+Descriptor Descriptor::std_in()
 {
     Descriptor res;
     res.pimpl_.reset(new Pimpl(Role::Normal, Type::Stream));
     res.pimpl_->desc = 0;
     translate_(res.pimpl_->accessMode, AccessMode::Read);
+    return res;
+}
+Descriptor Descriptor::connect(const string &ip, unsigned short port)
+{
+    Descriptor res;
     return res;
 }
 
@@ -340,7 +407,7 @@ bool Descriptor::operator==(const Descriptor &rhs) const
 }
 #include "gubg/log/end.hpp"
 
-#define GUBG_MODULE "Select"
+#define GUBG_MODULE_ "Select"
 #include "gubg/log/begin.hpp"
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
@@ -419,6 +486,7 @@ namespace
             struct timeval to;
             if (timeout)
             {
+                L("Setting timeval");
                 to.tv_sec = timeout->count()/1000;
                 to.tv_usec = 1000*(timeout->count()%1000);
                 pto = &to;
@@ -428,7 +496,9 @@ namespace
 
             {
                 S();L("Waiting for ::select() to return " << STREAM(maxDesc));
-                MSS(::select(maxDesc+1, &rs, &ws, 0, pto) != -1, FailedToSelect);
+                const auto ret = ::select(maxDesc+1, &rs, &ws, 0, pto);
+                L("::select() returned " << ret);
+                MSS(ret != -1, FailedToSelect);
                 L("::select() returned OK");
             }
 

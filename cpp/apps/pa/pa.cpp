@@ -61,8 +61,7 @@ namespace
 					tasks.push_back(ShowDebug::create());
 					});
 
-			OptionParser::Args args;
-			MSS(OptionParser::createArgs(args, argc, argv));
+			auto args = OptionParser::createArgs(argc, argv);
 			MSS(optionParser.parse(args));
 			if (loadMindMap)
 				tasks.push_front(LoadMindMap::create());

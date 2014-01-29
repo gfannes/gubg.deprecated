@@ -300,6 +300,7 @@ int main(int argc, char **argv)
         {
             case rip::ReturnCode::InputNotSpecified: cout << "Input was not specified"; break;
             case rip::ReturnCode::InputFileNotFound: cout << "Could not find the input file"; break;
+			default: cout << "code 0x" << std::hex << (int)rc; break;
         }
         cout << endl;
         return -1;

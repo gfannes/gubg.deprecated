@@ -1,6 +1,7 @@
 #include "da/package/Libs.hpp"
 #include "da/package/PkgConfig.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/Platform.hpp"
 #include <string>
 using namespace da::package;
 using namespace gubg::file;
@@ -34,6 +35,13 @@ da::ReturnCode Libs::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         MSS(insertLibrariesForPackage(linkSettings_.libraries, pkg));
         MSS_QL(RecognisedHeader);
     }
+#ifdef GUBG_MINGW
+    if (partial.name() == "Winsock2.h")
+    {
+        linkSettings_.libraries.insert("Ws2_32");
+        MSS_QL(RecognisedHeader);
+    }
+#endif
     MSS_QL(UnknownHeader);
     /*
     File p = partial;
