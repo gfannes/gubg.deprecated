@@ -106,9 +106,9 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     const Role role;
     const Type type;
     int accessMode;
-    Pimpl *peer;
+    Pimpl *peer = 0;
 
-    Pimpl(Role r, Type t): desc(InvalidDesc), role(r), type(t), accessMode(0), peer(0){}
+    Pimpl(Role r, Type t): desc(InvalidDesc), role(r), type(t), accessMode(0){}
     ~Pimpl()
     {
         clear();
