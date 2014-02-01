@@ -19,12 +19,12 @@ namespace
 {
     void addFixTask(Tasks &tasks, const string &name)
     {
-		if (false) {}
-		else if (name == "guards")
+        if (false) {}
+        else if (name == "guards")
             tasks.push_back(FixIncludeGuards::create());
-		else if (name == "unix")
+        else if (name == "unix")
             tasks.push_back(FixNewlines::create(gubg::line::Line::Unix));
-		else if (name == "dos")
+        else if (name == "dos")
             tasks.push_back(FixNewlines::create(gubg::line::Line::Dos));
         else
             DA_FINALIZE_ERROR("Unknown fix task " << STREAM(name));
@@ -36,7 +36,9 @@ namespace
     {
         MSS_BEGIN(ReturnCode);
 
-		bool verbose = false;
+        cout << string(100, '=') << endl;
+
+        bool verbose = false;
         Tasks tasks;
         Options options;
         {
@@ -60,8 +62,8 @@ namespace
             MSS(optionParser.parse(args));
         }
 
-		if (verbose)
-			cout << options << endl;
+        if (verbose)
+            cout << options << endl;
 
         for (auto task: tasks)
             MSS(task->execute(options));
