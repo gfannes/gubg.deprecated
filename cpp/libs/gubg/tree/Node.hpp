@@ -132,8 +132,24 @@ namespace gubg { namespace tree {
                     assert(si.invariants_());
 
                     assert(other.impl_);
-                    Node_i &chi = *other.impl_;
-                    assert(chi.invariants_());
+                    Node_i &oi = *other.impl_;
+                    assert(oi.invariants_());
+
+                    //Swap the childs
+                    {
+                        auto first = si.first;
+                        auto last = si.last;
+                        si.first = oi.first;
+                        si.last = oi.last;
+                        oi.first = first;
+                        oi.last = last;
+                    }
+
+                    //Fix the parents
+                    for (auto ch = si.first; ch; ch = ch->next)
+                        ch->parent = impl_;
+                    for (auto ch = oi.first; ch; ch = ch->next)
+                        ch->parent = other.impl_;
 
                     return other;
                 }
