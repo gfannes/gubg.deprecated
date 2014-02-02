@@ -37,6 +37,12 @@ namespace gubg { namespace trace {
                 return back_;
             }
 
+            void print()
+            {
+                Printer printer;
+                iterate_dfs(root_, printer);
+            }
+
         private:
             struct Data
             {
@@ -44,6 +50,20 @@ namespace gubg { namespace trace {
                 int category = 0;
             };
             typedef gubg::tree::Node<Data> Node;
+            struct Printer
+            {
+                int level = 0;
+                bool open(Node n)
+                {
+                    std::cout << std::string(2*level, '*') << n.data().str << std::endl;
+                    ++level;
+                    return true;
+                }
+                void close(Node n)
+                {
+                    --level;
+                }
+            };
 
             const std::thread::id tid_;
 
@@ -84,8 +104,17 @@ namespace gubg { namespace trace {
 
             void operator()()
             {
+                S();
                 while (!quit_)
                 {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    LockGuard lg(mutex_);
+                    for (auto p: treePerTid_)
+                    {
+                        std::cout << p.first << std::endl;
+                        p.second->print();
+                        
+                    }
                 }
             }
 
