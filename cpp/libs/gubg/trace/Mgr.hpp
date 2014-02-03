@@ -1,76 +1,14 @@
 #ifndef HEADER_gubg_trace_Mgr_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_trace_Mgr_hpp_ALREADY_INCLUDED
 
-#include "gubg/trace/Msg.hpp"
-#include "gubg/tree/Node.hpp"
+#include "gubg/trace/Tree.hpp"
 #include "gubg/Singleton.hpp"
 #include <thread>
-#include <memory>
 #include <map>
 
 #define GUBG_MODULE_ "trace::Mgr"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace trace { 
-    class Tree
-    {
-        public:
-            typedef std::shared_ptr<Tree> Ptr;
-            Tree(std::thread::id tid): tid_(tid) {}
-
-            void open(const Msg &msg)
-            {
-                if (!root_)
-                {
-                    root_ = Node::create();
-                    back_ = root_;
-                }
-                else
-                    back_ = back_.pushChild(Node::create());
-
-                back_.data().str = msg.str();
-                back_.data().category = msg.category();
-            }
-            //Returns false if the thread died
-            bool close()
-            {
-                back_ = back_.parent();
-                return back_;
-            }
-
-            void print()
-            {
-                Printer printer;
-                iterate_dfs(root_, printer);
-            }
-
-        private:
-            struct Data
-            {
-                std::string str;
-                int category = 0;
-            };
-            typedef gubg::tree::Node<Data> Node;
-            struct Printer
-            {
-                int level = 0;
-                bool open(Node n)
-                {
-                    std::cout << std::string(2*level, '*') << n.data().str << std::endl;
-                    ++level;
-                    return true;
-                }
-                void close(Node n)
-                {
-                    --level;
-                }
-            };
-
-            const std::thread::id tid_;
-
-            Node root_;
-            Node back_;
-            std::mutex mutex_;
-    };
     class Mgr
     {
         public:
@@ -113,8 +51,19 @@ namespace gubg { namespace trace {
                     {
                         std::cout << p.first << std::endl;
                         p.second->print();
-                        
+                        const auto stats = p.second->statistics();
+                        for (auto prop: stats.proportions)
+                            std::cout << prop << ", ";
+                        std::cout << std::endl;
                     }
+                }
+                for (auto p: treePerTid_)
+                {
+                    std::cout << "Proportions: " << std::endl;
+                    const auto stats = p.second->statistics();
+                    for (auto prop: stats.proportions)
+                        std::cout << prop << ", ";
+                    std::cout << std::endl;
                 }
             }
 

@@ -8,16 +8,16 @@ namespace gubg { namespace trace {
     class Msg
     {
         public:
-            Msg(int category): category_(category) { }
+            Msg(size_t category): category_(category) { }
 
-            int category() const {return category_;}
+            size_t category() const {return category_;}
             std::string str() const {return oss_.str();}
 
             template <typename T>
                 Msg &operator<<(const T &v) {oss_ << v; return *this;}
 
         private:
-            const int category_;
+            const size_t category_;
             std::ostringstream oss_;
     };
 } } 
