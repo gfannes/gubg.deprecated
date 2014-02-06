@@ -20,13 +20,13 @@ namespace gubg {
             struct Ref
             {
                 //Is dangling if cnt == 0 (and track > 0)
-                T &ptr_;
+                T &obj_;
                 //For speed, we assume you want to set the ref count to 1 initially
                 typedef unsigned int Count;
                 Count cnt = 1;
                 Count track  = 0;
 
-                Ref(T &p): ptr_(p) {}
+                Ref(T &p): obj_(p) {}
             };
     } 
 
@@ -51,6 +51,7 @@ namespace gubg {
 
                 T *operator->() const;
                 T &operator*() const;
+                T *get() const;
 
             private:
                 bool invariants_() const;
@@ -146,7 +147,7 @@ namespace gubg {
                 if (ref_->cnt == 1)
                 {
                     //A bit dangerous, this is dangling now
-                    delete &ref_->ptr_;
+                    delete &ref_->obj_;
                     if (ref_->track == 0)
                         delete ref_;
                     else
@@ -159,13 +160,21 @@ namespace gubg {
     template <typename T>
         cnt_ptr<T>::operator bool() const { assert(invariants_()); return ref_; }
     template <typename T>
-        T *cnt_ptr<T>::operator->() const { assert(invariants_()); return &ref_->ptr_; }
+        T *cnt_ptr<T>::operator->() const { assert(invariants_()); return &ref_->obj_; }
     template <typename T>
         T &cnt_ptr<T>::operator*() const
         {
             assert(invariants_());
             assert(ref_);
-            return ref_->ptr_;
+            return ref_->obj_;
+        }
+    template <typename T>
+        T *cnt_ptr<T>::get() const
+        {
+            assert(invariants_());
+            if (!ref_)
+                return nullptr;
+            return &ref_->obj_;
         }
     template <typename T>
         bool cnt_ptr<T>::invariants_() const

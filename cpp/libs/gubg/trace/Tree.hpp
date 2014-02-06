@@ -2,12 +2,14 @@
 #define HEADER_gubg_trace_Tree_hpp_ALREADY_INCLUDED
 
 #include "gubg/trace/Msg.hpp"
+#include "gubg/trace/DTO.hpp"
 #include "gubg/tree/Node.hpp"
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <algorithm>
+#include <unistd.h>
 
 #define GUBG_MODULE_ "trace::Mgr"
 #include "gubg/log/begin.hpp"
@@ -39,6 +41,9 @@ namespace gubg { namespace trace {
 
             void open(const Msg &msg)
             {
+                S();
+                LockGuard lg(mutex_);
+                assert(invariants_());
                 if (!root_)
                 {
                     root_ = Node::create();
@@ -54,9 +59,90 @@ namespace gubg { namespace trace {
             //Returns false if the thread died
             bool close()
             {
+                S();
+                LockGuard lg(mutex_);
+                assert(invariants_());
                 back_.data().stop = Clock::now();
                 back_ = back_.parent();
+                L("Back: " << (bool)back_);
                 return back_;
+            }
+
+            typedef std::vector<dto::Scope> Scopes;
+        private:
+            static unsigned long to_ms_(Clock::time_point tp)
+            {
+                S();
+                L(tp.time_since_epoch().count() << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count());
+                return std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+            }
+            //true means n is completely moved into scopes, and must be removed
+            bool get_(Scopes &scopes, dto::Scope &s, Node n, bool doOpen)
+            {
+                S();L(STREAM(n.id(), doOpen));
+                if (doOpen)
+                {
+                    s.isOpen = true;
+                    s.tp_ms = to_ms_(n.data().start);
+                    s.category = n.data().category;
+                    s.msg = n.data().str;
+                    scopes.push_back(s);
+                }
+
+                while (auto ch = n.firstChild())
+                {
+                    L(STREAM(ch.id()));
+                    if (!get_(scopes, s, ch, true))
+                        //The ch subtree is or contains back_
+                        return false;
+                    n.shiftChild();
+                }
+
+                if (n == back_)
+                {
+                    L("This is back_");
+                    return false;
+                }
+
+                {
+                    s.isOpen = false;
+                    s.tp_ms = to_ms_(n.data().stop);
+                    scopes.push_back(s);
+                }
+
+                L("This node can be removed");
+                return true;
+            }
+        public:
+            Scopes getScopeOperations(std::thread::id tid)
+            {
+                S();
+                std::vector<dto::Scope> res;
+                LockGuard lg(mutex_);
+                assert(invariants_());
+                L(STREAM(root_.id(), back_.id(), location_.node.id()));
+                if (root_)
+                {
+                    static const auto myPid = ::getpid();
+                    dto::Scope s; s.pid = myPid; s.tid = std::hash<std::thread::id>()(tid);
+                    if (!location_.node)
+                        get_(res, s, root_, true);
+                    else
+                    {
+                        while (get_(res, s, location_.node, false))
+                        {
+                            Node parent = location_.node.parent();
+                            if (parent)
+                            {
+                                assert(parent.firstChild() == location_.node);
+                                parent.shiftChild();
+                                location_.node = parent;
+                            }
+                        }
+                    }
+                    location_.node = back_;
+                }
+                return res;
             }
 
             struct Computer
@@ -122,22 +208,32 @@ namespace gubg { namespace trace {
             };
             Statistics statistics() const
             {
+                S();
                 Statistics stats;
+                LockGuard lg(mutex_);
+                assert(invariants_());
                 if (!root_)
                     return stats;
 
                 Computer computer;
                 {
-                    LockGuard lg(mutex_);
                     //We set the stop times from back_ to the root, we don't know these values,
                     //so we take the last time_point from the tree
                     //This does not change the state of the tree, these values where not set yet
                     {
+                        S();
+                        assert(back_);
                         Clock::time_point tp = back_.data().start;
                         if (auto ch = back_.lastChild())
+                        {
+                            L("a");
                             tp = ch.data().stop;
+                        }
                         for (auto n = back_; n; n = n.parent())
+                        {
+                            L("b");
                             n.data().stop = tp;
+                        }
                     }
                     iterate_dfs(root_, computer);
                 }
@@ -156,11 +252,22 @@ namespace gubg { namespace trace {
 
             void print()
             {
+                S();
                 Printer printer;
+                LockGuard lg(mutex_);
+                assert(invariants_());
                 iterate_dfs(root_, printer);
             }
 
         private:
+            //Assumes mutex_ is locked
+            bool invariants_() const
+            {
+                assert(!(!root_ && back_));
+                //Not very ok, the last close() will set back_ to null
+                assert(!(root_ && !back_));
+                return true;
+            }
             struct Printer
             {
                 size_t level = 0;
@@ -180,6 +287,12 @@ namespace gubg { namespace trace {
 
             Node root_;
             Node back_;
+            struct Location
+            {
+                Node node;
+                size_t ix;
+            };
+            Location location_;
             typedef std::mutex Mutex;
             typedef std::lock_guard<Mutex> LockGuard;
             mutable Mutex mutex_;

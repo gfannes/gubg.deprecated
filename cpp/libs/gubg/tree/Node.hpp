@@ -53,6 +53,9 @@ namespace gubg { namespace tree {
                     return n;
                 }
 
+                //Use this for debugging and logging, the same id might get reused later
+                size_t id () const { return (size_t)impl_.get(); }
+
                 operator bool () const {return (bool)impl_;}
 
                 //Make sure the node is valid (using operator bool) before trying to call any of the following methods
@@ -154,6 +157,27 @@ namespace gubg { namespace tree {
                     return other;
                 }
 
+                //Not tested yet
+                void removeChilds()
+                {
+                    S();
+                    assert(impl_);
+                    Node_i &si = *impl_;
+                    assert(si.invariants_());
+                    typename Node_i::Ptr tmp;
+                    for (auto ch = si.first; ch;)
+                    {
+                        ch->parent.reset();
+                        tmp = ch;
+                        ch = ch->next;
+                        tmp->prev.reset();
+                        tmp->next.reset();
+                    }
+                    si.first.reset();
+                    si.last.reset();
+                    assert(!si.has_child());
+                }
+
                 //Returns child, which allows you to use a construct like:
                 //auto ch = root.pushChild(Node::create())
                 Node pushChild(Node ch)
@@ -187,6 +211,7 @@ namespace gubg { namespace tree {
                     assert(si.invariants_());
                     return ch;
                 }
+                //Returns the sifted node
                 Node shiftChild()
                 {
                     S();

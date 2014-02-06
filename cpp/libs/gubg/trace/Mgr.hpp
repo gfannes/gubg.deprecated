@@ -2,7 +2,10 @@
 #define HEADER_gubg_trace_Mgr_hpp_ALREADY_INCLUDED
 
 #include "gubg/trace/Tree.hpp"
+#include "gubg/trace/DTO.hpp"
 #include "gubg/Singleton.hpp"
+#include "gubg/msgpack/Serializer.hpp"
+#include "gubg/testing/Testing.hpp"
 #include <thread>
 #include <map>
 
@@ -45,19 +48,28 @@ namespace gubg { namespace trace {
                 S();
                 while (!quit_)
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    LockGuard lg(mutex_);
-                    for (auto p: treePerTid_)
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    TreePerTid lTreePerTid;
                     {
-                        std::cout << p.first << std::endl;
-                        p.second->print();
-                        const auto stats = p.second->statistics();
-                        for (auto prop: stats.proportions)
-                            std::cout << prop << ", ";
-                        std::cout << std::endl;
+                        LockGuard lg(mutex_);
+                        lTreePerTid = treePerTid_;
+                    }
+                    for (auto p: lTreePerTid)
+                    {
+                        auto scopes = p.second->getScopeOperations(p.first);
+                        gubg::msgpack::Serializer<std::string, dto::TypeIds, 10> serializer;
+                        for (auto &s: scopes)
+                            serializer.serialize(s);
+                        std::cout << gubg::testing::toHex(serializer.buffer()) << std::endl;
                     }
                 }
-                for (auto p: treePerTid_)
+#if 0
+                TreePerTid lTreePerTid;
+                {
+                    LockGuard lg(mutex_);
+                    lTreePerTid = treePerTid_;
+                }
+                for (auto p: lTreePerTid)
                 {
                     std::cout << "Proportions: " << std::endl;
                     const auto stats = p.second->statistics();
@@ -65,6 +77,7 @@ namespace gubg { namespace trace {
                         std::cout << prop << ", ";
                     std::cout << std::endl;
                 }
+#endif
             }
 
         private:
