@@ -24,7 +24,7 @@ map -t <Bslash>aotemplate <typename <Esc>:call ReadString("Type")<CR>A><Esc><Bsl
 
 let hn = hostname()
 let athome = 0
-let indep = 0
+let indep = 1
 if hn == "rii"
 	let athome = 1
 endif
