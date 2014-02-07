@@ -4,6 +4,7 @@
 #include "gubg/trace/Tree.hpp"
 #include "gubg/trace/DTO.hpp"
 #include "gubg/Singleton.hpp"
+#include "gubg/Platform.hpp"
 #include "gubg/msgpack/Serializer.hpp"
 #include "gubg/testing/Testing.hpp"
 #include <thread>
@@ -56,11 +57,11 @@ namespace gubg { namespace trace {
                     }
                     for (auto p: lTreePerTid)
                     {
-                        auto scopes = p.second->getScopeOperations(p.first);
+                        auto scopes = p.second->getScopeOperations();
                         gubg::msgpack::Serializer<std::string, dto::TypeIds, 10> serializer;
                         for (auto &s: scopes)
                             serializer.serialize(s);
-                        std::cout << gubg::testing::toHex(serializer.buffer()) << std::endl;
+                        std::cout << serializer.buffer().size() << "::" << gubg::testing::toHex(serializer.buffer()) << std::endl;
                     }
                 }
 #if 0
@@ -92,7 +93,7 @@ namespace gubg { namespace trace {
             Tree &getTree_()
             {
                 LockGuard lg(mutex_);
-                const auto tid = std::this_thread::get_id();
+                const auto tid = threadId();
                 Tree::Ptr &tree = treePerTid_[tid];
                 if (!tree)
                     tree.reset(new Tree(tid));
@@ -102,7 +103,7 @@ namespace gubg { namespace trace {
             {
                 Tree::Ptr tree;
                 LockGuard lg(mutex_);
-                auto it = treePerTid_.find(std::this_thread::get_id());
+                auto it = treePerTid_.find(threadId());
                 if (it != treePerTid_.end())
                 {
                     tree = it->second;
@@ -111,7 +112,7 @@ namespace gubg { namespace trace {
                 return tree;
             }
 
-            typedef std::map<std::thread::id, Tree::Ptr> TreePerTid;
+            typedef std::map<ThreadId, Tree::Ptr> TreePerTid;
             TreePerTid treePerTid_;
             typedef std::vector<Tree::Ptr> DeadTrees;
             DeadTrees deadTrees_;

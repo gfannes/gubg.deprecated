@@ -2,6 +2,7 @@
 #define HEADER_gubg_logging_Framework_hpp_ALREADY_INCLUDED
 
 #include "gubg/Singleton.hpp"
+#include "gubg/Platform.hpp"
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -25,7 +26,7 @@ namespace gubg
         {
             public:
                 Scope(const char *module, const char *name, bool verboseDtor):
-                    threadId_(std::this_thread::get_id()),
+                    threadId_(threadId()),
                     verboseDtor_(verboseDtor)
             {
                 thread_local NameStack *nameStack = 0;
@@ -80,7 +81,7 @@ namespace gubg
                     Name(const char *m, const char *n): module(m), name(n){}
                 };
                 typedef std::vector<Name> NameStack;
-                std::thread::id threadId_;
+                const ThreadId threadId_;
                 bool verboseDtor_;
                 NameStack *nameStack_;
                 std::unique_ptr<std::string> indent_;

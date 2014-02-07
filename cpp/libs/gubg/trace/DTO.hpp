@@ -106,7 +106,7 @@ namespace gubg { namespace trace { namespace dto {
                 }
                 else
                 {
-                    s.writeIdAndAttrCnt(S::CloseScope, nr_);
+                    s.writeIdAndAttrCnt(S::CloseScope, category_);
                     s.template writeAttribute<long>(pid_, pid);
                     s.template writeAttribute<long>(tid_, tid);
                     s.template writeAttribute<long>(tp_ms_, tp_ms);

@@ -51,6 +51,7 @@ namespace gubg
         L_MSGPACK_DEFINE_TAG(UInt8);
         L_MSGPACK_DEFINE_TAG(UInt16);
         L_MSGPACK_DEFINE_TAG(UInt32);
+        L_MSGPACK_DEFINE_TAG(UInt64);
         L_MSGPACK_DEFINE_TAG(NegFix);
         L_MSGPACK_DEFINE_TAG(Int8);
         L_MSGPACK_DEFINE_TAG(Int16);

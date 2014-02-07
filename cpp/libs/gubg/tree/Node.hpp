@@ -56,6 +56,7 @@ namespace gubg { namespace tree {
                 //Use this for debugging and logging, the same id might get reused later
                 size_t id () const { return (size_t)impl_.get(); }
 
+                bool operator==(const Node &rhs) const {return impl_ == rhs.impl_;}
                 operator bool () const {return (bool)impl_;}
 
                 //Make sure the node is valid (using operator bool) before trying to call any of the following methods

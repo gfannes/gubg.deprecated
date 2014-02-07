@@ -4,12 +4,12 @@
 #include "gubg/trace/Msg.hpp"
 #include "gubg/trace/DTO.hpp"
 #include "gubg/tree/Node.hpp"
+#include "gubg/Platform.hpp"
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <algorithm>
-#include <unistd.h>
 
 #define GUBG_MODULE_ "trace::Mgr"
 #include "gubg/log/begin.hpp"
@@ -37,13 +37,14 @@ namespace gubg { namespace trace {
         public:
             typedef std::shared_ptr<Tree> Ptr;
 
-            Tree(std::thread::id tid): tid_(tid) {}
+            Tree(ThreadId tid): tid_(tid) {}
 
             void open(const Msg &msg)
             {
                 S();
                 LockGuard lg(mutex_);
                 assert(invariants_());
+                L("Back: " << back_.id());
                 if (!root_)
                 {
                     root_ = Node::create();
@@ -51,6 +52,7 @@ namespace gubg { namespace trace {
                 }
                 else
                     back_ = back_.pushChild(Node::create());
+                L("New back: " << back_.id());
 
                 back_.data().start = Clock::now();
                 back_.data().str = msg.str();
@@ -62,9 +64,10 @@ namespace gubg { namespace trace {
                 S();
                 LockGuard lg(mutex_);
                 assert(invariants_());
+                L("Back: " << back_.id());
                 back_.data().stop = Clock::now();
                 back_ = back_.parent();
-                L("Back: " << (bool)back_);
+                L("New back: " << back_.id());
                 return back_;
             }
 
@@ -114,7 +117,7 @@ namespace gubg { namespace trace {
                 return true;
             }
         public:
-            Scopes getScopeOperations(std::thread::id tid)
+            Scopes getScopeOperations()
             {
                 S();
                 std::vector<dto::Scope> res;
@@ -123,8 +126,8 @@ namespace gubg { namespace trace {
                 L(STREAM(root_.id(), back_.id(), location_.node.id()));
                 if (root_)
                 {
-                    static const auto myPid = ::getpid();
-                    dto::Scope s; s.pid = myPid; s.tid = std::hash<std::thread::id>()(tid);
+                    static const auto myPid = gubg::processId();
+                    dto::Scope s; s.pid = myPid; s.tid = tid_;
                     if (!location_.node)
                         get_(res, s, root_, true);
                     else
@@ -283,7 +286,7 @@ namespace gubg { namespace trace {
                 }
             };
 
-            const std::thread::id tid_;
+            const ThreadId tid_;
 
             Node root_;
             Node back_;

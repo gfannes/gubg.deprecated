@@ -44,6 +44,8 @@ namespace gubg {
 
                 ~cnt_ptr();
 
+                bool operator==(const cnt_ptr<T> &) const;
+
                 void reset();
                 void reset(T *);
 
@@ -119,6 +121,13 @@ namespace gubg {
         {
             assert(invariants_());
             decrement_();
+        }
+    template <typename T>
+        bool cnt_ptr<T>::operator==(const cnt_ptr<T> &rhs) const
+        {
+            assert(invariants_());
+            assert(rhs.invariants_());
+            return ref_ == rhs.ref_;
         }
     template <typename T>
         void cnt_ptr<T>::reset()

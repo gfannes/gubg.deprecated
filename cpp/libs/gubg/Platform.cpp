@@ -4,6 +4,8 @@
 #ifdef GUBG_LINUX
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 #endif
 #ifdef GUBG_WIN32
 #include <unistd.h>
@@ -47,6 +49,18 @@ namespace gubg
                 break;
         }
         return res;
+    }
+
+    ProcessId processId()
+    {
+        static const ProcessId pid = ::getpid();
+        return pid;
+    }
+    ThreadId threadId()
+    {
+        //We cannot use std::this_thread::get_id(), that is to be used for comparison only, but is not the id reported by the OS
+        thread_local const ThreadId tid = ::syscall(SYS_gettid);
+        return tid;
     }
 }
 #include "gubg/log/end.hpp"

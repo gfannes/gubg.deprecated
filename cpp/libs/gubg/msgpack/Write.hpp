@@ -63,6 +63,24 @@ namespace gubg
                 buffer.push_back((char)(v & 0xff));
                 return ReturnCode::OK;
             }
+        template <typename Buffer, typename Integer>
+            ReturnCode write(Buffer &buffer, Integer v, UInt64_tag)
+            {
+                if (v < 0)
+                    return ReturnCode::OutOfRange;
+                if (v > 0xffffffffffffffff)
+                    return ReturnCode::OutOfRange;
+                buffer.push_back(0xcf);
+                buffer.push_back((char)((v >> 56) & 0xff));
+                buffer.push_back((char)((v >> 48) & 0xff));
+                buffer.push_back((char)((v >> 40) & 0xff));
+                buffer.push_back((char)((v >> 32) & 0xff));
+                buffer.push_back((char)((v >> 24) & 0xff));
+                buffer.push_back((char)((v >> 16) & 0xff));
+                buffer.push_back((char)((v >> 8) & 0xff));
+                buffer.push_back((char)(v & 0xff));
+                return ReturnCode::OK;
+            }
         //Negative integers
         template <typename Buffer, typename Integer>
             ReturnCode write(Buffer &buffer, Integer v, NegFix_tag)
@@ -126,6 +144,8 @@ namespace gubg
                     if (ReturnCode::OK == write(buffer, v, UInt16_tag()))
                         return ReturnCode::OK;
                     if (ReturnCode::OK == write(buffer, v, UInt32_tag()))
+                        return ReturnCode::OK;
+                    if (ReturnCode::OK == write(buffer, v, UInt64_tag()))
                         return ReturnCode::OK;
                     MSS_L(OutOfRange);
                 }

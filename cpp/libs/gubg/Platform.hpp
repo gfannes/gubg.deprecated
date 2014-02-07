@@ -36,6 +36,11 @@ namespace gubg
     //Basic command-line escaping
     enum class Quotes {Add};
     std::string escapeForCLI(const std::string &str, Quotes quotes);
+
+    typedef unsigned long ProcessId;
+    ProcessId processId();
+    typedef unsigned long ThreadId;
+    unsigned long threadId();
 }
 
 #endif
