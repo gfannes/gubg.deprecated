@@ -1,44 +1,32 @@
 #include "garf/Sonar.hpp"
 #include "Arduino.h"
 
-const int trigger = 7;
 const int echo = 8;
-
+typedef garf::Sonar<2, echo, 200> Sonar_left;
+typedef garf::Sonar<7, echo, 200> Sonar_right;
 bool mutex;
-typedef garf::Sonar<7, 8, 200> Sonar;
-Sonar sonar(mutex);
+Sonar_left  sonar_left(mutex);
+Sonar_right sonar_right(mutex);
 
 void setup()
 {
     mutex = false;
-    sonar.init();
+    sonar_left.init();
+    sonar_right.init();
     Serial.begin(9600);
 }
 
 void loop()
 {
-    int s = (int)sonar.debug_getState();
-#if 0
-    switch (s)
-    {
-        case 1: break;
-        case 2:
-                Serial.print("\n\rSend pulse");
-                break;
-        default:
-                Serial.print(" ");
-                Serial.print((int)sonar.debug_getState());
-                break;
-    }
-#endif
     unsigned long cm;
-    if (sonar.process(cm))
+    if (sonar_left.process(cm))
     {
-#if 0
-        Serial.print(" >> ");
-#else
-        Serial.print("\n\r");
-#endif
+        Serial.print("\n\rleft  ");
+        Serial.print(cm);
+    }
+    if (sonar_right.process(cm))
+    {
+        Serial.print("\n\rright ");
         Serial.print(cm);
     }
 }
