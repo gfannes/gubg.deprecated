@@ -4,7 +4,7 @@
 #include "gubg/msgpack/Deserialize.hpp"
 #include <ostream>
 
-#define GUBG_MODULE_ "DTO"
+#define GUBG_MODULE "DTO"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace trace { namespace dto { 
     struct TypeIds

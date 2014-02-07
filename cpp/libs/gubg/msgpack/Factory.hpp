@@ -7,7 +7,7 @@
 #include "gubg/StateMachine.hpp"
 #include "gubg/FixedVector.hpp"
 
-#define GUBG_MODULE_ "msgpack_Factory"
+#define GUBG_MODULE "msgpack_Factory"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {

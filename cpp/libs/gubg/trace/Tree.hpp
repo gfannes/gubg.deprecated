@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>
 
-#define GUBG_MODULE_ "trace::Mgr"
+#define GUBG_MODULE "trace::Mgr"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace trace { 
 

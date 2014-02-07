@@ -50,6 +50,7 @@ namespace gubg
                     nameStack_->pop_back();
                 }
 
+                bool verbose() const {return verboseDtor_;}
                 const char *name() const {return nameStack_->back().name;}
                 const char *module() const {return nameStack_->back().module;}
                 std::string indent()
@@ -82,7 +83,7 @@ namespace gubg
                 };
                 typedef std::vector<Name> NameStack;
                 const ThreadId threadId_;
-                bool verboseDtor_;
+                const bool verboseDtor_;
                 NameStack *nameStack_;
                 std::unique_ptr<std::string> indent_;
         };

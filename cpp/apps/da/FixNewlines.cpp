@@ -46,7 +46,7 @@ namespace
 					//One line ending found
 					if (end != wantedEnd_)
 					{
-						cout << file << ": " << gubg::line::to_s(end) << " line ending found" << endl;
+						cout << file << ": " << gubg::line::to_hr(end) << " line ending found" << endl;
 						doFix = true;
 					}
 				}

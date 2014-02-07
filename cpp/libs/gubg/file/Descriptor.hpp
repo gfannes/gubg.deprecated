@@ -27,6 +27,8 @@ namespace gubg
             public:
                 static const int InvalidDesc = -1;
 
+                size_t id() const;
+
                 Descriptor(){}
                 Descriptor(PP pp): pimpl_(pp) {}
 

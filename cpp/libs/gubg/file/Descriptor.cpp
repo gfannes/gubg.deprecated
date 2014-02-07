@@ -25,6 +25,8 @@ using namespace gubg::file;
 using namespace std;
 using std::chrono::milliseconds;
 
+#define GUBG_MODULE "Descriptor"
+#include "gubg/log/begin.hpp"
 namespace gubg { namespace file { 
     const char *to_hr(EventType et)
     {
@@ -124,8 +126,6 @@ namespace
 	}
 }
 
-#define GUBG_MODULE_ "Descr::Pimpl"
-#include "gubg/log/begin.hpp"
 struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
 {
     typedef shared_ptr<Pimpl> Ptr;
@@ -309,10 +309,11 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         MSS_END();
     }
 };
-#include "gubg/log/end.hpp"
 
-#define GUBG_MODULE_ "Descriptor"
-#include "gubg/log/begin.hpp"
+size_t Descriptor::id() const
+{
+    return (size_t)pimpl_.get();
+}
 Descriptor Descriptor::listen(unsigned short port, const string &ip)
 {
     S();
@@ -489,10 +490,7 @@ bool Descriptor::operator==(const Descriptor &rhs) const
 {
     return pimpl_ == rhs.pimpl_;
 }
-#include "gubg/log/end.hpp"
 
-#define GUBG_MODULE_ "Select"
-#include "gubg/log/begin.hpp"
 ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
 {
     MSS_BEGIN(ReturnCode);

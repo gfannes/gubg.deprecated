@@ -11,7 +11,7 @@
 #include <thread>
 #include <map>
 
-#define GUBG_MODULE_ "trace::Mgr"
+#define GUBG_MODULE "trace::Mgr"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace trace { 
     class Mgr
@@ -54,6 +54,8 @@ namespace gubg { namespace trace {
 					if (!d.valid())
 					{
 						d = file::Descriptor::connect("localhost", 1234);
+                        if (d.valid())
+                            std::cout << "Connected to ttt" << std::endl;
 						continue;
 					}
 
@@ -69,7 +71,7 @@ namespace gubg { namespace trace {
                         for (auto &s: scopes)
                             serializer.serialize(s);
 						const auto str = serializer.buffer();
-                        std::cout << str.size() << "::" << gubg::testing::toHex(str) << std::endl;
+                        std::cout << "Sending " << str.size() << " bytes" << std::endl;
 						size_t s = 0;
 						while (s < str.size())
 						{

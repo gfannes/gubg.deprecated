@@ -50,6 +50,7 @@ namespace ttt {
 				{
 					case gubg::trace::dto::TypeIds::OpenScope:
 						//cout << os << endl;
+                        pid = os.pid;
 						infoPerPid[os.pid][os.tid] = os.msg;
 						break;
 					case gubg::trace::dto::TypeIds::CloseScope:
@@ -61,6 +62,7 @@ namespace ttt {
 			void msgpack_set(AttributeId id, const std::string &str) {S();L("???");}
 			void msgpack_set(AttributeId id, long) {S();L("???");}
 
+            ProcessId pid = 0;
 			gubg::trace::dto::OpenScope os;
 			gubg::trace::dto::CloseScope cs;
 	};
@@ -69,9 +71,15 @@ namespace ttt {
 		public:
 			void process(const std::string &str, file::Descriptor d)
 			{
-				//SSS("Processing " << str.size() << " bytes");
+				S_();L("Processing " << str.size() << " bytes");
 				factoryPerDesc_[d].process(str);
 			}
+            void erase(file::Descriptor d)
+            {
+                S();L(d.id());
+                infoPerPid.erase(factoryPerDesc_[d].pid);
+                factoryPerDesc_.erase(d);
+            }
 		private:
 			typedef std::map<file::Descriptor, Factory> FactoryPerDesc;
 			FactoryPerDesc factoryPerDesc_;
@@ -82,7 +90,7 @@ namespace ttt {
 		public:
 			virtual void select_ready(file::Descriptor d, file::EventType et)
 			{
-				S();L(d << " is ready for some action: " << to_hr(et));
+				S_();L(d << " is ready for some action: " << to_hr(et));
 				switch (et)
 				{
 					case file::EventType::Open:
@@ -96,12 +104,15 @@ namespace ttt {
 						{
 							std::string str(1024, '?');
 							d.read(str);
-							L(testing::toHex(str));
+							L("I read " << str.size() << " bytes");
+							//L(testing::toHex(str));
 							factoryMgr.process(str, d);
 						}
 						break;
 					case file::EventType::Close:
 						{
+                            cout << "Peer closed connection" << endl;
+                            factoryMgr.erase(d);
 							erase(d, file::AccessMode::ReadWrite);
 						}
 						break;
@@ -132,16 +143,17 @@ ReturnCode main_(int argc, char **argv)
 	auto timeout = Clock::now();
 	while (true)
 	{
-		S();
+		S_();
 		s.process(std::chrono::seconds(1));
 		if (Clock::now() >= timeout)
 		{
 			timeout = Clock::now() + std::chrono::seconds(3);
+            cout << string(100, '=') << endl;
 			for (auto p: infoPerPid)
 			{
-				cout << p.first << endl;
+				cout << "Process: " << p.first << endl;
 				for (auto p2: p.second)
-					cout << "\t" << p2.first << ": " << p2.second << endl;
+					cout << "\tThread: " << p2.first << ": " << p2.second << endl;
 			}
 		}
 	}
