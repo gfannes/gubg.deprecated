@@ -1,6 +1,7 @@
 #ifndef HEADER_gubg_trace_Mgr_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_trace_Mgr_hpp_ALREADY_INCLUDED
 
+#include "gubg/trace/Codes.hpp"
 #include "gubg/trace/Tree.hpp"
 #include "gubg/trace/DTO.hpp"
 #include "gubg/Singleton.hpp"
@@ -59,27 +60,10 @@ namespace gubg { namespace trace {
 						continue;
 					}
 
-                    TreePerTid lTreePerTid;
-                    {
-                        LockGuard lg(mutex_);
-                        lTreePerTid = treePerTid_;
-                    }
-                    for (auto p: lTreePerTid)
-                    {
-                        auto scopes = p.second->getScopeOperations();
-                        gubg::msgpack::Serializer<std::string, dto::TypeIds, 10> serializer;
-                        for (auto &s: scopes)
-                            serializer.serialize(s);
-						const auto str = serializer.buffer();
-                        std::cout << "Sending " << str.size() << " bytes" << std::endl;
-						size_t s = 0;
-						while (s < str.size())
-						{
-							size_t tmp;
-							d.write(tmp, str.substr(s));
-							s += tmp;
-						}
-                    }
+                    if (!MSS_IS_OK(work_(d)))
+                        //Something went wrong, reset the network connection
+                        d = file::Descriptor();
+
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
 #if 0
@@ -100,6 +84,32 @@ namespace gubg { namespace trace {
             }
 
         private:
+            ReturnCode work_(file::Descriptor d)
+            {
+                MSS_BEGIN(ReturnCode);
+                TreePerTid lTreePerTid;
+                {
+                    LockGuard lg(mutex_);
+                    lTreePerTid = treePerTid_;
+                }
+                for (auto p: lTreePerTid)
+                {
+                    auto scopes = p.second->getScopeOperations();
+                    gubg::msgpack::Serializer<std::string, dto::TypeIds, 10> serializer;
+                    for (auto &s: scopes)
+                        serializer.serialize(s);
+                    const auto str = serializer.buffer();
+                    std::cout << "Sending " << str.size() << " bytes" << std::endl;
+                    size_t s = 0;
+                    while (s < str.size())
+                    {
+                        size_t tmp;
+                        MSS(d.write(tmp, str.substr(s)));
+                        s += tmp;
+                    }
+                }
+                MSS_END();
+            }
             friend class Singleton<Mgr>;
             Mgr(): thread_(std::ref(*this)) {}
             ~Mgr()
