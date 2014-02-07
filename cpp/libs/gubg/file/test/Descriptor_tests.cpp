@@ -60,7 +60,7 @@ int main()
         s.add(std_in, AccessMode::Read);
         s.process(std::chrono::seconds(10));
     }
-    if (true)
+    if (false)
     {
         TEST_TAG(socket);
         auto d = Descriptor::listen(1234);
@@ -73,6 +73,26 @@ int main()
             s.process(std::chrono::seconds(60));
         }
     }
+	if (true)
+	{
+		TEST_TAG(connect);
+		for (int i = 0; i < 10; ++i)
+		{
+			auto d = Descriptor::connect("192.168.205.123", 1234);
+			TEST_TRUE(d.valid());
+
+			const std::string msg(1024, '!');
+			size_t s = 0;
+			TEST_OK(d.write(s, msg.substr(s)));
+			while (false and s < msg.size())
+			{
+				size_t tmp;
+				TEST_OK(d.write(tmp, msg.substr(s)));
+				s += tmp;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		}
+	}
     return 0;
 }
 #include "gubg/log/end.hpp"

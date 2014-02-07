@@ -96,6 +96,14 @@ namespace gubg
                     }
                 return false;
             }
+            bool popUntil(std::string &res, const std::string &str)
+            {
+				Strange s;
+				if (!popUntil(s, str))
+					return false;
+				res = s.str();
+				return true;
+            }
 #if 0
             template <typename Int>
                 bool popDecimal(Int &i)

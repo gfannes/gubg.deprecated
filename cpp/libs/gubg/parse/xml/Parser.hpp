@@ -14,12 +14,13 @@ namespace gubg
 {
     namespace xml
     {
+		typedef std::vector<std::string> Path;
+		typedef std::map<std::string, std::string> Attributes;
+
         template <typename Receiver>
             class Parser_crtp
             {
                 public:
-                    typedef std::vector<std::string> Path;
-                    typedef std::map<std::string, std::string> Attributes;
 
                     ReturnCode process(const std::string &str)
                     {
@@ -29,6 +30,9 @@ namespace gubg
                         str_ = str;
                         while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
                         path_.clear();
+
+						MSS(readVersion_());
+                        while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
 
                         while (!str_.empty())
                         {
@@ -96,6 +100,15 @@ namespace gubg
                     static const Flags Open = 1;
                     static const Flags Close = 2;
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
+                    ReturnCode readVersion_()
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS_Q(str_.popString("<?xml"));
+                        while (str_.popCharIf(' ')){}
+                        MSS(str_.popUntil(version_, "?>"));
+                        while (!version_.empty() and version_[version_.size()-1] == ' '){version_.resize(version_.size()-1);}
+                        MSS_END();
+                    }
                     ReturnCode readComment_(Strange &comment)
                     {
                         MSS_BEGIN(ReturnCode);
@@ -160,6 +173,7 @@ namespace gubg
                         MSS_END();
                     }
 
+					std::string version_;
                     Strange str_;
                     Path path_;
             };

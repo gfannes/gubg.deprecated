@@ -8,6 +8,7 @@
 #include <sys/syscall.h>
 #endif
 #ifdef GUBG_WIN32
+#include "Windows.h"
 #include <unistd.h>
 #endif
 
@@ -59,7 +60,12 @@ namespace gubg
     ThreadId threadId()
     {
         //We cannot use std::this_thread::get_id(), that is to be used for comparison only, but is not the id reported by the OS
+#ifdef GUBG_LINUX
         thread_local const ThreadId tid = ::syscall(SYS_gettid);
+#endif
+#ifdef GUBG_WIN32
+        thread_local const ThreadId tid = ::GetCurrentThreadId();
+#endif
         return tid;
     }
 }

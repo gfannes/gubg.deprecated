@@ -2,6 +2,7 @@
 #define HEADER_gubg_trace_DTO_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Deserialize.hpp"
+#include <ostream>
 
 #define GUBG_MODULE_ "DTO"
 #include "gubg/log/begin.hpp"
@@ -57,6 +58,11 @@ namespace gubg { namespace trace { namespace dto {
             }
         }
     };
+	std::ostream &operator<<(std::ostream &os, const OpenScope &obj)
+	{
+		os << STREAM(obj.pid, obj.tid, obj.tp_ms, obj.category, obj.msg);
+		return os;
+	}
     struct CloseScope: Origin
     {
         enum {pid_, tid_, tp_ms_, nr_};
@@ -83,6 +89,11 @@ namespace gubg { namespace trace { namespace dto {
             }
         }
     };
+	std::ostream &operator<<(std::ostream &os, const CloseScope &obj)
+	{
+		os << STREAM(obj.pid, obj.tid, obj.tp_ms);
+		return os;
+	}
 
     //This is only used at the sending side and can only be serialized to msgpack
     struct Scope: Origin

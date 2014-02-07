@@ -33,6 +33,7 @@ namespace gubg
             AlreadyAcceptedFile,
             InvalidMaxDesc,
             PeerClosedConnection,
+			FailedToWrite,
         };
     }
 }

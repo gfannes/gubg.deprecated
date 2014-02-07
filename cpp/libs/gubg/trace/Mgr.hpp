@@ -6,6 +6,7 @@
 #include "gubg/Singleton.hpp"
 #include "gubg/Platform.hpp"
 #include "gubg/msgpack/Serializer.hpp"
+#include "gubg/file/Descriptor.hpp"
 #include "gubg/testing/Testing.hpp"
 #include <thread>
 #include <map>
@@ -47,9 +48,15 @@ namespace gubg { namespace trace {
             void operator()()
             {
                 S();
+				file::Descriptor d;
                 while (!quit_)
                 {
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
+					if (!d.valid())
+					{
+						d = file::Descriptor::connect("localhost", 1234);
+						continue;
+					}
+
                     TreePerTid lTreePerTid;
                     {
                         LockGuard lg(mutex_);
@@ -61,8 +68,17 @@ namespace gubg { namespace trace {
                         gubg::msgpack::Serializer<std::string, dto::TypeIds, 10> serializer;
                         for (auto &s: scopes)
                             serializer.serialize(s);
-                        std::cout << serializer.buffer().size() << "::" << gubg::testing::toHex(serializer.buffer()) << std::endl;
+						const auto str = serializer.buffer();
+                        std::cout << str.size() << "::" << gubg::testing::toHex(str) << std::endl;
+						size_t s = 0;
+						while (s < str.size())
+						{
+							size_t tmp;
+							d.write(tmp, str.substr(s));
+							s += tmp;
+						}
                     }
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
 #if 0
                 TreePerTid lTreePerTid;

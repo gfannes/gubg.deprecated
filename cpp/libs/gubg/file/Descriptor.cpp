@@ -72,7 +72,27 @@ namespace
 #endif
 
     enum class Role { Normal, Acceptor };
+	const char *to_hr(Role r)
+	{
+		switch (r)
+		{
+			case Role::Normal: return "Normal";
+			case Role::Acceptor: return "Acceptor";
+		}
+		return "Unknown role";
+	}
+
     enum class Type { Socket, File, Stream };
+	const char *to_hr(Type t)
+	{
+		switch (t)
+		{
+			case Type::Socket: return "Socket";
+			case Type::File: return "File";
+			case Type::Stream: return "Stream";
+		}
+		return "Unknown type";
+	}
 
     void translate_(int &flags, AccessMode am)
     {
@@ -93,6 +113,15 @@ namespace
             case Role::Acceptor: et = EventType::Open; break;
         }
     }
+
+	bool peerClosedConnection_(int desc)
+	{
+		char c;
+		const auto ret = ::recv(desc, &c, 1, MSG_PEEK);
+		//cout << desc << " peerClosedConnection_ " << ret << " " << errno << endl;
+		//We do not want -1, it means peer has not correctly closed the connection
+		return ret == 0 || ret == -1;
+	}
 }
 
 #define GUBG_MODULE_ "Descr::Pimpl"
@@ -115,9 +144,19 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     }
     void clear()
     {
+		S();
         if (desc != InvalidDesc)
         {
+#ifdef GUBG_LINUX
             ::close(desc);
+#endif
+#ifdef GUBG_MINGW
+			if (type == Type::Socket)
+			{
+				L("Closing socket desc");
+				::closesocket(desc);
+			}
+#endif
             desc = InvalidDesc;
         }
         if (peer)
@@ -134,11 +173,11 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     }
     void stream(ostream &os) const
     {
-        os << STREAM(desc, fn, (int)role, (int)type);
+        os << STREAM(desc, fn, to_hr(role), to_hr(type));
     }
     ReturnCode selectNonBlock(EventType &et, AccessMode am)
     {
-        MSS_BEGIN(ReturnCode, STREAM((int)role, (int)type, desc));
+        MSS_BEGIN(ReturnCode, STREAM(to_hr(role), to_hr(type), desc));
         switch (type)
         {
             case Type::File:
@@ -244,12 +283,15 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         MSS(role == Role::Normal);
         MSS(desc != InvalidDesc);
 
+#ifdef GUBG_LINUX
         const auto s = ::write(desc, &buffer[0], buffer.size());
-        if (s == 0)
-        {
-            clear();
-            MSS_L(PeerClosedConnection);
-        }
+#endif
+#ifdef GUBG_MINGW
+		MSS(type == Type::Socket);
+        const auto s = ::send(desc, &buffer[0], buffer.size(), 0);
+#endif
+		L(STREAM(desc, s));
+		MSS(s != -1, FailedToWrite);
         MSS(s <= buffer.size());
         written = s;
         L("I wrote " << written << " bytes");
@@ -278,9 +320,11 @@ Descriptor Descriptor::listen(unsigned short port, const string &ip)
     struct addrinfo hints;
     struct addrinfo *servinfo = 0;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
+    //hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
+	hints.ai_protocol = IPPROTO_TCP;
 
     ostringstream oss;
     oss << port;
@@ -335,7 +379,47 @@ Descriptor Descriptor::std_in()
 }
 Descriptor Descriptor::connect(const string &ip, unsigned short port)
 {
+	S();
+
+    struct addrinfo hints;
+    struct addrinfo *servinfo = 0;
+    memset(&hints, 0, sizeof(hints));
+    //hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	{
+		ostringstream oss; oss << port;
+		const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), oss.str().c_str(), &hints, &servinfo);
+		//const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), 0, &hints, &servinfo);
+		if (rc != 0)
+		{
+			L("Failed to get address info " << rc << " " << gai_strerror(rc));
+			return Descriptor();
+		}
+		assert(servinfo != 0);
+	}
+
+    const auto desc = ::socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+    if (desc == -1)
+    {
+        L("Failed to get a socket");
+        return Descriptor();
+    }
+	L("Got descriptor " << desc);
+
+	if (::connect(desc, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
+	{
+		L("Failed to connect");
+		return Descriptor();
+	}
+
     Descriptor res;
+    res.pimpl_.reset(new Pimpl(Role::Normal, Type::Socket));
+    res.pimpl_->desc = desc;
+
     return res;
 }
 
@@ -428,11 +512,11 @@ ReturnCode Select::add(Descriptor desc, AccessMode accessMode)
             break;
     }
     assert(invariants_());
-    LLL(STREAM(read_set_.size(), write_set_.size()));
+    L(STREAM(read_set_.size(), write_set_.size()));
     for (auto d: read_set_)
-        LLL(Descriptor(d));
+        L(Descriptor(d));
     for (auto d: write_set_)
-        LLL(Descriptor(d));
+        L(Descriptor(d));
     MSS_END();
 }
 ReturnCode Select::erase(Descriptor desc, AccessMode accessMode)
@@ -453,11 +537,11 @@ ReturnCode Select::erase(Descriptor desc, AccessMode accessMode)
             break;
     }
     assert(invariants_());
-    LLL(STREAM(read_set_.size(), write_set_.size()));
+    L(STREAM(read_set_.size(), write_set_.size()));
     for (auto d: read_set_)
-        LLL(Descriptor(d));
+        L(Descriptor(d));
     for (auto d: write_set_)
-        LLL(Descriptor(d));
+        L(Descriptor(d));
     MSS_END();
 }
 namespace 
@@ -512,8 +596,23 @@ namespace
                     continue;
                 if (FD_ISSET(desc, &rs))
                 {
-                    EventType et; translate_(et, p->role, AccessMode::Read);
-                    receiver.select_ready(Descriptor(p), et);
+					if (p->role == Role::Normal and p->type == Type::Socket)
+					{
+						if (peerClosedConnection_(desc))
+						{
+							receiver.select_ready(Descriptor(p), EventType::Close);
+						}
+						else
+						{
+							EventType et; translate_(et, p->role, AccessMode::Read);
+							receiver.select_ready(Descriptor(p), et);
+						}
+					}
+					else
+					{
+						EventType et; translate_(et, p->role, AccessMode::Read);
+						receiver.select_ready(Descriptor(p), et);
+					}
                 }
             }
             for (auto p: lWds)
@@ -613,7 +712,7 @@ ReturnCode Select::process_(milliseconds *timeout)
                 switch (auto rc = p->selectNonBlock(et, AccessMode::Read))
                 {
                     case ReturnCode::OK:
-                        L("Event detected: " << STREAM((int)et));
+                        L("Event detected: " << STREAM(to_hr(et)));
                         select_ready(Descriptor(p), et);
                         break;
                 }
@@ -628,7 +727,7 @@ ReturnCode Select::process_(milliseconds *timeout)
                 switch (auto rc = p->selectNonBlock(et, AccessMode::Write))
                 {
                     case ReturnCode::OK:
-                        L("Event detected: " << STREAM((int)et));
+                        L("Event detected: " << STREAM(to_hr(et)));
                         select_ready(Descriptor(p), et);
                         break;
                 }
