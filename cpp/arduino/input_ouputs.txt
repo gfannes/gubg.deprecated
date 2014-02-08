@@ -7,3 +7,4 @@ pin 9: Motor rigth backward
 pin 10: Motor rigth forward
 pin 5: Motor left forward
 pin 6: Motor left backward
+pin 42: gat ir

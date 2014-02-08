@@ -70,25 +70,25 @@ namespace garf
                 switch (s())
                 {
                     case State::Forward:
-                        if (left_() < threshold_())
+                        if (detectedLeft_())
                             s.changeTo(State::DetLeft);
-                        else if (right_() < threshold_())
+                        else if (detectedRight_())
                             s.changeTo(State::DetRight);
                         break;
                     case State::DetLeft:
                         if(timer_ > 1000000)
                             s.changeTo(State::Reverse);
-                        else if (left_() >= threshold_())
+                        else if (not detectedLeft_())
                             s.changeTo(State::Forward);
-                        else if (right_() < threshold_())
+                        else if (detectedRight_())
                             s.changeTo(State::Reverse);
                         break;
                     case State::DetRight:
                         if(timer_ > 1000000)
                             s.changeTo(State::Reverse);
-                        else if (right_() >= threshold_())
+                        else if (not detectedRight_())
                             s.changeTo(State::Forward);
-                        else if (left_() < threshold_())
+                        else if (detectedLeft_())
                             s.changeTo(State::Reverse);
                         break;
                     case State::Reverse:
@@ -102,7 +102,7 @@ namespace garf
                         break;
                     case State::TurnRight:
                     case State::TurnLeft:
-                        if (timer_ > 2000000)
+                        if (timer_ > 1000000)
                             s.changeTo(State::Forward);
                         break;
                 }
@@ -110,9 +110,8 @@ namespace garf
 
         private:
             Receiver &receiver_(){return static_cast<Receiver&>(*this);}
-            unsigned long left_(){return receiver_().oa_leftDistance();}
-            unsigned long right_(){return receiver_().oa_rightDistance();}
-            unsigned long threshold_(){return receiver_().oa_thresholdDistance();}
+            bool detectedLeft_(){return receiver_().oa_detectedLeft();}
+            bool detectedRight_(){return receiver_().oa_detectedRight();}
 
             unsigned long prev_;
             unsigned long timer_;

@@ -15,6 +15,9 @@ namespace garf
                     rest_(0),
                     sm_(*this){}
 
+                int position() const {return pos_ - Min;}
+                int range() const {return Max - Min;}
+
                 void process(int elapse)
                 {
                     rest_ += elapse;
