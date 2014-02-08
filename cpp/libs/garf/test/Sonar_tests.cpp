@@ -11,7 +11,6 @@ Sonar_left  sonar_left(mutex);
 Sonar_right sonar_right(mutex);
 
 typedef garf::Sweeper<30, 30, 130, 10> SweeperR;
-//typedef garf::Sweeper<9, 40, 250, 10> SweeperR;
 typedef garf::Sweeper<31, 50, 150, 10 > SweeperL;
 SweeperR sweeperr; 
 SweeperL sweeperl;

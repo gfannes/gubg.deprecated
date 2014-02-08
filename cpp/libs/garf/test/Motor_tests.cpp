@@ -3,7 +3,7 @@
 #include "garf/Blinker.hpp"
 #include "garf/Metronome.hpp"
 
-class Motor: public garf::Metronome_crtp<Motor, 100>
+class Motors: public garf::Metronome_crtp<Motors, 100>
 {
     public:
         void metronome_tick()
@@ -13,19 +13,20 @@ class Motor: public garf::Metronome_crtp<Motor, 100>
                 delta_ = -Delta;
             else if (speed_ < -255)
                 delta_ = Delta;
-            motor.setSpeed(speed_);
-            motor.process(0);
+            motor_l.setSpeed(speed_/2);
+            motor_r.setSpeed(speed_/2);
+            motor_l.process(0);
+            motor_r.process(0);
         }
 
     private:
-        //garf::Motor<5, 6> motor;
-        //garf::Motor<10, 11> motor;
-        garf::Motor<9, 10> motor;
+        garf::Motor<10, 9> motor_r;
+        garf::Motor<5, 6> motor_l;
         int speed_ = 0;
         static const int Delta = 4;
         int delta_ = Delta;
 };
-Motor g_motor;
+Motors g_motors;
 
 garf::Elapser g_elapser;
 
@@ -40,5 +41,5 @@ void loop()
 {
     g_elapser.process();
     g_blinker.process(g_elapser.elapse());
-    g_motor.process(g_elapser.elapse());
+    g_motors.process(g_elapser.elapse());
 }

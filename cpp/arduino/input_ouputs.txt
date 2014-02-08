@@ -3,3 +3,7 @@ Pin 31: Servo rechts
 pin 7: Sonar Pulse L
 pin 2: Sonar Pulse R
 pin 8: Sonar Echo
+pin 9: Motor rigth backward
+pin 10: Motor rigth forward
+pin 5: Motor left forward
+pin 6: Motor left backward
