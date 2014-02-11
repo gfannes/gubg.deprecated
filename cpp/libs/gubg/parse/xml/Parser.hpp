@@ -8,14 +8,14 @@
 #include <string>
 #include <map>
 
-#define GUBG_MODULE "xml::Parser"
+#define GUBG_MODULE_ "xml::Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
     namespace xml
     {
-		typedef std::vector<std::string> Path;
-		typedef std::map<std::string, std::string> Attributes;
+        typedef std::vector<std::string> Path;
+        typedef std::map<std::string, std::string> Attributes;
 
         template <typename Receiver>
             class Parser_crtp
@@ -31,7 +31,7 @@ namespace gubg
                         while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
                         path_.clear();
 
-						MSS(readVersion_());
+                        MSS(readVersion_());
                         while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
 
                         while (!str_.empty())
@@ -41,7 +41,6 @@ namespace gubg
                             if (!text.empty())
                             {
                                 L(STREAM(text));
-                                MSS(!path_.empty(), TextNotExpected);
                                 std::string t;
                                 MSS(decode(t, text.str()));
                                 receiver_().parser_text(t, path_);
@@ -162,7 +161,7 @@ namespace gubg
                             MSS(attr.popCharIf('"'));
                             MSS(attr.popUntil(v, '"'));
                             std::string kk, vv;
-							L(STREAM(k.str(), v.str()));
+                            L(STREAM(k.str(), v.str()));
                             MSS(decode(kk, k.str()));
                             MSS(decode(vv, v.str()));
                             //insert().second returns false if insertion failed (i.e., the attribute was already present)
@@ -173,7 +172,7 @@ namespace gubg
                         MSS_END();
                     }
 
-					std::string version_;
+                    std::string version_;
                     Strange str_;
                     Path path_;
             };

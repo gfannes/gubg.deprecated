@@ -12,7 +12,7 @@ namespace gubg
     namespace file
     {
         enum class AccessMode {Read, Write, ReadWrite};
-        enum class EventType {Read, Write, Open, Close};
+        enum class EventType {Read, Write, Open, CloseRead, CloseWrite};
         const char *to_hr(EventType);
 
         class Select;
@@ -41,8 +41,11 @@ namespace gubg
 
                 static Descriptor connect(const std::string &ip, unsigned short port);
 
+                //Returns silent PeerClosedConnection
                 ReturnCode read(std::string &buffer);
                 ReturnCode write(size_t &written, const std::string &buffer);
+
+                ReturnCode shutdown(AccessMode);
 
                 ReturnCode setBaudRate(int rate);
 

@@ -30,10 +30,11 @@ namespace gubg
             void popAll(std::string &res)
             {
                 assert(invariants_());
-				Strange s;
-				popAll(s);
-				res = s.str();
+                Strange s;
+                popAll(s);
+                res = s.str();
             }
+            //Does not pop ch
             bool popTo(Strange &res, const char ch)
             {
                 assert(invariants_());
@@ -50,6 +51,7 @@ namespace gubg
 
                 return false;
             }
+            //Pops ch too
             bool popUntil(Strange &res, const char ch)
             {
                 assert(invariants_());
@@ -68,11 +70,11 @@ namespace gubg
             }
             bool popUntil(std::string &res, const char ch)
             {
-				Strange s;
-				if (!popUntil(s, ch))
-					return false;
-				res = s.str();
-				return true;
+                Strange s;
+                if (!popUntil(s, ch))
+                    return false;
+                res = s.str();
+                return true;
             }
             bool popUntil(Strange &res, const std::string &str)
             {
@@ -98,11 +100,11 @@ namespace gubg
             }
             bool popUntil(std::string &res, const std::string &str)
             {
-				Strange s;
-				if (!popUntil(s, str))
-					return false;
-				res = s.str();
-				return true;
+                Strange s;
+                if (!popUntil(s, str))
+                    return false;
+                res = s.str();
+                return true;
             }
 #if 0
             template <typename Int>

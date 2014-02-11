@@ -36,7 +36,8 @@ namespace gubg { namespace file {
             L_CASE(Read);
             L_CASE(Write);
             L_CASE(Open);
-            L_CASE(Close);
+            L_CASE(CloseRead);
+            L_CASE(CloseWrite);
 #undef L_CASE
         }
         return "Unknown EventType";
@@ -74,27 +75,27 @@ namespace
 #endif
 
     enum class Role { Normal, Acceptor };
-	const char *to_hr(Role r)
-	{
-		switch (r)
-		{
-			case Role::Normal: return "Normal";
-			case Role::Acceptor: return "Acceptor";
-		}
-		return "Unknown role";
-	}
+    const char *to_hr(Role r)
+    {
+        switch (r)
+        {
+            case Role::Normal: return "Normal";
+            case Role::Acceptor: return "Acceptor";
+        }
+        return "Unknown role";
+    }
 
     enum class Type { Socket, File, Stream };
-	const char *to_hr(Type t)
-	{
-		switch (t)
-		{
-			case Type::Socket: return "Socket";
-			case Type::File: return "File";
-			case Type::Stream: return "Stream";
-		}
-		return "Unknown type";
-	}
+    const char *to_hr(Type t)
+    {
+        switch (t)
+        {
+            case Type::Socket: return "Socket";
+            case Type::File: return "File";
+            case Type::Stream: return "Stream";
+        }
+        return "Unknown type";
+    }
 
     void translate_(int &flags, AccessMode am)
     {
@@ -115,15 +116,6 @@ namespace
             case Role::Acceptor: et = EventType::Open; break;
         }
     }
-
-	bool peerClosedConnection_(int desc)
-	{
-		char c;
-		const auto ret = ::recv(desc, &c, 1, MSG_PEEK);
-		//cout << desc << " peerClosedConnection_ " << ret << " " << errno << endl;
-		//We do not want -1, it means peer has not correctly closed the connection
-		return ret == 0 || ret == -1;
-	}
 }
 
 struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
@@ -144,18 +136,18 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
     }
     void clear()
     {
-		S();
+        S();
         if (desc != InvalidDesc)
         {
 #ifdef GUBG_LINUX
             ::close(desc);
 #endif
 #ifdef GUBG_MINGW
-			if (type == Type::Socket)
-			{
-				L("Closing socket desc");
-				::closesocket(desc);
-			}
+            if (type == Type::Socket)
+            {
+                L("Closing socket desc");
+                ::closesocket(desc);
+            }
 #endif
             desc = InvalidDesc;
         }
@@ -188,11 +180,6 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
                         MSS_Q(exists(fn));
                         L("File " << fn << " exists and has no peer yet");
                         et = EventType::Open;
-                        break;
-                    case Role::Normal:
-                        //If a descriptor is present, we should do real select()
-                        MSS(desc == InvalidDesc);
-                        et = EventType::Close;
                         break;
                 }
                 break;
@@ -254,20 +241,22 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         MSS(role == Role::Normal);
         MSS(desc != InvalidDesc);
 
-#ifdef GUBG_LINUX
-        const auto s = ::read(desc, &buffer[0], buffer.size());
-#endif
-#ifdef GUBG_MINGW
-        //Mingw currently only supports reading from a socket
-        MSS(type == Type::Socket);
-        const auto s = ::recv(desc, &buffer[0], buffer.size(), 0);
-#endif
-        L("I read " << s << " bytes");
-        if (s == 0)
+        ssize_t s = 0;
+        switch (type)
         {
-            clear();
-            MSS_L(PeerClosedConnection);
+            case Type::Socket:
+                s = ::recv(desc, &buffer[0], buffer.size(), 0);
+                break;
+            default:
+#ifdef GUBG_LINUX
+                //Transparent reading from files is only supported in linux
+                s = ::read(desc, &buffer[0], buffer.size());
+#endif
+                break;
         }
+        L("I read " << s << " bytes");
+        MSS(s >= 0, FailedToRead);
+        MSS_Q(s > 0, PeerClosedConnection);
         MSS(s <= buffer.size());
         buffer.resize(s);
 
@@ -287,14 +276,52 @@ struct Descriptor::Pimpl: public enable_shared_from_this<Pimpl>
         const auto s = ::write(desc, &buffer[0], buffer.size());
 #endif
 #ifdef GUBG_MINGW
-		MSS(type == Type::Socket);
+        MSS(type == Type::Socket);
         const auto s = ::send(desc, &buffer[0], buffer.size(), 0);
 #endif
-		L(STREAM(desc, s));
-		MSS(s != -1, FailedToWrite);
+        L(STREAM(desc, s));
+        MSS(s != -1, FailedToWrite);
         MSS(s <= buffer.size());
         written = s;
         L("I wrote " << written << " bytes");
+
+        MSS_END();
+    }
+    ReturnCode shutdown(AccessMode am)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        MSS(role == Role::Normal);
+        MSS(desc != InvalidDesc);
+
+#ifdef GUBG_LINUX
+        switch (am)
+        {
+            case AccessMode::Read:
+                ::shutdown(desc, SHUT_RD);
+                break;
+            case AccessMode::Write:
+                ::shutdown(desc, SHUT_WR);
+                break;
+            case AccessMode::ReadWrite:
+                ::shutdown(desc, SHUT_RDWR);
+                break;
+        }
+#endif
+#ifdef GUBG_MINGW
+        switch (am)
+        {
+            case AccessMode::Read:
+                ::shutdown(desc, SD_RECEIVE);
+                break;
+            case AccessMode::Write:
+                ::shutdown(desc, SD_SEND);
+                break;
+            case AccessMode::ReadWrite:
+                ::shutdown(desc, SD_BOTH);
+                break;
+        }
+#endif
 
         MSS_END();
     }
@@ -325,7 +352,7 @@ Descriptor Descriptor::listen(unsigned short port, const string &ip)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-	hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_protocol = IPPROTO_TCP;
 
     ostringstream oss;
     oss << port;
@@ -380,7 +407,7 @@ Descriptor Descriptor::std_in()
 }
 Descriptor Descriptor::connect(const string &ip, unsigned short port)
 {
-	S();
+    S();
 
     struct addrinfo hints;
     struct addrinfo *servinfo = 0;
@@ -389,19 +416,19 @@ Descriptor Descriptor::connect(const string &ip, unsigned short port)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-	hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_protocol = IPPROTO_TCP;
 
-	{
-		ostringstream oss; oss << port;
-		const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), oss.str().c_str(), &hints, &servinfo);
-		//const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), 0, &hints, &servinfo);
-		if (rc != 0)
-		{
-			L("Failed to get address info " << rc << " " << gai_strerror(rc));
-			return Descriptor();
-		}
-		assert(servinfo != 0);
-	}
+    {
+        ostringstream oss; oss << port;
+        const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), oss.str().c_str(), &hints, &servinfo);
+        //const auto rc = ::getaddrinfo((ip.empty() ? 0 : ip.c_str()), 0, &hints, &servinfo);
+        if (rc != 0)
+        {
+            L("Failed to get address info " << rc << " " << gai_strerror(rc));
+            return Descriptor();
+        }
+        assert(servinfo != 0);
+    }
 
     const auto desc = ::socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
     if (desc == -1)
@@ -409,13 +436,13 @@ Descriptor Descriptor::connect(const string &ip, unsigned short port)
         L("Failed to get a socket");
         return Descriptor();
     }
-	L("Got descriptor " << desc);
+    L("Got descriptor " << desc);
 
-	if (::connect(desc, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-	{
-		L("Failed to connect");
-		return Descriptor();
-	}
+    if (::connect(desc, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
+    {
+        L("Failed to connect");
+        return Descriptor();
+    }
 
     Descriptor res;
     res.pimpl_.reset(new Pimpl(Role::Normal, Type::Socket));
@@ -456,6 +483,13 @@ ReturnCode Descriptor::write(size_t &written, const string &buffer)
     MSS_BEGIN(ReturnCode);
     MSS(pimpl_);
     MSS(pimpl_->write(written, buffer));
+    MSS_END();
+}
+ReturnCode Descriptor::shutdown(AccessMode am)
+{
+    MSS_BEGIN(ReturnCode);
+    MSS(pimpl_);
+    MSS(pimpl_->shutdown(am));
     MSS_END();
 }
 ReturnCode Descriptor::setBaudRate(int rate)
@@ -594,23 +628,8 @@ namespace
                     continue;
                 if (FD_ISSET(desc, &rs))
                 {
-					if (p->role == Role::Normal and p->type == Type::Socket)
-					{
-						if (peerClosedConnection_(desc))
-						{
-							receiver.select_ready(Descriptor(p), EventType::Close);
-						}
-						else
-						{
-							EventType et; translate_(et, p->role, AccessMode::Read);
-							receiver.select_ready(Descriptor(p), et);
-						}
-					}
-					else
-					{
-						EventType et; translate_(et, p->role, AccessMode::Read);
-						receiver.select_ready(Descriptor(p), et);
-					}
+                    EventType et; translate_(et, p->role, AccessMode::Read);
+                    receiver.select_ready(Descriptor(p), et);
                 }
             }
             for (auto p: lWds)
