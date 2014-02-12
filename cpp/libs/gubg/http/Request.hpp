@@ -2,7 +2,7 @@
 #define HEADER_gubg_http_Request_hpp_ALREADY_INCLUDED
 
 #include "gubg/http/Codes.hpp"
-#include <map>
+#include "gubg/http/Parameters.hpp"
 #include <string>
 
 namespace gubg { namespace http { 
@@ -12,9 +12,6 @@ namespace gubg { namespace http {
     class Request
     {
         public:
-            typedef std::string Key;
-            typedef std::string Value;
-
             static Request Get(const std::string &uri);
 
             bool valid() const {return verb_ != Verb::Unknown and !uri_.empty() and !version_.empty();}
@@ -32,11 +29,16 @@ namespace gubg { namespace http {
 
             Request &setParameter(const Key &key, const Value &value) {parameters_[key] = value; return *this;}
             Request &setContentLength() {return setParameter("Content-Length", std::to_string(body_.size()));}
+            bool hasParameter(const Key &key) const;
+            ReturnCode getParameter(std::string &value, const Key &key) const;
+            ReturnCode getParameter(long &value, const Key &key) const;
 
             const std::string &body() const {return body_;}
             Request &setBody(const std::string &b) {body_ = b; return *this;}
 
-            ReturnCode parse(const std::string &);
+            //Returns silent NotEnoughData
+            ReturnCode parseHeader(size_t &headerSize, const std::string &msg);
+            ReturnCode parse(const std::string &msg);
 
             void swap(Request &);
 
@@ -44,7 +46,6 @@ namespace gubg { namespace http {
             Verb verb_ = Verb::Unknown;
             std::string uri_;
             std::string version_ = "http/1.1";
-            typedef std::map<Key, Value> Parameters;
             Parameters parameters_;
             std::string body_;
     };

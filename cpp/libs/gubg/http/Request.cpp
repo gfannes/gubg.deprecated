@@ -1,5 +1,6 @@
 #include "gubg/http/Request.hpp"
 #include "gubg/Strange.hpp"
+#include "gubg/String.hpp"
 #include <sstream>
 using namespace std;
 
@@ -40,9 +41,10 @@ namespace  {
 
     const char sp = ' ';
     const std::string eol = "\r\n";
+    const std::string eol2 = "\r\n\r\n";
 } 
 
-#define GUBG_MODULE "HTTP"
+#define GUBG_MODULE_ "HTTP"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace http { 
     Request Request::Get(const string &uri)
@@ -63,50 +65,79 @@ namespace gubg { namespace http {
         oss << body_;
         return oss.str();
     }
-    ReturnCode Request::parse(const string &str)
+    ReturnCode Request::parseHeader(size_t &headerSize, const string &str)
     {
         MSS_BEGIN(ReturnCode);
+        L(gubg::toHex(str));
 
         Request request;
 
         Strange strange(str);
+        Strange header;
+        MSS_Q(strange.popUntil(header, eol2, true), NotEnoughData);
+        MSS(header.popBack() and header.popBack());
+
         {
             Strange verb;
-            MSS(strange.popUntil(verb, sp));
+            MSS(header.popUntil(verb, sp));
             request.setVerb(from_s_(verb.str()));
         }
         {
             Strange uri;
-            MSS(strange.popUntil(uri, sp));
+            MSS(header.popUntil(uri, sp));
             request.setUri(uri.str());
         }
         {
             Strange version;
-            MSS(strange.popUntil(version, eol));
+            MSS(header.popUntil(version, eol));
             request.setVersion(version.str());
         }
 
         //Read the headers
-        while (true)
+        while (!header.empty())
         {
-            Strange header;
-            MSS(strange.popUntil(header, eol));
+            S();L(header.str());
+            Strange headerLine;
+            MSS(header.popUntil(headerLine, eol));
             Strange key;
-            if (!header.popUntil(key, ':'))
-            {
-                //We are done reading headers
-                MSS(key.empty());
-                break;
-            }
+            MSS(headerLine.popUntil(key, ':'));
             //Remove leading and trailing whitespaces
-            while (header.popCharIf(sp)){}
-            while (header.popCharBack(sp)){}
-            request.setParameter(key.str(), header.str());
+            while (headerLine.popCharIf(sp)){}
+            while (headerLine.popCharBack(sp)){}
+            request.setParameter(key.str(), headerLine.str());
         }
 
-        //The rest belongs to the body
-        request.setBody(strange.str());
+        headerSize = str.size()-strange.size();
+        swap(request);
 
+        MSS_END();
+    }
+    ReturnCode Request::parse(const std::string &str)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        http::Request request;
+        size_t header_len;
+        const auto rc = request.parseHeader(header_len, str);
+        L(STREAM((int)rc, header_len));
+        switch (rc)
+        {
+            case ReturnCode::NotEnoughData: MSS_Q(rc); break;
+            default:                        MSS(rc);   break;
+        }
+
+        if (!request.hasParameter("Content-Length"))
+        {
+            L("We assume no body will me present");
+            swap(request);
+            MSS_RETURN_OK();
+        }
+
+        long content_len;
+        MSS(request.getParameter(content_len, "Content-Length"));
+        MSS_Q(str.size() >= header_len + content_len, NotEnoughData);
+
+        request.setBody(str.substr(header_len, content_len));
         swap(request);
 
         MSS_END();
@@ -119,6 +150,31 @@ namespace gubg { namespace http {
         L_SWAP(version_);
         L_SWAP(parameters_);
         L_SWAP(body_);
+    }
+    bool Request::hasParameter(const Key &key) const
+    {
+        auto it = parameters_.find(key);
+        return it != parameters_.end();
+    }
+    ReturnCode Request::getParameter(string &value, const Key &key) const
+    {
+        MSS_BEGIN(ReturnCode);
+        auto it = parameters_.find(key);
+        MSS(it != parameters_.end());
+        value = it->second;
+        MSS_END();
+    }
+    ReturnCode Request::getParameter(long &value, const Key &key) const
+    {
+        MSS_BEGIN(ReturnCode);
+        auto it = parameters_.find(key);
+        MSS(it != parameters_.end());
+        const auto &v = it->second;
+        MSS(!v.empty());
+        size_t pos = 0;
+        value = std::stol(it->second, &pos);
+        MSS(pos != 0);
+        MSS_END();
     }
 
 } } 

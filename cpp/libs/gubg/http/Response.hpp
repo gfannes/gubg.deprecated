@@ -2,6 +2,7 @@
 #define HEADER_gubg_http_Response_hpp_ALREADY_INCLUDED
 
 #include "gubg/http/Codes.hpp"
+#include "gubg/http/Parameters.hpp"
 #include <map>
 #include <string>
 
@@ -11,8 +12,6 @@ namespace gubg { namespace http {
     {
         public:
             typedef unsigned long StatusCode;
-            typedef std::string Key;
-            typedef std::string Value;
             static const StatusCode InvalidStatusCode = -1;
 
             bool valid() const {return status_ != InvalidStatusCode and !version_.empty();}
@@ -39,10 +38,9 @@ namespace gubg { namespace http {
             void swap(Response &);
 
         private:
-            StatusCode status_;
+            StatusCode status_ = 200;
             std::string reason_;
             std::string version_ = "http/1.1";
-            typedef std::map<Key, Value> Parameters;
             Parameters parameters_;
             std::string body_;
     };

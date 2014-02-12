@@ -8,6 +8,7 @@ namespace gubg { namespace http {
     enum class ReturnCode
     {
         MSS_DEFAULT_CODES,
+        ResponseWasSent, NotEnoughData,
     };
 
 } } 

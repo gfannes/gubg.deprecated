@@ -51,8 +51,8 @@ namespace gubg
 
                 return false;
             }
-            //Pops ch too
-            bool popUntil(Strange &res, const char ch)
+            //Pops ch too, set inclusive to true if you want ch to be included in res
+            bool popUntil(Strange &res, const char ch, bool inclusive = false)
             {
                 assert(invariants_());
                 if (empty())
@@ -61,29 +61,29 @@ namespace gubg
                     if (s_[i] == ch)
                     {
                         res.s_ = s_;
-                        res.l_ = i;
+                        res.l_ = i + (inclusive ? 1 : 0);
                         forward_(i+1);
                         return true;
                     }
 
                 return false;
             }
-            bool popUntil(std::string &res, const char ch)
+            bool popUntil(std::string &res, const char ch, bool inclusive = false)
             {
                 Strange s;
-                if (!popUntil(s, ch))
+                if (!popUntil(s, ch, inclusive))
                     return false;
                 res = s.str();
                 return true;
             }
-            bool popUntil(Strange &res, const std::string &str)
+            bool popUntil(Strange &res, const std::string &str, bool inclusive = false)
             {
                 assert(invariants_());
                 if (str.empty())
                     return true;
                 const auto ch = str.front();
                 const size_t s = str.size();
-                const auto l2check = l_-s;
+                const auto l2check = l_-s+1;
                 for (size_t i = 0; i < l2check; ++i)
                     if (s_[i] == ch)
                     {
@@ -91,17 +91,17 @@ namespace gubg
                         if (!std::memcmp(str.data(), s_+i, s))
                         {
                             res.s_ = s_;
-                            res.l_ = i;
+                            res.l_ = i + (inclusive ? s : 0);
                             forward_(i+s);
                             return true;
                         }
                     }
                 return false;
             }
-            bool popUntil(std::string &res, const std::string &str)
+            bool popUntil(std::string &res, const std::string &str, bool inclusive = false)
             {
                 Strange s;
-                if (!popUntil(s, str))
+                if (!popUntil(s, str, inclusive))
                     return false;
                 res = s.str();
                 return true;
@@ -178,6 +178,14 @@ namespace gubg
                 if (empty())
                     return false;
                 if (s_[l_-1] != ch)
+                    return false;
+                shrink_(1);
+                return true;
+            }
+            bool popBack()
+            {
+                assert(invariants_());
+                if (empty())
                     return false;
                 shrink_(1);
                 return true;
