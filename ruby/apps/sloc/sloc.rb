@@ -2,7 +2,7 @@ require("gubg/cube")
 require("gubg/options")
 require("gubg/utils")
 
-DEFAULT_EXTS = ["hpp", "cpp", "h", "rb", "d", "c"]
+DEFAULT_EXTS = ["hpp", "cpp", "hxx", "cxx", "h", "rb", "d", "c"]
 options = parseOptions(name: "Lines of source counter", author: "Geert Fannes") do |parser, options|
     options[:extensions] = []
     parser.on("-e", "--extension EXT", "Add extension (without dot)"){|ext|options[:extensions] << ext}

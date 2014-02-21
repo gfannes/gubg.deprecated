@@ -20,11 +20,11 @@ int main()
 {
     TEST_TAG(main);
 
-    auto stdin = Descriptor::stdin();
-    TEST_TRUE(stdin.valid());
+    auto std_in = Descriptor::std_in();
+    TEST_TRUE(std_in.valid());
 
     MySelect s;
-    s.add(stdin, AccessMode::Read);
+    s.add(std_in, AccessMode::Read);
     s.process(std::chrono::seconds(10));
     return 0;
 }

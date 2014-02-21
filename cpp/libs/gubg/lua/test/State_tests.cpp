@@ -9,7 +9,7 @@ extern "C"
 {
 	int myf(lua_State *s)
 	{
-		SS();LL(lua_gettop(s));
+		SS(lua_gettop(s));
 		lua_pushnumber(s, 123);
 		return 1;
 	}

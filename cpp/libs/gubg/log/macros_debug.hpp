@@ -22,9 +22,9 @@
 
 #define S()   L_S__(__FUNCTION__, "", true)
 #define S_()  L_S__(__FUNCTION__, "", false)
-#define SS()  L_S__(__FUNCTION__, "", true)
-#define SS_() L_S__(__FUNCTION__, "", false)
+#define SS(...)  L_S__(__FUNCTION__, STREAM(__VA_ARGS__), true)
+#define SS_(...) L_S__(__FUNCTION__, STREAM(__VA_ARGS__), false)
 
-#define L(msg)  do {                          L_L__("  ", msg); } while(false)
-#define L_(msg) do {                          L_L__("  ", msg); } while(false)
-#define LL(msg) do { L_S__(__FUNCTION__, ""); L_L__("**", msg); } while(false)
+#define L(msg)  do {                                L_L__("  ", msg); } while(false)
+#define L_(msg) do {                                L_L__("  ", msg); } while(false)
+#define LL(msg) do { L_S__(__FUNCTION__, "", true); L_L__("**", msg); } while(false)

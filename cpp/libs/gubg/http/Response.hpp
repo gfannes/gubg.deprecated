@@ -28,10 +28,15 @@ namespace gubg { namespace http {
             Response &setVersion(const std::string &v) {version_ = v; return *this;}
 
             Response &setParameter(const Key &key, const Value &value) {parameters_[key] = value; return *this;}
-            Response &setContentLength() {return setParameter("Content-Length", std::to_string(body_.size()));}
+            bool hasParameter(const Key &key) const;
+            ReturnCode getParameter(std::string &value, const Key &key) const;
+            ReturnCode getParameter(long &value, const Key &key) const;
 
             const std::string &body() const {return body_;}
-            Response &setBody(const std::string &b) {body_ = b; return *this;}
+			//Sets Content-Length parameter accordingly
+            Response &setBody(const std::string &body) {body_ = body; return setParameter("Content-Length", std::to_string(body_.size()));}
+			//Sets Content-Length and Content-Type parameters accordingly
+            Response &setBody(const std::string &body, const std::string &type) {return setBody(body).setParameter("Content-Type", type);}
 
             ReturnCode parse(const std::string &);
 
@@ -39,7 +44,7 @@ namespace gubg { namespace http {
 
         private:
             StatusCode status_ = 200;
-            std::string reason_;
+            std::string reason_ = "OK";
             std::string version_ = "http/1.1";
             Parameters parameters_;
             std::string body_;

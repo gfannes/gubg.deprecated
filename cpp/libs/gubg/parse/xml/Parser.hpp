@@ -31,8 +31,17 @@ namespace gubg
                         while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
                         path_.clear();
 
-                        MSS(readVersion_());
-                        while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
+						switch (const auto rc = readVersion_())
+						{
+							case ReturnCode::OK:
+								while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
+								break;
+							case ReturnCode::NoVersionFound:
+								break;
+							default:
+								MSS(rc);
+								break;
+						}
 
                         while (!str_.empty())
                         {
@@ -102,7 +111,7 @@ namespace gubg
                     ReturnCode readVersion_()
                     {
                         MSS_BEGIN(ReturnCode);
-                        MSS_Q(str_.popString("<?xml"));
+                        MSS_Q(str_.popString("<?xml"), NoVersionFound);
                         while (str_.popCharIf(' ')){}
                         MSS(str_.popUntil(version_, "?>"));
                         while (!version_.empty() and version_[version_.size()-1] == ' '){version_.resize(version_.size()-1);}

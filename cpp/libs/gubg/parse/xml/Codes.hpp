@@ -11,7 +11,7 @@ namespace gubg
         {
             MSS_DEFAULT_CODES,
             XMLEmpty, CloseTagMismatch, DuplicateAttributeName, NonPrintable, UnknownEscape,
-            UnexpectedRawChar,
+            UnexpectedRawChar, NoVersionFound,
         };
     }
 }

@@ -28,13 +28,15 @@ namespace gubg { namespace http {
             Request &setVersion(const std::string &v) {version_ = v; return *this;}
 
             Request &setParameter(const Key &key, const Value &value) {parameters_[key] = value; return *this;}
-            Request &setContentLength() {return setParameter("Content-Length", std::to_string(body_.size()));}
             bool hasParameter(const Key &key) const;
             ReturnCode getParameter(std::string &value, const Key &key) const;
             ReturnCode getParameter(long &value, const Key &key) const;
 
             const std::string &body() const {return body_;}
-            Request &setBody(const std::string &b) {body_ = b; return *this;}
+			//Sets Content-Length parameter accordingly
+            Request &setBody(const std::string &body) {body_ = body; return setParameter("Content-Length", std::to_string(body_.size()));}
+			//Sets Content-Length and Content-Type parameters accordingly
+            Request &setBody(const std::string &body, const std::string &type) {return setBody(body).setParameter("Content-Type", type);}
 
             //Returns silent NotEnoughData
             ReturnCode parseHeader(size_t &headerSize, const std::string &msg);

@@ -71,7 +71,7 @@ Compiler::Command Compiler::command(const ObjectFile &obj, const SourceFile &src
 			const auto ext = src.extension();
 			if (false) {}
 			else if (ext == "c")   { compiler = "gcc "; }
-			else if (ext == "cpp") { compiler = "g++ -std=c++11 -pthread "; }
+			else if (ext == "cpp" or ext == "cxx") { compiler = "g++ -std=c++11 -pthread "; }
 			switch (exeType_)
 			{
 				case ExeType::Debug:   compiler += "-g "; break;

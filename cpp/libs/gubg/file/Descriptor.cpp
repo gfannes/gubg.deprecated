@@ -665,7 +665,7 @@ namespace
     template <typename Set>
         void computeMinMaxDesc_(int &minDesc, int &maxDesc, const Set &r, const Set &w)
         {
-            SS();
+            S();
             minDesc = maxDesc = Descriptor::InvalidDesc;
             gubg::OnlyOnce setMinDesc;
             {

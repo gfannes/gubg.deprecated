@@ -97,7 +97,7 @@ namespace gubg { namespace planning {
 				gubg::OnlyOnce setStart;
 				while (sweat > eps_())
 				{
-					SS();LL(sweat);
+					SS(sweat);
 					Worker worker;
 					auto dayPlanning = getFirstAvailableDayPlanning_(worker, workers);
 					MSS(dayPlanning != 0, NotEnoughSweatAvailable);
@@ -121,7 +121,7 @@ namespace gubg { namespace planning {
 				{
 					for (auto &dp: dpsw.second)
 					{
-						SS();LL(dp.first);
+						SS(dp.first);
 						for (auto &tp: dp.second.taskParts)
 						{
 							L(STREAM(*tp.task));

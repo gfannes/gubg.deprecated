@@ -22,6 +22,8 @@ namespace
 {
     struct Parser: gubg::xml::Parser_crtp<Parser>
     {
+		typedef gubg::xml::Path Path;
+		typedef gubg::xml::Attributes Attributes;
         void parser_text(const std::string &text, const Path &path)
         {
             SS(text);
