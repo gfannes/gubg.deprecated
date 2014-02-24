@@ -19,7 +19,7 @@ namespace gubg { namespace math { namespace distribution {
                 T density_norm(T x) const;
                 void mean(T &) const;
                 void variance(T &) const;
-                void standardDeviation(T &) const;
+                void stddev(T &) const;
                 void precision(T &) const;
 
             private:
@@ -44,7 +44,7 @@ namespace gubg { namespace math { namespace distribution {
     template <typename T>
         void Normal<T>::variance(T &v) const { v = sd_*sd_; }
     template <typename T>
-        void Normal<T>::standardDeviation(T &sd) const { sd = sd_; }
+        void Normal<T>::stddev(T &sd) const { sd = sd_; }
     template <typename T>
         void Normal<T>::precision(T &p) const { p = 1.0/(sd_*sd_); }
     //Setters

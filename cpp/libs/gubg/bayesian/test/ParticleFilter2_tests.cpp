@@ -1,6 +1,6 @@
 #include "gubg/bayesian/ParticleFilter.hpp"
-#include "gubg/distribution/Gaussian.hpp"
-#include "gubg/distribution/Estimation.hpp"
+#include "gubg/math/random/Normal.hpp"
+#include "gubg/math/distribution/Estimation.hpp"
 #include "gubg/Plot.hpp"
 #include "gubg/Macro.hpp"
 #include "gubg/math/Norm.hpp"
@@ -10,6 +10,7 @@
 #include <fstream>
 #include <array>
 using namespace std;
+using gubg::math::random::drawNormal;
 
 typedef double Control;
 //[0]: location
@@ -47,8 +48,8 @@ class System
             ++time_;
             control_ = control;
             updateState_(state_, 0.001);
-            observation_[0] = gubg::distribution::drawGaussian(state_[0][0], obs_s_);
-            observation_[1] = gubg::distribution::drawGaussian(state_[0][1], obs_s_);
+            observation_[0] = drawNormal(state_[0][0], obs_s_);
+            observation_[1] = drawNormal(state_[0][1], obs_s_);
 
             timeAry.push_back(time_);
             controlAry.push_back(control_);
@@ -57,14 +58,14 @@ class System
         }
         void updateState(State &state, Control) const
         {
-            state[1][0] = gubg::distribution::drawGaussian(0.0, 0.05);
-            state[1][1] = gubg::distribution::drawGaussian(0.0, 0.05);
+            state[1][0] = drawNormal(0.0, 0.05);
+            state[1][1] = drawNormal(0.0, 0.05);
             updateState_(state, 0.1);
         }
         void updateState_(State &state, double f) const
         {
-            state[0][0] += gubg::distribution::drawGaussian(0.01*state[1][0], f*move_s_);
-            state[0][1] += gubg::distribution::drawGaussian(0.01*state[1][1], f*move_s_);
+            state[0][0] += drawNormal(0.01*state[1][0], f*move_s_);
+            state[0][1] += drawNormal(0.01*state[1][1], f*move_s_);
         }
         double observation_prob(Observation obs, State state) const
         {

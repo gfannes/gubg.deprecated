@@ -1,72 +1,74 @@
 #ifndef HEADER_gubg_math_stat_Gaussian_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_math_stat_Gaussian_hpp_ALREADY_INCLUDED
 
+//Needs rework or sholud be merged in distribution/Normal.hpp
+
 #include "gubg/math/stat/Distribution.hpp"
-#include "gubg/distribution/Gaussian.hpp"
+#include "gubg/math/random/Normal.hpp"
 #include <array>
 #include <vector>
 #include <initializer_list>
 #include <cmath>
 using namespace std;
 
-#define GUBG_MODULE "Gaussian"
+#define GUBG_MODULE "stat::Gaussian"
 #include "gubg/log/begin.hpp"
-namespace gubg
-{
+namespace gubg { namespace math { namespace stat { 
+
     template <typename T>
         class GaussianUV: public Distribution_crtp<GaussianUV<T>, T>
-        {
-            public:
-                GaussianUV &setMean(T m){mean_ = m; return *this;}
-                GaussianUV &setSigma(T s){sigma_ = s; return *this;}
+    {
+        public:
+            GaussianUV &setMean(T m){mean_ = m; return *this;}
+            GaussianUV &setSigma(T s){sigma_ = s; return *this;}
 
-            private:
-                friend class Distribution_crtp<GaussianUV<T>, T>;
-                bool distribution_draw(T &t)
-                {
-                    t = distribution::drawGaussian(mean_, sigma_);
-                    return true;
-                }
+        private:
+            friend class Distribution_crtp<GaussianUV<T>, T>;
+            bool distribution_draw(T &t)
+            {
+                t = random::drawNormal(mean_, sigma_);
+                return true;
+            }
 
-                T mean_ = 0;
-                T sigma_ = 1;
-        };
+            T mean_ = 0;
+            T sigma_ = 1;
+    };
 
     template <typename T, size_t Dim>
         class GaussianMV: public Distribution_crtp<GaussianMV<T, Dim>, std::array<T, Dim>>
-        {
-            public:
-                typedef std::array<T, Dim> Mean;
-                typedef std::array<T, Dim> Sigma;
-                typedef std::array<T, Dim> value_type;
+    {
+        public:
+            typedef std::array<T, Dim> Mean;
+            typedef std::array<T, Dim> Sigma;
+            typedef std::array<T, Dim> value_type;
 
-                GaussianMV()
-                {
-                    mean_.fill(0.0);
-                    sigma_.fill(1.0);
-                }
+            GaussianMV()
+            {
+                mean_.fill(0.0);
+                sigma_.fill(1.0);
+            }
 
-                template <typename M>
-                    GaussianMV &setMean(const M &m){mean_ = m; return *this;}
-                template <typename TT>
-                    GaussianMV &setMean(std::initializer_list<TT> m){std::copy(m.begin(), m.end(), mean_.begin()); return *this;}
-                template <typename S>
-                    GaussianMV &setSigma(const S &s){sigma_ = s; return *this;}
-                template <typename TT>
-                    GaussianMV &setSigma(std::initializer_list<TT> s){std::copy(s.begin(), s.end(), sigma_.begin()); return *this;}
+            template <typename M>
+                GaussianMV &setMean(const M &m){mean_ = m; return *this;}
+            template <typename TT>
+                GaussianMV &setMean(std::initializer_list<TT> m){std::copy(m.begin(), m.end(), mean_.begin()); return *this;}
+            template <typename S>
+                GaussianMV &setSigma(const S &s){sigma_ = s; return *this;}
+            template <typename TT>
+                GaussianMV &setSigma(std::initializer_list<TT> s){std::copy(s.begin(), s.end(), sigma_.begin()); return *this;}
 
-            private:
-                friend class Distribution_crtp<GaussianMV<T, Dim>, std::array<T, Dim>>;
-                bool distribution_draw(value_type &t)
-                {
-                    for (size_t i = 0; i < Dim; ++i)
-                        t[i] = distribution::drawGaussian(mean_[i], sigma_[i]);
-                    return true;
-                }
+        private:
+            friend class Distribution_crtp<GaussianMV<T, Dim>, std::array<T, Dim>>;
+            bool distribution_draw(value_type &t)
+            {
+                for (size_t i = 0; i < Dim; ++i)
+                    t[i] = random::drawNormal(mean_[i], sigma_[i]);
+                return true;
+            }
 
-                Mean mean_;
-                Sigma sigma_;
-        };
+            Mean mean_;
+            Sigma sigma_;
+    };
 
 #if 0
     template <typename DomainT = vector<double> >
@@ -226,7 +228,8 @@ namespace gubg
                 GaussianD<DomainType> mGaussian;
         };
 #endif
-}
+
+} } } 
 #include "gubg/log/end.hpp"
 
 #endif

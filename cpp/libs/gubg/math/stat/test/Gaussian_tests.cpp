@@ -6,8 +6,8 @@
 #include "gubg/log/begin.hpp"
 namespace 
 {
-    typedef gubg::GaussianUV<double> GaussianUV;
-    typedef gubg::GaussianMV<double, 3> GaussianMV;
+    typedef gubg::math::stat::GaussianUV<double> GaussianUV;
+    typedef gubg::math::stat::GaussianMV<double, 3> GaussianMV;
     template <typename T, size_t D>
         std::string to_s(const std::array<T, D> &vs)
         {

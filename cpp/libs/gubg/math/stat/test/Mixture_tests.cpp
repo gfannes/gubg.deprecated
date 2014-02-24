@@ -5,10 +5,11 @@
 
 namespace 
 {
-    typedef gubg::GaussianUV<double> GaussianUV;
-    typedef gubg::Mixture<GaussianUV> MixtureUV;
-    typedef gubg::GaussianMV<double, 2> GaussianMV;
-    typedef gubg::Mixture<GaussianMV> MixtureMV;
+    using namespace gubg::math::stat;
+    typedef GaussianUV<double> GaussianUV;
+    typedef Mixture<GaussianUV> MixtureUV;
+    typedef GaussianMV<double, 2> GaussianMV;
+    typedef Mixture<GaussianMV> MixtureMV;
 }
 
 #define GUBG_MODULE "test"

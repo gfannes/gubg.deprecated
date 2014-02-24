@@ -3,16 +3,14 @@
 
 #include "gubg/mss.hpp"
 
-namespace gubg
-{
-    namespace math
+namespace gubg { namespace math {
+
+    enum class ReturnCode
     {
-        enum class ReturnCode
-        {
-            MSS_DEFAULT_CODES,
-            OnlyUnsignedDivisionForNow, DivisionByZero,
-        };
-    }
-}
+        MSS_DEFAULT_CODES,
+        OnlyUnsignedDivisionForNow, DivisionByZero, SizeMismatch, StdDevTooSmall,
+    };
+
+} }
 
 #endif

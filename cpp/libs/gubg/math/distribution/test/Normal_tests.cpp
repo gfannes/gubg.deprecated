@@ -11,7 +11,7 @@ int main()
     n.mean(mean);
     L(STREAM(mean));
     double stddev;
-    n.standardDeviation(stddev);
+    n.stddev(stddev);
     L(STREAM(stddev));
     return 0;
 }

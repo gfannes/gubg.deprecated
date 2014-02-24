@@ -1,6 +1,6 @@
 #include "gubg/bayesian/ParticleFilter.hpp"
-#include "gubg/distribution/Gaussian.hpp"
-#include "gubg/distribution/Estimation.hpp"
+#include "gubg/math/random/Normal.hpp"
+#include "gubg/math/distribution/Estimation.hpp"
 #include "gubg/Plot.hpp"
 #include "gubg/Macro.hpp"
 #include <thread>
@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
+using gubg::math::random::drawNormal;
 
 typedef double Control;
 typedef double State;
@@ -43,7 +44,7 @@ class System
             ++time_;
             control_ = control;
             updateState(state_, control_);
-            observation_ = gubg::distribution::drawGaussian(0.0, b_*exp(0.5*state_));
+            observation_ = drawNormal(0.0, b_*exp(0.5*state_));
 
             timeAry.push_back(time_);
             controlAry.push_back(control_);
@@ -52,7 +53,7 @@ class System
         }
         void updateState(State &state, Control control) const
         {
-            state = a_*state + gubg::distribution::drawGaussian(control, 1.0);
+            state = a_*state + drawNormal(control, 1.0);
         }
         double observation_prob(Observation obs, State state) const
         {
@@ -77,7 +78,7 @@ class System
     template <char D, typename Particles>
 void streamParticles(ostream &os, const Particles &particles)
 {
-    double mean; gubg::distribution::computeMean(mean, particles);
+    double mean; gubg::math::distribution::computeMean(mean, particles);
     os << mean << D;
     for (auto p: particles)
         os << p << D;
