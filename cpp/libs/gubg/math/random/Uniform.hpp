@@ -5,20 +5,20 @@
 
 namespace gubg { namespace math { namespace random { 
 
-    inline double drawUniform()
+    inline double generateUniform()
     {
         std::uniform_real_distribution<double> rng(0.0, 1.0);
         return rng(defaultEngine);
     }
     inline bool withProbability(double p)
     {
-        return drawUniform() <= p;
+        return generateUniform() <= p;
     }
-    inline double drawUniform(double min, double max)
+    inline double generateUniform(double min, double max)
     {
-        return min + drawUniform()*(max-min);
+        return min + generateUniform()*(max-min);
     }
-    inline int drawUniform_int(int min, int max)
+    inline int generateUniform_int(int min, int max)
     {
         std::uniform_int_distribution<int> rng(min, max);
         return rng(defaultEngine);

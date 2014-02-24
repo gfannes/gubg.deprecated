@@ -30,11 +30,11 @@ namespace gubg
             }
         double logDensity(double &value){return log(density(value));}
 
-        bool draw(double &value)
+        bool generate(double &value)
             {
                 int ix;
-                Random::drawDiscrete(ix, mNormalizedWeights);
-                value = Random::drawGaussian(mData[ix], mWidth);
+                Random::generateDiscrete(ix, mNormalizedWeights);
+                value = Random::generateGaussian(mData[ix], mWidth);
                 return true;
             }
 

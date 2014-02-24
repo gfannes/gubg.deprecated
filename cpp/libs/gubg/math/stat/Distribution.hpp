@@ -11,16 +11,16 @@ namespace gubg
 
                 //double density(DomainT &value){return exp(logDensity(value));}
                 //double logDensity(DomainT &value){return 0.0;}
-                bool draw(value_type &value)
+                bool generate(value_type &value)
                 {
-                    return receiver_().distribution_draw(value);
+                    return receiver_().distribution_generate(value);
                 }
                 template <typename Values>
-                bool draw(Values &values)
+                bool generate(Values &values)
                 {
                     for (auto &v: values)
                     {
-                        if (!draw(v))
+                        if (!generate(v))
                             return false;
                     }
                     return true;
@@ -42,9 +42,9 @@ namespace gubg
             ConditionalDistribution(){}
             double density(DomainT &value, const DomainC &condition){return exp(logDensity(value,condition));}
             double logDensity(DomainT &value, const DomainC &condition){return 0.0;}
-            bool draw(DomainT &value, const DomainC &condition)
+            bool generate(DomainT &value, const DomainC &condition)
             {
-                cerr << "No draw functionality is implemented yet for this conditional distribution." << endl;
+                cerr << "No generate functionality is implemented yet for this conditional distribution." << endl;
                 return false;
             }
     };

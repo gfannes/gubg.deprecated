@@ -26,7 +26,7 @@ int main()
         gubg::Plot p;
         for (int i = 0; i < 10; ++i)
         {
-            m.draw(vs);
+            m.generate(vs);
             p.histogram(vs, 200);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -41,7 +41,7 @@ int main()
         gubg::Plot p;
         for (int i = 0; i < 100; ++i)
         {
-            m.draw(vs);
+            m.generate(vs);
             p.scatter(vs, 0, 1);
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }

@@ -2,7 +2,6 @@
 #define HEADER_gubg_math_stat_Table_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/stat/Distribution.hpp"
-#include "gubg/distribution/Uniform.hpp"
 
 #define GUBG_MODULE "Table"
 #include "gubg/log/begin.hpp"
@@ -18,7 +17,7 @@ namespace gubg
 
         private:
             friend class Distribution_crtp<Table, T>;
-            bool distribution_draw(size_t &ix)
+            bool distribution_generate(size_t &ix)
             {
                 return table_.generate(ix);
             }

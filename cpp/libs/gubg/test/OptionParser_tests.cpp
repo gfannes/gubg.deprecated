@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 
     cout << parser.help();
 
-    OptionParser::Args args;
-    OptionParser::createArgs(args, argc, argv);
+    auto args = OptionParser::createArgs(argc, argv);
+    
     cout << "Before parsing the args: " << args << endl;
     auto res = parser.parse(args);
     cout << "Parsing was " << (MSS_IS_OK(res) ? "OK" : "not OK") << endl;

@@ -11,7 +11,7 @@
 namespace gubg { namespace math { namespace random { 
 
     template <typename T>
-        T drawNormal(T mean, T sigma)
+        T generateNormal(T mean, T sigma)
         {
             return std::normal_distribution<double>(mean, sigma)(defaultEngine);
         }
@@ -25,7 +25,7 @@ namespace gubg { namespace math { namespace random {
         void addNormalNoise(Ctr &ctr, double stddev)
         {
             for (auto &v: ctr)
-                v += drawNormal(0.0, stddev);
+                v += generateNormal(0.0, stddev);
         }
 
 } } } 

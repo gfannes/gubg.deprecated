@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
-using gubg::math::random::drawNormal;
+using gubg::math::random::generateNormal;
 
 typedef double Control;
 typedef double State;
@@ -44,7 +44,7 @@ class System
             ++time_;
             control_ = control;
             updateState(state_, control_);
-            observation_ = drawNormal(0.0, b_*exp(0.5*state_));
+            observation_ = generateNormal(0.0, b_*exp(0.5*state_));
 
             timeAry.push_back(time_);
             controlAry.push_back(control_);
@@ -53,7 +53,7 @@ class System
         }
         void updateState(State &state, Control control) const
         {
-            state = a_*state + drawNormal(control, 1.0);
+            state = a_*state + generateNormal(control, 1.0);
         }
         double observation_prob(Observation obs, State state) const
         {

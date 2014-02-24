@@ -32,32 +32,32 @@ namespace gubg
                 mInitialized = true;
             }
 
-        static double drawUniform(){return double(rand())/RAND_MAX;}
-        static double drawUniform(double low, double high){return low+(high-low)*double(rand())/RAND_MAX;}
+        static double generateUniform(){return double(rand())/RAND_MAX;}
+        static double generateUniform(double low, double high){return low+(high-low)*double(rand())/RAND_MAX;}
         // high is not inclusive, low is
-        static long drawUniformDiscrete(long low, long high)
+        static long generateUniformDiscrete(long low, long high)
             {
                 return low+rand()%(high-low);
             }
         template <typename R, typename T>
-        static bool drawDiscrete(R &ix, const vector<T> &probs)
+        static bool generateDiscrete(R &ix, const vector<T> &probs)
             {
                 T cumulProb = 0.0;
-                T x = drawUniform();
+                T x = generateUniform();
                 for (ix=0; x<probs.size(); ++ix)
                 {
                     cumulProb += probs[ix];
                     if (cumulProb > 1.0000000001)
-                        cerr << "The sum of the probs is more than 1.0 in drawDiscrete: " << cumulProb << "" << endl;
+                        cerr << "The sum of the probs is more than 1.0 in generateDiscrete: " << cumulProb << "" << endl;
                     if (x <= cumulProb)
                         return true;
                 }
-                cerr << "The sum of the probs is less than 1.0 in drawDiscrete: " << x << " < " << cumulProb << "" << endl;
+                cerr << "The sum of the probs is less than 1.0 in generateDiscrete: " << x << " < " << cumulProb << "" << endl;
                 return false;
             }
 
         //according to: Stochastic simulation, B. Ripley, section
-        static double drawGaussian()
+        static double generateGaussian()
             {
                 double dX1,dX2,dV,dY,dZ;
                 const double dsqrt2dive = 0.85776388496071;            //sqrt(2/exp(1))
@@ -66,8 +66,8 @@ namespace gubg
         
                 do
                 {
-                    dX1 = drawUniform();
-                    dX2 = drawUniform();
+                    dX1 = generateUniform();
+                    dX2 = generateUniform();
                     dV = dsqrt2dive*(dX2+dX2-1);
                     if (dX1 > 0)
                     {
@@ -85,11 +85,11 @@ namespace gubg
                 } while (!bAccepted);
                 return dZ;        
             }
-        static double drawGaussian(double mean,double sigma)
+        static double generateGaussian(double mean,double sigma)
             {
                 if (sigma == 0.0)
                     return mean;
-                return sigma*drawGaussian()+mean;
+                return sigma*generateGaussian()+mean;
             }
     private:
         static bool mInitialized;

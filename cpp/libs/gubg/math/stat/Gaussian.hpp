@@ -24,9 +24,9 @@ namespace gubg { namespace math { namespace stat {
 
         private:
             friend class Distribution_crtp<GaussianUV<T>, T>;
-            bool distribution_draw(T &t)
+            bool distribution_generate(T &t)
             {
-                t = random::drawNormal(mean_, sigma_);
+                t = random::generateNormal(mean_, sigma_);
                 return true;
             }
 
@@ -59,10 +59,10 @@ namespace gubg { namespace math { namespace stat {
 
         private:
             friend class Distribution_crtp<GaussianMV<T, Dim>, std::array<T, Dim>>;
-            bool distribution_draw(value_type &t)
+            bool distribution_generate(value_type &t)
             {
                 for (size_t i = 0; i < Dim; ++i)
-                    t[i] = random::drawNormal(mean_[i], sigma_[i]);
+                    t[i] = random::generateNormal(mean_[i], sigma_[i]);
                 return true;
             }
 
@@ -89,9 +89,9 @@ namespace gubg { namespace math { namespace stat {
                 return (mMean-value)/mSigma2;
             }
             void setMean(const DomainT &m){mMean = m;};
-            bool draw(DomainT &rnd)
+            bool generate(DomainT &rnd)
             {
-                rnd = Random::drawGaussian(mMean, mSigma);
+                rnd = Random::generateGaussian(mMean, mSigma);
                 return true;
             }
         private:
@@ -158,17 +158,17 @@ namespace gubg { namespace math { namespace stat {
                 }
                 void setMean(const value_type &m){mMeans = m;};
                 void setMean(const T &m){mMean = m;};
-                bool draw(value_type &rnd)
+                bool generate(value_type &rnd)
                 {
                     if (mSingleValue)
                     {
                         for (int i=0;i<rnd.size();++i)
-                            rnd[i] = Random::drawGaussian(mMean, mSigma);
+                            rnd[i] = Random::generateGaussian(mMean, mSigma);
                     } else
                     {
                         rnd.resize(mMeans.size());
                         for (int i=0;i<mMeans.size();++i)
-                            rnd[i] = Random::drawGaussian(mMeans[i], mSigmas[i]);
+                            rnd[i] = Random::generateGaussian(mMeans[i], mSigmas[i]);
                     }
                     return true;
                 }
@@ -194,10 +194,10 @@ namespace gubg { namespace math { namespace stat {
                 mGaussian.setMean(mean);
                 return mGaussian.logDensity(value);
             }
-            bool draw(DomainT &value, const DomainT &mean)
+            bool generate(DomainT &value, const DomainT &mean)
             {
                 mGaussian.setMean(mean);
-                return mGaussian.draw(value);
+                return mGaussian.generate(value);
             }
         private:
             GaussianD<DomainT> mGaussian;
@@ -219,10 +219,10 @@ namespace gubg { namespace math { namespace stat {
                     mGaussian.setMean(mean);
                     return mGaussian.logDensity(value);
                 }
-                bool draw(DomainType &value, const DomainType &mean)
+                bool generate(DomainType &value, const DomainType &mean)
                 {
                     mGaussian.setMean(mean);
-                    return mGaussian.draw(value);
+                    return mGaussian.generate(value);
                 }
             private:
                 GaussianD<DomainType> mGaussian;

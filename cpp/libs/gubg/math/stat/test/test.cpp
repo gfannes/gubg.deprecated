@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   cout << gaussian.logDensity(x) << endl;
 
   double d;
-  gaussian.draw(d);
+  gaussian.generate(d);
   cout << "" << d << "" << endl;
 
   KernelD<double> kernel;

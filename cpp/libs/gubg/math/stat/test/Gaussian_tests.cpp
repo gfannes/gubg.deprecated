@@ -26,13 +26,13 @@ int main()
         GaussianUV g;
         GaussianUV::value_type v;
         for (int i = 0; i < Nr; ++i)
-            g.draw(v);
+            g.generate(v);
         L(v);
         std::vector<double> vs(Nr);
         gubg::Plot p;
         for (int i = 0; i < 100; ++i)
         {
-            g.draw(vs);
+            g.generate(vs);
             p.histogram(vs, 200);
             //std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -42,13 +42,13 @@ int main()
         g.setSigma({1.0, 0.1, 10.0});
         GaussianMV::value_type v;
         for (int i = 0; i < Nr; ++i)
-            g.draw(v);
+            g.generate(v);
         L(A2S(v));
         std::vector<GaussianMV::value_type> vs(Nr);
         gubg::Plot p;
         for (int i = 0; i < 100; ++i)
         {
-            g.draw(vs);
+            g.generate(vs);
             p.scatter(vs, 0, 2);
             //std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }

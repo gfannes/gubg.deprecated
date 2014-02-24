@@ -26,9 +26,9 @@ namespace gubg
                 return log(density(value));
             }
         void setProbTrue(double probTrue){mProbTrue = probTrue;};
-        bool draw(bool &b)
+        bool generate(bool &b)
             {
-                b = ((Random::drawUniform() <= mProbTrue) ? true : false);
+                b = ((Random::generateUniform() <= mProbTrue) ? true : false);
                 return true;
             }
     private:

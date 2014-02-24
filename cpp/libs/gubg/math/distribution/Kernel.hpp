@@ -38,12 +38,12 @@ namespace gubg { namespace math { namespace distribution {
                 }
                 double logDensity_norm(T &value){return ::log(density_norm(value));}
 
-                ReturnCode draw(T &value) const
+                ReturnCode generate(T &value) const
                 {
                     MSS_BEGIN(ReturnCode);
                     size_t ix;
                     MSS(weightDistribution_.generate(ix));
-                    value = random::drawNormal(data_[ix], width_);
+                    value = random::generateNormal(data_[ix], width_);
                     MSS_END();
                 }
 

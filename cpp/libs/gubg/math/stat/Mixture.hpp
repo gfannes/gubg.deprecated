@@ -40,10 +40,10 @@ namespace gubg { namespace math { namespace stat {
             }
 
             friend class Distribution_crtp<Mixture<Component>, typename Component::value_type>;
-            bool distribution_draw(value_type &res)
+            bool distribution_generate(value_type &res)
             {
                 S();
-                auto u = random::drawUniform();
+                auto u = random::generateUniform();
                 L(u);
                 size_t ix = 0;
                 for (auto w: weights_)
@@ -55,7 +55,7 @@ namespace gubg { namespace math { namespace stat {
                 }
                 if (ix >= nrComponents())
                     ix = nrComponents()-1;
-                return components_[ix].draw(res);
+                return components_[ix].generate(res);
             }
 
             Components components_;

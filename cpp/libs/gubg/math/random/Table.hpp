@@ -40,7 +40,7 @@ namespace gubg { namespace math { namespace random {
             S();
             if (ctr.empty())
                 return false;
-            auto prob = drawUniform(0.0, sum);
+            auto prob = generateUniform(0.0, sum);
             T cumul = 0;
             for (it = ctr.begin(); it != ctr.end(); ++it)
             {

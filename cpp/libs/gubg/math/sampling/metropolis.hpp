@@ -29,7 +29,7 @@ namespace gubg
                 for (long i=0;i<nrSteps;++i)
                 {
                     // Generate a new candidate location
-                    mProposalD.draw(newLocation, location);
+                    mProposalD.generate(newLocation, location);
                     logP1 = mTargetD.logDensity(newLocation);
                 
                     // Compute the likelihood ratio
@@ -51,7 +51,7 @@ namespace gubg
                     } else
                     {
                         mBernoulli.setProbTrue(exp(alpha));
-                        mBernoulli.draw(b);
+                        mBernoulli.generate(b);
                         if (b)
                         {
                             location = newLocation;
