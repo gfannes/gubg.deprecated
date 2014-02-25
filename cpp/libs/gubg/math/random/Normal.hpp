@@ -3,7 +3,6 @@
 
 #include "gubg/math/random/DefaultEngine.hpp"
 #include "gubg/math/Math.hpp"
-#include "gubg/Macro.hpp"
 #include <cmath>
 
 #define GUBG_MODULE_ "random::Normal"
@@ -11,9 +10,9 @@
 namespace gubg { namespace math { namespace random { 
 
     template <typename T>
-        T generateNormal(T mean, T sigma)
+        T generateNormal(T mean, T stddev)
         {
-            return std::normal_distribution<double>(mean, sigma)(defaultEngine);
+            return std::normal_distribution<double>(mean, stddev)(defaultEngine);
         }
 
     double normal_density(double x, double mean, double stddev)

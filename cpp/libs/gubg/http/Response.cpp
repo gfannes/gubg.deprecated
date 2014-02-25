@@ -67,7 +67,8 @@ namespace gubg { namespace http {
         }
 
         //The rest belongs to the body
-        response.setBody(strange.str());
+		//We do not use setBody, that API call sets Content-Length accordingly
+        response.body_ = strange.str();
 
         swap(response);
 

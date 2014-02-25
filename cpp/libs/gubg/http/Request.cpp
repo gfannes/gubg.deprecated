@@ -53,6 +53,12 @@ namespace gubg { namespace http {
         res.setVerb(Verb::Get).setUri(uri);
         return res;
     }
+    Request Request::Post(const string &uri)
+    {
+        Request res;
+        res.setVerb(Verb::Post).setUri(uri);
+        return res;
+    }
     string Request::serialize() const
     {
         if (!valid())
