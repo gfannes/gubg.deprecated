@@ -15,7 +15,9 @@ if [ ! $GUBG_BIN ];then
     echo "* Setting GUBG_BIN to $GUBG_BIN"
 fi
 export GUBG_BASH=$GUBG/bash
-export GUBG_NUMBER_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
+if [ ! $GUBG_NUMBER_CPU ];then
+    export GUBG_NUMBER_CPU=`cat /proc/cpuinfo | grep -e "^processor" | wc -l`
+fi
 export GUBG_PLATFORM=linux
 export RUBYLIB=$GUBG/ruby
 export PATH=/usr/lib/colorgcc/bin:$PATH:$GUBG_BIN:$GUBG/bin
