@@ -13,6 +13,7 @@ namespace gubg { namespace http {
     {
         public:
             static Request Get(const std::string &uri);
+            static Request Post(const std::string &uri);
 
             bool valid() const {return verb_ != Verb::Unknown and !uri_.empty() and !version_.empty();}
 
