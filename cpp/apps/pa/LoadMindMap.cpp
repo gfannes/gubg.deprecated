@@ -25,6 +25,8 @@ namespace pa
         const double defaultFraction;
         Parser(Node &r, string n, string f, double df):root(r), value(n), fraction(f), defaultFraction(df){}
 
+		typedef gubg::xml::Path Path;
+		typedef gubg::xml::Attributes Attributes;
         void parser_open(const string &tag, const Path &path)
         {
             if (tag == "node")

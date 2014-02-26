@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <iomanip>
 
 #define GUBG_MODULE_ "Planning"
 #include "gubg/log/begin.hpp"
@@ -266,7 +267,7 @@ namespace gubg { namespace planning {
 						{
 							if (!putBehindDate())
 								os << "\t          ";
-							os << " (" << tp.sweat << "d) " << tp.task->fullName() << " (work: " << tp.task->sweat << "d)" << std::endl;
+							os << " (" << std::setprecision(2) << std::fixed << tp.sweat << "d) " << tp.task->fullName() << " (work: " << tp.task->sweat << "d)" << std::endl;
 						}
 					}
 				}

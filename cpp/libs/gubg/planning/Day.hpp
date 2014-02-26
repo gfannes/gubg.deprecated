@@ -48,9 +48,9 @@ namespace gubg
                         L_CASE(1, 31);
                         case 2:
                         {
-                            int nrDays = (y_%4 == 0 ? 28 : 27);
+                            int nrDays = (y_%4 == 0 ? 29 : 28);
                             if (y_%100 == 0 && y_%400 != 0)
-                                nrDays = 27;
+                                nrDays = 28;
                             if (d_ > nrDays)
                             {
                                 d_ = 1;

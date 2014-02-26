@@ -46,6 +46,7 @@ namespace gubg { namespace http {
         {
             Strange reason;
             MSS(strange.popUntil(reason, eol));
+            response.setReason(reason.str());
         }
 
         //Read the headers
