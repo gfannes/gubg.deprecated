@@ -1,5 +1,5 @@
-#ifndef aoeuaoeu
-#define aoeuaoeu
+#ifndef HEADER_gubg_math_random_Gamma_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_math_random_Gamma_hpp_ALREADY_INCLUDED
 
 #include "gubg/math/random/DefaultEngine.hpp"
 
