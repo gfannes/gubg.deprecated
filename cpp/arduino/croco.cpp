@@ -61,7 +61,7 @@ ReturnCode setup()
     MSS(joystick, CouldNotOpenJoystick);
 
     //string peerIP = "localhost";
-    string peerIP = "192.168.0.100";
+    string peerIP = "192.168.0.103";
     gubg::internet::Client client(peerIP, 1234);
     MSS(client.createConnection(pipi));
 
@@ -86,7 +86,7 @@ ReturnCode poll()
 
     while (!quit)
     {
-        S();
+        //S();
         keepAlive.process();
 
         SDL_Event event;
@@ -100,14 +100,15 @@ ReturnCode poll()
 
             if (event.type == SDL_JOYAXISMOTION)
             {
+                S();
                 switch (event.jaxis.axis)
                 {
                     case 0:
-                        //L("X " << event.jaxis.value);
+                        L("X " << event.jaxis.value);
                         directions[0] = event.jaxis.value;
                         break;
                     case 1:
-                        //L("Y " << event.jaxis.value);
+                        L("Y " << event.jaxis.value);
                         directions[1] = event.jaxis.value;
                         break;
                 }
@@ -117,7 +118,7 @@ ReturnCode poll()
                 msgpack::write(motors_msgpack, motors);
                 ostringstream oss;
                 oss << "\xd9" << motors_msgpack;
-                //L(testing::toHex(oss.str()));
+                L(testing::toHex(oss.str()));
                 pipi->send(oss.str());
             }
         }

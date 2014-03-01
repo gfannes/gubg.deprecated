@@ -79,7 +79,7 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 5>
             g_oostatus.indicateOnline();
         }
         void msgpack_set(AttributeId id, const my::String &str) {}
-        void msgpack_set(AttributeId id, long) {}
+        void msgpack_set(AttributeId id, long) {g_oostatus.indicateOnline();}
 
     private:
 };
@@ -124,6 +124,7 @@ void loop()
 
     if (Serial.available())
     {
+        g_oostatus.indicateOnline();
         if (!mss::isOK(g_decoder.process(Serial.read())))
         {
             g_decoder.reset();
