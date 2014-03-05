@@ -54,26 +54,40 @@ int main()
     TEST_TAG(main);
     typedef gubg::Packer<std::string, std::string,SizeProtocol> Packer;
     Packer packer;
+    TEST_EQ(Packer::Idle, packer.state());
     {
         auto sdu = packer.sdu_out();
+        TEST_EQ(Packer::Sending, packer.state());
         sdu.ref().append("Hello World");
     }
+    TEST_EQ(Packer::Sending, packer.state());
     auto pdu = packer.pdu_out();
     for (; !pdu.empty(); pdu.pop_front())
         L("0x" << std::hex << (int)pdu.front());
+    TEST_EQ(Packer::Sending, packer.state());
 
     packer.clear();
+    TEST_EQ(Packer::Idle, packer.state());
     const std::string buffer("\x0bHello World");
     auto range = gubg::packer::createRange(buffer);
 
     TEST_TRUE(packer.append(range));
+    TEST_EQ(Packer::Receiving, packer.state());
+    TEST_TRUE(packer.receivedFrame());
     TEST_EQ(packer.body(), "Hello World");
     packer.clear();
+    TEST_FALSE(packer.receivedFrame());
+    TEST_EQ(Packer::Idle, packer.state());
     range = gubg::packer::createRange(std::string("\x0bHello "));
     TEST_FALSE(packer.append(range));
+    TEST_EQ(Packer::Receiving, packer.state());
+    TEST_FALSE(packer.receivedFrame());
     range = gubg::packer::createRange(std::string("World"));
     TEST_TRUE(packer.append(range));
+    TEST_TRUE(packer.receivedFrame());
+    TEST_EQ(Packer::Receiving, packer.state());
     TEST_EQ(packer.body(), "Hello World");
+    TEST_EQ(Packer::Receiving, packer.state());
     return 0;
 }
 #include "gubg/log/end.hpp"

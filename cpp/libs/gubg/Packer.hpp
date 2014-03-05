@@ -152,7 +152,7 @@ namespace gubg {
             //Call this when you start receiving data for a new message
             void clear();
 
-            State state() const {return state_ & Mask;}
+            State state() const {return (State)(state_ & Mask);}
 
             //Returns a RAII object that allows the caller to set the SDU (i.e., the body) and
             //will ask the Protocol to set the header upon dtor
@@ -218,6 +218,8 @@ namespace gubg {
                 //An SDU was prepared, we are still sending, call clear() to get out
                 //of this state
                 return false;
+            if (state_ == Idle)
+                state_ |= Receiving;
             if (!(state_ & HeaderComplete) and !Protocol::append_header(header_, range))
                 //Header was not complete, and it is still not complete: not enough data
                 return false;
