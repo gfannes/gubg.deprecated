@@ -1,7 +1,19 @@
 #ifndef HEADER_gubg_Packer_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_Packer_hpp_ALREADY_INCLUDED
 
-#include <cassert>
+//Provides a generic class (Packer) for converting an SDU into a PDU, and vice versa
+//Memory usage is restricted to the bare minimum, which makes this class useful for arduino too
+//The Protocol should provide three methods:
+//* void pack(Header&, Body&): This method should create the header based on the body, and it can adjust the body too, if needed
+//  After this call, Packer::pud_out() returns a range that can be used to send the PDU (first header, than body).
+//* bool append_header(Header&, Range&): This method should use as much data from range to fill the header, it should return true
+//  if the header is complete. This method will _only_ be called if the header is not yet complete.
+//* bool append_body(Body&, Range&): This method should use as much data from range to fill the body, it should return true
+//  if the body is complete. This method will _only_ be called if the body is not yet complete.
+//The Protocol can store data itself (e.g., required body length, or header data that does not depend on the body content)
+//to use during append or pack because Packer is derived from Protocol.
+
+#include "gubg/cassert.hpp"
 
 #define GUBG_MODULE_ "packer"
 #include "gubg/log/begin.hpp"
