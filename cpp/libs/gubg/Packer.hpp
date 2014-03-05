@@ -24,24 +24,6 @@ namespace gubg {
         class Packer;
 
     namespace packer { 
-        template <typename Outer, typename T, typename Tag>
-            class Reference
-            {
-                public:
-                    T &ref() {return ref_;}
-                    const T &ref() const {return ref_;}
-
-                    Reference(Outer &outer, T &ref): outer_(outer), ref_(ref) {}
-                    ~Reference()
-                    {
-                        outer_.ref_dtor(Tag());
-                    }
-
-                private:
-                    Outer &outer_;
-                    T &ref_;
-            };
-
         template <typename Value>
             class Range_memory
             {
@@ -144,9 +126,6 @@ namespace gubg {
             {
                 return Traits<Buffer>::create(buffer);
             }
-
-        struct SDU_out_tag {};
-        struct PDU_out_tag {};
     } 
 
     template <typename Header, typename Body, typename Protocol>
@@ -157,7 +136,18 @@ namespace gubg {
             enum ReceiveFlags: uint8_t {HeaderComplete = 0x04, BodyComplete = 0x08};
 
         public:
-            typedef packer::Reference<Self, Body, packer::SDU_out_tag> SDURef_out;
+            class SDURef_out
+            {
+                public:
+                    SDURef_out(Packer &outer): outer_(outer) {}
+                    ~SDURef_out() { outer_.ref_dtor(); }
+
+                    Body &ref() {return outer_.body_;}
+                    const Body &ref() const {return outer_.body_;}
+
+                private:
+                    Packer &outer_;
+            };
             typedef packer::RangePair<typename packer::Traits<Header>::Range, typename packer::Traits<Body>::Range> PDURange;
             enum State: uint8_t {Idle = 0x00, Sending = 0x01, Receiving = 0x02, Mask = 0x03};
 
@@ -184,7 +174,7 @@ namespace gubg {
 
             //Called by SDURef_out::dtor, this indicates that the SDU was set, and the
             //header should be prepared
-            void ref_dtor(packer::SDU_out_tag);
+            void ref_dtor();
 
             const Header &header() const {return header_;}
             const Body &body() const {return body_;}
@@ -208,11 +198,11 @@ namespace gubg {
         {
             clear();
             state_ = Sending;
-            SDURef_out br(*this, body_);
+            SDURef_out br(*this);
             return br;
         }
     template <typename Header, typename Body, typename Protocol>
-        void Packer<Header, Body, Protocol>::ref_dtor(packer::SDU_out_tag)
+        void Packer<Header, Body, Protocol>::ref_dtor()
         {
             Protocol::pack(header_, body_);
         }
