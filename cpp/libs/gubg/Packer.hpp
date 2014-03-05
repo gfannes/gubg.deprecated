@@ -102,6 +102,16 @@ namespace gubg {
                     return Range(&str[0], str.size());
                 }
             };
+        template <>
+            struct Traits<const std::string>
+            {
+                typedef Range_memory<char> Range;
+
+                static Range create(const std::string &str)
+                {
+                    return Range(&str[0], str.size());
+                }
+            };
         template <typename Header, typename Body, typename Protocol>
             struct Traits<Packer<Header, Body, Protocol>>
             {
@@ -117,6 +127,12 @@ namespace gubg {
                 }
             };
 
+        template <typename Buffer>
+            auto createRange(const Buffer &buffer) -> typename Traits<Buffer>::Range
+            {
+                return Traits<Buffer>::create(buffer);
+            }
+
         struct SDU_out_tag {};
         struct PDU_out_tag {};
     } 
@@ -131,10 +147,27 @@ namespace gubg {
             typedef packer::Reference<Self, Body, packer::SDU_out_tag> SDURef_out;
             typedef packer::RangePair<typename packer::Traits<Header>::Range, typename packer::Traits<Body>::Range> PDURange;
 
+            //Returns a RAII object that allows the caller to set the SDU (i.e., the body) and
+            //will ask the Protocol to set the header upon dtor
             SDURef_out sdu_out();
 
+            //Once sdu_out() is used to set the body and the header, pdu_out() will return
+            //a Range that can be used to send the header-body combination
             PDURange pdu_out();
 
+            //Call this when you start receiving data for a new message
+            void clear();
+
+            //Appends the given range to the header, if still needed, and to the body, if still needed.
+            //Returns true if both the header and body are OK
+            template <typename Range>
+                bool append(Range &);
+
+            //Indicates if the received header and body are OK
+            bool isComplete() const {return bodyComplete_;}
+
+            //Called by SDURef_out::dtor, this indicates that the SDU was set, and the
+            //header should be prepared
             void ref_dtor(packer::SDU_out_tag);
 
             const Header &header() const {return header_;}
@@ -142,13 +175,16 @@ namespace gubg {
 
         private:
             Header header_;
+            bool headerComplete_ = false;
             Body body_;
+            bool bodyComplete_ = false;
     };
 
     //Implementation
     template <typename Header, typename Body, typename Protocol>
         auto Packer<Header, Body, Protocol>::sdu_out() -> SDURef_out
         {
+            clear();
             SDURef_out br(*this, body_);
             return br;
         }
@@ -161,6 +197,26 @@ namespace gubg {
         auto Packer<Header, Body, Protocol>::pdu_out() -> PDURange
         {
             return packer::Traits<Self>::create(*this);
+        }
+    template <typename Header, typename Body, typename Protocol>
+        void Packer<Header, Body, Protocol>::clear()
+        {
+            header_.clear();
+            headerComplete_ = false;
+            body_.clear();
+            bodyComplete_ = false;
+        }
+    template <typename Header, typename Body, typename Protocol>
+        template <typename Range>
+        bool Packer<Header, Body, Protocol>::append(Range &range)
+        {
+            if (!headerComplete_)
+                headerComplete_ = Protocol::append_header(header_, range);
+            if (!headerComplete_)
+                return false;
+            if (!bodyComplete_)
+                bodyComplete_ = Protocol::append_body(body_, range);
+            return bodyComplete_;
         }
 } 
 #include "gubg/log/end.hpp"
