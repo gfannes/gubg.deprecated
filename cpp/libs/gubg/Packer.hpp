@@ -142,10 +142,17 @@ namespace gubg {
     {
         private:
             typedef Packer<Header, Body, Protocol> Self;
+            enum ReceiveFlags: uint8_t {HeaderComplete = 0x04, BodyComplete = 0x08};
 
         public:
             typedef packer::Reference<Self, Body, packer::SDU_out_tag> SDURef_out;
             typedef packer::RangePair<typename packer::Traits<Header>::Range, typename packer::Traits<Body>::Range> PDURange;
+            enum State: uint8_t {Idle = 0x00, Sending = 0x01, Receiving = 0x02, Mask = 0x03};
+
+            //Call this when you start receiving data for a new message
+            void clear();
+
+            State state() const {return state_ & Mask;}
 
             //Returns a RAII object that allows the caller to set the SDU (i.e., the body) and
             //will ask the Protocol to set the header upon dtor
@@ -155,16 +162,13 @@ namespace gubg {
             //a Range that can be used to send the header-body combination
             PDURange pdu_out();
 
-            //Call this when you start receiving data for a new message
-            void clear();
-
             //Appends the given range to the header, if still needed, and to the body, if still needed.
             //Returns true if both the header and body are OK
             template <typename Range>
                 bool append(Range &);
 
             //Indicates if the received header and body are OK
-            bool isComplete() const {return bodyComplete_;}
+            bool receivedFrame() const {return state_ & BodyComplete;}
 
             //Called by SDURef_out::dtor, this indicates that the SDU was set, and the
             //header should be prepared
@@ -175,16 +179,23 @@ namespace gubg {
 
         private:
             Header header_;
-            bool headerComplete_ = false;
             Body body_;
-            bool bodyComplete_ = false;
+            uint8_t state_ = Idle;
     };
 
     //Implementation
     template <typename Header, typename Body, typename Protocol>
+        void Packer<Header, Body, Protocol>::clear()
+        {
+            header_.clear();
+            body_.clear();
+            state_ = Idle;
+        }
+    template <typename Header, typename Body, typename Protocol>
         auto Packer<Header, Body, Protocol>::sdu_out() -> SDURef_out
         {
             clear();
+            state_ = Sending;
             SDURef_out br(*this, body_);
             return br;
         }
@@ -196,27 +207,29 @@ namespace gubg {
     template <typename Header, typename Body, typename Protocol>
         auto Packer<Header, Body, Protocol>::pdu_out() -> PDURange
         {
+            assert(state_ == Sending);
             return packer::Traits<Self>::create(*this);
-        }
-    template <typename Header, typename Body, typename Protocol>
-        void Packer<Header, Body, Protocol>::clear()
-        {
-            header_.clear();
-            headerComplete_ = false;
-            body_.clear();
-            bodyComplete_ = false;
         }
     template <typename Header, typename Body, typename Protocol>
         template <typename Range>
         bool Packer<Header, Body, Protocol>::append(Range &range)
         {
-            if (!headerComplete_)
-                headerComplete_ = Protocol::append_header(header_, range);
-            if (!headerComplete_)
+            if (state_ == Sending)
+                //An SDU was prepared, we are still sending, call clear() to get out
+                //of this state
                 return false;
-            if (!bodyComplete_)
-                bodyComplete_ = Protocol::append_body(body_, range);
-            return bodyComplete_;
+            if (!(state_ & HeaderComplete) and !Protocol::append_header(header_, range))
+                //Header was not complete, and it is still not complete: not enough data
+                return false;
+            //Indicate that the header is complete
+            state_ |= HeaderComplete;
+            if (!(state_ & BodyComplete) and !Protocol::append_body(body_, range))
+                //Body was not complete, and it is still not complete: not enough data
+                return false;
+            //Indicate that the body is complete
+            state_ |= BodyComplete;
+            //Body and header are complete, we received a complete frame
+            return true;
         }
 } 
 #include "gubg/log/end.hpp"
