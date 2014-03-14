@@ -19,6 +19,7 @@ namespace gubg { namespace range {
 
             void popFront() {++ix_; --size_;}
 
+            //Resizing does not invalidate existing ranges
             bool resizeBack(std::size_t nr)
             {
                 if (nr <= size_)
