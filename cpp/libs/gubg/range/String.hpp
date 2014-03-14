@@ -43,6 +43,25 @@ namespace gubg { namespace range {
             std::size_t size_ = str_.size();
     };
 
+    class Range_cstring
+    {
+        public:
+            Range_cstring(const std::string &str): str_(str) {}
+
+            typedef std::string::value_type value_type;
+
+            bool empty() const {return size_ == 0;}
+
+            const value_type &front() const {return str_[ix_];}
+
+            void popFront() {++ix_; --size_;}
+
+        private:
+            const std::string &str_;
+            std::size_t ix_ = 0;
+            std::size_t size_ = str_.size();
+    };
+
 } } 
 
 #endif
