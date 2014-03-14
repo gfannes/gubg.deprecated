@@ -46,6 +46,7 @@ namespace gubg { namespace range {
     class Range_cstring
     {
         public:
+            //Make sure str outlives this
             Range_cstring(const std::string &str): str_(str) {}
 
             typedef std::string::value_type value_type;
