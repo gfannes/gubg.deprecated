@@ -26,7 +26,7 @@ namespace pa
 			planning.addWorker("gfa", 0.7);
 			planning.addWorker("wba", 0.4);
 			gubg::OnlyOnce upgradeWBA;
-			for (auto d: workDays(300))
+			for (auto d: workDays(350))
 			{
 #if 0
 				if (d >= Day(2013,8,1) && upgradeWBA())
@@ -43,6 +43,9 @@ namespace pa
 			planning.absence("wba", Day(2013, 11, 28));
 			planning.absence("wba", Day(2014, 1, 30));
 #endif
+			planning.absence("gfa", Day(2014, 3, 6));
+			planning.absence("gfa", Day(2014, 3, 7));
+			planning.absence("wba", Day(2014, 3, 7));
 
 			{
 				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));

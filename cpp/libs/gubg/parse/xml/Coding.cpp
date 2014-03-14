@@ -98,7 +98,7 @@ namespace gubg
                             MSS(rawSize >= 4);
                             rawSize -= 4;
                         }
-                        else if (strange.popString("#x2018;") || strange.popString("#x2019;") || strange.popString("#x2026;"))
+                        else if (strange.popString("#x2018;") || strange.popString("#x2019;") || strange.popString("#x2026;") || strange.popString("#x201c;") || strange.popString("#x201d;"))
                         {
                             MSS(rawSize >= 7);
                             rawSize -= 7;
@@ -129,7 +129,7 @@ namespace gubg
                     if (strange.popCharIf('&'))
                     {
                         if (false) {}
-                        else if (strange.popString("quot;"))
+                        else if (strange.popString("quot;") || strange.popString("#x201c;") || strange.popString("#x201d;"))
                             *dst++ = '"';
                         else if (strange.popString("lt;"))
                             *dst++ = '<';

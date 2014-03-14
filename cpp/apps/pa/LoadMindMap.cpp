@@ -31,7 +31,7 @@ namespace pa
         {
             if (tag == "node")
             {
-                SS();LL(tag);
+                SS(tag);
                 if (location.empty())
                     location.push_back(&root);
                 else
@@ -46,7 +46,7 @@ namespace pa
         {
             if (tag == "node")
             {
-                SS();LL(tag);
+                SS(tag);
                 location.pop_back();
             }
         }
