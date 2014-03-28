@@ -8,28 +8,85 @@ using namespace gubg::range;
 int main()
 {
     TEST_TAG(main);
+	string str;
+	{
+		TEST_TAG(ctor1);
+        String_char r(str);
+        TEST_TRUE(r.empty());
+	}
+	{
+		TEST_TAG(ctor2);
+		str = "a";
+        String_char r(str);
+        TEST_FALSE(r.empty());
+	}
+	{
+		TEST_TAG(forward_iteration);
+		str = "abc";
+        String_char r(str);
+		TEST_EQ('a', r.front());
+		r.popFront();
+        TEST_FALSE(r.empty());
+		TEST_EQ('b', r.front());
+		r.popFront();
+        TEST_FALSE(r.empty());
+		TEST_EQ('c', r.front());
+		r.popFront();
+        TEST_TRUE(r.empty());
+	}
+	{
+		TEST_TAG(backward_iteration);
+		str = "abc";
+        String_char r(str);
+		TEST_EQ('c', r.back());
+		r.popBack();
+        TEST_FALSE(r.empty());
+		TEST_EQ('b', r.back());
+		r.popBack();
+        TEST_FALSE(r.empty());
+		TEST_EQ('a', r.back());
+		r.popBack();
+        TEST_TRUE(r.empty());
+	}
     {
-        string str;
-        Range_string r(str);
-        TEST_TRUE(r.empty());
-        TEST_TRUE(r.resizeBack(2));
+		TEST_TAG(resizeBack);
+		str.clear();
+        String_char r(str);
+        TEST_TRUE(r.resizeBack(3));
         auto sp = r;
+        r.front() = 'a'; r.popFront();
         TEST_FALSE(r.empty());
-        r.front() = 's';
-        r.popFront();
+        r.front() = 'b'; r.popFront();
         TEST_FALSE(r.empty());
-        r.front() = 'n';
-        r.popFront();
+        r.front() = 'c'; r.popFront();
         TEST_TRUE(r.empty());
-        TEST_EQ('s', sp.front());
-        sp.popFront();
-        TEST_EQ('n', sp.front());
-        sp.popFront();
-        TEST_TRUE(r.empty());
+		TEST_EQ(string("abc"), str);
     }
     {
-        string str("abc");
-        Range_cstring r(str);
+		TEST_TAG(resizeFront_neg);
+		str.clear();
+        String_char r(str);
+        TEST_FALSE(r.resizeFront(1));
+    }
+    {
+		TEST_TAG(resizeFront_pos);
+		str = "abc";
+        String_char r(str);
+		r.popFront(); r.popFront(); r.popFront();
+        TEST_TRUE(r.empty());
+        TEST_TRUE(r.resizeFront(3));
+        r.front() = 'a'; r.popFront();
+        TEST_FALSE(r.empty());
+        r.front() = 'b'; r.popFront();
+        TEST_FALSE(r.empty());
+        r.front() = 'c'; r.popFront();
+        TEST_TRUE(r.empty());
+    }
+
+    {
+		TEST_TAG(String_cchar);
+		str = "abc";
+        String_cchar r(str);
         TEST_FALSE(r.empty());
         TEST_EQ('a', r.front());
         r.popFront();
@@ -38,8 +95,8 @@ int main()
         r.popFront();
         TEST_FALSE(r.empty());
         TEST_EQ('c', r.front());
-        TEST_TRUE(r.empty());
         r.popFront();
+        TEST_TRUE(r.empty());
     }
 
     return 0;
