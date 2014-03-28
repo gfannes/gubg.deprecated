@@ -35,6 +35,16 @@ da::ReturnCode Libs::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         MSS(insertLibrariesForPackage(linkSettings_.libraries, pkg));
         MSS_QL(RecognisedHeader);
     }
+    if (partial.name() == "GL/gl.h")
+    {
+        linkSettings_.libraries.insert("GL");
+        MSS_QL(RecognisedHeader);
+    }
+    if (partial.name() == "GL/glut.h")
+    {
+        linkSettings_.libraries.insert("glut");
+        MSS_QL(RecognisedHeader);
+    }
 #ifdef GUBG_MINGW
     if (partial.name() == "Winsock2.h")
     {
