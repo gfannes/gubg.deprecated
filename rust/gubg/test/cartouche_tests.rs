@@ -3,8 +3,11 @@
 //extern mod cartouche;
 extern mod gubg;
 
+use gubg::cartouche::Cartouche;
+
 fn main()
 {
     println!("cartouche_tests");
-    gubg::cartouche::cart();
+    let mut c = Cartouche::new().tag(~"mytag");
+    c.print();
 }
