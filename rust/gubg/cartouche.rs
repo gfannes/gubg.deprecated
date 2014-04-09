@@ -1,3 +1,4 @@
+use std::io::stdio::println;
 
 pub struct Cartouche
 {
@@ -9,11 +10,13 @@ impl Cartouche
 {
     pub fn new() -> Cartouche
     {
-        Cartouche{tag: ~"<tag>", lines: ~[~"line0", ~"line1"]}
+        Cartouche{tag: ~"", lines: ~[]}
     }
-    pub fn tag(self, tag: ~str) -> Cartouche
+    pub fn parse(content: &str) -> ~[~Cartouche]
     {
-        Cartouche{tag: tag, lines: self.lines}
+        println!("Content: {}", content);
+        let mut res = ~[];
+        res
     }
     pub fn print(&self)
     {

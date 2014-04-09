@@ -1,7 +1,6 @@
-
 .PHONY: gubg
 gubg:
-	rustc gubg.rs --lib
+	rustc gubg.rs --crate-type lib
 
 .PHONY: tests
 tests: gubg
