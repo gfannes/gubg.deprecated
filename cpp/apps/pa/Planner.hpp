@@ -62,7 +62,7 @@ namespace pa
 			}
 
 			//Quality week
-			for (auto d: dayRange(Day(2014, 3, 31), Day(2014, 4, 4)))
+			for (auto d: dayRange(Day(2014, 7, 7), Day(2014, 7, 11)))
 			{
 				planning.absence("gfa", d);
 				planning.absence("wba", d);

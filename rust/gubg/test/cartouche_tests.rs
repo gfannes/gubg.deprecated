@@ -19,7 +19,6 @@ fn main()
 
     let path = Path::new("cartouche.rs");
     let mut fi = File::open(&path);
-    let tmp = fi.read_to_end().unwrap();
-    let content: &str = std::str::from_utf8(tmp).unwrap();
+    let content = fi.read_to_str().unwrap();
     let cs = Cartouche::parse(content);
 }

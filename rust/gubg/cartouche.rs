@@ -2,8 +2,8 @@ use std::io::stdio::println;
 
 pub struct Cartouche
 {
-    tag: ~str,
-    lines: ~[~str],
+    pub tag: ~str,
+    pub lines: ~[~str],
 }
 
 impl Cartouche
