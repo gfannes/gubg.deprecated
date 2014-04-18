@@ -2,7 +2,7 @@
 #include "gubg/file/Filesystem.hpp"
 using namespace std;
 
-#define GUBG_MODULE_ "Manuscript"
+#define GUBG_MODULE "Manuscript"
 #include "gubg/log/begin.hpp"
 namespace gubg { 
 
@@ -28,7 +28,7 @@ namespace gubg {
                 //The tag stop sequence was not found
                 return false;
             if (!line.empty())
-                //There are extra characters after stop, which is not allowed for a tag line
+                //There are extra characters after the stop tag, which is not allowed for a tag line
                 return false;
             tag = tmpTag;
             pre.swap(tmpPre);
