@@ -1,5 +1,5 @@
-#ifndef aoeuaoeuRange
-#define aoeuaoeuRange
+#ifndef HEADER_gubg_range_Range_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_range_Range_hpp_ALREADY_INCLUDED
 
 namespace gubg { namespace range { 
 
