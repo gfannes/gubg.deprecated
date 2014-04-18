@@ -1,5 +1,5 @@
-#ifndef aoeuaoeuArray
-#define aoeuaoeuArray
+#ifndef HEADER_gubg_range_Array_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_range_Array_hpp_ALREADY_INCLUDED
 
 #include "gubg/range/RawArray.hpp"
 

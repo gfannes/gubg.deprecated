@@ -7,6 +7,9 @@
 #include <ostream>
 #include <cstring>
 
+//TODO: the methods that take a Strange& as argument are currently not correct when this argument
+//is the same as the this pointer
+
 namespace gubg
 {
     class Strange
@@ -81,8 +84,11 @@ namespace gubg
                 assert(invariants_());
                 if (str.empty())
                     return true;
-                const auto ch = str.front();
                 const size_t s = str.size();
+                if (size() < s)
+                    //We are to small to match str
+                    return false;
+                const auto ch = str.front();
                 const auto l2check = l_-s+1;
                 for (size_t i = 0; i < l2check; ++i)
                     if (s_[i] == ch)
@@ -209,6 +215,58 @@ namespace gubg
                 if (std::memcmp(str.data(), s_, s))
                     return false;
                 forward_(s);
+                return true;
+            }
+
+            bool popLine(Strange &line)
+            {
+                assert(invariants_());
+
+                if (empty())
+                    return false;
+
+                //We start looking for 0xa because that is the most likely indicator of an end-of-line
+                //0xd can occur on its own, but that is old-mac style, which is not used anymore
+                const char *ptr = (const char *)std::memchr(s_, '\x0a', l_);
+                if (!ptr)
+                {
+                    //No 0xa found, lets look for a 0xd (old-mac)
+                    ptr = (const char *)std::memchr(s_, '\x0d', l_);
+                    if (!ptr)
+                    {
+                        //old-mac wasn't found either, we return everything we got, this is the last line
+                        line = *this;
+                        forward_(l_);
+                        return true;
+                    }
+                    //An old-mac end-of-line was found
+                    line.s_ = s_;
+                    line.l_ = ptr-s_;
+                    forward_(line.l_+1);
+                    return true;
+                }
+                //0xa was found, we still need to determine if it is a unix or dos style end-of-line
+                if (ptr == s_)
+                {
+                    //This is an empty line, it does not make sense to check for 0xd
+                    line.s_ = s_;
+                    line.l_ = 0;
+                    forward_(1);
+                    return true;
+                }
+                //We have to check for 0xd
+                if (ptr[-1] == '\x0d')
+                {
+                    //This line is dos-style terminated
+                    line.s_ = s_;
+                    line.l_ = ptr-s_-1;
+                    forward_(line.l_+2);
+                    return true;
+                }
+                //No 0xd was found before ptr so we have a unix-style terminated line
+                line.s_ = s_;
+                line.l_ = ptr-s_;
+                forward_(line.l_+1);
                 return true;
             }
 
