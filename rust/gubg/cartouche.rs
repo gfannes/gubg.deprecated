@@ -27,3 +27,25 @@ impl Cartouche
         }
     }
 }
+
+pub struct Cartouches<'a>
+{
+	content: ~str,
+	pub cartouches: ~[&'a str],
+}
+
+impl<'a> Cartouches<'a>
+{
+	pub fn from_str(content: ~str) -> Cartouches
+	{
+		let mut res = Cartouches{content: content, cartouches: ~[]};
+		let mut ix = 0;
+		for line in res.content.lines_any()
+		{
+			ix += 1;
+			println!("{}: {}", ix, line);
+			res.cartouches.push(line);
+		}
+		Cartouches{content: ~"bla", cartouches: ~[]}
+	}
+}

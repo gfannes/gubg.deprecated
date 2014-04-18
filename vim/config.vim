@@ -42,7 +42,7 @@ autocmd BufEnter,BufNewFile,BufRead *.cpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.h source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.hpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.jscad source $GUBG/vim/maps.cpp.vim
-"autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/maps.cpp.vim
+autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/rust.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim

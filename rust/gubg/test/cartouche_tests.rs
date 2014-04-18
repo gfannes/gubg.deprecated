@@ -4,6 +4,7 @@
 extern crate gubg;
 
 use gubg::cartouche::Cartouche;
+use gubg::cartouche::Cartouches;
 use std::io::{File, BufferedReader};
 
 fn main()
@@ -21,4 +22,6 @@ fn main()
     let mut fi = File::open(&path);
     let content = fi.read_to_str().unwrap();
     let cs = Cartouche::parse(content);
+
+	let css = Cartouches::from_str(content);
 }
