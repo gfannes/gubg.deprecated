@@ -19,8 +19,22 @@ void stream(ostream &os, Planner &planner)
 		auto b = quarter.begin();
 		auto e = quarter.end();
 		--e;
-		os << endl << "Quarter: " << *b << " " << *e << " (" << quarter.size() << ")" << endl;
+		os << endl << "Quarter: " << *b << " " << *e << " (" << quarter.size() << "days)" << endl;
 		planner.planning.overview(os, quarter);
+	}
+
+	vector<gubg::planning::Worker> workers = {"gfa", "wba"};
+	for (const auto &worker: workers)
+	{
+		os << endl << worker << endl;
+		for (const auto &quarter: quarters)
+		{
+			auto b = quarter.begin();
+			auto e = quarter.end();
+			--e;
+			os << "Quarter: " << *b << " " << *e << " (" << quarter.size() << "days)" << endl;
+			planner.planning.overviewForWorker(os, worker, quarter, 2);
+		}
 	}
 }
 pa::ReturnCode Quarter::execute(const Options &options)
@@ -42,3 +56,4 @@ pa::ReturnCode Quarter::execute(const Options &options)
 
 	MSS_END();
 }
+#include "gubg/log/end.hpp"

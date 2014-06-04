@@ -175,6 +175,64 @@ namespace gubg { namespace planning {
 					os << c_s.first << "\t" << c_s.second << std::endl;
 			}
 
+			size_t depth_(Task::Ptr task)
+			{
+				Task::Ptr p = task->parent.lock();
+				if (!p)
+					return 0;
+				return depth_(p)+1;
+			}
+			Task::Ptr taskAtLevel_(Task::Ptr task, size_t level)
+			{
+				if (level == 0)
+					//End of recursion
+					return task;
+				Task::Ptr p = task->parent.lock();
+				if (!p)
+					//No more parents
+					return task;
+				return taskAtLevel_(p, level-1);
+			}
+			void overviewForWorker(std::ostream &os, const Worker &worker, const std::set<Day> &days, const size_t wantedLevel)
+			{
+				if (days.empty())
+				{
+					os << "Empty period specified" << std::endl;
+					return;
+				}
+				std::map<Task::Ptr, double> sweatPerTask;
+				for (auto dp: dayPlanningsPerWorker_[worker])
+				{
+					if (!days.count(dp.first))
+						continue;
+					for (auto tp: dp.second.taskParts)
+					{
+						auto task = tp.task;
+						auto level = depth_(task);
+						if (level >= wantedLevel)
+							level -= wantedLevel;
+						else
+							level = 0;
+						sweatPerTask[taskAtLevel_(task, level)] += tp.sweat;
+					}
+				}
+				auto b = days.begin();
+				auto e = days.end();
+				--e;
+				size_t maxTaskNameSize = 0;
+				for (auto &t_s: sweatPerTask)
+				{
+					auto name = t_s.first->fullName();
+					if (name.size() > maxTaskNameSize)
+						maxTaskNameSize = name.size();
+				}
+				for (auto &t_s: sweatPerTask)
+				{
+					auto name = t_s.first->fullName();
+					os << " * " << name << std::string(maxTaskNameSize-name.size(), ' ') << " [" << t_s.second << "days, " << t_s.first->category << "]" << std::endl;
+				}
+			}
+
 		private:
 			typedef std::map<Worker, Efficiency> EfficiencyPerWorker;
 			EfficiencyPerWorker efficiencyPerWorker_;

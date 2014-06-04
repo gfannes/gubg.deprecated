@@ -6,7 +6,7 @@ set tabstop=4
 set shiftwidth=4
 set expandtab
 set autochdir
-set wrap
+set nowrap
 set visualbell
 set scroll=1
 "Remove the 3000 character syntax highlighting limit
@@ -42,8 +42,8 @@ autocmd BufEnter,BufNewFile,BufRead *.cpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.h source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.hpp source $GUBG/vim/maps.cpp.vim
 autocmd BufEnter,BufNewFile,BufRead *.jscad source $GUBG/vim/maps.cpp.vim
-autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/maps.cpp.vim
-autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/rust.vim
+""autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/maps.cpp.vim
+""autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/rust.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim
 autocmd BufEnter,BufNewFile,BufRead *.asciidoc source $GUBG/vim/asciidoc2.vim
@@ -61,7 +61,7 @@ source $GUBG/vim/tabnumber.vim
 source $GUBG/vim/autoclose.vim
 source $GUBG/vim/cscope_maps.vim
 source $GUBG/vim/git.vim
-source $GUBG/vim/rust.vim
+""source $GUBG/vim/rust.vim
 
 :au FocusLost * silent! wa
 

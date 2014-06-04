@@ -5,18 +5,16 @@
 #include <vector>
 #include <memory>
 
-namespace gubg
-{
-    namespace planning
-    {
-        typedef std::string Worker;
-        typedef std::vector<Worker> Workers;
-        typedef std::shared_ptr<Workers> WorkersPtr;
-        typedef double Sweat;
-        typedef double Efficiency;
+namespace gubg { namespace planning {
 
-		enum class Format {Text, Html};
-    }
-}
+	typedef std::string Worker;
+	typedef std::vector<Worker> Workers;
+	typedef std::shared_ptr<Workers> WorkersPtr;
+	typedef double Sweat;
+	typedef double Efficiency;
+
+	enum class Format {Text, Html};
+
+} }
 
 #endif

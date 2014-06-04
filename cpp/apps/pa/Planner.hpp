@@ -23,15 +23,10 @@ namespace pa
 			categoryName(catName)
 		{
 			using namespace gubg::planning;
-			planning.addWorker("gfa", 0.7);
+			planning.addWorker("gfa", 1.0);
 			planning.addWorker("wba", 0.4);
-			gubg::OnlyOnce upgradeWBA;
-			for (auto d: workDays(350))
+			for (auto d: workDays(1000))
 			{
-#if 0
-				if (d >= Day(2013,8,1) && upgradeWBA())
-					planning.addWorker("wba", 0.5);
-#endif
 				planning.addDay(d);
 			}
 #ifdef PAST
@@ -46,14 +41,26 @@ namespace pa
 			planning.absence("gfa", Day(2014, 3, 6));
 			planning.absence("gfa", Day(2014, 3, 7));
 			planning.absence("wba", Day(2014, 3, 7));
+			for (auto d: dayRange(Day(2014, 8, 4), Day(2014, 8, 14)))
+				planning.absence("wba", d);
 
 			{
-				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));
 #ifdef PAST
+				auto verlof = dayRange(Day(2013, 12, 25), Day(2014, 1, 1));
 				verlof.push_back(Day(2013, 8, 15));
 				verlof.push_back(Day(2013, 11, 1));
 				verlof.push_back(Day(2013, 11, 11));
 #endif
+				auto verlof = dayRange(Day(2014, 12, 25), Day(2015, 1, 1));
+				verlof.push_back(Day(2014, 5, 1));
+				verlof.push_back(Day(2014, 5, 2));
+				verlof.push_back(Day(2014, 5, 29));
+				verlof.push_back(Day(2014, 5, 30));
+				verlof.push_back(Day(2014, 6, 9));
+				verlof.push_back(Day(2014, 7, 21));
+				verlof.push_back(Day(2014, 8, 15));
+				verlof.push_back(Day(2014, 11, 11));
+
 				for (auto d: verlof)
 				{
 					planning.absence("gfa", d);
