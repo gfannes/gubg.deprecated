@@ -18,8 +18,15 @@ namespace
 int main()
 {
     TEST_TAG(main);
+    {
+        TEST_TAG(defctor);
+        Wrapper<string> wrapper;
+        TEST_FALSE(wrapper.isValid());
+        TEST_TRUE(&wrapper == &(wrapper = Wrapper<string>()));
+    }
     A a;
     Wrapper<string> wrapper(a);
+    TEST_TRUE(wrapper.isValid());
     wrapper.set(0, 0);
     Wrapper<string> w2 = wrapper;
     w2.set(0, string("oeuaou"));

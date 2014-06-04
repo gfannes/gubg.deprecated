@@ -22,13 +22,20 @@ namespace gubg
                     template <typename T>
                         explicit Wrapper(T &t)
                     {
+                        //Type erasure: we will copy obj byte for byte into data_, including its vtable
+                        //Probably not very portable...
                         Object<T> obj(t);
                         const uint8_t *ptr = (uint8_t*)&obj;
                         for (auto it = data_.begin(); it != data_.end(); ++it)
                             *it = *ptr++;
+                        dataIsValid_ = true;
                     }
-                    Wrapper(const Wrapper &rhs): aid(rhs.aid), tid(rhs.tid), data_(rhs.data_) {}
-                    Wrapper &operator=(const Wrapper &rhs) {aid = rhs.aid; tid = rhs.tid; data_ = rhs.data_;}
+                    Wrapper(const Wrapper &rhs): aid(rhs.aid), tid(rhs.tid), data_(rhs.data_), dataIsValid_(rhs.dataIsValid_) {}
+                    Wrapper &operator=(const Wrapper &rhs)
+                    {
+                        aid = rhs.aid; tid = rhs.tid; data_ = rhs.data_; dataIsValid_ = rhs.dataIsValid_;
+                        return *this;
+                    }
 
                     bool isValid() const {return itf_() != 0;}
 
@@ -52,10 +59,11 @@ namespace gubg
                             void *ptr_;
                     };
 
-                    gubg::array<uint8_t, sizeof(Object_itf)> data_;
-                    //Returns 0 for a default-constructed object
-                    Object_itf *itf_() {return (Object_itf*)data_.data();}
-                    const Object_itf *itf_() const {return (const Object_itf*)data_.data();}
+                    typedef gubg::array<uint8_t, sizeof(Object_itf)> Data;
+                    Data data_;
+                    bool dataIsValid_ = false;
+                    Object_itf *itf_() {return dataIsValid_ ? (Object_itf*)data_.data() : 0;}
+                    const Object_itf *itf_() const {return dataIsValid_ ? (const Object_itf*)data_.data() : 0;}
 
                     template <typename T>
                         class Object: public Object_itf
