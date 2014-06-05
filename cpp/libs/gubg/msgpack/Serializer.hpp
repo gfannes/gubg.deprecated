@@ -38,6 +38,12 @@ namespace gubg { namespace msgpack {
 
                     ok_ = true;
                 }
+                    //We only allow moving, no copying
+                    Composer(Composer &&rhs): outer_(rhs.outer_), ok_(rhs.ok_) { }
+                    Composer(const Composer &rhs) = delete;
+                    Composer &operator=(const Composer &rhs) = delete;
+                    Composer &operator=(Composer &&rhs) = delete;
+
                     ~Composer()
                     {
                         if (!ok())
