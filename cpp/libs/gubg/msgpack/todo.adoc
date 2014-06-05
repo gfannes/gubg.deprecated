@@ -8,3 +8,5 @@ TODO
 * keys are always ints
 * set(), open(range<int>) and close(range<int>) are the only things the user should provide
 * try to keep the set/open/close methods outside the populated objects
+* allow arrays of things at the same key to reduce footprint
+* parse the ext msgpack codes
