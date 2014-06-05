@@ -11,18 +11,21 @@ namespace
     class Obj
     {
         public:
-            template <typename S>
-                bool msgpack_serialize(S &s) const
+            template <typename Serializer>
+                bool msgpack_serialize(Serializer &s) const
                 {
                     MSS_BEGIN(bool);
-                    MSS(s.writeIdAndAttrCnt(S::Obj, 2));
-                    MSS(s.writeAttribute(0, a_));
-                    MSS(s.writeAttribute(1, b_));
+                    auto c = s.createComposer(2);
+                    MSS(c.ok());
+                    MSS(c.writeElement(a__, a_));
+                    MSS(c.writeElement(b__, b_));
+                    MSS(c.full());
                     MSS_END();
                 }
         private:
-            int a_;
-            string b_;
+            enum {a__, b__};
+            int a_ = 0x12345678;
+            string b_ = "abc";
     };
 
     struct Ids

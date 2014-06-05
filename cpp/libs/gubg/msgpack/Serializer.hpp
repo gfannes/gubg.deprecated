@@ -6,88 +6,132 @@
 
 #define GUBG_MODULE "Serializer"
 #include "gubg/log/begin.hpp"
-namespace gubg
-{
-    namespace msgpack
-    {
-        typedef long TypeId;
-        typedef long AttrId;
+namespace gubg { namespace msgpack {
 
-        template <typename Buffer, typename Ids, size_t MaxDepth>
-            class Serializer: public Ids
+    typedef long RoleId;
+
+    template <typename Buffer, typename Ids, size_t MaxDepth>
+        class Serializer: public Ids
+    {
+        public:
+            class Composer
             {
                 public:
-                    void clear()
-                    {
-                        buffer_.clear();
-                        attrInfos_.clear();
-                    }
-                    ReturnCode swap(Buffer &buffer)
-                    {
-                        MSS_BEGIN(ReturnCode);
-                        MSS(attrInfos_.empty());
-                        buffer_.swap(buffer);
-                        MSS_END();
-                    }
-                    const Buffer &buffer() const {return buffer_;}
-                    Buffer &buffer() {return buffer_;}
+                    typedef Serializer<Buffer, Ids, MaxDepth> Outer;
 
-                    ReturnCode serialize(long v) { return write(buffer_, v); }
-                    ReturnCode serialize(int v) { return write(buffer_, v); }
-                    ReturnCode serialize(bool v) { return write(buffer_, v); }
-#ifndef ARDUINO
-                    ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
-#endif
+                    Composer(Outer &outer, size_t el_cnt):
+                        outer_(outer)
+                {
+                    if (!MSS_IS_OK(write(outer_.buffer_, el_cnt, MapTL_tag())))
+                        return;
+
+                    {
+                        auto &elementInfos = outer_.elementInfos_;
+                        const auto s = elementInfos.size();
+                        elementInfos.push_back(ElementInfo(el_cnt));
+                        //Check that push_back() worked. For STL, this would be no problem, but on
+                        //Arduino, this cannot be used, and FixedVector can fail to push_back()
+                        //if the vector is full
+                        if (!MSS_IS_OK(elementInfos.size() == s+1))
+                            return;
+                    }
+
+                    ok_ = true;
+                }
+                    ~Composer()
+                    {
+                        if (!ok())
+                            return;
+                        assert(full());
+                        outer_.elementInfos_.pop_back();
+                    }
+
                     template <typename T>
-                        ReturnCode serialize(const T &t)
+                        ReturnCode writeElement(RoleId rid, const T &t)
                         {
                             MSS_BEGIN(ReturnCode);
-                            MSS(t.msgpack_serialize(*this));
+                            assert(!full());
+                            MSS(!full());
+                            MSS(outer_.writeElement(rid, t));
                             MSS_END();
                         }
 
-                    ReturnCode writeIdAndAttrCnt(TypeId tid, size_t attr_cnt)
+                    bool ok() const {return ok_;}
+                    bool full() const
                     {
-                        MSS_BEGIN(ReturnCode);
-                        MSS(write(buffer_, attr_cnt + 1, MapTL_tag()));
-                        if (attr_cnt > 0)
-                        {
-                            AttrInfo ai;
-                            ai.nr = attr_cnt;
-                            ai.ix = 0;
-                            const size_t s = attrInfos_.size();
-                            attrInfos_.push_back(ai);
-                            MSS(attrInfos_.size() == s+1);
-                        }
-                        MSS(write(buffer_, Nil_tag()));
-                        MSS(write(buffer_, tid));
-                        MSS_END();
+                        if (!ok())
+                            return false;
+                        const auto &ei = outer_.elementInfos_.back();
+                        return ei.ix == ei.nr;
                     }
-                    template <typename T>
-                        ReturnCode writeAttribute(AttrId aid, const T &t)
-                        {
-                            MSS_BEGIN(ReturnCode);
-                            MSS(write(buffer_, aid));
-                            MSS(serialize(t));
-                            auto &ai = attrInfos_.back();
-                            ++ai.ix;
-                            if (ai.ix == ai.nr)
-                                attrInfos_.pop_back();
-                            MSS_END();
-                        }
+
 
                 private:
-                    Buffer buffer_;
-                    struct AttrInfo
-                    {
-                        size_t nr;
-                        size_t ix;
-                    };
-                    typedef FixedVector<AttrInfo, MaxDepth> AttrInfos;
-                    AttrInfos attrInfos_;
+                    Outer &outer_;
+                    bool ok_ = false;
             };
-    }
-}
+
+            void clear()
+            {
+                buffer_.clear();
+                elementInfos_.clear();
+            }
+            ReturnCode swap(Buffer &buffer)
+            {
+                MSS_BEGIN(ReturnCode);
+                MSS(elementInfos_.empty());
+                buffer_.swap(buffer);
+                MSS_END();
+            }
+            const Buffer &buffer() const {return buffer_;}
+            Buffer &buffer() {return buffer_;}
+
+            template <typename T>
+                ReturnCode writeElement(RoleId rid, const T &t)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    MSS(write(buffer_, rid));
+                    MSS(serialize(t));
+                    auto &ei = elementInfos_.back();
+                    ++ei.ix;
+                    MSS(ei.ix <= ei.nr);
+                    MSS_END();
+                }
+
+            ReturnCode serialize(long v) { return write(buffer_, v); }
+            ReturnCode serialize(int v) { return write(buffer_, v); }
+            ReturnCode serialize(bool v) { return write(buffer_, v); }
+#ifndef ARDUINO
+            ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
+#endif
+            template <typename T>
+                ReturnCode serialize(const T &t)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    MSS(t.msgpack_serialize(*this));
+                    MSS_END();
+                }
+
+            Composer createComposer(size_t el_cnt)
+            {
+                return Composer(*this, el_cnt);
+            }
+
+        private:
+            Buffer buffer_;
+            struct ElementInfo
+            {
+                size_t nr = 0;
+                size_t ix = 0;
+                ElementInfo() {}
+                ElementInfo(size_t nr): nr(nr) {}
+            };
+            typedef FixedVector<ElementInfo, MaxDepth> ElementInfos;
+            ElementInfos elementInfos_;
+            bool ok_ = true;
+    };
+
+} }
 #include "gubg/log/end.hpp"
 
 #endif
