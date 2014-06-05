@@ -16,10 +16,9 @@ namespace
                 {
                     MSS_BEGIN(bool);
                     auto c = s.createComposer(2);
-                    L("after");
                     MSS(c.ok());
-                    MSS(c.writeElement(a__, a_));
-                    MSS(c.writeElement(b__, b_));
+                    MSS(c.put(a__, a_));
+                    MSS(c.put(b__, b_));
                     MSS(c.full());
                     MSS_END();
                 }

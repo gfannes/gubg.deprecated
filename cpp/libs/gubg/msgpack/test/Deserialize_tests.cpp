@@ -10,9 +10,12 @@ namespace
 {
     struct A
     {
-        void msgpack_set(AttributeId aid, long v) {S();L(STREAM(aid, v));}
-        void msgpack_set(AttributeId aid, Nil_tag) {S();L(STREAM(aid) << " nil");}
-        void msgpack_set(AttributeId aid, const string &v) {S();L(STREAM(aid, v));}
+		template <typename Wrapper>
+			void msgpack_createObject(Wrapper &, RoleId) {}
+        void msgpack_set(RoleId rid, long v) {S();L(STREAM(rid, v));}
+        void msgpack_set(RoleId rid, Nil_tag) {S();L(STREAM(rid) << " nil");}
+        void msgpack_set(RoleId rid, const string &v) {S();L(STREAM(rid, v));}
+		void msgpack_createdObject(RoleId) {}
     };
 }
 int main()
@@ -29,8 +32,8 @@ int main()
     TEST_TRUE(wrapper.isValid());
     wrapper.set(0, 0);
     Wrapper<string> w2 = wrapper;
-    w2.set(0, string("oeuaou"));
-    w2.set(0, 0);
+    w2.set(1, string("oeuaou"));
+    w2.set(2, 0);
     return 0;
 }
 #include "gubg/log/end.hpp"

@@ -1,14 +1,13 @@
 #ifndef HEADER_gubg_msgpack_Serializer_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_msgpack_Serializer_hpp_ALREADY_INCLUDED
 
+#include "gubg/msgpack/Types.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include "gubg/FixedVector.hpp"
 
 #define GUBG_MODULE "Serializer"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace msgpack {
-
-    typedef long RoleId;
 
     template <typename Buffer, typename Ids, size_t MaxDepth>
         class Serializer: public Ids
@@ -53,12 +52,12 @@ namespace gubg { namespace msgpack {
                     }
 
                     template <typename T>
-                        ReturnCode writeElement(RoleId rid, const T &t)
+                        ReturnCode put(RoleId rid, const T &t)
                         {
                             MSS_BEGIN(ReturnCode);
                             assert(!full());
                             MSS(!full());
-                            MSS(outer_.writeElement(rid, t));
+                            MSS(outer_.put(rid, t));
                             MSS_END();
                         }
 
@@ -93,7 +92,7 @@ namespace gubg { namespace msgpack {
             Buffer &buffer() {return buffer_;}
 
             template <typename T>
-                ReturnCode writeElement(RoleId rid, const T &t)
+                ReturnCode put(RoleId rid, const T &t)
                 {
                     MSS_BEGIN(ReturnCode);
                     MSS(write(buffer_, rid));
