@@ -1,0 +1,10 @@
+TODO
+====
+
+== Simplify the type encoding with msgpack
+
+* One type of ids, no difference between types and attributes
+* top level is always a map
+* keys are always ints
+* set(), open(range<int>) and close(range<int>) are the only things the user should provide
+* try to keep the set/open/close methods outside the populated objects
