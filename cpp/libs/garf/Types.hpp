@@ -5,126 +5,152 @@
 
 #define GUBG_MODULE_ "garf_Types"
 #include "gubg/log/begin.hpp"
-namespace garf
-{
-    namespace pod
+namespace garf { namespace pod {
+
+    struct TypeIds
     {
-        struct TypeIds
-        {
-            enum {Time, TopInfo, Led, Motor};
-        };
+        enum {Time, TopInfo, Led, Motor};
+    };
 
-        struct Time
-        {
-            Time(): millis(0) {}
-            unsigned long millis;
+    struct Time
+    {
+        Time(): millis(0) {}
+        unsigned long millis;
 
-            enum {millis_, nr_};
-            template <typename S>
-                bool msgpack_serialize(S &s) const
-                {
-                    s.writeIdAndAttrCnt(S::Time, nr_);
-                    s.template writeAttribute<long>(millis_, millis);
-                    return true;
-                }
-            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
-            template <typename String>
-                void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
-            void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+        enum {millis_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
             {
-                S();L(STREAM(aid, v));
-                switch (aid)
-                {
-                    case millis_: millis = v; break;
-                }
+                MSS_BEGIN(bool);
+                auto c = s.createComposer(nr_);
+                MSS(c.ok());
+                MSS(c.put(millis_rid, millis));
+                MSS(c.full());
+                MSS_END();
             }
-        };
 
-        struct TopInfo
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
         {
-            unsigned long nrLoops;
-            unsigned long maxElapse;
-
-            TopInfo():nrLoops(0), maxElapse(0){}
-
-            enum {nrLoops_, maxElapse_, nr_};
-            template <typename S>
-                bool msgpack_serialize(S &s) const
-                {
-                    s.writeIdAndAttrCnt(S::TopInfo, nr_);
-                    s.template writeAttribute<long>(nrLoops_, nrLoops);
-                    s.template writeAttribute<long>(maxElapse_, maxElapse);
-                    return true;
-                }
-            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
-            template <typename String>
-                void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
-            void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+            S();L(STREAM(rid, v));
+            switch (rid)
             {
-                S();L(STREAM(aid, v));
-                switch (aid)
-                {
-                    case nrLoops_: nrLoops = v; break;
-                    case maxElapse_: maxElapse = v; break;
-                }
+                case millis_rid: millis = v; break;
             }
-        };
+        }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
+    };
 
-        struct Led
+    struct TopInfo
+    {
+        unsigned long nrLoops;
+        unsigned long maxElapse;
+
+        TopInfo():nrLoops(0), maxElapse(0){}
+
+        enum {nrLoops_rid, maxElapse_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
+            {
+                MSS_BEGIN(bool);
+                auto c = s.createComposer(nr_);
+                MSS(c.ok());
+                MSS(c.put(nrLoops_rid, nrLoops));
+                MSS(c.put(maxElapse_rid, maxElapse));
+                MSS(c.full());
+                MSS_END();
+            }
+
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
         {
-            unsigned char id;
-            uint8_t pattern;
-
-            enum Attribute {id_, pattern_, nr_};
-            template <typename S>
-                bool msgpack_serialize(S &s) const
-                {
-                    s.writeIdAndAttrCnt(S::Led, nr_);
-                    s.template writeAttribute<long>(id_, id);
-                    s.template writeAttribute<long>(pattern_, pattern);
-                    return true;
-                }
-            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
-            template <typename String>
-                void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
-            void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+            S();L(STREAM(rid, v));
+            switch (rid)
             {
-                switch (aid)
-                {
-                    case id_: id = v; break;
-                    case pattern_: pattern = v; break;
-                }
+                case nrLoops_rid: nrLoops = v; break;
+                case maxElapse_rid: maxElapse = v; break;
             }
-        };
+        }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
+    };
 
-        struct Motor
+    struct Led
+    {
+        unsigned char id;
+        uint8_t pattern;
+
+        enum {id_rid, pattern_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
+            {
+                MSS_BEGIN(bool);
+                auto c = s.createComposer(nr_);
+                MSS(c.ok());
+                MSS(c.put(id_rid, id));
+                MSS(c.put(pattern_rid, pattern));
+                MSS(c.full());
+                MSS_END();
+            }
+
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
         {
-            int left;
-            int right;
-
-            enum Attribute {left_, right_, nr_};
-            template <typename S>
-                bool msgpack_serialize(S &s) const
-                {
-                    s.writeIdAndAttrCnt(S::Motor, nr_);
-                    s.template writeAttribute<long>(left_, left);
-                    s.template writeAttribute<long>(right_, right);
-                    return true;
-                }
-            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
-            template <typename String>
-                void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
-            void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+            switch (rid)
             {
-                switch (aid)
-                {
-                    case left_: left = v; break;
-                    case right_: right = v; break;
-                }
+                case id_rid: id = v; break;
+                case pattern_rid: pattern = v; break;
             }
-        };
-    }
-}
+        }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
+    };
+
+    struct Motor
+    {
+        int left;
+        int right;
+
+        enum {left_rid, right_rid, nr_};
+        template <typename S>
+            bool msgpack_serialize(S &s) const
+            {
+                MSS_BEGIN(bool);
+                auto c = s.createComposer(2);
+                MSS(c.ok());
+                MSS(c.put(left_rid, left));
+                MSS(c.put(right_rid, right));
+                MSS(c.full());
+                MSS_END();
+            }
+
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
+        template <typename String>
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
+        {
+            switch (rid)
+            {
+                case left_rid: left = v; break;
+                case right_rid: right = v; break;
+            }
+        }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
+    };
+
+} }
 #include "gubg/log/end.hpp"
 
 #endif

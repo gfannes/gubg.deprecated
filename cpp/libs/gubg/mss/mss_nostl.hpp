@@ -122,6 +122,8 @@ namespace gubg
 #define MSS_Q(...) MSS_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define MSS_L(c) MSS_DIRECT(mss_return_code_type::c)
-#define MSS_LQ(c) MSS_DIRECT(mss_return_code_type::c)
+#define MSS_QL(c) MSS_DIRECT(mss_return_code_type::c)
+
+#define MSS_IS_OK(v) gubg::mss::isOK(v)
 
 #endif

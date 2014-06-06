@@ -35,18 +35,18 @@ namespace ttt {
     class Factory: public gubg::msgpack::Factory_crtp<Factory, std::string, 15>
     {
         public:
-            gubg::msgpack::Wrapper<std::string> msgpack_createObject(AttributeId aid, TypeId tid)
-            {
-                switch (tid)
+            template <typename Wrapper>
+                void msgpack_createObject(Wrapper &obj, RoleId rid)
                 {
-                    case gubg::trace::dto::TypeIds::OpenScope: return wrap(os);
-                    case gubg::trace::dto::TypeIds::CloseScope: return wrap(cs);
+                    switch (rid)
+                    {
+                        case gubg::trace::dto::TypeIds::OpenScope:  obj = wrap(os); break;
+                        case gubg::trace::dto::TypeIds::CloseScope: obj = wrap(cs); break;
+                    }
                 }
-                return gubg::msgpack::Wrapper<std::string>();
-            }
-            void msgpack_createdObject(AttributeId aid, TypeId tid)
+            void msgpack_createdObject(RoleId rid)
             {
-                switch (tid)
+                switch (rid)
                 {
                     case gubg::trace::dto::TypeIds::OpenScope:
                         //cout << os << endl;
@@ -58,9 +58,9 @@ namespace ttt {
                         break;
                 }
             }
-            void msgpack_set(AttributeId id, gubg::msgpack::Nil_tag) {S();L("???");}
-            void msgpack_set(AttributeId id, const std::string &str) {S();L("???");}
-            void msgpack_set(AttributeId id, long) {S();L("???");}
+            void msgpack_set(RoleId id, gubg::msgpack::Nil_tag) {S();L("???");}
+            void msgpack_set(RoleId id, const std::string &str) {S();L("???");}
+            void msgpack_set(RoleId id, long) {S();L("???");}
 
             ProcessId pid = 0;
             gubg::trace::dto::OpenScope os;

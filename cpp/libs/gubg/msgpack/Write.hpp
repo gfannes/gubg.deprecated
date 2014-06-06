@@ -164,11 +164,17 @@ namespace gubg
                 MSS_END();
             }
         template <typename Buffer>
+            ReturnCode write(Buffer &buffer, char v){return write(buffer, v, Integer_tag());}
+        template <typename Buffer>
+            ReturnCode write(Buffer &buffer, unsigned char v){return write(buffer, v, Integer_tag());}
+        template <typename Buffer>
             ReturnCode write(Buffer &buffer, int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
             ReturnCode write(Buffer &buffer, unsigned int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
             ReturnCode write(Buffer &buffer, long int v){return write(buffer, v, Integer_tag());}
+        template <typename Buffer>
+            ReturnCode write(Buffer &buffer, long unsigned int v){return write(buffer, v, Integer_tag());}
         template <typename Buffer>
             ReturnCode write(Buffer &buffer, long long int v){return write(buffer, v, Integer_tag());}
 

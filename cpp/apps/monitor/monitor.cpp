@@ -25,36 +25,36 @@ namespace
     class Factory: public gubg::msgpack::Factory_crtp<Factory, string, 5>
     {
         public:
-            Wrapper_ msgpack_createObject(AttributeId aid, TypeId tid)
+            template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, RoleId rid)
             {
-                S();L(STREAM(aid, tid));
-                switch (tid)
+                S();L(STREAM(rid));
+                switch (rid)
                 {
-                    case garf::pod::TypeIds::Time: L("Time");return wrap(time_);
-                    case garf::pod::TypeIds::TopInfo: L("TopInfo"); return wrap(topInfo_);
+                    case garf::pod::TypeIds::Time:    L("Time");    obj = wrap(time_);    break;
+                    case garf::pod::TypeIds::TopInfo: L("TopInfo"); obj = wrap(topInfo_); break;
                 }
-                return Wrapper_();
             }
-            void msgpack_createdObject(AttributeId aid, TypeId tid)
+            void msgpack_createdObject(RoleId rid)
             {
-                S();L(STREAM(aid, tid));
-                switch (tid)
+                S();L(STREAM(rid));
+                switch (rid)
                 {
-                    case garf::pod::TypeIds::Time: std::cout << time_ << std::endl; break;
+                    case garf::pod::TypeIds::Time:    std::cout << time_ << std::endl;    break;
                     case garf::pod::TypeIds::TopInfo: std::cout << topInfo_ << std::endl; break;
                 }
             }
-            void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+            void msgpack_set(gubg::msgpack::RoleId rid, long v)
             {
-                S();L(STREAM(aid, v));
+                S();L(STREAM(rid, v));
             }
-            void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag)
+            void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag)
             {
                 S();L("nil");
             }
-            void msgpack_set(gubg::msgpack::AttributeId aid, const string &str)
+            void msgpack_set(gubg::msgpack::RoleId rid, const string &str)
             {
-                S();L(STREAM(aid, str));
+                S();L(STREAM(rid, str));
             }
         private:
             garf::pod::Time time_;
@@ -105,7 +105,7 @@ namespace
                 mode_(D9_Msgpack),
                 d9Decoder_(factory_)
         {
-            add(Descriptor::stdin(), AccessMode::Read);
+            add(Descriptor::std_in(), AccessMode::Read);
         }
 
             void setMode(Mode m) {mode_ = m;}
@@ -122,7 +122,7 @@ namespace
                         tty_.setBaudRate(9600);
                         add(tty_, AccessMode::ReadWrite);
                         break;
-                    case EventType::Close:
+                    case EventType::CloseRead:
                         LLL("Closed tty " << tty_);
                         erase(tty_, AccessMode::ReadWrite);
                         break;
@@ -201,8 +201,7 @@ namespace
             optionParser.addSwitch("-r", "--raw", "Raw output mode", [&s](){s.setMode(Raw);});
             optionParser.addSwitch("-m", "--msgpack", "Msgpack output mode", [&s](){s.setMode(Msgpack);});
 
-            OptionParser::Args args;
-            MSS(OptionParser::createArgs(args, argc, argv));
+            auto args = OptionParser::createArgs(argc, argv);
             MSS(optionParser.parse(args));
         }
 

@@ -17,18 +17,17 @@ garf::Blinker<100> g_blinker;
 class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
 {
     public:
-        gubg::msgpack::Wrapper<my::String> msgpack_createObject(AttributeId aid, TypeId tid)
-        {
-            switch (tid)
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, RoleId rid)
             {
-                case garf::pod::TypeIds::Led:
-                    return wrap(led);
+                switch (rid)
+                {
+                    case garf::pod::TypeIds::Led: obj = wrap(led); break;
+                }
             }
-            return gubg::msgpack::Wrapper<my::String>();
-        }
-        void msgpack_createdObject(AttributeId aid, TypeId tid)
+        void msgpack_createdObject(RoleId rid)
         {
-            switch (tid)
+            switch (rid)
             {
                 case garf::pod::TypeIds::Led:
                     if (led.id == 13)
@@ -36,11 +35,11 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 15>
                     break;
             }
         }
-        void msgpack_set(AttributeId id, gubg::msgpack::Nil_tag) {}
-        void msgpack_set(AttributeId id, const my::String &str) {}
-        void msgpack_set(AttributeId id, long) {}
+        void msgpack_set(RoleId id, gubg::msgpack::Nil_tag) {}
+        void msgpack_set(RoleId id, const my::String &str) {}
+        void msgpack_set(RoleId id, long) {}
 
-        garf::Led led;
+        garf::pod::Led led;
 };
 Factory factory;
 

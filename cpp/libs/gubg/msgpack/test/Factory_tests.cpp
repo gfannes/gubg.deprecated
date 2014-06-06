@@ -12,7 +12,7 @@ struct Ids
 #include "gubg/log/begin.hpp"
 struct Work
 {
-	enum {nonce_rid, msg_rid};
+	enum {nonce_rid, msg_rid, nr_};
     std::string nonce;
     std::string msg;
 
@@ -24,7 +24,7 @@ struct Work
         bool msgpack_serialize(Serializer &s)
         {
 			MSS_BEGIN(bool);
-			auto c = s.createComposer(2);
+			auto c = s.createComposer(nr_);
 			MSS(c.ok());
 			MSS(c.put(nonce_rid, nonce));
 			MSS(c.put(msg_rid, msg));

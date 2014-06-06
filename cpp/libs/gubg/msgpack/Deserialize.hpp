@@ -4,7 +4,7 @@
 #include "gubg/msgpack/Types.hpp"
 #include "gubg/msgpack/Primitives.hpp"
 #include "gubg/array.hpp"
-#include <cassert>
+#include "gubg/cassert.hpp"
 
 #define GUBG_MODULE_ "Deserialize"
 #include "gubg/log/begin.hpp"

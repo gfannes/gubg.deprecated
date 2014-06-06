@@ -53,31 +53,29 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 5>
         garf::pod::Motor motor;
         bool dirty = false;
 
-        gubg::msgpack::Wrapper<my::String> msgpack_createObject(AttributeId aid, TypeId tid)
-        {
-            switch (tid)
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, RoleId rid)
             {
-                case garf::pod::TypeIds::Motor:
-                    return wrapWithoutClear(motor);
+                switch (rid)
+                {
+                    case garf::pod::TypeIds::Motor: obj = wrapWithoutClear(motor); break;
+                }
             }
-            return gubg::msgpack::Wrapper<my::String>();
-        }
-        void msgpack_createdObject(AttributeId aid, TypeId tid)
+        void msgpack_createdObject(RoleId rid)
         {
             g_oostatus.indicateOnline();
             dirty = true;
-            switch (tid)
+            switch (rid)
             {
-                case garf::pod::TypeIds::Motor:
-                    break;
+                case garf::pod::TypeIds::Motor: break;
             }
         }
-        void msgpack_set(AttributeId id, gubg::msgpack::Nil_tag)
+        void msgpack_set(RoleId id, gubg::msgpack::Nil_tag)
         {
             g_oostatus.indicateOnline();
         }
-        void msgpack_set(AttributeId id, const my::String &str) {}
-        void msgpack_set(AttributeId id, long) {}
+        void msgpack_set(RoleId id, const my::String &str) {}
+        void msgpack_set(RoleId id, long) {}
 
     private:
 };

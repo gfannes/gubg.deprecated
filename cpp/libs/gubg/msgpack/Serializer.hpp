@@ -4,6 +4,7 @@
 #include "gubg/msgpack/Types.hpp"
 #include "gubg/msgpack/Write.hpp"
 #include "gubg/FixedVector.hpp"
+#include "gubg/mss.hpp"
 
 #define GUBG_MODULE "Serializer"
 #include "gubg/log/begin.hpp"
@@ -31,7 +32,7 @@ namespace gubg { namespace msgpack {
                         //Check that push_back() worked. For STL, this would be no problem, but on
                         //Arduino, this cannot be used, and FixedVector can fail to push_back()
                         //if the vector is full
-                        if (!MSS_IS_OK(elementInfos.size() == s+1))
+                        if (elementInfos.size() != s+1)
                             return;
                     }
 
@@ -52,13 +53,11 @@ namespace gubg { namespace msgpack {
                     }
 
                     template <typename T>
-                        ReturnCode put(RoleId rid, const T &t)
+                        bool put(RoleId rid, const T &t)
                         {
-                            MSS_BEGIN(ReturnCode);
                             assert(!full());
-                            MSS(!full());
-                            MSS(outer_.put(rid, t));
-                            MSS_END();
+                            if (!full()) return false;
+                            return outer_.put(rid, t);
                         }
 
                     bool ok() const {return ok_;}
@@ -92,9 +91,9 @@ namespace gubg { namespace msgpack {
             Buffer &buffer() {return buffer_;}
 
             template <typename T>
-                ReturnCode put(RoleId rid, const T &t)
+                bool put(RoleId rid, const T &t)
                 {
-                    MSS_BEGIN(ReturnCode);
+                    MSS_BEGIN(bool);
                     MSS(write(buffer_, rid));
                     MSS(serialize(t));
                     auto &ei = elementInfos_.back();
@@ -103,8 +102,14 @@ namespace gubg { namespace msgpack {
                     MSS_END();
                 }
 
-            ReturnCode serialize(long v) { return write(buffer_, v); }
+            ReturnCode serialize(char v) { return write(buffer_, v); }
+            ReturnCode serialize(unsigned char v) { return write(buffer_, v); }
             ReturnCode serialize(int v) { return write(buffer_, v); }
+            ReturnCode serialize(unsigned int v) { return write(buffer_, v); }
+            ReturnCode serialize(long v) { return write(buffer_, v); }
+            ReturnCode serialize(unsigned long v) { return write(buffer_, v); }
+            //ReturnCode serialize(long int v) { return write(buffer_, v); }
+            //ReturnCode serialize(long unsigned int v) { return write(buffer_, v); }
             ReturnCode serialize(bool v) { return write(buffer_, v); }
 #ifndef ARDUINO
             ReturnCode serialize(const std::string &str) { return write(buffer_, str); }

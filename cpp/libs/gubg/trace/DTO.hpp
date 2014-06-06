@@ -7,6 +7,7 @@
 #define GUBG_MODULE "DTO"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace trace { namespace dto { 
+
     struct TypeIds
     {
         enum {OpenScope, CloseScope};
@@ -24,76 +25,89 @@ namespace gubg { namespace trace { namespace dto {
         unsigned long category;
         std::string msg;
 
-        enum {pid_, tid_, tp_ms_, category_, msg_, nr_};
-        template <typename S>
-            bool msgpack_serialize(S &s) const
+        enum {pid_rid, tid_rid, tp_ms_rid, category_rid, msg_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
             {
-                s.writeIdAndAttrCnt(S::OpenScope, nr_);
-                s.template writeAttribute<long>(pid_, pid);
-                s.template writeAttribute<long>(tid_, tid);
-                s.template writeAttribute<long>(tp_ms_, tp_ms);
-                s.template writeAttribute<long>(category_, category);
-                s.template writeAttribute<std::string>(msg_, msg);
+                auto c = s.createComposer(nr_);
+                if (!c.ok()) return false;
+                if (!c.put(pid_rid, pid)) return false;
+                if (!c.put(tid_rid, tid)) return false;
+                if (!c.put(tp_ms_rid, tp_ms)) return false;
+                if (!c.put(category_rid, category)) return false;
+                if (!c.put(msg_rid, msg)) return false;
+                if (!c.full()) return false;
                 return true;
             }
-        void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
+
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
-            void msgpack_set(gubg::msgpack::AttributeId aid, const String &str)
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str)
             {
-                S();L(STREAM(aid, str));
-                switch (aid)
+                S();L(STREAM(rid, str));
+                switch (rid)
                 {
-                    case msg_: msg = str; break;
+                    case msg_rid: msg = str; break;
                 }
             }
-        void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
         {
-            S();L(STREAM(aid, v));
-            switch (aid)
+            S();L(STREAM(rid, v));
+            switch (rid)
             {
-                case pid_: pid = v; break;
-                case tid_: tid = v; break;
-                case tp_ms_: tp_ms = v; break;
-                case category_: category = v; break;
+                case pid_rid: pid = v; break;
+                case tid_rid: tid = v; break;
+                case tp_ms_rid: tp_ms = v; break;
+                case category_rid: category = v; break;
             }
         }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
-	std::ostream &operator<<(std::ostream &os, const OpenScope &obj)
-	{
-		os << STREAM(obj.pid, obj.tid, obj.tp_ms, obj.category, obj.msg);
-		return os;
-	}
+    std::ostream &operator<<(std::ostream &os, const OpenScope &obj)
+    {
+        os << STREAM(obj.pid, obj.tid, obj.tp_ms, obj.category, obj.msg);
+        return os;
+    }
+
     struct CloseScope: Origin
     {
-        enum {pid_, tid_, tp_ms_, nr_};
-        template <typename S>
-            bool msgpack_serialize(S &s) const
+        enum {pid_rid, tid_rid, tp_ms_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
             {
-                s.writeIdAndAttrCnt(S::CloseScope, nr_);
-                s.template writeAttribute<long>(pid_, pid);
-                s.template writeAttribute<long>(tid_, tid);
-                s.template writeAttribute<long>(tp_ms_, tp_ms);
+                auto c = s.createComposer(nr_);
+                if (!c.ok()) return false;
+                if (!c.put(pid_rid, pid)) return false;
+                if (!c.put(tid_rid, tid)) return false;
+                if (!c.put(tp_ms_rid, tp_ms)) return false;
+                if (!c.full()) return false;
                 return true;
             }
-        void msgpack_set(gubg::msgpack::AttributeId aid, gubg::msgpack::Nil_tag) {}
+
+        template <typename Wrapper>
+            void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
-            void msgpack_set(gubg::msgpack::AttributeId aid, const String &str) {}
-        void msgpack_set(gubg::msgpack::AttributeId aid, long v)
+            void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
+        void msgpack_set(gubg::msgpack::RoleId rid, long v)
         {
-            S();L(STREAM(aid, v));
-            switch (aid)
+            S();L(STREAM(rid, v));
+            switch (rid)
             {
-                case pid_: pid = v; break;
-                case tid_: tid = v; break;
-                case tp_ms_: tp_ms = v; break;
+                case pid_rid: pid = v; break;
+                case tid_rid: tid = v; break;
+                case tp_ms_rid: tp_ms = v; break;
             }
         }
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
-	std::ostream &operator<<(std::ostream &os, const CloseScope &obj)
-	{
-		os << STREAM(obj.pid, obj.tid, obj.tp_ms);
-		return os;
-	}
+    std::ostream &operator<<(std::ostream &os, const CloseScope &obj)
+    {
+        os << STREAM(obj.pid, obj.tid, obj.tp_ms);
+        return os;
+    }
 
     //This is only used at the sending side and can only be serialized to msgpack
     struct Scope: Origin
@@ -102,25 +116,30 @@ namespace gubg { namespace trace { namespace dto {
         unsigned long category;
         std::string msg;
 
-        enum {pid_, tid_, tp_ms_, category_, msg_, nr_};
-        template <typename S>
-            bool msgpack_serialize(S &s) const
+        enum {pid_rid, tid_rid, tp_ms_rid, category_rid, msg_rid, nr_};
+        template <typename Serializer>
+            bool msgpack_serialize(Serializer &s) const
             {
+                TODO::There is a problem here, the type of open or close scope should be inserted too. test it against apps/ttt
                 if (isOpen)
                 {
-                    s.writeIdAndAttrCnt(S::OpenScope, nr_);
-                    s.template writeAttribute<long>(pid_, pid);
-                    s.template writeAttribute<long>(tid_, tid);
-                    s.template writeAttribute<long>(tp_ms_, tp_ms);
-                    s.template writeAttribute<long>(category_, category);
-                    s.template writeAttribute<std::string>(msg_, msg);
+                    auto c = s.createComposer(nr_);
+                    if (!c.ok()) return false;
+                    if (!c.put(pid_rid, pid)) return false;
+                    if (!c.put(tid_rid, tid)) return false;
+                    if (!c.put(tp_ms_rid, tp_ms)) return false;
+                    if (!c.put(category_rid, category)) return false;
+                    if (!c.put(msg_rid, msg)) return false;
+                    if (!c.full()) return false;
                 }
                 else
                 {
-                    s.writeIdAndAttrCnt(S::CloseScope, category_);
-                    s.template writeAttribute<long>(pid_, pid);
-                    s.template writeAttribute<long>(tid_, tid);
-                    s.template writeAttribute<long>(tp_ms_, tp_ms);
+                    auto c = s.createComposer(nr_);
+                    if (!c.ok()) return false;
+                    if (!c.put(pid_rid, pid)) return false;
+                    if (!c.put(tid_rid, tid)) return false;
+                    if (!c.put(tp_ms_rid, tp_ms)) return false;
+                    if (!c.full()) return false;
                 }
                 return true;
             }
