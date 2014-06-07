@@ -6,7 +6,7 @@ namespace gubg
 {
     namespace msgpack
     {
-        ReturnCode Type::read(const uint8_t b)
+        ReturnCode Type::read(const std::uint8_t b)
         {
             MSS_BEGIN(ReturnCode);
             clear();

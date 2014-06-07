@@ -2,21 +2,19 @@
 #define HEADER_garf_Elapser_hpp_ALREADY_INCLUDED
 
 #include "Arduino.h"
+#include "gubg/OnlyOnce.hpp"
 
 namespace garf
 {
     class Elapser
     {
         public:
-            Elapser(): initialized_(false) {}
-
             void process()
             {
-                if (!initialized_)
+                if (doInit_())
                 {
                     previousProcess_ = millis();
                     elapse_ = 0;
-                    initialized_ = true;
                 }
 
                 const unsigned long now = millis();
@@ -29,7 +27,7 @@ namespace garf
         private:
             unsigned long previousProcess_;
             unsigned int elapse_;
-            bool initialized_;
+            gubg::OnlyOnce doInit_;
     };
 }
 

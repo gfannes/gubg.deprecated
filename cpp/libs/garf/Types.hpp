@@ -14,8 +14,7 @@ namespace garf { namespace pod {
 
     struct Time
     {
-        Time(): millis(0) {}
-        unsigned long millis;
+        unsigned long millis = 0;
 
         enum {millis_rid, nr_};
         template <typename Serializer>
@@ -47,10 +46,8 @@ namespace garf { namespace pod {
 
     struct TopInfo
     {
-        unsigned long nrLoops;
-        unsigned long maxElapse;
-
-        TopInfo():nrLoops(0), maxElapse(0){}
+        unsigned long nrLoops = 0;
+        unsigned long maxElapse = 0;
 
         enum {nrLoops_rid, maxElapse_rid, nr_};
         template <typename Serializer>
@@ -84,8 +81,8 @@ namespace garf { namespace pod {
 
     struct Led
     {
-        unsigned char id;
-        uint8_t pattern;
+        unsigned char id = 0;
+        uint8_t pattern = 0;
 
         enum {id_rid, pattern_rid, nr_};
         template <typename Serializer>
@@ -118,8 +115,8 @@ namespace garf { namespace pod {
 
     struct Motor
     {
-        int left;
-        int right;
+        int left = 0;
+        int right = 0;
 
         enum {left_rid, right_rid, nr_};
         template <typename S>

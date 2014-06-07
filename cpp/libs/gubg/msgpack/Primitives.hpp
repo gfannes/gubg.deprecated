@@ -2,6 +2,7 @@
 #define HEADER_gubg_msgpack_Primitives_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Codes.hpp"
+#include "gubg/cstdint.hpp"
 
 namespace gubg
 {
@@ -57,7 +58,7 @@ namespace gubg
 			unsigned char nr;
 
 			Type(): primitive(Primitive::Unknown), group(Group::Unknown), width(Width::Zero), nr(0){}
-			ReturnCode read(const uint8_t);
+			ReturnCode read(const std::uint8_t);
 			void clear();
 			ReturnCode valid() const;
 		};
