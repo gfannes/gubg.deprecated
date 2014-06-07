@@ -10,14 +10,14 @@
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace msgpack {
 
-    template <typename Buffer, typename Ids, size_t MaxDepth>
-        class Serializer: public Ids
+    template <typename Buffer, size_t MaxDepth>
+        class Serializer
     {
         public:
             class Composer
             {
                 public:
-                    typedef Serializer<Buffer, Ids, MaxDepth> Outer;
+                    typedef Serializer<Buffer, MaxDepth> Outer;
 
                     Composer(Outer &outer, size_t el_cnt):
                         outer_(outer)

@@ -9,6 +9,7 @@
 // * operator[]
 
 #include "gubg/cassert.hpp"
+#include "gubg/algorithm.hpp"
 
 namespace gubg
 {
@@ -16,6 +17,7 @@ namespace gubg
         class FixedVector
         {
             public:
+                typedef FixedVector<T, Capacity> Self;
                 typedef T* iterator;
                 typedef const T* const_iterator;
 
@@ -75,6 +77,14 @@ namespace gubg
                 {
                     assert(!empty());
                     return elements_;
+                }
+
+                void swap(Self &other)
+                {
+                    const auto maxSize = gubg::maximum(size_, other.size_);
+                    for (size_t i = 0; i < maxSize; ++i)
+                        std::swap(elements_[i], other.elements_[i]);
+                    std::swap(size_, other.size_);
                 }
 
             private:
