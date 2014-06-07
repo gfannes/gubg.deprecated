@@ -6,7 +6,7 @@ namespace gubg
 {
     namespace msgpack
     {
-        ReturnCode Type::read(const ubyte b)
+        ReturnCode Type::read(const uint8_t b)
         {
             MSS_BEGIN(ReturnCode);
             clear();
@@ -35,12 +35,12 @@ namespace gubg
                                 width = Width::Zero;
                                 break;
                             case 0xc2:
-                                primitive = Primitive::Boolean;
+                                primitive = Primitive::False;
                                 group = Group::Boolean;
                                 width = Width::One;
                                 break;
                             case 0xc3:
-                                primitive = Primitive::Boolean;
+                                primitive = Primitive::True;
                                 group = Group::Boolean;
                                 width = Width::One;
                                 break;

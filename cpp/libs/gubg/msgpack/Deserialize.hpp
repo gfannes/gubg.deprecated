@@ -21,6 +21,7 @@ namespace gubg { namespace msgpack {
 				void createObject(Wrapper<String> &, RoleId) {}
 				void set(RoleId, Nil_tag){}
 				void set(RoleId, long v){}
+				void set(RoleId, bool v){}
 				void set(RoleId, const String &str){}
 				void createdObject(RoleId){}
 		};
@@ -58,7 +59,9 @@ namespace gubg { namespace msgpack {
 				//Calls into the corresponding msgpack_createObject()/msgpack_set()/msgpack_createdObject() methods of the object passed during ctor.
 				void createObject(Self &res, RoleId rid) {if (!dataIsValid_) return; itf_()->createObject(res, rid);}
 				void set(RoleId rid, Nil_tag nil)        {if (!dataIsValid_) return; itf_()->set(rid, nil);}
+				void set(RoleId rid, int v)              {if (!dataIsValid_) return; itf_()->set(rid, (long)v);}
 				void set(RoleId rid, long v)             {if (!dataIsValid_) return; itf_()->set(rid, v);}
+				void set(RoleId rid, bool v)             {if (!dataIsValid_) return; itf_()->set(rid, v);}
 				void set(RoleId rid, const String &str)  {if (!dataIsValid_) return; itf_()->set(rid, str);}
 				void createdObject(RoleId rid)           {if (!dataIsValid_) return; itf_()->createdObject(rid);}
 
@@ -70,6 +73,7 @@ namespace gubg { namespace msgpack {
 						virtual void createObject(Self&, RoleId) = 0;
 						virtual void set(RoleId, Nil_tag) = 0;
 						virtual void set(RoleId, long v) = 0;
+						virtual void set(RoleId, bool v) = 0;
 						virtual void set(RoleId, const String &str) = 0;
 						virtual void createdObject(RoleId) = 0;
 				};
@@ -85,6 +89,7 @@ namespace gubg { namespace msgpack {
 						virtual void createObject(Self &res, RoleId rid) { obj_().msgpack_createObject(res, rid); };
 						virtual void set(RoleId rid, Nil_tag nil)        { obj_().msgpack_set(rid, nil); }
 						virtual void set(RoleId rid, long v)             { obj_().msgpack_set(rid, v); }
+						virtual void set(RoleId rid, bool v)             { obj_().msgpack_set(rid, v); }
 						virtual void set(RoleId rid, const String &str)  { obj_().msgpack_set(rid, str); }
 						virtual void createdObject(RoleId rid)           { obj_().msgpack_createdObject(rid); };
 

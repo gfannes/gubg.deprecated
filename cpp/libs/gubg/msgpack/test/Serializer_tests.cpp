@@ -15,15 +15,15 @@ namespace
                 bool msgpack_serialize(Serializer &s) const
                 {
                     MSS_BEGIN(bool);
-                    auto c = s.createComposer(2);
+                    auto c = s.createComposer(nr_);
                     MSS(c.ok());
-                    MSS(c.put(a__, a_));
-                    MSS(c.put(b__, b_));
+                    MSS(c.put(a_rid, a_));
+                    MSS(c.put(b_rid, b_));
                     MSS(c.full());
                     MSS_END();
                 }
         private:
-            enum {a__, b__};
+            enum {a_rid, b_rid, nr_};
             int a_ = 0x12345678;
             string b_ = "abc";
     };

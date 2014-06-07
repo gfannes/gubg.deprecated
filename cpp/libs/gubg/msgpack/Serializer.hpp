@@ -6,7 +6,7 @@
 #include "gubg/FixedVector.hpp"
 #include "gubg/mss.hpp"
 
-#define GUBG_MODULE "Serializer"
+#define GUBG_MODULE_ "Serializer"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace msgpack {
 
@@ -55,8 +55,10 @@ namespace gubg { namespace msgpack {
                     template <typename T>
                         bool put(RoleId rid, const T &t)
                         {
+							S();L(STREAM(rid));
                             assert(!full());
-                            if (!full()) return false;
+                            if (full())
+								return false;
                             return outer_.put(rid, t);
                         }
 
@@ -102,6 +104,7 @@ namespace gubg { namespace msgpack {
                     MSS_END();
                 }
 
+            ReturnCode serialize(bool v) { return write(buffer_, v); }
             ReturnCode serialize(char v) { return write(buffer_, v); }
             ReturnCode serialize(unsigned char v) { return write(buffer_, v); }
             ReturnCode serialize(int v) { return write(buffer_, v); }
@@ -110,7 +113,6 @@ namespace gubg { namespace msgpack {
             ReturnCode serialize(unsigned long v) { return write(buffer_, v); }
             //ReturnCode serialize(long int v) { return write(buffer_, v); }
             //ReturnCode serialize(long unsigned int v) { return write(buffer_, v); }
-            ReturnCode serialize(bool v) { return write(buffer_, v); }
 #ifndef ARDUINO
             ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
 #endif
@@ -134,7 +136,7 @@ namespace gubg { namespace msgpack {
                 size_t nr = 0;
                 size_t ix = 0;
                 ElementInfo() {}
-                ElementInfo(size_t nr): nr(nr) {}
+                ElementInfo(size_t nr): nr(nr), ix(0) {}
             };
             typedef FixedVector<ElementInfo, MaxDepth> ElementInfos;
             ElementInfos elementInfos_;

@@ -7,7 +7,7 @@
 #include "gubg/StateMachine.hpp"
 #include "gubg/FixedVector.hpp"
 
-#define GUBG_MODULE_ "msgpack_Factory"
+#define GUBG_MODULE "msgpack_Factory"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -95,6 +95,12 @@ namespace gubg
                                 //S();L("long: " << l);
                                 sm_.process(l);
                             }
+                        template <typename P>
+                            void parser_add(Bool b, const P &p)
+                            {
+                                //S();L("Bool: " << (bool)b);
+                                sm_.process(b);
+                            }
                         //We collect a raw string character by character and send it to the state machine
                         //when it is complete
                         template <typename P>
@@ -157,6 +163,7 @@ namespace gubg
 								case State::TopLevel:
 									//We use the receiver as the top-level entry point for deserialization
 									assert(objectsStack_.empty());
+									receiver_().msgpack_beginOfFrame();
 									obj = wrapWithoutClear(receiver_());
 									break;
 								case State::RoleId_detected:
@@ -192,6 +199,7 @@ namespace gubg
 											if (objectsStack_.empty())
 											{
 												assert(roleId_ == TopLevel_rid);
+												receiver_().msgpack_endOfFrame();
                                                 s.changeTo(State::TopLevel);
 											}
 											else
@@ -247,6 +255,27 @@ namespace gubg
    									//We received a nil inside a struct
                                     assert(objectsStack_.size() > 1);
                                     objectsStack_.back().set(roleId_, nil);
+                                    return s.changeTo(State::ElementWasSet);
+                                    break;
+                            }
+                            s.changeTo(State::SemanticError);
+                        }
+                        void sm_event(typename SM::State &s, Bool b)
+                        {
+                            S();L("Bool " << (bool)b);
+                            switch (s())
+                            {
+                                case State::TopLevel:
+									//We received a Bool directly
+                                    assert(objectsStack_.size() == 1);
+									assert(roleId_ == TopLevel_rid);
+                                    objectsStack_.back().set(roleId_, b);
+                                    return;
+                                    break;
+                                case State::RoleId_detected:
+   									//We received a Bool inside a struct
+                                    assert(objectsStack_.size() > 1);
+                                    objectsStack_.back().set(roleId_, b);
                                     return s.changeTo(State::ElementWasSet);
                                     break;
                             }

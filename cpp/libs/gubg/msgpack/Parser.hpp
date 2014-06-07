@@ -27,7 +27,7 @@ namespace gubg
                     typedef Path_ Path;
 
                     //Emits ParsingFinished when a complete top-level object is parsed
-                    ReturnCode process(ubyte b)
+                    ReturnCode process(uint8_t b)
                     {
                         MSS_BEGIN(ReturnCode);
 
@@ -162,7 +162,11 @@ namespace gubg
                                     receiver_().parser_add(Nil_tag(), path_);
                                     MSS_Q(proceed_());
                                     break;
-                            }
+								case Group::Boolean:
+									receiver_().parser_add(Bool(el_.type.primitive == Primitive::True), path_);
+									MSS_Q(proceed_());
+									break;
+							}
                         }
                         MSS_END();
                     }
@@ -172,7 +176,7 @@ namespace gubg
                             MSS_BEGIN(ReturnCode);
                             for (auto it = str.begin(); it != str.end(); ++it)
                             {
-                                switch (auto rc = process((ubyte)*it))
+                                switch (auto rc = process((uint8_t)*it))
                                 {
                                     case ReturnCode::OK:
                                     case ReturnCode::ParsingFinished:
@@ -192,7 +196,7 @@ namespace gubg
                     }
 
                 private:
-                    typedef gubg::FixedVector<ubyte, 8> Buffer;
+                    typedef gubg::FixedVector<uint8_t, 8> Buffer;
 
                     Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 
@@ -210,6 +214,7 @@ namespace gubg
                             auto e = path_.back();
                             path_.pop_back();
                             receiver_().parser_close(e, path_);
+							MSS_Q(proceed_());
                         }
                         MSS_END();
                     }
