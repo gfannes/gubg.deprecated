@@ -14,6 +14,8 @@ namespace garf { namespace pod {
 
     struct Time
     {
+        enum {TypeId = TypeIds::Time};
+
         unsigned long millis = 0;
 
         enum {millis_rid, nr_};
@@ -46,6 +48,8 @@ namespace garf { namespace pod {
 
     struct TopInfo
     {
+        enum {TypeId = TypeIds::TopInfo};
+
         unsigned long nrLoops = 0;
         unsigned long maxElapse = 0;
 
@@ -81,6 +85,8 @@ namespace garf { namespace pod {
 
     struct Led
     {
+        enum {TypeId = TypeIds::Led};
+
         unsigned char id = 0;
         uint8_t pattern = 0;
 
@@ -115,6 +121,8 @@ namespace garf { namespace pod {
 
     struct Motor
     {
+        enum {TypeId = TypeIds::Motor};
+
         int left = 0;
         int right = 0;
 

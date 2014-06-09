@@ -3,7 +3,8 @@
 #include "gubg/internet/Endpoint.hpp"
 #include "gubg/tty/Endpoint.hpp"
 #include "gubg/Timer.hpp"
-#include "gubg/msgpack/Write.hpp"
+#include "gubg/msgpack/Serializer.hpp"
+#include "garf/Types.hpp"
 #include "SDL/SDL.h"
 #include <thread>
 #include <chrono>
@@ -79,10 +80,12 @@ ReturnCode poll()
     bool quit = false;
 
     KeepAlive keepAlive;
-    keepAlive.setTimeout(std::chrono::milliseconds(500));
+    keepAlive.setTimeout(std::chrono::milliseconds(2500));
 
     vector<int> directions(2);
-    vector<int> motors(2);
+    garf::pod::Motor motor;
+    typedef gubg::msgpack::Serializer<std::string, 10> Serializer;
+    Serializer serializer;
 
     while (!quit)
     {
@@ -112,12 +115,12 @@ ReturnCode poll()
                         directions[1] = event.jaxis.value;
                         break;
                 }
-                motors[0] = (-directions[0]-directions[1])/1200;
-                motors[1] = (+directions[0]-directions[1])/1200;
-                string motors_msgpack;
-                msgpack::write(motors_msgpack, motors);
+                motor.left = (-directions[0]-directions[1])/1200;
+                motor.right = (+directions[0]-directions[1])/1200;
+
+                MSS(serializer.frame(motor));
                 ostringstream oss;
-                oss << "\xd9" << motors_msgpack;
+                oss << "\xd9" << serializer.buffer();
                 L(testing::toHex(oss.str()));
                 pipi->send(oss.str());
             }

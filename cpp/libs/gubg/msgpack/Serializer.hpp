@@ -61,6 +61,11 @@ namespace gubg { namespace msgpack {
 								return false;
                             return outer_.put(rid, t);
                         }
+                    template <typename T>
+                        bool put(const T &t)
+                        {
+                            return put(T::TypeId, t);
+                        }
 
                     bool ok() const {return ok_;}
                     bool full() const
@@ -121,6 +126,19 @@ namespace gubg { namespace msgpack {
                 {
                     MSS_BEGIN(ReturnCode);
                     MSS(t.msgpack_serialize(*this));
+                    MSS_END();
+                }
+
+            //Creates a frame of one object
+            template <typename T>
+                bool frame(const T &t)
+                {
+                    MSS_BEGIN(bool);
+                    clear();
+                    auto c = createComposer(1);
+                    MSS(c.ok());
+                    c.put(t);
+                    MSS(c.full());
                     MSS_END();
                 }
 
