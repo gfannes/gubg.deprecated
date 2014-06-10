@@ -32,6 +32,7 @@ namespace garf { namespace pod {
 
         template <typename Wrapper>
             void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
         void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
             void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
@@ -43,7 +44,6 @@ namespace garf { namespace pod {
                 case millis_rid: millis = v; break;
             }
         }
-        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
 
     struct TopInfo
@@ -68,6 +68,7 @@ namespace garf { namespace pod {
 
         template <typename Wrapper>
             void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
         void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
             void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
@@ -80,7 +81,6 @@ namespace garf { namespace pod {
                 case maxElapse_rid: maxElapse = v; break;
             }
         }
-        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
 
     struct Led
@@ -105,6 +105,7 @@ namespace garf { namespace pod {
 
         template <typename Wrapper>
             void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
         void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
             void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
@@ -116,7 +117,6 @@ namespace garf { namespace pod {
                 case pattern_rid: pattern = v; break;
             }
         }
-        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
 
     struct Motor
@@ -141,6 +141,7 @@ namespace garf { namespace pod {
 
         template <typename Wrapper>
             void msgpack_createObject(Wrapper &obj, gubg::msgpack::RoleId rid) {}
+        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
         void msgpack_set(gubg::msgpack::RoleId rid, gubg::msgpack::Nil_tag) {}
         template <typename String>
             void msgpack_set(gubg::msgpack::RoleId rid, const String &str) {}
@@ -152,7 +153,6 @@ namespace garf { namespace pod {
                 case right_rid: right = v; break;
             }
         }
-        void msgpack_createdObject(gubg::msgpack::RoleId rid) {}
     };
 
 } }

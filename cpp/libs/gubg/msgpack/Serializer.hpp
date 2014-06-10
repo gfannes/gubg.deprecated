@@ -6,7 +6,7 @@
 #include "gubg/FixedVector.hpp"
 #include "gubg/mss.hpp"
 
-#define GUBG_MODULE_ "Serializer"
+#define GUBG_MODULE "Serializer"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace msgpack {
 
@@ -116,9 +116,8 @@ namespace gubg { namespace msgpack {
             ReturnCode serialize(unsigned int v) { return write(buffer_, v); }
             ReturnCode serialize(long v) { return write(buffer_, v); }
             ReturnCode serialize(unsigned long v) { return write(buffer_, v); }
-            //ReturnCode serialize(long int v) { return write(buffer_, v); }
-            //ReturnCode serialize(long unsigned int v) { return write(buffer_, v); }
 #ifndef ARDUINO
+            ReturnCode serialize(std::nullptr_t) { return write(buffer_, Nil_tag()); }
             ReturnCode serialize(const std::string &str) { return write(buffer_, str); }
 #endif
             template <typename T>

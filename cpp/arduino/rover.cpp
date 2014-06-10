@@ -53,12 +53,14 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 5>
         garf::pod::Motor motor;
         bool dirty = false;
 
+        void msgpack_beginOfFrame() {}
+        void msgpack_endOfFrame() {}
         template <typename Wrapper>
             void msgpack_createObject(Wrapper &obj, RoleId rid)
             {
                 switch (rid)
                 {
-                    case garf::pod::TypeIds::Motor: obj = wrapWithoutClear(motor); break;
+                    case garf::pod::TypeIds::Motor: obj = wrap(motor); break;
                 }
             }
         void msgpack_createdObject(RoleId rid)
@@ -82,11 +84,10 @@ class Factory: public gubg::msgpack::Factory_crtp<Factory, my::String, 5>
 Factory g_factory;
 
 gubg::FixedVector<uint8_t, 4> d9Header_;
-gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, garf::pod::TypeIds, 2> serializer_;
+gubg::msgpack::Serializer<gubg::FixedVector<uint8_t, 20>, 3> serializer_;
 void sendAnswer()
 {
-    serializer_.clear();
-    serializer_.serialize(g_factory.motor);
+    serializer_.frame(g_factory.motor);
     gubg::d9::encodeInPlace(d9Header_, serializer_.buffer());
     Serial.write(d9Header_.data(), d9Header_.size());
     Serial.write(serializer_.buffer().data(), serializer_.buffer().size());

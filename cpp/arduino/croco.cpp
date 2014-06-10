@@ -4,6 +4,7 @@
 #include "gubg/tty/Endpoint.hpp"
 #include "gubg/Timer.hpp"
 #include "gubg/msgpack/Serializer.hpp"
+#include "gubg/d9/D9.hpp"
 #include "garf/Types.hpp"
 #include "SDL/SDL.h"
 #include <thread>
@@ -62,7 +63,8 @@ ReturnCode setup()
     MSS(joystick, CouldNotOpenJoystick);
 
     //string peerIP = "localhost";
-    string peerIP = "192.168.0.103";
+    //string peerIP = "192.168.0.103";
+    string peerIP = "192.168.0.100";
     gubg::internet::Client client(peerIP, 1234);
     MSS(client.createConnection(pipi));
 
@@ -80,7 +82,7 @@ ReturnCode poll()
     bool quit = false;
 
     KeepAlive keepAlive;
-    keepAlive.setTimeout(std::chrono::milliseconds(2500));
+    keepAlive.setTimeout(std::chrono::milliseconds(500));
 
     vector<int> directions(2);
     garf::pod::Motor motor;
@@ -119,10 +121,10 @@ ReturnCode poll()
                 motor.right = (+directions[0]-directions[1])/1200;
 
                 MSS(serializer.frame(motor));
-                ostringstream oss;
-                oss << "\xd9" << serializer.buffer();
-                L(testing::toHex(oss.str()));
-                pipi->send(oss.str());
+                std::string msg;
+                gubg::d9::encode(msg, serializer.buffer());
+                L(testing::toHex(msg));
+                pipi->send(msg);
             }
         }
     }

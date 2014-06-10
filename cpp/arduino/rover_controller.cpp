@@ -45,22 +45,25 @@ namespace
                 if (false)
                 {
                     L("Stay awake man");
-                    arduino_.send("\xd9\x80\xc0");
+                    serializer_.clear();
+                    serializer_.serialize(nullptr);
                 }
                 else
                 {
-                    gubg::msgpack::Serializer<std::string, garf::pod::TypeIds, 5> serializer;
-                    serializer.serialize(motor);
-                    std::string msg;
-                    gubg::d9::encode(msg, serializer.buffer());
-                    //L(testing::toHex(msg));
-                    arduino_.send(msg);
+                    serializer_.frame(motor);
                 }
+
+                std::string msg;
+                gubg::d9::encode(msg, serializer_.buffer());
+                L(testing::toHex(msg));
+                arduino_.send(msg);
 
                 reset();
             }
         private:
             Arduino &arduino_;
+            typedef gubg::msgpack::Serializer<std::string, 5> Serializer;
+            Serializer serializer_;
     };
 }
 
