@@ -7,97 +7,93 @@
 #include <set>
 #include <chrono>
 
-namespace gubg
-{
-    namespace file
+namespace gubg { namespace file {
+
+    enum class AccessMode {Read, Write, ReadWrite};
+    enum class EventType {Read, Write, Open, CloseRead, CloseWrite};
+    const char *to_hr(EventType);
+
+    class Select;
+
+    class Descriptor
     {
-        enum class AccessMode {Read, Write, ReadWrite};
-        enum class EventType {Read, Write, Open, CloseRead, CloseWrite};
-        const char *to_hr(EventType);
+        private:
+            friend class Select;
+            struct Pimpl;
+            typedef std::shared_ptr<Pimpl> PP;
 
-        class Select;
+        public:
+            static const int InvalidDesc = -1;
 
-        class Descriptor
-        {
-            private:
-                friend class Select;
-                struct Pimpl;
-                typedef std::shared_ptr<Pimpl> PP;
+            size_t id() const;
 
-            public:
-                static const int InvalidDesc = -1;
+            Descriptor(){}
+            Descriptor(PP pp): pimpl_(pp) {}
 
-                size_t id() const;
+            static Descriptor listen(unsigned short port, const std::string &ip = "");
+            static Descriptor listen(File, AccessMode);
 
-                Descriptor(){}
-                Descriptor(PP pp): pimpl_(pp) {}
+            static Descriptor std_in();
 
-                static Descriptor listen(unsigned short port, const std::string &ip = "");
-                static Descriptor listen(File, AccessMode);
+            ReturnCode accept(Descriptor &);
 
-                static Descriptor std_in();
+            static Descriptor connect(const std::string &ip, unsigned short port);
 
-                ReturnCode accept(Descriptor &);
+            //Returns silent PeerClosedConnection when peer closed the connection
+            //Allocate buffer with the maximum size you want to read. Failure if it is empty.
+            ReturnCode read(std::string &buffer);
+            ReturnCode write(size_t &written, const std::string &buffer);
 
-                static Descriptor connect(const std::string &ip, unsigned short port);
+            ReturnCode shutdown(AccessMode);
 
-                //Returns silent PeerClosedConnection
-                ReturnCode read(std::string &buffer);
-                ReturnCode write(size_t &written, const std::string &buffer);
+            ReturnCode setBaudRate(int rate);
 
-                ReturnCode shutdown(AccessMode);
+            void reset(){pimpl_.reset();}
+            bool valid() const;
 
-                ReturnCode setBaudRate(int rate);
+            bool operator<(const Descriptor &rhs) const;
+            bool operator==(const Descriptor &rhs) const;
 
-                void reset(){pimpl_.reset();}
-                bool valid() const;
+            void stream(std::ostream &) const;
 
-                bool operator<(const Descriptor &rhs) const;
-                bool operator==(const Descriptor &rhs) const;
+        private:
+            PP pimpl_;
+    };
 
-                void stream(std::ostream &) const;
+    class Select
+    {
+        public:
+            ReturnCode add(Descriptor, AccessMode);
+            ReturnCode erase(Descriptor, AccessMode);
 
-            private:
-                PP pimpl_;
-        };
+            //Calls select() on the added Descriptors
+            //Waits infinitely for a descriptor event
+            ReturnCode process() { return process_(0); }
+            //Waits for the specified timeout, 0 is polling
+            ReturnCode process(std::chrono::milliseconds timeout) { return process_(&timeout); }
+            //Waits for the specified timeout, 0 pointer waits infinitely
+            ReturnCode process(const std::chrono::milliseconds *timeout);
 
-        class Select
-        {
-            public:
-                ReturnCode add(Descriptor, AccessMode);
-                ReturnCode erase(Descriptor, AccessMode);
+            //Callbacks with typical select-events: a descriptor can be served
+            virtual void select_ready(Descriptor, EventType) = 0;
 
-                //Calls select() on the added Descriptors
-                //Waits infinitely for a descriptor event
-                ReturnCode process() { return process_(0); }
-                //Waits for the specified timeout, 0 is polling
-                ReturnCode process(std::chrono::milliseconds timeout) { return process_(&timeout); }
-                //Waits for the specified timeout, 0 pointer waits infinitely
-                ReturnCode process(const std::chrono::milliseconds *timeout);
+        private:
+            //This version of process_ is too dangerous to make public, timeout will be changed
+            ReturnCode process_(std::chrono::milliseconds *timeout);
+            bool invariants_() const;
 
-                //Callbacks with typical select-events: a descriptor can be served
-                virtual void select_ready(Descriptor, EventType) = 0;
+            typedef Descriptor::PP PP;
+            typedef std::set<PP> Set;
+            Set read_set_;
+            Set write_set_;
+    };
 
-            private:
-                //This version of process_ is too dangerous to make public, timeout will be changed
-                ReturnCode process_(std::chrono::milliseconds *timeout);
-                bool invariants_() const;
-
-                typedef Descriptor::PP PP;
-                typedef std::set<PP> Set;
-                Set read_set_;
-                Set write_set_;
-        };
-    }
-}
-
-namespace std
-{
-    inline ostream &operator<<(ostream &os, const gubg::file::Descriptor &d)
+    inline std::ostream &operator<<(std::ostream &os, const Descriptor &d)
     {
         d.stream(os);
         return os;
     }
-}
+
+} }
 
 #endif

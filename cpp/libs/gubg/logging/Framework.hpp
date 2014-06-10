@@ -3,6 +3,7 @@
 
 #include "gubg/Singleton.hpp"
 #include "gubg/Platform.hpp"
+#include "gubg/chrono/Uptime.hpp"
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -55,23 +56,21 @@ namespace gubg
                 const char *module() const {return nameStack_->back().module;}
                 std::string indent()
                 {
-                    if (!indent_)
+                    std::ostringstream oss;
+                    oss.setf(std::ios_base::fixed, std::ios_base::floatfield);
+                    oss.precision(3);
+                    oss << gubg::chrono::uptime() << ' ' << threadId_;
+                    const char *currentModule = 0;
+                    for (NameStack::const_iterator name = nameStack_->begin(); name != nameStack_->end(); ++name)
                     {
-                        std::ostringstream oss;
-                        oss << threadId_;
-                        const char *currentModule = 0;
-                        for (NameStack::const_iterator name = nameStack_->begin(); name != nameStack_->end(); ++name)
+                        if (currentModule != name->module)
                         {
-                            if (currentModule != name->module)
-                            {
-                                currentModule = name->module;
-                                oss << "->(" << name->module << ")";
-                            }
-                            oss << "->" << name->name;
+                            currentModule = name->module;
+                            oss << "->(" << name->module << ")";
                         }
-                        indent_.reset(new std::string(oss.str()));
+                        oss << "->" << name->name;
                     }
-                    return *indent_;
+                    return oss.str();
                 }
 
             private:
@@ -85,7 +84,6 @@ namespace gubg
                 const ThreadId threadId_;
                 const bool verboseDtor_;
                 NameStack *nameStack_;
-                std::unique_ptr<std::string> indent_;
         };
     }
 }

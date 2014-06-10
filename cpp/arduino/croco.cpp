@@ -5,6 +5,7 @@
 #include "gubg/Timer.hpp"
 #include "gubg/msgpack/Serializer.hpp"
 #include "gubg/d9/D9.hpp"
+#include "gubg/OnlyOnce.hpp"
 #include "garf/Types.hpp"
 #include "SDL/SDL.h"
 #include <thread>
@@ -13,7 +14,7 @@
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE_ "croco"
+#define GUBG_MODULE "croco"
 #include "gubg/log/begin.hpp"
 enum class ReturnCode {MSS_DEFAULT_CODES, NoJoystickFound, CouldNotOpenJoystick};
 
@@ -43,12 +44,45 @@ namespace
     class KeepAlive: public gubg::Timer_crtp<KeepAlive>
     {
         public:
-            void timer_expired()
+            ReturnCode timer_expired()
             {
-                pipi->send("\xd9\x80\xc0");
+                MSS_BEGIN(ReturnCode);
+                //Make sure reset() is always called
                 reset();
+                MSS(sendMessage_());
+                MSS_END();
             }
+
+            void set(const garf::pod::Motor &motor)
+            {
+                motor_ = motor;
+                sendMotor_.reset();
+            }
+
         private:
+            ReturnCode sendMessage_()
+            {
+                MSS_BEGIN(ReturnCode);
+
+                if (!sendMotor_())
+                {
+                    pipi->send("\xd9\x80\xc0");
+                    MSS_RETURN_OK();
+                }
+
+                MSS(serializer_.frame(motor_));
+                std::string msg;
+                gubg::d9::encode(msg, serializer_.buffer());
+                L(testing::toHex(msg));
+                pipi->send(msg);
+
+                MSS_END();
+            }
+
+            typedef gubg::msgpack::Serializer<std::string, 10> Serializer;
+            Serializer serializer_;
+            gubg::OnlyOnce sendMotor_;
+            garf::pod::Motor motor_;
     };
 }
 
@@ -82,12 +116,9 @@ ReturnCode poll()
     bool quit = false;
 
     KeepAlive keepAlive;
-    keepAlive.setTimeout(std::chrono::milliseconds(500));
+    keepAlive.setTimeout(std::chrono::milliseconds(100));
 
     vector<int> directions(2);
-    garf::pod::Motor motor;
-    typedef gubg::msgpack::Serializer<std::string, 10> Serializer;
-    Serializer serializer;
 
     while (!quit)
     {
@@ -117,14 +148,12 @@ ReturnCode poll()
                         directions[1] = event.jaxis.value;
                         break;
                 }
-                motor.left = (-directions[0]-directions[1])/1200;
-                motor.right = (+directions[0]-directions[1])/1200;
-
-                MSS(serializer.frame(motor));
-                std::string msg;
-                gubg::d9::encode(msg, serializer.buffer());
-                L(testing::toHex(msg));
-                pipi->send(msg);
+                garf::pod::Motor motor;
+                {
+                    motor.left = (-directions[0]-directions[1])/1200;
+                    motor.right = (+directions[0]-directions[1])/1200;
+                }
+                keepAlive.set(motor);
             }
         }
     }
