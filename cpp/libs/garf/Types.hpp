@@ -2,6 +2,7 @@
 #define HEADER_garf_Types_hpp_ALREADY_INCLUDED
 
 #include "gubg/msgpack/Deserialize.hpp"
+#include "gubg/Macro.hpp"
 
 #define GUBG_MODULE_ "garf_Types"
 #include "gubg/log/begin.hpp"
@@ -153,7 +154,17 @@ namespace garf { namespace pod {
                 case right_rid: right = v; break;
             }
         }
+        template <typename OS>
+            OS &stream(OS &os) const
+            {
+                return os << STREAM(left, right);
+            }
     };
+    template <typename OS>
+        OS &operator<<(OS &os, const Motor &m)
+        {
+            return m.stream(os);
+        }
 
 } }
 #include "gubg/log/end.hpp"

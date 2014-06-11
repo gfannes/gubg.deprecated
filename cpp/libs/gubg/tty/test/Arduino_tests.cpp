@@ -25,8 +25,10 @@ namespace
             Timer(Arduino &arduino):arduino_(arduino){}
             void timer_expired()
             {
-                arduino_.send("\xd9\xc0");
                 reset();
+                std::cout << "Sending message" << std::endl;
+                std::cout.flush();
+                arduino_.send("\xd9\x80\xc0");
             }
         private:
             Arduino &arduino_;
@@ -37,7 +39,7 @@ int main()
 {
     Arduino a;
     Timer timer(a);
-    timer.setTimeout(std::chrono::milliseconds(10));
+    timer.setTimeout(std::chrono::milliseconds(200));
     for (;;)
     {
         a.process();

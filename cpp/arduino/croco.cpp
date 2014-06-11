@@ -152,8 +152,8 @@ ReturnCode poll()
                 }
                 garf::pod::Motor motor;
                 {
-                    motor.left = (-directions[0]-directions[1])/1200;
-                    motor.right = (+directions[0]-directions[1])/1200;
+                    motor.right = (-directions[0]-directions[1])/800;
+                    motor.left = (+directions[0]-directions[1])/800;
                 }
                 keepAlive.set(motor);
             }
