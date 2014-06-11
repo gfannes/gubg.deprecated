@@ -4,7 +4,7 @@
 
 enum class ReturnCode {MSS_DEFAULT_CODES, };
 
-#define GUBG_MODULE "pipi"
+#define GUBG_MODULE_ "pipi"
 #include "gubg/log/begin.hpp"
 namespace pipi { 
 

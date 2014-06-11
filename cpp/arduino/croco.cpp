@@ -6,6 +6,7 @@
 #include "gubg/msgpack/Serializer.hpp"
 #include "gubg/d9/D9.hpp"
 #include "gubg/OnlyOnce.hpp"
+#include "gubg/String.hpp"
 #include "garf/Types.hpp"
 #include "SDL/SDL.h"
 #include <thread>
@@ -73,7 +74,8 @@ namespace
                 MSS(serializer_.frame(motor_));
                 std::string msg;
                 gubg::d9::encode(msg, serializer_.buffer());
-                L(testing::toHex(msg));
+                std::cout << gubg::toHex(msg) << std::endl;
+                //L(testing::toHex(msg));
                 pipi->send(msg);
 
                 MSS_END();
@@ -97,8 +99,8 @@ ReturnCode setup()
     MSS(joystick, CouldNotOpenJoystick);
 
     //string peerIP = "localhost";
-    //string peerIP = "192.168.0.103";
-    string peerIP = "192.168.0.100";
+    string peerIP = "192.168.0.103";
+    //string peerIP = "192.168.0.100";
     gubg::internet::Client client(peerIP, 1234);
     MSS(client.createConnection(pipi));
 
