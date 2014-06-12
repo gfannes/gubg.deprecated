@@ -42,9 +42,11 @@ namespace
     int nrJoysticks;
     SDL_Joystick *joystick = 0;
 
-    class KeepAlive: public gubg::Timer_crtp<KeepAlive>
+    class KeepAlive: public gubg::Timer_ftop<KeepAlive>
     {
         public:
+            KeepAlive(): Timer_ftop(*this, std::chrono::milliseconds(100)) {}
+
             ReturnCode timer_expired()
             {
                 MSS_BEGIN(ReturnCode);
@@ -118,7 +120,6 @@ ReturnCode poll()
     bool quit = false;
 
     KeepAlive keepAlive;
-    keepAlive.setTimeout(std::chrono::milliseconds(100));
 
     vector<int> directions(2);
 
