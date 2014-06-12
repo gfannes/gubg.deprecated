@@ -1,5 +1,8 @@
 #include "gubg/file/Descriptor.hpp"
 #include "gubg/String.hpp"
+#include "gubg/Timer.hpp"
+#include "gubg/msgpack/Serializer.hpp"
+#include "gubg/d9/D9.hpp"
 #include <queue>
 
 enum class ReturnCode {MSS_DEFAULT_CODES, };
@@ -11,10 +14,18 @@ namespace rvc {
     class Model: public gubg::file::Select
     {
         public:
-            Model(gubg::file::File flamingo)
+            Model(gubg::file::File flamingo):
+                sendMessage_(*this, std::chrono::milliseconds(500))
             {
                 flamingo_listen_ = Descriptor::listen(flamingo, AccessMode::ReadWrite);
-                add(flamingo_listen_, AccessMode::ReadWrite);
+                add(flamingo_listen_, AccessMode::Read);
+            }
+
+            void process()
+            {
+                //S();
+                Select::process(std::chrono::milliseconds(100));
+                sendMessage_.process();
             }
 
         private:
@@ -34,8 +45,10 @@ namespace rvc {
                         {
                             MSS(!flamingo_descr_.valid());
                             MSS(descr.accept(flamingo_descr_));
+                            MSS(flamingo_descr_.setBaudRate(9600));
                             MSS(add(flamingo_descr_, AccessMode::Read));
                             L("Flamingo is connected");
+                            std::this_thread::sleep_for(std::chrono::seconds(2));
                         }
                         break;
                     case EventType::Read:
@@ -73,6 +86,7 @@ namespace rvc {
                         {
                             size_t nrWritten = 0;
                             auto &msg = messages_4_flamingo_.front();
+                            L("Sending msg: " << gubg::toHex(msg));
                             MSS(flamingo_descr_.write(nrWritten, msg));
                             if (nrWritten == msg.size())
                             {
@@ -97,6 +111,40 @@ namespace rvc {
 
             typedef std::queue<std::string> Messages;
             Messages messages_4_flamingo_;
+
+            typedef gubg::msgpack::Serializer<std::string, 5> Serializer;
+            Serializer serializer;
+            void timer_expired()
+            {
+                S();L("timer_expired");
+                //Reschedule the timer
+                sendMessage_.reset();
+
+                if (!flamingo_descr_.valid())
+                {
+                    L("Flamingo not connected yet");
+                    return;
+                }
+
+                const int ut = gubg::chrono::uptime()/5;
+                if (ut%2 == 0)
+                {
+                    //Send keep alive
+                    serializer.clear();
+                    serializer.serialize(nullptr);
+                    std::string msg;
+                    gubg::d9::encode(msg, serializer.buffer());
+                    messages_4_flamingo_.push(msg);
+                    if (messages_4_flamingo_.size() == 1)
+                    {
+                        L("Adding flamingo to Write set");
+                        add(flamingo_descr_, AccessMode::Write);
+                    }
+                }
+            }
+            friend class gubg::Timer_ftop<Model>;
+            typedef gubg::Timer_ftop<Model> SendMessage;
+            SendMessage sendMessage_;
     };
 
 } 
@@ -106,8 +154,9 @@ ReturnCode main_()
     MSS_BEGIN(ReturnCode);
 
     rvc::Model model(gubg::file::File("/dev/ttyACM0"));
-    while (MSS_IS_OK(model.process()))
+    while (true)
     {
+        model.process();
     }
 
     MSS_END();

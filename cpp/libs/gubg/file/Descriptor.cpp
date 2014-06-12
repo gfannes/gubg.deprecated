@@ -714,8 +714,11 @@ ReturnCode Select::process_(milliseconds *timeout)
     {
         S();L("Not all descriptors are selectable");
         //We have to pauze ::select() from time to time to give non-select()-able non-blocking select-lookalikes a chance
-        const auto timeStep = milliseconds(500);
-        while (!timeout || *timeout >= timeStep)
+        auto timeStep = milliseconds(500);
+        if (timeout and *timeout < timeStep)
+            timeStep = *timeout;
+        L(STREAM(timeout->count(), timeStep.count()));
+        while (!timeout || (*timeout > milliseconds(0) and *timeout >= timeStep))
         {
             S();L("Processing " << timeStep.count() << " ms");
             //Do non-blocking select on those that cannot be selected
