@@ -221,9 +221,9 @@ namespace gubg
                             {
                                 case State::TopLevel:
 									//We received a long directly
-                                    assert(objectsStack_.size() == 1);
+                                    assert(objectsStack_.empty());
 									assert(roleId_ == TopLevel_rid);
-                                    objectsStack_.back().set(roleId_, id);
+                                    receiver_().msgpack_set(roleId_, id);
                                     return;
                                     break;
                                 case State::RoleId_detected:
@@ -246,9 +246,9 @@ namespace gubg
                             {
                                 case State::TopLevel:
 									//We received a nil directly
-                                    assert(objectsStack_.size() == 1);
+                                    assert(objectsStack_.empty());
 									assert(roleId_ == TopLevel_rid);
-                                    objectsStack_.back().set(roleId_, nil);
+                                    receiver_().msgpack_set(roleId_, nil);
                                     return;
                                     break;
                                 case State::RoleId_detected:
@@ -267,9 +267,9 @@ namespace gubg
                             {
                                 case State::TopLevel:
 									//We received a Bool directly
-                                    assert(objectsStack_.size() == 1);
+                                    assert(objectsStack_.empty());
 									assert(roleId_ == TopLevel_rid);
-                                    objectsStack_.back().set(roleId_, b);
+                                    receiver_().msgpack_set(roleId_, b);
                                     return;
                                     break;
                                 case State::RoleId_detected:
@@ -288,9 +288,9 @@ namespace gubg
                             {
                                 case State::TopLevel:
 									//We received a string directly
-                                    assert(objectsStack_.size() == 1);
+                                    assert(objectsStack_.empty());
 									assert(roleId_ == TopLevel_rid);
-                                    objectsStack_.back().set(roleId_, str);
+                                    receiver_().msgpack_set(roleId_, str);
                                     return;
                                     break;
                                 case State::RoleId_detected:

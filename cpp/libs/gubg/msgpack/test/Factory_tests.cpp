@@ -4,10 +4,6 @@
 #include "gubg/msgpack/test/Helper.hpp"
 #include <iostream>
 
-struct Ids
-{
-};
-
 #define GUBG_MODULE_ "Work"
 #include "gubg/log/begin.hpp"
 struct Work
@@ -136,12 +132,12 @@ int main()
     TEST_TAG(main);
     Factory f;
     //    f.process(data::msg_0);
-    //    f.process(data::msg_nil);
+    f.process(data::msg_nil);
     f.process(data::msg_ut);
     work.stream(std::cout);
 
     std::string buffer;
-    gubg::msgpack::Serializer<std::string, Ids, 10> serializer;
+    gubg::msgpack::Serializer<std::string, 10> serializer;
     serializer.serialize(buffer);
     std::cout << gubg::testing::toHex(buffer) << std::endl;
     return 0;

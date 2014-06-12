@@ -116,8 +116,6 @@ class Decoder: public gubg::d9::Decoder_crtp<Decoder, Flips>
         void d9_error(d9::ReturnCode) {ok_ = false;}
         void d9_ubyte(ubyte b)
         {
-            if (b == 0xc0)
-                g_oostatus.indicateOnline();
             if (ok_)
                 g_factory.process(b);
         }
@@ -148,17 +146,6 @@ void loop()
     g_leftMotor.process(g_elapser.elapse());
     g_rightMotor.process(g_elapser.elapse());
 
-#if 0
-    while (Serial.available())
-    {
-        g_oostatus.indicateOnline();
-        const auto ch = Serial.read();
-        Serial.print("Received: ");
-        Serial.println(ch);
-    }
-#endif
-
-#if 1
     if (Serial.available())
     {
         if (!mss::isOK(g_decoder.process(Serial.read())))
@@ -174,5 +161,4 @@ void loop()
         g_rightMotor.setSpeed(4*g_factory.motor.right);
         //sendAnswer();
     }
-#endif
 }
