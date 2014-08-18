@@ -26,3 +26,6 @@ export C_INCLUDE_PATH=$HOME/software/include
 export PKG_CONFIG_PATH=$HOME/software/lib/pkgconfig
 export EMACSRC=$HOME/gubg/emacs
 export INSTIKI=$HOME/software/instiki-0.13.0
+
+#execute this to get case-insensitive bash
+#echo "set completion-ignore-case On" >> ~/.inputrc

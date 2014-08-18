@@ -15,7 +15,7 @@
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE "croco"
+#define GUBG_MODULE_ "croco"
 #include "gubg/log/begin.hpp"
 enum class ReturnCode {MSS_DEFAULT_CODES, NoJoystickFound, CouldNotOpenJoystick};
 

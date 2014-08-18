@@ -57,7 +57,7 @@ DA_EXE := da
 endif
 da: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(DA_CACHE) $(GUBG_BIN)
 	g++ $(LDFLAGS) -o $(DA_EXE) $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(LINK_LIBS)
-	cp $(DA_EXE) $(GUBG_BIN)
+	cp -p $(DA_EXE) $(GUBG_BIN)
 
 %.da.cpp.o: %.cpp
 	g++ $(CPPFLAGS) -c $< -o $@
