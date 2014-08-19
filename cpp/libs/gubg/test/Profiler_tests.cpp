@@ -1,3 +1,4 @@
+#include "catch/catch.hpp"
 #include "gubg/Profiler.hpp"
 #include <chrono>
 #include <thread>
@@ -13,23 +14,27 @@ namespace  {
         Void, A, B, C, Nr,
     };
     typedef gubg::Profiler<Location> Profiler;
-    Profiler profiler(Location::Void);
-
-    void f()
-    {
-        profiler.setLocationTo(Location::A);
-        sleep(1);
-        profiler.setLocationTo(Location::B);
-        sleep(1);
-        profiler.setLocationTo(Location::C);
-        sleep(2);
-    }
 } 
 
-int main()
+TEST_CASE("Profiler", "[profiler]")
 {
-    for(int i = 0; i < 10; ++i)
-        f();
-    std::cout << profiler;
-    return 0;
+    Profiler profiler(Location::Void);
+    SECTION("ctor has all elapses initialized")
+    {
+        Profiler::Elapses zeroElapses;
+        REQUIRE(zeroElapses == profiler.elapses());
+    }
+    SECTION("streaming")
+    {
+        for(int i = 0; i < 10; ++i)
+        {
+            profiler.setLocationTo(Location::A);
+            sleep(1);
+            profiler.setLocationTo(Location::B);
+            sleep(1);
+            profiler.setLocationTo(Location::C);
+            sleep(2);
+        }
+        std::cout << profiler;
+    }
 }

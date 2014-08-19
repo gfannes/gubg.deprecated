@@ -11,10 +11,15 @@ namespace gubg {
         class Profiler
         {
             public:
-                typedef std::chrono::high_resolution_clock Clock;
                 static const size_t Nr = (size_t)Location::Nr;
 
+                typedef std::chrono::high_resolution_clock Clock;
+                typedef unsigned long Elapse;
+                typedef std::array<Elapse, Nr> Elapses;
+
                 Profiler(Location location): location_(location), start_(Clock::now()) {}
+
+                const Elapses &elapses() const {return elapses_;}
 
                 void setLocationTo(Location newLocation)
                 {
@@ -31,7 +36,6 @@ namespace gubg {
                 }
 
             private:
-                typedef unsigned long Elapse;
 
                 Elapse currentElapse_(size_t ix) const
                 {
@@ -43,7 +47,6 @@ namespace gubg {
                 Location location_;
                 Clock::time_point start_;
 
-                typedef std::array<Elapse, Nr> Elapses;
                 Elapses elapses_;
         };
 

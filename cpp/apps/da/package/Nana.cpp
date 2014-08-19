@@ -19,7 +19,7 @@ Nana::Nana(const File &base):
 
 bool Nana::exists() const
 {
-    SS();LL(base_.name());
+    SS(base_.name());
     return gubg::file::exists(base_) && gubg::file::exists(libDir_) && gubg::file::exists(incDir_);
 }
 

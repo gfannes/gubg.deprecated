@@ -21,6 +21,12 @@ map -S <Bslash>aoswitch (<Esc>:call ReadString("Switcher")<CR>A)<Esc>o{<Esc>ocas
 map -f <Bslash>aofor (<Esc>:call ReadString("Type")<CR>A::iterator it = <Esc>:call ReadString("Container")<CR>A.begin(); it != .end(); ++it)<Esc>o{<Esc>o}<Esc><Bslash>akhhhhhhh
 " template
 map -t <Bslash>aotemplate <typename <Esc>:call ReadString("Type")<CR>A><Esc><Bslash>a$
+" TEST_CASE
+map -e <Bslash>aoTEST_CASE("", "[]")<Esc><Bslash>a-bkbbla
+" SECTION
+map -E <Bslash>aoSECTION("")<Esc><Bslash>a-bkbla
+" REQUIRE
+map -u <Bslash>aoREQUIRE();<Esc><Bslash>aba
 
 let hn = hostname()
 let athome = 0
