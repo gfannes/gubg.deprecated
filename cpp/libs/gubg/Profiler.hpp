@@ -13,6 +13,7 @@ namespace gubg {
             public:
                 static const size_t Nr = (size_t)Location::Nr;
 
+                typedef Profiler<Location> Self;
                 typedef std::chrono::high_resolution_clock Clock;
                 typedef unsigned long Elapse;
                 typedef std::array<Elapse, Nr> Elapses;
@@ -34,6 +35,16 @@ namespace gubg {
                     for (size_t ix = 0; ix < Nr; ++ix)
                         os << ix << ": " << elapses_[ix] + currentElapse_(ix) << std::endl;
                 }
+
+                class RAII
+                {
+                    public:
+                        RAII(Self &self, Location loc): self_(self), loc_(loc) {}
+                        ~RAII() { self_.setLocationTo(loc_); }
+                    private:
+                        Self &self_;
+                        const Location loc_;
+                };
 
             private:
 
