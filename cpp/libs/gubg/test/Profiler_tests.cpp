@@ -61,4 +61,15 @@ TEST_CASE("Profiler", "[profiler]")
             std::cout << oss.str();
         }
     }
+    SECTION("stress")
+    {
+        for (long i = 0; i < 1000000; ++i)
+        {
+            profiler.setLocationTo(Location::A);
+            profiler.setLocationTo(Location::B);
+            profiler.setLocationTo(Location::C);
+            profiler.setLocationTo(Location::Void);
+        }
+        std::cout << profiler;
+    }
 }
