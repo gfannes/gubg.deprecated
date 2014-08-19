@@ -33,7 +33,9 @@ TEST_CASE("Profiler", "[profiler]")
     SECTION("streaming")
     {
         {
+            //Make sure we switch back to Void after these loops
             Profiler::RAII raii(profiler, Location::Void);
+
             for(int i = 0; i < 10; ++i)
             {
                 profiler.setLocationTo(Location::A);
@@ -44,6 +46,7 @@ TEST_CASE("Profiler", "[profiler]")
                 sleep(2);
             }
         }
+
         SECTION("relative durations")
         {
             const auto &elapses = profiler.elapses();
