@@ -2,6 +2,7 @@
 #include "gubg/parse/cpp/Includes.hpp"
 #include <queue>
 #include <set>
+#include <iostream>
 using namespace da;
 using gubg::file::File;
 using gubg::file::Forest;
@@ -68,7 +69,8 @@ ReturnCode Source::searchForHeaders(Headers &headers, SourceFiles &sisterFiles, 
 
         {
             S();L(STREAM(hdr.name()));
-            MSS(includePusher.process(hdr));
+            if (!gubg::mss::isOK(includePusher.process(hdr)))
+                std::cerr << "Warning: Could not parse " << hdr << " for additional includes." << std::endl;
         }
     }
 

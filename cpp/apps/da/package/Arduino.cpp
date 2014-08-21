@@ -14,7 +14,7 @@ Arduino::Arduino(const File &base):
 
 bool Arduino::exists() const
 {
-    SS();LL(base_.name());
+    SS(base_.name());
     return gubg::file::exists(base_);
 }
 

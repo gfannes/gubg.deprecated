@@ -15,25 +15,39 @@ GUBG::GUBG(const File &base):
     appsDir_(base),
     luaDir_(base)
 {
-    libsDir_ << "cpp/libs";
-    appsDir_ << "cpp/apps";
-    luaDir_ << "c/lua-5.2.3";
+	libsDir_ << "cpp/libs";
+	appsDir_ << "cpp/apps";
+	luaDir_ << "c/lua-5.2.3";
 
-    File gubg(libsDir_);
-    gubg << "gubg";
-    forest_.add(gubg, {"cpp", "hpp"});
+	{
+		File gubg(libsDir_);
+		gubg << "gubg";
+		forest_.add(gubg, {"cpp", "hpp"});
+	}
 
-    File iup(libsDir_);
-    iup << "iup";
-    forest_.add(iup, {"cpp", "hpp"});
+	{
+		File catsj(libsDir_);
+		catsj << "catch";
+		forest_.add(catsj, {"cpp", "hpp"});
+	}
 
-    File garf(libsDir_);
-    garf << "garf";
-    forest_.add(garf, {"cpp", "hpp", "h"});
+	{
+		File iup(libsDir_);
+		iup << "iup";
+		forest_.add(iup, {"cpp", "hpp"});
+	}
 
-    File da(appsDir_);
-    da << "da";
-    forest_.add(da, {"cpp", "hpp"});
+	{
+		File garf(libsDir_);
+		garf << "garf";
+		forest_.add(garf, {"cpp", "hpp", "h"});
+	}
+
+	{
+		File da(appsDir_);
+		da << "da";
+		forest_.add(da, {"cpp", "hpp"});
+	}
 }
 
 bool GUBG::exists() const
@@ -135,6 +149,8 @@ da::ReturnCode GUBG::resolveHeader(File &resolvedHeader, SourceFiles &sisterFile
         }
         else if (bn == "da")
             compileSettings_.includePaths.insert(appsDir_);
+        else if (bn == "catch")
+            compileSettings_.includePaths.insert(libsDir_);
         else
             MSS_QL(UnknownHeader);
     }

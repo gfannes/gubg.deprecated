@@ -47,7 +47,7 @@ unwantedExtensions = %w[a o dll pem der b64 cnf txt bin sh py java jar cloak.c c
 str = unwantedExtensions.map{|ext|"(\\.#{ext})"}*"|"
 reUnwantedExtensions = /(#{str})$/
 
-wantedExtensions = %w[c h cpp hpp d rb S asm asciidoc adoc lua]
+wantedExtensions = %w[c h cpp hpp inc d rb S asm asciidoc adoc lua]
 str = wantedExtensions.map{|ext|"(\\.#{ext})"}*"|"
 reWantedExtensions = /(#{str})$/
 

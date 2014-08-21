@@ -12,7 +12,7 @@ $(info "GUBG_SDKS: $(GUBG_SDKS)")
 $(info "GUBG_TMP: $(GUBG_TMP)")
 
 ifeq ($(GUBG_PLATFORM),win32)
-	GUBG_MAKE := gnu-make
+	GUBG_MAKE := make
 endif
 ifeq ($(GUBG_PLATFORM),linux)
 	GUBG_MAKE := make

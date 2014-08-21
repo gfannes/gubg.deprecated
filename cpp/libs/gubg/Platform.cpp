@@ -10,6 +10,7 @@
 #ifdef GUBG_WIN32
 #include "Windows.h"
 #include <unistd.h>
+#include <cstdlib>
 #endif
 
 using namespace std;
@@ -36,6 +37,9 @@ namespace gubg
                 return true;
                 break;
         }
+#endif
+#ifdef GUBG_WIN32
+		std::system(command.c_str());
 #endif
         return false;
     }
