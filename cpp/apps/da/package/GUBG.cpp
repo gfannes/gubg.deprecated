@@ -15,9 +15,9 @@ GUBG::GUBG(const File &base):
     appsDir_(base),
     luaDir_(base)
 {
-    libsDir_ << "cpp/libs";
-    appsDir_ << "cpp/apps";
-    luaDir_ << "c/lua-5.2.3";
+	libsDir_ << "cpp/libs";
+	appsDir_ << "cpp/apps";
+	luaDir_ << "c/lua-5.2.3";
 
     {
         File gubg(libsDir_);

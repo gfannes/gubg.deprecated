@@ -27,7 +27,7 @@ namespace
                 {
                     MSS_BEGIN(ReturnCode);
                     const auto ext = file.extension();
-                    if (ext == "hpp" || ext == "h" || ext == "cpp" || ext == "c" || ext == "rb")
+                    if (ext == "hpp" || ext == "h" || ext == "cpp" || ext == "c" || ext == "rb" || ext == "sh")
                         MSS(fixNewLines_(file));
                     MSS_END();
                 }

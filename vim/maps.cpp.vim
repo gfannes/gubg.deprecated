@@ -30,7 +30,7 @@ map -u <Bslash>aoREQUIRE();<Esc><Bslash>aba
 
 let hn = hostname()
 let athome = 0
-let indep = 0
+let indep = 1
 if hn == "rii"
 	let athome = 1
 endif

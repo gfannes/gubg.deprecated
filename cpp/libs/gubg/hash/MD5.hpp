@@ -5,34 +5,32 @@
 #include <string>
 #include <cstdint>
 
-namespace gubg
-{
-    namespace hash
-    {
-        class MD5
-        {
-            public:
-                MD5();
+namespace gubg { namespace hash {
 
-                void clear();
+	class MD5
+	{
+		public:
+			MD5();
 
-                MD5 &operator<<(const std::string &);
+			void clear();
 
-                typedef std::array<uint8_t, 16> Hash;
-                Hash hash() const;
-                std::string hash_hex() const;
+			MD5 &operator<<(const std::string &);
 
-                static std::string to_hex(const Hash &);
+			typedef std::array<uint8_t, 16> Hash;
+			Hash hash() const;
+			std::string hash_hex() const;
 
-            private:
-                typedef std::array<uint32_t, 4> HashWords;
-                HashWords hash_;
-                std::string remainder_;
-				//This should stay 64 bit and little endian, its content is copied as-is
-                typedef std::uint64_t Length;
-                Length length_;
-        };
-    }
-}
+			static std::string to_hex(const Hash &);
+
+		private:
+			typedef std::array<uint32_t, 4> HashWords;
+			HashWords hash_;
+			std::string remainder_;
+			//This should stay 64 bit and little endian, its content is copied as-is
+			typedef std::uint64_t Length;
+			Length length_;
+	};
+
+} }
 
 #endif
