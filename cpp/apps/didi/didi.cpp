@@ -87,7 +87,7 @@ namespace  {
 				S();L("Diffing " << lfn << " and " << rfn);
 				L(gubg::hash::MD5::to_hex(lhash));
 				L(gubg::hash::MD5::to_hex(rhash));
-				std::ostringstream command; command << "gvim -d " << lfn << " " << rfn;
+				std::ostringstream command; command << "gvim -f -d " << lfn << " " << rfn;
 				std::system(command.str().c_str());
 			}
 
