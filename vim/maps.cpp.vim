@@ -6,7 +6,7 @@ map -r <Bslash>aO#include "<Esc>:call ReadString("Header")<CR>A"<Esc>j<Bslash>a
 " include <>
 map -R <Bslash>aO#include <<Esc>:call ReadString("Header")<CR>A><Esc>j<Bslash>a
 " guard
-map -g <Bslash>ai#ifndef <Esc>:call ReadString("Path to header")<CR>$by$o#define <Esc>p-o-oo#endif<Esc>kk<Bslash>a
+map -g <Bslash>ai#ifndef HEADER_<Esc>:call ReadString("Path to header")<CR>A_ALREADY_INCLUDED<Esc>$by$o#define <Esc>p-o-o-o-oo#endif<Esc>kkk<Bslash>a
 " block
 map -b -o<Bslash>aa{<Esc>-oa}<Esc><Bslash>ak$
 " class
@@ -27,9 +27,13 @@ map -e <Bslash>aoTEST_CASE("", "[]")<Esc><Bslash>a-bkbbla
 map -E <Bslash>aoSECTION("")<Esc><Bslash>a-bkbla
 " REQUIRE
 map -u <Bslash>aoREQUIRE();<Esc><Bslash>aba
+" AURO_LOG
+map -a <Bslash>aoAURO_LOG_M(<Esc>:call ReadString("Log level")<CR>$bve~ea, );<Esc><Bslash>ahha
+" CAP
+map -A <Bslash>aaCAP() << <Esc><Bslash>ahhhhha
 
 let hn = hostname()
-let athome = 0
+let athome = 1
 let indep = 1
 if hn == "rii"
 	let athome = 1
