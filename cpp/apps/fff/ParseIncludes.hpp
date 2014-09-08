@@ -9,7 +9,9 @@ namespace fff {
 		public:
 			std::string name() const override {return "ParseIncludes";}
 			ReturnCode process(Board &) override;
+
 		private:
+			size_t ix_ = 0;
 	};
 } 
 

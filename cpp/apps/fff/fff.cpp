@@ -46,7 +46,7 @@ namespace fff {
 		MSS(!options.seed.empty(), NoSeedGiven);
 
 		Board board;
-		MSS(board.add(Tag("start"), gubg::file::File(options.seed)));
+		MSS(board.add(Tag("start"), options.seed));
 
         ToolFactory fact;
         auto toolchain = fact.createToolChain("exe");

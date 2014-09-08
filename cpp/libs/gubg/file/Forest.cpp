@@ -111,8 +111,10 @@ ReturnCode Forest::resolve(File &resolved, File &root, const File &partial, cons
 {
     assert(invariants_());
 
+	SS(STREAM(partial, overlap));
     for (auto tree: trees_)
     {
+		SS(STREAM(tree->root()));
         File wanted = tree->root();
         size_t ol = overlap;
         while (ol > 0)
@@ -121,7 +123,9 @@ ReturnCode Forest::resolve(File &resolved, File &root, const File &partial, cons
             string bn;
             wanted.popBasename(bn);
         }
+		L(STREAM(wanted));
         wanted << partial.name();
+		L(STREAM(wanted));
         for (const auto &f: tree->files())
         {
             if (wanted.name() == f.name())

@@ -1,20 +1,25 @@
 #include "fff/Tag.hpp"
 #include "gubg/OnlyOnce.hpp"
 #include <vector>
+using namespace std;
 
 namespace fff { 
 
 	struct Tag::Pimpl
 	{
-		std::vector<std::string> parts;
-		Pimpl(std::string str) {parts.push_back(str);}
+		vector<string> parts;
+		Pimpl(string str) {parts.push_back(str);}
+		Pimpl(string str1, string str2) {parts.push_back(str1); parts.push_back(str2);}
 	};
 
-	Tag::Tag(std::string str): pimpl_(new Pimpl(str)) {}
+	Tag::Tag(string str): pimpl_(new Pimpl(str)) {}
+	Tag::Tag(string str1, string str2): pimpl_(new Pimpl(str1, str2)) {}
 
 	bool Tag::operator<(Tag rhs) const {return pimpl_->parts < rhs.pimpl_->parts;}
+	bool Tag::operator==(Tag rhs) const {return pimpl_->parts == rhs.pimpl_->parts;}
+	bool Tag::operator!=(Tag rhs) const {return pimpl_->parts != rhs.pimpl_->parts;}
 
-	void Tag::stream(std::ostream &os) const
+	void Tag::stream(ostream &os) const
 	{
 		if (!pimpl_)
 		{

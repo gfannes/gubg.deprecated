@@ -7,7 +7,7 @@ namespace fff {
 	enum class ReturnCode
 	{
 		MSS_DEFAULT_CODES,
-		NoSeedGiven, TagValueAlreadyExists,
+		NoSeedGiven, TagValueAlreadyExists, AlreadyStarted, NoNewEntries,
 	};
 } 
 

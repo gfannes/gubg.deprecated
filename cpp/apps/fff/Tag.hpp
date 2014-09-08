@@ -10,8 +10,11 @@ namespace fff {
 	{
 		public:
 			Tag(std::string);
+			Tag(std::string, std::string);
 
 			bool operator<(Tag) const;
+			bool operator==(Tag) const;
+			bool operator!=(Tag) const;
 
 			void stream(std::ostream &) const;
 

@@ -16,7 +16,7 @@ namespace fff {
 		LockGuard lg(mutex_);
 		{
 			const auto p = tagsPerValue_.find(value);
-			MSS(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
+			MSS_Q(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
 		}
 		tagValues_.push_back(TagValue(tag, value));
 		tagsPerValue_[value].insert(tag);
