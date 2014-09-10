@@ -2,20 +2,14 @@
 #define HEADER_fff_Board_hpp_ALREADY_INCLUDED
 
 #include "fff/Codes.hpp"
-#include "fff/Tag.hpp"
-#include "fff/Value.hpp"
+#include "fff/Types.hpp"
 #include "fff/Tool.hpp"
-#include "gubg/hash/MD5.hpp"
 #include <vector>
 #include <map>
 #include <set>
 #include <thread>
 
 namespace fff { 
-
-	typedef std::pair<Tag, Value> TagValue;
-	typedef std::vector<TagValue> TagValues;
-	typedef gubg::hash::MD5::Hash Hash;
 
     class Board
     {
@@ -38,7 +32,6 @@ namespace fff {
 			typedef std::map<Value, Tags> TagsPerValue;
 			TagsPerValue tagsPerValue_;
 
-			typedef std::set<TagValue> Dependencies;
 			typedef std::map<TagValue, Dependencies> DependenciesPerTV;
 			DependenciesPerTV dependenciesPerTV_;
 

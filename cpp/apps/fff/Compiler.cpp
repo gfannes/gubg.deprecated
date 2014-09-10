@@ -1,6 +1,6 @@
 #include "fff/Compiler.hpp"
 #include "fff/Board.hpp"
-#include "fff/Execute.hpp"
+#include "fff/Create.hpp"
 using namespace gubg;
 using namespace std;
 
@@ -29,6 +29,7 @@ namespace fff {
 			options = oss.str();
 		}
 
+        CreateMgr create_mgr(file::File("/tmp"));
 		for (auto tv: tvs)
 		{
 			if (false) {}
@@ -39,7 +40,10 @@ namespace fff {
 				ostringstream oss;
 				oss << "g++ -std=c++0x -c " << source << " -o " << obj << " " << options;
 				L("Compiling " << source << " into " << obj);
-				MSS(execute(oss.str()));
+                CreateJob job;
+                job.files.insert(obj);
+                job.command = oss.str();
+				MSS(create_mgr.create(job));
 				board.add(Tag("c++", "object"), obj);
 			}
 		}
