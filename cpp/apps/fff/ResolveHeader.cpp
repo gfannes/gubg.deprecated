@@ -43,7 +43,7 @@ namespace fff {
 					forest_.add(path, {"hpp", "cpp"});
 					{
 						auto ip = path; ip.popBasename();
-						board.add(Tag("c++", "include_path"), ip);
+						board.add(Tag("c++", "include_path"), ip, tv);
 					}
 				}
 			}
@@ -61,7 +61,7 @@ namespace fff {
 						roots_.insert(*gubg_);
 						{
 							auto ip = *gubg_; ip.popBasename();
-							board.add(Tag("c++", "include_path"), ip);
+							board.add(Tag("c++", "include_path"), ip, tv);
 						}
 					}
 				}
@@ -75,7 +75,7 @@ namespace fff {
 				const auto header = tv.second.file();
 				file::File source = header; source.setExtension("cpp");
 				if (forest_.contains(source))
-					board.add(Tag("c++", "source"), source);
+					board.add(Tag("c++", "source"), source, tv);
 			}
 		}
 

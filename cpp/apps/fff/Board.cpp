@@ -22,6 +22,32 @@ namespace fff {
 		tagsPerValue_[value].insert(tag);
 		MSS_END();
 	}
+	ReturnCode Board::add(Tag tag, Value value, TagValue orig)
+	{
+		MSS_BEGIN(ReturnCode, STREAM(tag, value));
+		LockGuard lg(mutex_);
+		{
+			const auto p = tagsPerValue_.find(value);
+			MSS_Q(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
+		}
+		auto tv = TagValue(tag, value);
+		tagValues_.push_back(tv);
+		tagsPerValue_[value].insert(tag);
+		dependenciesPerTV_[orig].insert(tv);
+		MSS_END();
+	}
+
+	ReturnCode Board::setHash(TagValue tv, Hash hash)
+	{
+		MSS_BEGIN(ReturnCode);
+		LockGuard lg(mutex_);
+		{
+			const auto p = hashPerTV_.find(tv);
+			MSS_Q(p == hashPerTV_.end(), HashAlreadySet);
+		}
+		hashPerTV_[tv] = hash;
+		MSS_END();
+	}
 
 	TagValues Board::getFrom(size_t ix) const
 	{
