@@ -1,6 +1,6 @@
 #include "fff/Linker.hpp"
 #include "fff/Board.hpp"
-#include "fff/Execute.hpp"
+#include "fff/Create.hpp"
 #include "gubg/file/Filesystem.hpp"
 using namespace gubg;
 using namespace std;
@@ -57,7 +57,11 @@ namespace fff {
 		for (auto obj: objects)
 			oss << " " << obj;
 		L("Linking " << executable);
-		MSS(execute(oss.str()));
+        CreateJob job;
+        job.files.insert(executable);
+        job.command = oss.str();
+        CreateMgr create_mgr(file::File("/tmp"));
+        MSS(create_mgr.create(job));
 		board.add(Tag("c++", "executable"), executable);
 
 		MSS_END();
