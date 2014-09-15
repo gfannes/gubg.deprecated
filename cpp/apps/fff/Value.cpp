@@ -1,5 +1,6 @@
 #include "fff/Value.hpp"
 #include <cassert>
+#include <sstream>
 
 namespace  { 
 	gubg::file::File emptyFile_;
@@ -83,5 +84,11 @@ namespace fff {
 			case Integer: os << "Integer: " << pimpl_->integer; break;
 			default:      os << "Unknown type";                 break;
 		}
+	}
+	std::string Value::to_str() const
+	{
+		std::ostringstream oss;
+		stream(oss);
+		return oss.str();
 	}
 } 

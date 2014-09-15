@@ -2,12 +2,14 @@
 #define HEADER_fff_Options_hpp_ALREADY_INCLUDED
 
 #include <string>
+#include <vector>
 
 namespace fff { 
 	struct Options
 	{
 		bool showHelp = false;
-		std::string seed;
+		typedef std::vector<std::string> Seeds;
+		Seeds seeds;
 	};
 } 
 

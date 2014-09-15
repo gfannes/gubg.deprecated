@@ -13,15 +13,15 @@ namespace fff {
         if (false) {}
         else if (name == "exe")
         {
-            res.push_back(create_("Starter"));
-            res.push_back(create_("ParseIncludes"));
-            res.push_back(create_("ResolveHeader"));
-            res.push_back(create_("Compiler"));
-            res.push_back(create_("Linker"));
+            res.push_back(createTool("Starter"));
+            res.push_back(createTool("ParseIncludes"));
+            res.push_back(createTool("ResolveHeader"));
+            res.push_back(createTool("Compiler"));
+            res.push_back(createTool("Linker"));
         }
         return res;
     }
-    Tool_itf::Ptr ToolFactory::create_(const string &name)
+    Tool_itf::Ptr ToolFactory::createTool(const string &name)
     {
 #define L_ELSE_IF(type) else if (name == #type) return Tool_itf::Ptr(new type())
         if (false) {}

@@ -25,6 +25,7 @@ namespace fff {
 			long integer() const;
 
 			void stream(std::ostream &) const;
+			std::string to_str() const;
 
 		private:
 			struct Pimpl;

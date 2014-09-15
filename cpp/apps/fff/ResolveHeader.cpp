@@ -22,6 +22,8 @@ namespace fff {
 		file::File f;
 		if (gubg_home_(f))
 			gubg_.reset(new file::File(f << "cpp/libs/gubg"));
+		if (gubg_home_(f))
+			lua_.reset(new file::File(f << "c/lua-5.2.3"));
 	}
 	ReturnCode ResolveHeader::process(Board &board)
 	{
@@ -66,9 +68,31 @@ namespace fff {
 					}
 				}
 
+				if (lua_ and roots_.count(*lua_) == 0)
+				{
+					static const regex lua_re("lua.hpp");
+					if (regex_match(tv.second.string(), lua_re))
+					{
+						L("Adding lua (" << *lua_ << ")");
+						board.add(Tag("c++", "include_path"), *lua_, tv);
+						vector<file::File> files;
+						MSS(file::read(files, *lua_));
+						for (auto f: files)
+						{
+							if (f.extension() != "c")
+								continue;
+							if (f.basename() == "luac.c")
+								continue;
+							if (f.basename() == "lua.c")
+								continue;
+							board.add(Tag("c", "source"), f, tv);
+						}
+					}
+				}
+
 				file::File rf;
 				if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()))))
-					board.add(Tag("c++", "header"), rf);
+					board.add(Tag("c++", "header"), rf, tv);
 			}
 			else if (tv.first == Tag("c++", "header"))
 			{

@@ -10,7 +10,7 @@ namespace fff {
 
 	typedef std::pair<Tag, Value> TagValue;
 	typedef std::vector<TagValue> TagValues;
-	typedef gubg::hash::MD5::Hash Hash;
+	typedef gubg::hash::md5::Hash Hash;
     typedef std::set<TagValue> Dependencies;
 
 } 

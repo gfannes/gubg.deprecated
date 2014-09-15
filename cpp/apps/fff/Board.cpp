@@ -1,13 +1,34 @@
 #include "fff/Board.hpp"
+#include "gubg/file/Filesystem.hpp"
+#include <cassert>
 
 #define GUBG_MODULE_ "Board"
 #include "gubg/log/begin.hpp"
+extern "C"
+{
+#include "lua.h"
+	int fff_board_add(lua_State *s)
+	{
+		SS(lua_gettop(s));
+		int nr_res = 0;
+		if (lua_gettop(s) != 2)
+		{
+			lua_pushboolean(s, false); ++nr_res;
+			return nr_res;
+		}
+		lua_pushboolean(s, true); ++nr_res;
+		return nr_res;
+	}
+}
 namespace fff { 
 
-	size_t Board::size() const
+	const std::string lua_lib__ = "board = {add: fff_board_add};";
+
+	Board::Board():
+		luaState_(gubg::lua::State::create())
 	{
-		LockGuard lg(mutex_);
-		return tagValues_.size();
+		luaState_.registerFunction(fff_board_add, "fff_board_add");
+		luaState_.execute(lua_lib__);
 	}
 
 	ReturnCode Board::add(Tag tag, Value value)
@@ -25,29 +46,18 @@ namespace fff {
 	ReturnCode Board::add(Tag tag, Value value, TagValue orig)
 	{
 		MSS_BEGIN(ReturnCode, STREAM(tag, value));
+		auto tv = TagValue(tag, value);
 		LockGuard lg(mutex_);
+		dependenciesPerTV_[orig].insert(tv);
 		{
 			const auto p = tagsPerValue_.find(value);
 			MSS_Q(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
 		}
-		auto tv = TagValue(tag, value);
 		tagValues_.push_back(tv);
 		tagsPerValue_[value].insert(tag);
-		dependenciesPerTV_[orig].insert(tv);
 		MSS_END();
 	}
 
-	ReturnCode Board::setHash(TagValue tv, Hash hash)
-	{
-		MSS_BEGIN(ReturnCode);
-		LockGuard lg(mutex_);
-		{
-			const auto p = hashPerTV_.find(tv);
-			MSS_Q(p == hashPerTV_.end(), HashAlreadySet);
-		}
-		hashPerTV_[tv] = hash;
-		MSS_END();
-	}
 
 	TagValues Board::getFrom(size_t ix) const
 	{
@@ -56,24 +66,102 @@ namespace fff {
 			return TagValues();
 		return TagValues(tagValues_.begin()+ix, tagValues_.end());
 	}
+	Dependencies Board::getDependencies(const TagValue &tv) const
+	{
+		Dependencies deps;
+		LockGuard lg(mutex_);
+		auto p = dependenciesPerTV_.find(tv);
+		if (p != dependenciesPerTV_.end())
+			deps = p->second;
+		return deps;
+	}
+	Hash Board::hash(const Dependencies &deps) const
+	{
+		S();
+		Hash hash;
+		using namespace gubg::hash::md5;
+		for (auto tv: deps)
+		{
+			LockGuard lg(mutex_);
+			auto p = hashPerTV_.find(tv);
+			if (p == hashPerTV_.end())
+			{
+				Stream md5;
+				md5 << tv.first.to_str() << tv.second.to_str();
+				switch (tv.second.type())
+				{
+					case Value::File:
+						{
+							std::string content; gubg::file::read(content, tv.second.file());
+							md5 << content;
+						}
+						break;
+				}
+				hashPerTV_[tv] = md5.hash();
+				p = hashPerTV_.find(tv);
+			}
+			assert(p != hashPerTV_.end());
+			L(p->second.to_hex() << ": " << tv.second);
+			hash ^= p->second;
+		}
+		L("Final hash: " << hash.to_hex());
+		return hash;
+	}
 
-	ReturnCode Board::expand(ToolChain toolchain)
+	ReturnCode Board::addTool(Tool_itf::Ptr tool)
+	{
+		MSS_BEGIN(ReturnCode);
+		MSS((bool)tool);
+		LockGuard lg(mutex_);
+		for (auto t: toolChain_)
+			MSS(t->name() != tool->name(), ToolAlreadyPresent);
+		toolChain_.push_back(tool);
+		MSS_END();
+	}
+	ReturnCode Board::executeLua(const std::string &code)
+	{
+		MSS_BEGIN(ReturnCode);
+		MSS(luaState_.execute(code));
+		MSS_END();
+	}
+	ReturnCode Board::expand()
 	{
         MSS_BEGIN(ReturnCode);
-		auto it = toolchain.begin();
-		while (it != toolchain.end())
+		size_t ix = 0;
+		while (true)
 		{
-            auto &tool = **it;
-            SS(tool.name());
-			const auto s = size();
+			size_t board_size, toolchain_size;
+			Tool_itf::Ptr tool_ptr;
+			{
+				LockGuard lg(mutex_);
+				board_size = tagValues_.size();
+				toolchain_size = toolChain_.size();
+				if (ix >= toolchain_size)
+					//We are done, no more tools to run
+					break;
+				tool_ptr = toolChain_[ix];
+			}
 
+			assert(tool_ptr);
+			auto &tool = *tool_ptr;
+
+            SS(tool.name());
 			tool.process(*this);
 
-			if (size() != s)
-				//The board was modified: restart
-				it = toolchain.begin();
+			bool boardWasModified = false;
+			{
+				LockGuard lg(mutex_);
+				if (tagValues_.size() != board_size)
+					boardWasModified = true;
+				if (toolChain_.size() != toolchain_size)
+					boardWasModified = true;
+			}
+			if (boardWasModified)
+				//Restart
+				ix = 0;
             else
-                ++it;
+				//Continue
+                ++ix;
 		}
         MSS_END();
 	}

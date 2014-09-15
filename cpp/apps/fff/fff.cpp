@@ -3,6 +3,7 @@
 #include "fff/Board.hpp"
 #include "fff/ToolFactory.hpp"
 #include "gubg/OptionParser.hpp"
+#include <algorithm>
 
 #define GUBG_MODULE_ "fff"
 #include "gubg/log/begin.hpp"
@@ -18,15 +19,14 @@ namespace fff {
 	ReturnCode parseOptions(Options &options, int argc, char **argv)
 	{
 		MSS_BEGIN(ReturnCode);
-		gubg::OptionParser parser("flexible file factory: fff [options] <seed>");
+		gubg::OptionParser parser("flexible file factory: fff [options] <seeds>");
 		parser.addSwitch("-h", "--help", "Show help", [&options, &parser](){options.showHelp = true; g_help = parser.help();});
 		auto args = gubg::OptionParser::createArgs(argc, argv);
 		parser.parse(args);
-		if (!args.empty())
-		{
-			options.seed = args.front();
-			args.pop_front();
-		}
+
+		options.seeds.resize(args.size());
+		std::copy(args.begin(), args.end(), options.seeds.begin());
+
 		MSS_END();
 	}
 
@@ -43,15 +43,17 @@ namespace fff {
 			MSS_RETURN_OK();
 		}
 
-		MSS(!options.seed.empty(), NoSeedGiven);
+		MSS(!options.seeds.empty(), NoSeedGiven);
 
 		Board board;
-		MSS(board.add(Tag("start"), options.seed));
+		MSS(board.add(Tag("cache"), gubg::file::File("/tmp")));
+		for (auto seed: options.seeds)
+			MSS(board.add(Tag("start"), seed));
 
-        ToolFactory fact;
-        auto toolchain = fact.createToolChain("exe");
+		ToolFactory fact;
+		MSS(board.addTool(fact.createTool("Starter")));
 
-        board.expand(toolchain);
+        board.expand();
 
 		MSS_END();
 	}

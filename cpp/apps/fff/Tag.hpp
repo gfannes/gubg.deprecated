@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <ostream>
+#include <vector>
 
 namespace fff { 
 	class Tag
@@ -11,12 +12,14 @@ namespace fff {
 		public:
 			Tag(std::string);
 			Tag(std::string, std::string);
+			Tag(const std::vector<std::string> &);
 
 			bool operator<(Tag) const;
 			bool operator==(Tag) const;
 			bool operator!=(Tag) const;
 
 			void stream(std::ostream &) const;
+			std::string to_str() const;
 
 		private:
 			struct Pimpl;

@@ -10,6 +10,7 @@ namespace fff {
 	{
 		MSS_BEGIN(ReturnCode);
 		L("Executing \"" << command << "\" ...");
+		cout << command << endl;
 		const auto ret = std::system(command.c_str());
 		L(" ... done (ret=" << ret << ")");
 		if (ret != 0)

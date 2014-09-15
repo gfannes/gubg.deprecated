@@ -3,7 +3,7 @@
 #include "gubg/Platform.hpp"
 #include <iomanip>
 #include <sstream>
-using namespace gubg::hash;
+using namespace gubg::hash::md5;
 using namespace std;
 
 #ifndef GUBG_LITTLE_ENDIAN
@@ -185,7 +185,7 @@ namespace
         const Word *words_;
 
         BlockProcessor(HashWords &hash):
-            hash_(hash){}
+            hash_(hash), state_{}{}
 
         template <RoundE R>
             void round_()
@@ -235,11 +235,11 @@ namespace
 }
 #include "gubg/log/end.hpp"
 
-MD5::MD5()
+Stream::Stream()
 {
     clear();
 }
-void MD5::clear()
+void Stream::clear()
 {
     hash_[0] = 0x67452301;
     hash_[1] = 0xefcdab89;
@@ -249,7 +249,7 @@ void MD5::clear()
     remainder_.clear();
 }
 
-MD5 &MD5::operator<<(const string &message)
+Stream &Stream::operator<<(const string &message)
 {
     const char *m = message.data();
     auto s = message.size();
@@ -300,7 +300,7 @@ MD5 &MD5::operator<<(const string &message)
     return *this;
 }
 
-MD5::Hash MD5::hash() const
+Hash Stream::hash() const
 {
     HashWords hash = hash_;
 
@@ -348,20 +348,26 @@ MD5::Hash MD5::hash() const
     Hash ret;
     uint8_t *p = (uint8_t*)&hash[0];
     for (auto i = 0; i < 16; ++i)
-        ret[i] = *p++;
+        ret.raw[i] = *p++;
 
     return ret;
 }
-string MD5::hash_hex() const
+string Stream::hash_hex() const
 {
-    return to_hex(hash());
+    return hash().to_hex();
 }
 
-string MD5::to_hex(const Hash &h)
+string Hash::to_hex() const
 {
     std::ostringstream oss;
     oss << std::hex;
     for (auto i = 0; i < 16; ++i)
-        oss << std::setfill('0') << std::setw(2) << (int)h[i];
+        oss << std::setfill('0') << std::setw(2) << (int)raw[i];
     return oss.str();
+}
+Hash &Hash::operator^=(const Hash &rhs)
+{
+	for (size_t i = 0; i < raw.size(); ++i)
+		raw[i] ^= rhs.raw[i];
+	return *this;
 }

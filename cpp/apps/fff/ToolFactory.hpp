@@ -9,9 +9,7 @@ namespace fff {
     {
         public:
             ToolChain createToolChain(const std::string &name);
-
-        private:
-            Tool_itf::Ptr create_(const std::string &name);
+            Tool_itf::Ptr createTool(const std::string &name);
     };
 } 
 

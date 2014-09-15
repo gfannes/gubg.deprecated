@@ -12,17 +12,20 @@ namespace fff {
         typedef std::set<gubg::file::File> Files;
         Files files;
         std::string command;
-        Dependencies dependencies;
+		Hash dependencies;
     };
 
     class CreateMgr
     {
         public:
-            CreateMgr(gubg::file::File cache): cache_(cache) {}
+            ReturnCode setCache(gubg::file::File cache);
 
             ReturnCode create(const CreateJob &);
 
         private:
+			ReturnCode execute_(const CreateJob &);
+			bool cacheExists_() const;
+
             gubg::file::File cache_;
     };
 } 

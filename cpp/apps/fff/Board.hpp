@@ -4,6 +4,7 @@
 #include "fff/Codes.hpp"
 #include "fff/Types.hpp"
 #include "fff/Tool.hpp"
+#include "gubg/lua/State.hpp"
 #include <vector>
 #include <map>
 #include <set>
@@ -14,18 +15,25 @@ namespace fff {
     class Board
     {
         public:
+			Board();
+
 			ReturnCode add(Tag, Value);
 			ReturnCode add(Tag, Value, TagValue);
 
-			ReturnCode setHash(TagValue, Hash);
-
 			TagValues getFrom(size_t ix) const;
+			Dependencies getDependencies(const TagValue &) const;
 
-			ReturnCode expand(ToolChain);
+			Hash hash(const Dependencies &) const;
 
-			size_t size() const;
+			ReturnCode addTool(Tool_itf::Ptr);
+			ReturnCode executeLua(const std::string &);
+			ReturnCode expand();
 
         private:
+			gubg::lua::State luaState_;
+
+			ToolChain toolChain_;
+
 			TagValues tagValues_;
 
 			typedef std::set<Tag> Tags;
@@ -36,7 +44,7 @@ namespace fff {
 			DependenciesPerTV dependenciesPerTV_;
 
 			typedef std::map<TagValue, Hash> HashPerTV;
-			HashPerTV hashPerTV_;
+			mutable HashPerTV hashPerTV_;
 
 			typedef std::mutex Mutex;
 			typedef std::lock_guard<Mutex> LockGuard;

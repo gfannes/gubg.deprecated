@@ -25,6 +25,14 @@ namespace gubg
             priv::fillArray(ret.data()+1, rest...);
             return ret;
         }
+
+	template <typename T, size_t Nr>
+		std::array<T, Nr> &xor_array(std::array<T, Nr> &accum, const std::array<T, Nr> &rhs)
+		{
+			for (size_t i = 0; i < Nr; ++i)
+				accum[i] ^= rhs[i];
+			return accum;
+		}
 }
 
 #endif

@@ -126,7 +126,7 @@ ReturnCode Compiler::operator()(const ObjectFile &obj, const SourceFile &src, He
         job->object = obj;
         job->settings.set(Job::Key::Object, obj.name());
         {
-            gubg::hash::MD5 md5;
+            gubg::hash::md5::Stream md5;
             string content;
             MSS(gubg::file::read(content, src));
             md5 << content;

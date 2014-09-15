@@ -5,22 +5,31 @@
 #include <string>
 #include <cstdint>
 
-namespace gubg { namespace hash {
+namespace gubg { namespace hash { namespace md5 { 
 
-	class MD5
+	struct Hash
+	{
+		typedef std::array<uint8_t, 16> Raw;
+		Raw raw;
+
+		std::string to_hex() const;
+
+		Hash(): raw{} {}
+
+		Hash &operator^=(const Hash &);
+	};
+
+	class Stream
 	{
 		public:
-			MD5();
+			Stream();
 
 			void clear();
 
-			MD5 &operator<<(const std::string &);
+			Stream &operator<<(const std::string &);
 
-			typedef std::array<uint8_t, 16> Hash;
 			Hash hash() const;
 			std::string hash_hex() const;
-
-			static std::string to_hex(const Hash &);
 
 		private:
 			typedef std::array<uint32_t, 4> HashWords;
@@ -31,6 +40,6 @@ namespace gubg { namespace hash {
 			Length length_;
 	};
 
-} }
+} } } 
 
 #endif

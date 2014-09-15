@@ -35,9 +35,15 @@ namespace fff {
 		file::File executable;
 		OnlyOnce setExecutable;
 		vector<file::File> objects;
+        CreateMgr create_mgr;
+		Dependencies dependencies;
 		for (auto tv: tvs)
 		{
 			if (false) {}
+			else if (tv.first == Tag("cache"))
+			{
+				create_mgr.setCache(tv.second.file());
+			}
 			else if (tv.first == Tag("c++", "source"))
 			{
 				if (setExecutable())
@@ -49,6 +55,12 @@ namespace fff {
 			else if (tv.first == Tag("c++", "object"))
 			{
 				objects.push_back(tv.second.file());
+				dependencies.insert(tv);
+			}
+			else if (tv.first == Tag("c", "object"))
+			{
+				objects.push_back(tv.second.file());
+				dependencies.insert(tv);
 			}
 		}
 
@@ -56,11 +68,10 @@ namespace fff {
 		oss << "g++ -std=c++0x -o " << executable;
 		for (auto obj: objects)
 			oss << " " << obj;
-		L("Linking " << executable);
         CreateJob job;
-        job.files.insert(executable);
+		job.files.insert(executable);
         job.command = oss.str();
-        CreateMgr create_mgr(file::File("/tmp"));
+		job.dependencies = board.hash(dependencies);
         MSS(create_mgr.create(job));
 		board.add(Tag("c++", "executable"), executable);
 

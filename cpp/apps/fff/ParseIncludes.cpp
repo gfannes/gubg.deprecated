@@ -35,13 +35,6 @@ namespace fff {
 			if (tv.first != Tag("c++", "source") && tv.first != Tag("c++", "header"))
 				continue;
 			MSS(tv.second.type() == Value::File);
-			{
-				string content;
-				//Could be more efficient, the include parser will read the file again hereunder...
-				MSS(file::read(content, tv.second.file()));
-				gubg::hash::MD5 md5; md5 << content;
-				board.setHash(tv, md5.hash());
-			}
 			IncludeParser ip;
 			MSS(ip.process(tv.second.file()));
 			for (auto inc: ip.includes)
