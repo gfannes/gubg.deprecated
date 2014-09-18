@@ -16,6 +16,7 @@ namespace fff {
     {
         public:
 			Board();
+			~Board();
 
 			ReturnCode add(Tag, Value);
 			ReturnCode add(Tag, Value, TagValue);
@@ -26,7 +27,7 @@ namespace fff {
 			Hash hash(const Dependencies &) const;
 
 			ReturnCode addTool(Tool_itf::Ptr);
-			ReturnCode executeLua(const std::string &);
+			ReturnCode executeLua(const std::string &code, std::string &err);
 			ReturnCode expand();
 
         private:

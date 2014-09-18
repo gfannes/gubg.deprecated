@@ -23,10 +23,13 @@ namespace gubg { namespace lua {
 			static State create();
 
 			ReturnCode execute(const std::string &code);
+			ReturnCode execute(const std::string &code, std::string &err);
 
 			ReturnCode get(long &, const std::string &name) const;
 
 			ReturnCode registerFunction(Function, const std::string &name);
+
+			lua_State *raw();
 
 		private:
 			struct Pimpl;

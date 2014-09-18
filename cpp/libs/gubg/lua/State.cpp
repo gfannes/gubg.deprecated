@@ -1,6 +1,7 @@
 #include "gubg/lua/State.hpp"
 #include "lua.hpp"
 #include <mutex>
+using namespace std;
 
 #define GUBG_MODULE_ "State"
 #include "gubg/log/begin.hpp"
@@ -9,7 +10,7 @@ namespace gubg { namespace lua {
 	struct State::Pimpl
 	{
 		lua_State *s;
-		std::mutex mutex_;
+		mutex mutex_;
 
 		Pimpl(): s(luaL_newstate())
 		{
@@ -24,16 +25,42 @@ namespace gubg { namespace lua {
 		return res;
 	}
 
-#define CHECK_AND_LOCK(pimpl) MSS(pimpl); std::lock_guard<std::mutex> l_lock(pimpl->mutex_); auto s = pimpl_->s
-	ReturnCode State::execute(const std::string &code)
+	lua_State *State::raw()
+	{
+		if (!pimpl_)
+			return 0;
+		lock_guard<mutex> l_lock(pimpl_->mutex_);
+		return pimpl_->s;
+	}
+
+#define CHECK_AND_LOCK(pimpl) MSS(pimpl); lock_guard<mutex> l_lock(pimpl->mutex_); auto s = pimpl_->s
+	ReturnCode State::execute(const string &code)
+	{
+		string err;
+		return execute(code, err);
+	}
+	ReturnCode State::execute(const string &code, string &err)
 	{
 		MSS_BEGIN(ReturnCode);
 		CHECK_AND_LOCK(pimpl_);
-		MSS(luaL_loadstring(s, code.c_str()) == 0, CompileError);
-		MSS(lua_pcall(s, 0, 0, 0) == 0, RuntimeError);
+
+		if (luaL_loadstring(s, code.c_str()) != 0)
+		{
+			err = lua_tostring(s, -1);
+			MSS_L(CompileError);
+		}
+		err.clear();
+
+		if (lua_pcall(s, 0, 0, 0) != 0)
+		{
+			err = lua_tostring(s, -1);
+			MSS_L(RuntimeError);
+		}
+		err.clear();
+
 		MSS_END();
 	}
-	ReturnCode State::get(long &v, const std::string &name) const
+	ReturnCode State::get(long &v, const string &name) const
 	{
 		MSS_BEGIN(ReturnCode);
 		CHECK_AND_LOCK(pimpl_);
@@ -48,7 +75,7 @@ namespace gubg { namespace lua {
 		L(lua_gettop(s));
 		MSS_END();
 	}
-	ReturnCode State::registerFunction(Function function, const std::string &name)
+	ReturnCode State::registerFunction(Function function, const string &name)
 	{
 		MSS_BEGIN(ReturnCode);
 		CHECK_AND_LOCK(pimpl_);

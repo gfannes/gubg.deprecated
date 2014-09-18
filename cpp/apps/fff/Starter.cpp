@@ -3,6 +3,7 @@
 #include "fff/Board.hpp"
 #include "fff/ToolFactory.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/parse/Line.hpp"
 using namespace gubg;
 
 #define GUBG_MODULE_ "Starter"
@@ -19,8 +20,10 @@ namespace fff {
 	ReturnCode Starter::process(Board &board)
 	{
 		MSS_BEGIN(ReturnCode);
-		MSS_Q(!started_, AlreadyStarted);
-		auto tvs = board.getFrom(0);
+
+		auto tvs = board.getFrom(ix_);
+		ix_ += tvs.size();
+
 		ToolFactory fact;
 		for (auto tv: tvs)
 		{
@@ -36,22 +39,32 @@ namespace fff {
 			if (false) {}
 			else if (f.extension() == "cpp")
 			{
-				MSS(board.addTool(fact.createTool("ParseIncludes")));
-				MSS(board.addTool(fact.createTool("ResolveHeader")));
-				MSS(board.addTool(fact.createTool("Compiler")));
-				MSS(board.addTool(fact.createTool("Linker")));
-				board.add(Tag("c++", "source"), f);
-				started_ = true;
+				if (addExeChain_())
+				{
+					MSS(board.addTool(fact.createTool("ParseIncludes")));
+					MSS(board.addTool(fact.createTool("ResolveHeader")));
+					MSS(board.addTool(fact.createTool("Compiler")));
+					MSS(board.addTool(fact.createTool("Linker")));
+					board.add(Tag("c++", "source"), f);
+				}
 			}
 			else if (f.extension() == "lua")
 			{
 				std::string code;
 				MSS(file::read(code, f));
-				MSS(board.executeLua(code));
-				started_ = true;
+				std::string err;
+				switch (const auto rc = board.executeLua(code, err))
+				{
+					default:
+						std::cout << "Lua error encountered:" << std::endl;
+						for (auto line: gubg::line::split(err))
+							std::cout << line.txt << std::endl;
+					case ReturnCode::OK:
+						MSS(rc);
+				}
 			}
 		}
-		MSS(started_);
+
 		MSS_END();
 	}
 } 

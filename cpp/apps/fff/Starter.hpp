@@ -2,6 +2,7 @@
 #define HEADER_fff_Starter_hpp_ALREADY_INCLUDED
 
 #include "fff/Tool.hpp"
+#include "gubg/OnlyOnce.hpp"
 
 namespace fff { 
 	class Starter: public Tool_itf
@@ -11,7 +12,8 @@ namespace fff {
 			ReturnCode process(Board &) override;
 
 		private:
-			bool started_ = false;
+			gubg::OnlyOnce addExeChain_;
+			size_t ix_ = 0;
 	};
 } 
 

@@ -2,6 +2,11 @@
 #include "gubg/file/Filesystem.hpp"
 #include <cassert>
 
+namespace  { 
+	typedef std::map<lua_State*, fff::Board*> BoardPerLuaState;
+	BoardPerLuaState boardPerLuaState__;
+} 
+
 #define GUBG_MODULE_ "Board"
 #include "gubg/log/begin.hpp"
 extern "C"
@@ -16,6 +21,62 @@ extern "C"
 			lua_pushboolean(s, false); ++nr_res;
 			return nr_res;
 		}
+
+		if (lua_type(s, -2) != LUA_TSTRING)
+		{
+			L("First arg should be a string");
+			lua_pushboolean(s, false); ++nr_res;
+			return nr_res;
+		}
+		auto tag = fff::Tag(gubg::string_algo::split<std::vector>(lua_tostring(s, -2), "."));
+
+		if (lua_type(s, -1) != LUA_TTABLE)
+		{
+			L("Second arg should be a table");
+			lua_pushboolean(s, false); ++nr_res;
+			return nr_res;
+		}
+		std::unique_ptr<fff::Value> value;
+		if (!value)
+		{
+			lua_pushstring(s, "file");
+			lua_gettable(s, -2);
+			if (!lua_isnil(s, -1))
+				value.reset(new fff::Value(gubg::file::File(lua_tostring(s, -1))));
+			lua_pop(s, 1);
+		}
+		if (!value)
+		{
+			lua_pushstring(s, "str");
+			lua_gettable(s, -2);
+			if (!lua_isnil(s, -1))
+				value.reset(new fff::Value(lua_tostring(s, -1)));
+			lua_pop(s, 1);
+		}
+		if (!value)
+		{
+			lua_pushstring(s, "integer");
+			lua_gettable(s, -2);
+			if (!lua_isnil(s, -1))
+				value.reset(new fff::Value(long(lua_tonumber(s, -1))));
+			lua_pop(s, 1);
+		}
+		if (!value)
+		{
+			L("Could not intepret the value");
+			return nr_res;
+		}
+
+		auto it = boardPerLuaState__.find(s);
+		if (it == boardPerLuaState__.end())
+		{
+			L("Could not find the board");
+			return nr_res;
+		}
+		auto &board = *it->second;
+
+		board.add(tag, *value);
+
 		lua_pushboolean(s, true); ++nr_res;
 		return nr_res;
 	}
@@ -29,6 +90,11 @@ namespace fff {
 	{
 		luaState_.registerFunction(fff_board_add, "fff_board_add");
 		luaState_.execute(lua_lib__);
+		boardPerLuaState__[luaState_.raw()] = this;
+	}
+	Board::~Board()
+	{
+		boardPerLuaState__.erase(luaState_.raw());
 	}
 
 	ReturnCode Board::add(Tag tag, Value value)
@@ -118,10 +184,10 @@ namespace fff {
 		toolChain_.push_back(tool);
 		MSS_END();
 	}
-	ReturnCode Board::executeLua(const std::string &code)
+	ReturnCode Board::executeLua(const std::string &code, std::string &err)
 	{
 		MSS_BEGIN(ReturnCode);
-		MSS(luaState_.execute(code));
+		MSS(luaState_.execute(code, err));
 		MSS_END();
 	}
 	ReturnCode Board::expand()

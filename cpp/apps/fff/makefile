@@ -1,6 +1,6 @@
 .PHONY: prog test
 prog:
-	da -e fff.cpp -x
+	da -E fff.cpp -x
 	./fff.exe test.lua
 
 test:
