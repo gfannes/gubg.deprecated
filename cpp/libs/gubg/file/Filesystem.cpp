@@ -261,4 +261,24 @@ gubg::file::File gubg::file::getcwd()
     return file;
 }
 
+ReturnCode gubg::file::chmod(const File &file, const Mode &mode)
+{
+    MSS_BEGIN(ReturnCode);
+#ifdef GUBG_POSIX
+    mode_t m = 0;
+    if (mode.user  & Read)    m |= S_IRUSR;
+    if (mode.user  & Write)   m |= S_IWUSR;
+    if (mode.user  & Execute) m |= S_IXUSR;
+    if (mode.group & Read)    m |= S_IRGRP;
+    if (mode.group & Write)   m |= S_IWGRP;
+    if (mode.group & Execute) m |= S_IXGRP;
+    if (mode.other & Read)    m |= S_IROTH;
+    if (mode.other & Write)   m |= S_IWOTH;
+    if (mode.other & Execute) m |= S_IXOTH;
+    const auto ret = ::chmod(file.name().c_str(), m);
+    MSS(ret == 0);
+#endif
+    MSS_END();
+}
+
 #include "gubg/log/end.hpp"

@@ -39,6 +39,15 @@ namespace gubg { namespace file {
     ReturnCode getcwd(File &);
     File getcwd();
 
+    enum Flags: unsigned char {Read = 0x01, Write = 0x02, Execute = 0x4, ReadWrite = (Read|Write), All = (Read|Write|Execute)};
+    struct Mode
+    {
+        Flags user;
+        Flags group;
+        Flags other;
+    };
+    ReturnCode chmod(const File &, const Mode &);
+
     //Calls recursor_discoveredFile(file) to indicate a new file was discovered
     //* OK: continue
     //* Skip: skip this file

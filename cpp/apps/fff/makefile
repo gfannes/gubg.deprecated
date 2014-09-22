@@ -33,17 +33,17 @@ LDFLAGS := -std=c++0x $(LDFLAGS_PLATFORM)
 LINK_LIBS := 
 
 ifeq ($(GUBG_PLATFORM),win32)
-FFF_EXE := fff.exe
+FFF_EXE := $(GUBG_BIN)/fff.exe
 endif
 ifeq ($(GUBG_PLATFORM),linux)
-FFF_EXE := fff
+FFF_EXE := $(GUBG_BIN)/fff
 endif
 
 .PHONY: clean
 clean:
 	rm -f $(CPP_OBJECT_FILES)
 	rm -f $(C_OBJECT_FILES)
-	rm -f $(FFF_EXE)
+	rm -f fff.exe
 
 FFF_CACHE := $(GUBG_TMP)/fff
 $(FFF_CACHE):
@@ -51,8 +51,8 @@ $(FFF_CACHE):
 $(GUBG_BIN):
 	mkdir $@
 fff: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(FFF_CACHE) $(GUBG_BIN)
-	g++ $(LDFLAGS) -o $(FFF_EXE) $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(LINK_LIBS)
-	cp -p $(FFF_EXE) $(GUBG_BIN)
+	g++ $(LDFLAGS) -o fff.exe $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(LINK_LIBS)
+	cp -p fff.exe $(FFF_EXE)
 
 %.fff.cpp.o: %.cpp
 	g++ $(CPPFLAGS) -c $< -o $@
@@ -61,6 +61,6 @@ fff: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(FFF_CACHE) $(GUBG_BIN)
 
 .PHONY: self
 self:
-	rm -f $(FFF_EXE)
+	rm -f fff.exe
 	fff fff.cpp norun
-	cp -p $(FFF_EXE) $(GUBG_BIN)
+	cp -p fff.exe $(FFF_EXE)

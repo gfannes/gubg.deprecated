@@ -1,6 +1,8 @@
+#include "gubg/dynlib/Visibility.hpp"
+
 extern "C"
 {
-	__declspec(dllexport) int answer()
+	GUBG_DYNLIB_EXPORT int answer()
 	{
 		return 42;
 	}

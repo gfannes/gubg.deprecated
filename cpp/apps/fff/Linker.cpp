@@ -2,6 +2,7 @@
 #include "fff/Board.hpp"
 #include "fff/Create.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/Platform.hpp"
 using namespace gubg;
 using namespace std;
 
@@ -40,6 +41,7 @@ namespace fff {
 		file::File executable;
 		OnlyOnce setExecutable;
 		vector<file::File> objects;
+		vector<string> libs;
         CreateMgr create_mgr;
 		Dependencies dependencies;
 		ExeType exeType = Exe;
@@ -70,6 +72,15 @@ namespace fff {
 				objects.push_back(tv.second.file());
 				dependencies.insert(tv);
 			}
+			else if (tv.first == Tag("c++", "include"))
+            {
+                if (tv.second.string() == "dlfcn.h")
+                    libs.push_back("dl");
+#ifdef GUBG_POSIX
+                if (tv.second.string() == "thread")
+                    libs.push_back("pthread");
+#endif
+            }
 		}
 
 		ostringstream oss;
@@ -90,11 +101,18 @@ namespace fff {
 		for (auto obj: objects)
 			oss << " " << obj;
 
+		for (auto lib: libs)
+			oss << " -l" << lib;
+
         CreateJob job;
 		job.files.insert(executable);
         job.command = oss.str();
 		job.dependencies = board.hash(dependencies);
         MSS(create_mgr.create(job), LinkFailure);
+        {
+            using namespace gubg::file;
+            MSS(file::chmod(executable, {All, Read, Read}));
+        }
 
 		switch (exeType)
 		{
@@ -102,7 +120,6 @@ namespace fff {
 			case Shared: board.add(Tag("c++", "shared_object"), executable); break;
 		}
 		
-
 		MSS_END();
 	}
 } 

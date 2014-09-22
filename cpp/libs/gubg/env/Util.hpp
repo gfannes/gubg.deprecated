@@ -3,12 +3,10 @@
 
 #include <string>
 
-namespace gubg
-{
-    namespace env
-    {
-        bool expand(std::string &, const std::string &);
-    }
-}
+namespace gubg { namespace env {
+
+    bool expand(std::string &, const std::string &);
+
+} }
 
 #endif

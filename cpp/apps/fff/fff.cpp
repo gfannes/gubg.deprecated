@@ -5,6 +5,7 @@
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
+#include "gubg/env/Variables.hpp"
 #include <algorithm>
 #include <iomanip>
 
@@ -50,7 +51,16 @@ namespace fff {
 
 		Board board;
 
-		const auto cache = gubg::file::File("/tmp/fff");
+		auto cache = gubg::file::File("/tmp/fff");
+        {
+            std::string gubg_tmp;
+            if (gubg::env::Variables::shell().get(gubg_tmp, "GUBG_TMP"))
+            {
+                gubg::file::File c = gubg_tmp; c << "fff";
+                if (gubg::file::isDirectory(c))
+                    cache = c;
+            }
+        }
 		if (!gubg::file::isDirectory(cache))
 			std::cout << "Cache directory (" << cache << ") not found, working without cache" << std::endl;
 		else

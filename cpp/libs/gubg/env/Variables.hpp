@@ -4,25 +4,23 @@
 #include <string>
 #include <map>
 
-namespace gubg
-{
-    namespace env
+namespace gubg { namespace env {
+
+    class Variables
     {
-        class Variables
-        {
-            public:
-                typedef std::string Variable;
-                typedef std::string Value;
+        public:
+            typedef std::string Variable;
+            typedef std::string Value;
 
-                static Variables shell();
+            static Variables shell();
 
-                bool get(Value &, const Variable &) const;
+            bool get(Value &, const Variable &) const;
 
-            private:
-                typedef std::map<Variable, Value> ValuePerVariable;
-                ValuePerVariable valuePerVariable_;
-        };
-    }
-}
+        private:
+            typedef std::map<Variable, Value> ValuePerVariable;
+            ValuePerVariable valuePerVariable_;
+    };
+
+} }
 
 #endif
