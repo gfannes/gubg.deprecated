@@ -42,18 +42,35 @@ namespace fff {
 		ix_ += tvs.size();
 
 		vector<file::File> includePaths;
+		vector<string> options;
+		set<string> defines;
 		for (auto tv: tvs)
 		{
 			if (false) {}
 			else if (tv.first == Tag("c++", "include_path"))
 				includePaths.push_back(tv.second.file());
+			else if (tv.first == Tag("start") && tv.second.string() == "release")
+            {
+                options.push_back("O3");
+                defines.insert("GUBG_RELEASE");
+            }
 		}
-		string options;
+        if (defines.count("GUBG_RELEASE") == 0)
+        {
+            options.push_back("g");
+            defines.insert("GUBG_DEBUG");
+        }
+
+		string options_str;
 		{
 			ostringstream oss;
+			for (auto o: options)
+				oss << "-" << o << " ";
 			for (auto ip: includePaths)
 				oss << "-I" << ip << " ";
-			options = oss.str();
+			for (auto d: defines)
+				oss << "-D" << d << " ";
+			options_str = oss.str();
 		}
 
 		CreateMgr create_mgr;
@@ -72,7 +89,7 @@ namespace fff {
 				SS(source);
 				file::File obj = source; obj.setExtension("obj");
 				ostringstream oss;
-				oss << "g++ -std=c++0x -O3 -c " << source << " -o " << obj << " " << options;
+				oss << "g++ -std=c++0x -c " << source << " -o " << obj << " " << options_str;
                 CreateJob job;
                 job.files.insert(obj);
                 job.command = oss.str();
@@ -86,7 +103,7 @@ namespace fff {
 				SS(source);
 				file::File obj = source; obj.setExtension("obj");
 				ostringstream oss;
-				oss << "gcc -c " << source << " -o " << obj << " " << options;
+				oss << "gcc -c " << source << " -o " << obj << " " << options_str;
                 CreateJob job;
                 job.files.insert(obj);
                 job.command = oss.str();
@@ -118,7 +135,7 @@ namespace fff {
 						break;
 				}
 			};
-			gubg::parallel::for_each(jobs.begin(), jobs.end(), ftor, 16);
+			gubg::parallel::for_each(jobs.begin(), jobs.end(), ftor, 0);
 			MSS(errors.empty(), CompileFailure);
 		}
 

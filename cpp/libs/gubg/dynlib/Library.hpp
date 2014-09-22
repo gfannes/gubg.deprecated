@@ -15,6 +15,8 @@ namespace gubg { namespace dynlib {
 
 			bool valid() const {return !!pimpl_;}
 
+            void *get(const std::string &name) const;
+
 		private:
 			ReturnCode ctor_(file::File);
 
