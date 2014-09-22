@@ -2,7 +2,6 @@
 #define HEADER_fff_Compiler_hpp_ALREADY_INCLUDED
 
 #include "fff/Tool.hpp"
-#include "gubg/OnlyOnce.hpp"
 
 namespace fff { 
 	class Compiler: public Tool_itf
@@ -12,7 +11,7 @@ namespace fff {
 			ReturnCode process(Board &) override;
 
 		private:
-			gubg::OnlyOnce run_;
+			size_t ix_ = 0;
 	};
 } 
 

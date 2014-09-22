@@ -212,7 +212,7 @@ namespace fff {
 			auto &tool = *tool_ptr;
 
             SS(tool.name());
-			tool.process(*this);
+			MSS(tool.process(*this));
 
 			bool boardWasModified = false;
 			{

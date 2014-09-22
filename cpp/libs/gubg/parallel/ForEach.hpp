@@ -54,8 +54,13 @@ namespace gubg { namespace parallel {
     } 
 
     template <typename Iterator, typename Ftor>
-        void for_each(Iterator b, Iterator e, Ftor ftor, size_t nrThreads)
+        void for_each(Iterator b, Iterator e, Ftor ftor, size_t nrThreads = 0)
         {
+			if (nrThreads == 0)
+				nrThreads = std::thread::hardware_concurrency();
+			if (nrThreads == 0)
+				nrThreads = 1;
+
             std::mutex m;
             typedef detail::Thread<Iterator, Ftor> Thread;
             typedef std::list<Thread> Threads;

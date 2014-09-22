@@ -24,6 +24,8 @@ namespace fff {
 			gubg_.reset(new file::File(f << "cpp/libs/gubg"));
 		if (gubg_home_(f))
 			lua_.reset(new file::File(f << "c/lua-5.2.3"));
+		if (gubg_home_(f))
+			catch_.reset(new file::File(f << "cpp/libs/catch"));
 	}
 	ReturnCode ResolveHeader::process(Board &board)
 	{
@@ -63,6 +65,20 @@ namespace fff {
 						roots_.insert(*gubg_);
 						{
 							auto ip = *gubg_; ip.popBasename();
+							board.add(Tag("c++", "include_path"), ip, tv);
+						}
+					}
+				}
+
+				if (catch_ and roots_.count(*catch_) == 0)
+				{
+					if (tv.second.string() == "catch/catch.hpp")
+					{
+						L("Adding catch (" << *catch_ << ")");
+						forest_.add(*catch_, {"hpp", "cpp"});
+						roots_.insert(*catch_);
+						{
+							auto ip = *catch_; ip.popBasename();
 							board.add(Tag("c++", "include_path"), ip, tv);
 						}
 					}

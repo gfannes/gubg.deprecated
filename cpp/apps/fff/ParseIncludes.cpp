@@ -36,9 +36,11 @@ namespace fff {
 				continue;
 			MSS(tv.second.type() == Value::File);
 			IncludeParser ip;
-			MSS(ip.process(tv.second.file()));
-			for (auto inc: ip.includes)
-				board.add(Tag("c++", "include"), inc, tv);
+			if (!MSS_IS_OK(ip.process(tv.second.file())))
+				std::cerr << "Failed to parse include statements for " << tv.second.file() << std::endl;
+			else
+				for (auto inc: ip.includes)
+					board.add(Tag("c++", "include"), inc, tv);
 		}
 
 		MSS_END();

@@ -16,7 +16,7 @@ namespace fff {
 		if (ret != 0)
 		{
 			cerr << "Failed to execute \"" << command << "\"" << endl;
-			exit(-1);
+			//exit(-1);
 		}
 		MSS(ret == 0);
 		MSS_END();

@@ -15,6 +15,8 @@ namespace fff {
 		public:
 			typedef std::shared_ptr<Tool_itf> Ptr;
 
+			virtual ~Tool_itf() = default;
+
 			virtual std::string name() const = 0;
 			virtual ReturnCode process(Board &) = 0;
 	};

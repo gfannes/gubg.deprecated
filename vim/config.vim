@@ -48,6 +48,7 @@ autocmd BufEnter,BufNewFile,BufRead *.jscad source $GUBG/vim/maps.js.vim
 ""autocmd BufEnter,BufNewFile,BufRead *.rs source $GUBG/vim/rust.vim
 autocmd BufEnter,BufNewFile,BufRead *.txt source $GUBG/vim/maps.markdown.vim
 autocmd BufEnter,BufNewFile,BufRead *.html source $GUBG/vim/maps.xml.vim
+autocmd BufEnter,BufNewFile,BufRead *.xml source $GUBG/vim/maps.xml.vim
 autocmd BufEnter,BufNewFile,BufRead *.json source $GUBG/vim/json.vim
 autocmd BufEnter,BufNewFile,BufRead *.asciidoc source $GUBG/vim/asciidoc2.vim
 autocmd BufEnter,BufNewFile,BufRead *.adoc source $GUBG/vim/asciidoc2.vim

@@ -1,6 +1,7 @@
 #include "fff/Compiler.hpp"
 #include "fff/Board.hpp"
 #include "fff/Create.hpp"
+#include "gubg/parallel/ForEach.hpp"
 #include <list>
 using namespace gubg;
 using namespace std;
@@ -37,8 +38,8 @@ namespace fff {
 	{
 		MSS_BEGIN(ReturnCode);
 
-		MSS_Q(run_());
-		auto tvs = board.getFrom(0);
+		auto tvs = board.getFrom(ix_);
+		ix_ += tvs.size();
 
 		vector<file::File> includePaths;
 		for (auto tv: tvs)
@@ -55,7 +56,9 @@ namespace fff {
 			options = oss.str();
 		}
 
-        CreateMgr create_mgr;
+		CreateMgr create_mgr;
+		typedef list<CreateJob> Jobs;
+		Jobs jobs;
 		for (auto tv: tvs)
 		{
 			if (false) {}
@@ -69,12 +72,12 @@ namespace fff {
 				SS(source);
 				file::File obj = source; obj.setExtension("obj");
 				ostringstream oss;
-				oss << "g++ -std=c++0x -c " << source << " -o " << obj << " " << options;
+				oss << "g++ -std=c++0x -O3 -c " << source << " -o " << obj << " " << options;
                 CreateJob job;
                 job.files.insert(obj);
                 job.command = oss.str();
 				job.dependencies = collectAndHashDependencies_(tv, board);
-				MSS(create_mgr.create(job));
+				jobs.push_back(job);
 				board.add(Tag("c++", "object"), obj);
 			}
 			else if (tv.first == Tag("c", "source"))
@@ -88,9 +91,35 @@ namespace fff {
                 job.files.insert(obj);
                 job.command = oss.str();
 				job.dependencies = collectAndHashDependencies_(tv, board);
-				MSS(create_mgr.create(job));
+				jobs.push_back(job);
 				board.add(Tag("c", "object"), obj);
 			}
+		}
+
+		{
+			list<ReturnCode> errors;
+			mutex m;
+			auto ftor = [&](const CreateJob &job){
+				//Check for previous errors, if so, we stop already
+				{
+					lock_guard<mutex> l(m);
+					if (!errors.empty())
+						return;
+				}
+				//Execute the job and process its return code
+				switch (const auto rc = create_mgr.create(job))
+				{
+					case ReturnCode::OK: break;
+					default:
+						{
+							lock_guard<mutex> l(m);
+							errors.push_back(rc);
+						}
+						break;
+				}
+			};
+			gubg::parallel::for_each(jobs.begin(), jobs.end(), ftor, 16);
+			MSS(errors.empty(), CompileFailure);
 		}
 
 		MSS_END();

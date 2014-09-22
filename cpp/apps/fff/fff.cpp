@@ -3,7 +3,10 @@
 #include "fff/Board.hpp"
 #include "fff/ToolFactory.hpp"
 #include "gubg/OptionParser.hpp"
+#include "gubg/file/Filesystem.hpp"
+#include "gubg/chrono/Stopwatch.hpp"
 #include <algorithm>
+#include <iomanip>
 
 #define GUBG_MODULE_ "fff"
 #include "gubg/log/begin.hpp"
@@ -46,14 +49,20 @@ namespace fff {
 		MSS(!options.seeds.empty(), NoSeedGiven);
 
 		Board board;
-		MSS(board.add(Tag("cache"), gubg::file::File("/tmp")));
+
+		const auto cache = gubg::file::File("/tmp/fff");
+		if (!gubg::file::isDirectory(cache))
+			std::cout << "Cache directory (" << cache << ") not found, working without cache" << std::endl;
+		else
+			MSS(board.add(Tag("cache"), cache));
+
 		for (auto seed: options.seeds)
 			MSS(board.add(Tag("start"), seed));
 
 		ToolFactory fact;
 		MSS(board.addTool(fact.createTool("Starter")));
 
-        board.expand();
+		MSS(board.expand());
 
 		MSS_END();
 	}
@@ -62,15 +71,20 @@ namespace fff {
 
 int main(int argc, char **argv)
 {
-	switch (fff::main(argc, argv))
+	gubg::chrono::Stopwatch<> sw;
+	switch (const auto rc = fff::main(argc, argv))
 	{
 		case fff::ReturnCode::OK:
+			{
+				std::cout << "Everything went OK (" << sw.mark().total_elapse_hr() << " seconds)" << std::endl;
+			}
 			break;
 		case fff::ReturnCode::NoSeedGiven:
 			std::cerr << "You have to give me a seed to start the process" << std::endl;
 			return -1;
 			break;
 		default:
+			std::cerr << "Error code " << (int)rc << std::endl;
 			return -1;
 			break;
 	}

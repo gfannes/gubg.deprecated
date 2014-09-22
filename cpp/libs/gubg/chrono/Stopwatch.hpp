@@ -2,6 +2,8 @@
 #define HEADER_gubg_chrono_Stopwatch_hpp_ALREADY_INCLUDED
 
 #include <chrono>
+#include <sstream>
+#include <iomanip>
 
 namespace gubg
 {
@@ -33,6 +35,19 @@ namespace gubg
                 duration mark_elapse() const {return mark_ - prevMark_;}
                 //Last mark time
                 time_point mark_time() const {return mark_;}
+
+				//There is a bug in g++ 4.8.1 with O3 with duration_cast, hence we do it ourselves
+				template <typename Duration>
+					Duration total_elapse_as() const { return Duration((total_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
+				template <typename Duration>
+					Duration mark_elapse_as() const { return Duration((mark_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
+
+				std::string total_elapse_hr() const
+				{
+					std::ostringstream oss;
+					oss << 0.001*total_elapse_as<std::chrono::milliseconds>().count() << " ms";
+					return oss.str();
+				}
 
             private:
                 time_point start_;

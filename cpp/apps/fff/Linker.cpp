@@ -8,11 +8,16 @@ using namespace std;
 #define GUBG_MODULE_ "Linker"
 #include "gubg/log/begin.hpp"
 namespace fff { 
+
+	enum ExeType {Exe, Shared};
+
 	ReturnCode Linker::process(Board &board)
 	{
 		MSS_BEGIN(ReturnCode);
 
-		MSS_Q(run_());
+		if (!run_())
+			MSS_RETURN_OK();
+
 		auto tvs = board.getFrom(0);
 
 #if 0
@@ -37,9 +42,15 @@ namespace fff {
 		vector<file::File> objects;
         CreateMgr create_mgr;
 		Dependencies dependencies;
+		ExeType exeType = Exe;
 		for (auto tv: tvs)
 		{
 			if (false) {}
+			else if (tv.first == Tag("start"))
+			{
+				if (tv.second.string() == "shared")
+					exeType = Shared;
+			}
 			else if (tv.first == Tag("cache"))
 			{
 				create_mgr.setCache(tv.second.file());
@@ -47,10 +58,7 @@ namespace fff {
 			else if (tv.first == Tag("c++", "source"))
 			{
 				if (setExecutable())
-				{
 					executable = tv.second.file();
-					executable.setExtension("tmp.exe");
-				}
 			}
 			else if (tv.first == Tag("c++", "object"))
 			{
@@ -65,15 +73,35 @@ namespace fff {
 		}
 
 		ostringstream oss;
-		oss << "g++ -std=c++0x -o " << executable;
+		oss << "g++ -std=c++0x ";
+
+		switch (exeType)
+		{
+			case Exe:
+				executable.setExtension("exe");
+				break;
+			case Shared:
+				executable.setExtension("dll");
+				oss << "-shared ";
+				break;
+		}
+		oss << "-o " << executable;
+
 		for (auto obj: objects)
 			oss << " " << obj;
+
         CreateJob job;
 		job.files.insert(executable);
         job.command = oss.str();
 		job.dependencies = board.hash(dependencies);
-        MSS(create_mgr.create(job));
-		board.add(Tag("c++", "executable"), executable);
+        MSS(create_mgr.create(job), LinkFailure);
+
+		switch (exeType)
+		{
+			case Exe:    board.add(Tag("c++", "executable"), executable); break;
+			case Shared: board.add(Tag("c++", "shared_object"), executable); break;
+		}
+		
 
 		MSS_END();
 	}

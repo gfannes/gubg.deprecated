@@ -4,6 +4,7 @@
 #include "fff/ResolveHeader.hpp"
 #include "fff/Compiler.hpp"
 #include "fff/Linker.hpp"
+#include "fff/Runner.hpp"
 using namespace std;
 
 namespace fff { 
@@ -30,6 +31,7 @@ namespace fff {
         L_ELSE_IF(ResolveHeader);
         L_ELSE_IF(Compiler);
         L_ELSE_IF(Linker);
+        L_ELSE_IF(Runner);
         return Tool_itf::Ptr();
     }
 } 

@@ -45,6 +45,7 @@ namespace fff {
 					MSS(board.addTool(fact.createTool("ResolveHeader")));
 					MSS(board.addTool(fact.createTool("Compiler")));
 					MSS(board.addTool(fact.createTool("Linker")));
+					MSS(board.addTool(fact.createTool("Runner")));
 					board.add(Tag("c++", "source"), f);
 				}
 			}
