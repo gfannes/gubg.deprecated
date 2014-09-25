@@ -74,8 +74,10 @@ namespace fff {
 			}
 			else if (tv.first == Tag("c++", "include"))
             {
+#ifdef GUBG_LINUX
                 if (tv.second.string() == "dlfcn.h")
                     libs.push_back("dl");
+#endif
 #ifdef GUBG_POSIX
                 if (tv.second.string() == "thread")
                     libs.push_back("pthread");

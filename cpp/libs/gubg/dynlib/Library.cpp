@@ -10,7 +10,7 @@ namespace  {
     typedef void* Symbol;
 } 
 
-#ifdef GUBG_POSIX
+#if defined(GUBG_LINUX)
 #include "dlfcn.h"
 namespace  { 
     typedef void* Handle;
@@ -19,13 +19,13 @@ namespace  {
     Symbol get_address_(Handle h, const string &name) {return ::dlsym(h, name.c_str());}
 } 
 #endif
-#ifdef GUBG_WIN32
+#if defined(GUBG_WIN32) || defined(GUBG_MINGW)
 #include "Windows.h"
 namespace  { 
     typedef HMODULE Handle;
     bool load_(Handle &h, const string &fn) { h = ::LoadLibrary(fn.c_str()); return h != 0; }
     bool unload_(Handle h) { return ::FreeLibrary(h); }
-    Symbol get_address_(Handle h, const string &name) {return ::GetProcAddress(h, name.c_str());}
+    Symbol get_address_(Handle h, const string &name) {return (Symbol)::GetProcAddress(h, name.c_str());}
 } 
 #endif
 

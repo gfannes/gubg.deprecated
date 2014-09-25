@@ -264,7 +264,7 @@ gubg::file::File gubg::file::getcwd()
 ReturnCode gubg::file::chmod(const File &file, const Mode &mode)
 {
     MSS_BEGIN(ReturnCode);
-#ifdef GUBG_POSIX
+#ifdef GUBG_LINUX
     mode_t m = 0;
     if (mode.user  & Read)    m |= S_IRUSR;
     if (mode.user  & Write)   m |= S_IWUSR;
