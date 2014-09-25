@@ -54,6 +54,11 @@ namespace fff {
                 options.push_back("O3");
                 defines.insert("GUBG_RELEASE");
             }
+			else if (tv.first == Tag("start"))
+			{
+				if (tv.second.string() == "shared")
+					options.push_back("fPIC");
+			}
 		}
         if (defines.count("GUBG_RELEASE") == 0)
         {
