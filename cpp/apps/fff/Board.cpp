@@ -83,7 +83,7 @@ extern "C"
 }
 namespace fff { 
 
-	const std::string lua_lib__ = "board = {add: fff_board_add};";
+	const std::string lua_lib__ = "board = {add=fff_board_add};";
 
 	Board::Board():
 		luaState_(gubg::lua::State::create())
@@ -178,6 +178,7 @@ namespace fff {
 	{
 		MSS_BEGIN(ReturnCode);
 		MSS((bool)tool);
+		L(tool->name());
 		LockGuard lg(mutex_);
 		for (auto t: toolChain_)
 			MSS(t->name() != tool->name(), ToolAlreadyPresent);

@@ -44,7 +44,7 @@ namespace fff {
 				if (MSS_IS_OK(file::resolve(path)) and path.popBasename())
 				{
 					L("Adding local (" << path << ")");
-					forest_.add(path, {"hpp", "cpp"});
+					forest_.add(path, {"hpp", "cpp", "h", "c"});
 					{
 						auto ip = path; ip.popBasename();
 						board.add(Tag("c++", "include_path"), ip, tv);
@@ -106,16 +106,30 @@ namespace fff {
 					}
 				}
 
+				L("Checking forest for " << tv.second.string());
 				file::File rf;
-				if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()))))
+				if (false) {}
+				else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()), 1)))
 					board.add(Tag("c++", "header"), rf, tv);
+				else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()), 0)))
+					board.add(Tag("c++", "header"), rf, tv);
+				else
+					L("Not found ...");
 			}
 			else if (tv.first == Tag("c++", "header"))
 			{
 				const auto header = tv.second.file();
-				file::File source = header; source.setExtension("cpp");
-				if (forest_.contains(source))
-					board.add(Tag("c++", "source"), source, tv);
+				file::File source = header;
+				{
+					source.setExtension("cpp");
+					if (forest_.contains(source))
+						board.add(Tag("c++", "source"), source, tv);
+				}
+				{
+					source.setExtension("c");
+					if (forest_.contains(source))
+						board.add(Tag("c", "source"), source, tv);
+				}
 			}
 		}
 

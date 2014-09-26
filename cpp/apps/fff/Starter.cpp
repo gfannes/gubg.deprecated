@@ -27,7 +27,7 @@ namespace fff {
 		ToolFactory fact;
 		for (auto tv: tvs)
 		{
-			SS(STREAM(tv.first, tv.second));
+			SS(tv.first, tv.second);
 			if (tv.first != Tag("start"))
 				continue;
 			file::File f;

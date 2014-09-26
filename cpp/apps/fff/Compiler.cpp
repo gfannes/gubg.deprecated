@@ -92,7 +92,7 @@ namespace fff {
 			{
 				const auto source = tv.second.file();
 				SS(source);
-				file::File obj = source; obj.setExtension("obj");
+				file::File obj = source; obj.setExtension("cpp.obj");
 				ostringstream oss;
 				oss << "g++ -std=c++0x -c " << source << " -o " << obj << " " << options_str;
                 CreateJob job;
@@ -106,7 +106,7 @@ namespace fff {
 			{
 				const auto source = tv.second.file();
 				SS(source);
-				file::File obj = source; obj.setExtension("obj");
+				file::File obj = source; obj.setExtension("c.obj");
 				ostringstream oss;
 				oss << "gcc -c " << source << " -o " << obj << " " << options_str;
                 CreateJob job;
