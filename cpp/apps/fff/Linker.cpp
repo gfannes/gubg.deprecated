@@ -42,6 +42,7 @@ namespace fff {
 		OnlyOnce setExecutable;
 		vector<file::File> objects;
 		vector<string> libs;
+		vector<string> options;
         CreateMgr create_mgr;
 		Dependencies dependencies;
 		ExeType exeType = Exe;
@@ -80,7 +81,7 @@ namespace fff {
 #endif
 #ifdef GUBG_POSIX
                 if (tv.second.string() == "thread")
-                    libs.push_back("pthread");
+                    options.push_back("pthread");
 #endif
             }
 		}
@@ -102,6 +103,9 @@ namespace fff {
 
 		for (auto obj: objects)
 			oss << " " << obj;
+
+		for (auto opt: options)
+			oss << " -" << options;
 
 		for (auto lib: libs)
 			oss << " -l" << lib;
