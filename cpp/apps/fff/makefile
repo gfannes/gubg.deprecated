@@ -17,8 +17,8 @@ C_OBJECT_FILES := $(patsubst %.c,%.fff.c.o,$(C_SRC_FILES))
 
 ifeq ($(GUBG_PLATFORM),linux)
 CPP_INCLUDE_PATHS := -I.. -I../../libs -I../../../c/lua-5.2.3
-CPPFLAGS_PLATFORM := -pthread
-LDFLAGS_PLATFORM := -lpthread
+CPPFLAGS_PLATFORM :=
+LDFLAGS_PLATFORM := -pthread
 endif
 ifeq ($(GUBG_PLATFORM),win32)
 CPP_INCLUDE_PATHS := -I.. -I../../libs -I../../../c/lua-5.2.3
@@ -29,8 +29,8 @@ DEBUG_FLAGS :=
 #DEBUG_FLAGS += -g -DGUBG_DEBUG
 CPPFLAGS := -std=c++0x -O3 $(CPPFLAGS_PLATFORM) $(CPP_INCLUDE_PATHS) $(DEBUG_FLAGS)
 CFLAGS := 
-LDFLAGS := -std=c++0x $(LDFLAGS_PLATFORM)
-LINK_LIBS := 
+LDFLAGS := -std=c++0x
+LINK_LIBS := $(LDFLAGS_PLATFORM)
 
 ifeq ($(GUBG_PLATFORM),win32)
 FFF_EXE := $(GUBG_BIN)/fff.exe
@@ -55,9 +55,9 @@ fff: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(FFF_CACHE) $(GUBG_BIN)
 	cp -p fff.exe $(FFF_EXE)
 
 %.fff.cpp.o: %.cpp
-	g++ $(CPPFLAGS) -c $< -o $@
+	g++ -c $< -o $@ $(CPPFLAGS)
 %.fff.c.o: %.c
-	gcc $(CFLAGS) -c $< -o $@
+	gcc -c $< -o $@ $(CFLAGS)
 
 .PHONY: self
 self:
