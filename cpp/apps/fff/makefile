@@ -62,5 +62,5 @@ fff: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(FFF_CACHE) $(GUBG_BIN)
 .PHONY: self
 self:
 	rm -f fff.exe
-	fff fff.cpp norun release
+	fff fff.cpp norun 
 	cp -p fff.exe $(FFF_EXE)
