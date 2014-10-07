@@ -10,19 +10,26 @@ namespace gubg
         class Range
         {
             public:
+				typedef Range<Iterator_> Self;
                 typedef Iterator_ Iterator;
 
                 Range();
                 Range(Iterator begin, Iterator end);
                 template <typename Container>
                     Range(Container &);
+                template <typename Container>
+                    Range(const Container &);
+				Self &operator=(const Self &);
+				template <typename OtherIterator>
+					Self &operator=(const Range<OtherIterator> &);
 
                 //Basic range functionality that requires the minimum functionality from Iterator:
                 //* operator==()
                 //* operator*()
                 //* operator++()
                 bool empty() const;
-                typename std::iterator_traits<Iterator>::value_type &front() const;
+                typename std::iterator_traits<Iterator>::reference front();
+                const typename std::iterator_traits<Iterator>::reference front() const;
                 void popFront();
 
                 //Requires operator<()
@@ -38,87 +45,128 @@ namespace gubg
 				void clear();
 
             private:
+				template <typename OtherIterator>
+					friend class Range;
+
                 Iterator begin_;
                 Iterator end_;
         };
     template <typename Container>
         Range<typename Container::iterator> make_range(Container &);
+    template <typename Container>
+        Range<typename Container::const_iterator> make_range(const Container &);
 
     //Implementation
-    template <typename Iterator_>
-        Range<Iterator_>::Range():
+#define L_TEMPLATE template <typename Iterator_>
+#define L_TYPE Range<Iterator_>
+	L_TEMPLATE
+        L_TYPE::Range():
             begin_(), end_()
     {
         assert(empty());
     }
-    template <typename Iterator_>
-        Range<Iterator_>::Range(Iterator begin, Iterator end):
+	L_TEMPLATE
+        L_TYPE::Range(Iterator begin, Iterator end):
             begin_(begin), end_(end) {}
-    template <typename Iterator_>
+	L_TEMPLATE
         template <typename Container>
-        Range<Iterator_>::Range(Container &container):
+        L_TYPE::Range(Container &container):
             begin_(std::begin(container)), end_(std::end(container)) {}
-    template <typename Iterator_>
-        bool Range<Iterator_>::empty() const
+	L_TEMPLATE
+        template <typename Container>
+        L_TYPE::Range(const Container &container):
+            begin_(std::begin(container)), end_(std::end(container)) {}
+	L_TEMPLATE
+		typename L_TYPE::Self &L_TYPE::operator=(const Self &rhs)
+		{
+			if (this != &rhs)
+			{
+				begin_ = rhs.begin_;
+				end_ = rhs.end_;
+			}
+			return *this;
+		}
+	L_TEMPLATE
+		template <typename OtherIterator>
+		typename L_TYPE::Self &L_TYPE::operator=(const Range<OtherIterator> &rhs)
+		{
+			begin_ = rhs.begin_;
+			end_ = rhs.end_;
+			return *this;
+		}
+	L_TEMPLATE
+        bool L_TYPE::empty() const
         {
             return begin_ == end_;
         }
-    template <typename Iterator_>
-        typename std::iterator_traits<Iterator_>::value_type &Range<Iterator_>::front() const
+	L_TEMPLATE
+        typename std::iterator_traits<Iterator_>::reference L_TYPE::front()
         {
             return *begin_;
         }
-    template <typename Iterator_>
-        void Range<Iterator_>::popFront()
+	L_TEMPLATE
+        const typename std::iterator_traits<Iterator_>::reference L_TYPE::front() const
+        {
+            return *begin_;
+        }
+	L_TEMPLATE
+        void L_TYPE::popFront()
         {
             assert(!empty());
             ++begin_;
         }
-    template <typename Iterator_>
-        bool Range<Iterator_>::contains(Iterator it) const
+	L_TEMPLATE
+        bool L_TYPE::contains(Iterator it) const
         {
             if (it < begin_)
                 return false;
             return it < end_;
         }
-    template <typename Iterator_>
-        bool Range<Iterator_>::contains(std::function<bool(const typename Iterator::value_type &)> ftor) const
+	L_TEMPLATE
+        bool L_TYPE::contains(std::function<bool(const typename Iterator::value_type &)> ftor) const
         {
             for (auto it = begin_; it != end_; ++it)
                 if (ftor(*it))
                     return true;
             return false;
         }
-    template <typename Iterator_>
-        Iterator_ Range<Iterator_>::begin() const
+	L_TEMPLATE
+        Iterator_ L_TYPE::begin() const
         {
             return begin_;
         }
-    template <typename Iterator_>
-        Iterator_ Range<Iterator_>::end() const
+	L_TEMPLATE
+        Iterator_ L_TYPE::end() const
         {
             return end_;
         }
-    template <typename Iterator_>
-        void Range<Iterator_>::begin(Iterator b)
+	L_TEMPLATE
+        void L_TYPE::begin(Iterator b)
         {
             begin_ = b;
         }
-    template <typename Iterator_>
-        void Range<Iterator_>::end(Iterator e)
+	L_TEMPLATE
+        void L_TYPE::end(Iterator e)
         {
             end_ = e;
         }
-    template <typename Iterator_>
-        void Range<Iterator_>::clear()
+	L_TEMPLATE
+        void L_TYPE::clear()
         {
             *this = Range();
         }
+#undef L_TYPE
+#undef L_TEMPLATE
     //Free functions
     template <typename Container>
         Range<typename Container::iterator> make_range(Container &container)
         {
             return Range<typename Container::iterator>(container);
+        }
+    template <typename Container>
+        Range<typename Container::const_iterator> make_range(const Container &container)
+        {
+            return Range<typename Container::const_iterator>(container);
         }
 }
 
