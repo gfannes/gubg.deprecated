@@ -8,6 +8,7 @@ namespace gubg { namespace toml {
 	enum class ReturnCode
 	{
 		MSS_DEFAULT_CODES,
+        KeyOrPathExpected, EqualSignExpected, ValueExpected, NewlineExpected,
 	};
 
 } } 
