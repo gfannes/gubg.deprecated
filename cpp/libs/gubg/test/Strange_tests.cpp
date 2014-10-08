@@ -77,6 +77,10 @@ TEST_CASE("creation from std::string == abc", "[strange]")
 	{
 		REQUIRE('a' == r.front());
 	}
+	SECTION("back()")
+	{
+		REQUIRE('c' == r.back());
+	}
 	SECTION("clear()")
 	{
 		REQUIRE(!r.empty());
@@ -127,6 +131,53 @@ TEST_CASE("creation from std::string == abc", "[strange]")
 			REQUIRE(r.str() == "abc");
 		}
 	}
+    SECTION("diffTo() with strange")
+    {
+        Strange sp = r;
+        SECTION("when r is not changed, sp should diff to empty")
+        {
+            REQUIRE(sp.diffTo(r));
+            REQUIRE(sp.empty());
+        }
+        SECTION("when r has one char popped, sp should diff to that char")
+        {
+            r.popFront();
+            REQUIRE(sp.diffTo(r));
+            REQUIRE(sp.str() == "a");
+        }
+        SECTION("when r is empty, sp should not be changed: we assume r just ran out")
+        {
+            r.clear();
+            REQUIRE(sp.diffTo(r));
+            REQUIRE(sp.str() == "abc");
+        }
+        SECTION("when sp is empty, we expect failure")
+        {
+            sp.clear();
+            REQUIRE(!sp.diffTo(r));
+        }
+        SECTION("is sp was popped, we expect a failure")
+        {
+            sp.popFront();
+            REQUIRE(!sp.diffTo(r));
+        }
+        SECTION("the end of r is not checked")
+        {
+            r.popBack();
+            REQUIRE(sp.diffTo(r));
+            REQUIRE(sp.empty());
+        }
+        SECTION("the end of sp is not checked")
+        {
+            sp.popBack();
+            sp.popBack();
+            r.popFront();
+            r.popFront();
+            REQUIRE(sp.str() == "a");
+            REQUIRE(sp.diffTo(r));
+            REQUIRE(sp.str() == "ab");
+        }
+    }
 	SECTION("popUntil() exclusive")
 	{
 		Strange rr;
@@ -235,11 +286,24 @@ TEST_CASE("creation from std::string == abc", "[strange]")
 		REQUIRE(r.popCharBackIf('a'));
 		REQUIRE(!r.popCharBackIf('e'));
 	}
+	SECTION("popFront")
+	{
+		REQUIRE(r.popFront());
+        REQUIRE(r.front() == 'b');
+		REQUIRE(r.popFront());
+        REQUIRE(r.front() == 'c');
+		REQUIRE(r.popFront());
+        REQUIRE(r.empty());
+		REQUIRE(!r.popFront());
+	}
 	SECTION("popBack")
 	{
 		REQUIRE(r.popBack());
+        REQUIRE(r.back() == 'b');
 		REQUIRE(r.popBack());
+        REQUIRE(r.back() == 'a');
 		REQUIRE(r.popBack());
+        REQUIRE(r.empty());
 		REQUIRE(!r.popBack());
 	}
 	SECTION("popChar")

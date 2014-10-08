@@ -24,6 +24,7 @@ namespace gubg
             size_t size() const;
             std::string str() const;
             char front() const;
+            char back() const;
             void clear();
 
             void popAll(Strange &res);
@@ -31,13 +32,14 @@ namespace gubg
 
             //Does not pop ch
             bool popTo(Strange &res, const char ch);
-            //Does not pop strange. strange is assumed to be related to this: pointers are compared, not content
-            bool popTo(Strange &res, const Strange &strange);
             //Pops ch too, set inclusive to true if you want ch to be included in res
             bool popUntil(Strange &res, const char ch, bool inclusive = false);
             bool popUntil(std::string &res, const char ch, bool inclusive = false);
             bool popUntil(Strange &res, const std::string &str, bool inclusive = false);
             bool popUntil(std::string &res, const std::string &str, bool inclusive = false);
+
+            //this and strange are assumed to be related and have the same end
+            bool diffTo(const Strange &strange);
 
             bool popDecimal(long &res);
             template <typename Int>
@@ -53,6 +55,7 @@ namespace gubg
 
             bool popCharIf(const char ch);
             bool popCharBackIf(const char ch);
+            bool popFront();
             bool popBack();
             bool popChar(char &ch);
 
