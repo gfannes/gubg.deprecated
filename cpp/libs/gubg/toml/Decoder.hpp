@@ -2,7 +2,7 @@
 #define HEADER_gubg_toml_Decoder_hpp_ALREADY_INCLUDED
 
 #include "gubg/toml/Codes.hpp"
-#include "gubg/Range.hpp"
+#include "gubg/Strange.hpp"
 #include <string>
 #include <stack>
 #include <cassert>
@@ -20,8 +20,8 @@ namespace gubg { namespace toml {
 				ReturnCode decode(const std::string &msg)
 				{
 					MSS_BEGIN(ReturnCode);
-					range_ = make_range(msg);
-					path_ = Range();
+					range_ = msg;
+					path_clear();
                     state_ = Idle;
 					assert(path_.empty());
                     while (!range_.empty())
@@ -73,28 +73,20 @@ namespace gubg { namespace toml {
 				}
 
 			private:
-				typedef gubg::Range<std::string::const_iterator> Range;
-
 				Receiver &receiver_(){return static_cast<Receiver&>(*this);}
 				bool trimWhitespace_()
 				{
-                    const auto sp = range_;
-                    for (; !range_.empty() && isWhitespace_(range_.front()); range_.popFront())
-                    {
-                    }
-					return sp.begin() != range_.begin();
+					return range_.popCharIf(' ') || range_.popCharIf('\t')
 				}
                 bool readKey_()
                 {
-                    auto b = range_.begin();
-                    for (; !range_.empty() && isKeyChar_(range_.front(), b == range_.begin()); range_.popFront())
+					key_ = range_;
+					gubg::OnlyOnce first;
+                    for (; !range_.empty() && isKeyChar_(range_.front(), first()); range_.popFront())
                     {
                     }
-                    auto e = range_.begin();
-                    if (b == e)
-                        return false;
-                    key_ = Range(b, range_.begin());
-                    return true;
+					key_.subtract(range_);
+					return !key_.empty();
                 }
                 bool readPath_()
                 {
@@ -180,10 +172,10 @@ namespace gubg { namespace toml {
                     return std::string(r.begin(), r.end());
                 }
 
-				Range range_;
-				Range path_;
-                Range key_;
-                Range int_;
+				Strange range_;
+				Strange path_;
+                Strange key_;
+                Strange int_;
                 enum State {Idle, Key, EqualSign, Path,};
                 State state_;
         };
