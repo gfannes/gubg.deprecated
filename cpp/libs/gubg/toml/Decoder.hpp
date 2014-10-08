@@ -3,6 +3,7 @@
 
 #include "gubg/toml/Codes.hpp"
 #include "gubg/Strange.hpp"
+#include "gubg/OnlyOnce.hpp"
 #include <string>
 #include <stack>
 #include <cassert>
@@ -11,22 +12,45 @@
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace toml { 
 
-	template <typename Receiver>
-		class Decoder_crtp
-		{
-			public:
+    namespace details { 
+        bool trimWhitespaceFront(Strange &r)
+        {
+            bool ret = false;
+            while (r.popCharIf(' ') || r.popCharIf('\t'))
+                ret = true;
+            return ret;
+        }
+        bool trimWhitespaceBack(Strange &r)
+        {
+            bool ret = false;
+            while (r.popCharBackIf(' ') || r.popCharBackIf('\t'))
+                ret = true;
+            return ret;
+        }
+        bool trimWhitespace(Strange &r)
+        {
+            auto f = trimWhitespaceFront(r);
+            auto b = trimWhitespaceBack(r);
+            return f || b;
+        }
+    } 
+
+    template <typename Receiver>
+        class Decoder_crtp
+        {
+            public:
                 typedef Decoder_crtp<Receiver> Self;
 
-				ReturnCode decode(const std::string &msg)
-				{
-					MSS_BEGIN(ReturnCode);
-					range_ = msg;
-					path_clear();
+                ReturnCode decode(const std::string &msg)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    range_ = msg;
+                    path_.clear();
                     state_ = Idle;
-					assert(path_.empty());
+                    assert(path_.empty());
                     while (!range_.empty())
                     {
-                        if (trimWhitespace_())
+                        if (details::trimWhitespaceFront(range_))
                             continue;
                         switch (state_)
                         {
@@ -34,12 +58,12 @@ namespace gubg { namespace toml {
                                 if (false) {}
                                 else if (readKey_())
                                 {
-                                    L("Read key: " << str_(key_));
+                                    L("Read key: " << key_);
                                     state_ = Key;
                                 }
                                 else if (readPath_())
                                 {
-                                    L("Read path: " << str_(path_));
+                                    L("Read path: " << path_);
                                     state_ = Path;
                                 }
                                 else
@@ -48,18 +72,18 @@ namespace gubg { namespace toml {
                                 }
                                 break;
                             case Key:
-                                MSS(readChar_('='), EqualSignExpected);
+                                MSS(range_.popCharIf('='), EqualSignExpected);
                                 state_ = EqualSign;
                                 break;
                             case Path:
-                                MSS(readChar_('\n'), NewlineExpected);
+                                MSS(range_.popCharIf('\n'), NewlineExpected);
                                 state_ = Idle;
                                 break;
                             case EqualSign:
                                 if (false) {}
-                                else if (readInterger_())
+                                else if (range_.popDecimal(int_))
                                 {
-                                    L("Read number: " << str_(int_));
+                                    L("Read number: " << int_);
                                     state_ = Idle;
                                 }
                                 else
@@ -69,59 +93,39 @@ namespace gubg { namespace toml {
                                 break;
                         }
                     }
-					MSS_END();
-				}
+                    MSS_END();
+                }
 
-			private:
-				Receiver &receiver_(){return static_cast<Receiver&>(*this);}
-				bool trimWhitespace_()
-				{
-					return range_.popCharIf(' ') || range_.popCharIf('\t')
-				}
+            private:
+                Receiver &receiver_(){return static_cast<Receiver&>(*this);}
                 bool readKey_()
                 {
-					key_ = range_;
-					gubg::OnlyOnce first;
+                    key_ = range_;
+                    gubg::OnlyOnce first;
                     for (; !range_.empty() && isKeyChar_(range_.front(), first()); range_.popFront())
                     {
                     }
-					key_.subtract(range_);
-					return !key_.empty();
+                    key_.diffTo(range_);
+                    return !key_.empty();
                 }
                 bool readPath_()
                 {
-                    if (range_.front() != '[')
-                       return false;
-                    range_.popFront();
-                    auto b = range_.begin();
-                    for (; !range_.empty(); range_.popFront())
+                    auto sp = range_;
+                    if (!range_.popCharIf('['))
+                        return false;
+                    if (!range_.popUntil(path_, ']'))
                     {
-                        if (range_.front() == ']')
-                        {
-                            path_ = Range(b, range_.begin());
-                            range_.popFront();
-                            return true;
-                        }
+                        range_ = sp;
+                        return false;
                     }
-                    return false;
+                    details::trimWhitespace(path_);
+                    return true;
                 }
                 bool readChar_(char wanted)
                 {
                     if (range_.front() != wanted)
                         return false;
                     range_.popFront();
-                    return true;
-                }
-                bool readInterger_()
-                {
-                    auto b = range_.begin();
-                    for (; !range_.empty() && isIntegerChar_(range_.front(), b == range_.begin()); range_.popFront())
-                    {
-                    }
-                    auto e = range_.begin();
-                    if (b == e)
-                        return false;
-                    int_ = Range(b, range_.begin());
                     return true;
                 }
                 static bool isWhitespace_(char ch)
@@ -167,15 +171,11 @@ namespace gubg { namespace toml {
                     }
                     return false;
                 }
-                static std::string str_(const Range &r)
-                {
-                    return std::string(r.begin(), r.end());
-                }
 
-				Strange range_;
-				Strange path_;
+                Strange range_;
+                Strange path_;
                 Strange key_;
-                Strange int_;
+                long int_;
                 enum State {Idle, Key, EqualSign, Path,};
                 State state_;
         };
