@@ -85,9 +85,7 @@ int main(int argc, char **argv)
 	switch (const auto rc = fff::main(argc, argv))
 	{
 		case fff::ReturnCode::OK:
-			{
-				std::cout << "Everything went OK (" << sw.mark().total_elapse_hr() << " seconds)" << std::endl;
-			}
+            std::cout << "Everything went OK (" << sw.mark().total_elapse_hr() << " seconds)" << std::endl;
 			break;
 		case fff::ReturnCode::NoSeedGiven:
 			std::cerr << "You have to give me a seed to start the process" << std::endl;
