@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "vector.hpp"
-#include "cube.hpp"
+#include "gubg/vector/vector.hpp"
+#include "gubg/cube/cube.hpp"
 
 using namespace std;
 

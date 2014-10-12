@@ -42,6 +42,7 @@ namespace fff {
 		OnlyOnce setExecutable;
 		vector<file::File> objects;
 		vector<string> libs;
+		vector<file::File> libPaths;
 		vector<string> options;
         CreateMgr create_mgr;
 		Dependencies dependencies;
@@ -84,6 +85,14 @@ namespace fff {
                     options.push_back("pthread");
 #endif
             }
+			else if (tv.first == Tag("c++", "library_path"))
+            {
+				libPaths.push_back(tv.second.file());
+            }
+			else if (tv.first == Tag("c++", "library"))
+            {
+				libs.push_back(tv.second.string());
+            }
 		}
 
 		ostringstream oss;
@@ -106,6 +115,9 @@ namespace fff {
 
 		for (auto opt: options)
 			oss << " -" << options;
+
+		for (auto lp: libPaths)
+			oss << " -L" << lp;
 
 		for (auto lib: libs)
 			oss << " -l" << lib;

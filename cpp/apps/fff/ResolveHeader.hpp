@@ -17,6 +17,7 @@ namespace fff {
 			std::unique_ptr<const gubg::file::File> gubg_;
 			std::unique_ptr<const gubg::file::File> lua_;
 			std::unique_ptr<const gubg::file::File> catch_;
+			std::unique_ptr<const gubg::file::File> sfml_;
 
 			size_t ix_ = 0;
 			std::set<gubg::file::File> roots_;

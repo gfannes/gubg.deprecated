@@ -9,13 +9,21 @@ using namespace std;
 #define GUBG_MODULE_ "ResolveHeader"
 #include "gubg/log/begin.hpp"
 namespace fff { 
-	bool gubg_home_(file::File &f)
+	bool gubg_env_var_(file::File &f, const string &var)
 	{
 		string v;
-		if (!env::Variables::shell().get(v, "GUBG"))
+		if (!env::Variables::shell().get(v, var))
 			return false;
 		f = v;
 		return true;
+	}
+	bool gubg_home_(file::File &f)
+	{
+        return gubg_env_var_(f, "GUBG");
+	}
+	bool gubg_sdks_(file::File &f)
+	{
+        return gubg_env_var_(f, "GUBG_SDKS");
 	}
 	ResolveHeader::ResolveHeader()
 	{
@@ -26,6 +34,8 @@ namespace fff {
 			lua_.reset(new file::File(f << "c/lua-5.2.3"));
 		if (gubg_home_(f))
 			catch_.reset(new file::File(f << "cpp/libs/catch"));
+		if (gubg_sdks_(f))
+			sfml_.reset(new file::File(f << "SFML"));
 	}
 	ReturnCode ResolveHeader::process(Board &board)
 	{
@@ -102,6 +112,30 @@ namespace fff {
 							if (f.basename() == "lua.c")
 								continue;
 							board.add(Tag("c", "source"), f, tv);
+						}
+					}
+				}
+
+				if (sfml_ and roots_.count(*sfml_) == 0)
+				{
+					static const regex sfml_re("SFML/.+\\.hpp");
+					if (regex_match(tv.second.string(), sfml_re))
+					{
+						L("Adding sfml (" << *sfml_ << ")");
+						forest_.add(*sfml_, {"hpp", "cpp"});
+						roots_.insert(*sfml_);
+						{
+							auto ip = *sfml_; ip << "include";
+							board.add(Tag("c++", "include_path"), ip, tv);
+						}
+						{
+							auto lp = *sfml_; lp << "build/lib";
+							board.add(Tag("c++", "library_path"), lp, tv);
+							board.add(Tag("c++", "library"), Value("sfml-system"), tv);
+							board.add(Tag("c++", "library"), Value("sfml-graphics"), tv);
+							board.add(Tag("c++", "library"), Value("sfml-window"), tv);
+							board.add(Tag("c++", "library"), Value("sfml-audio"), tv);
+							board.add(Tag("c++", "library"), Value("sfml-network"), tv);
 						}
 					}
 				}

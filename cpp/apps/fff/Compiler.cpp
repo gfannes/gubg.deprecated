@@ -43,6 +43,7 @@ namespace fff {
 
 		vector<file::File> includePaths;
 		vector<string> options;
+		vector<string> pkgs;
 		set<string> defines;
 		for (auto tv: tvs)
 		{
@@ -71,6 +72,8 @@ namespace fff {
 			ostringstream oss;
 			for (auto o: options)
 				oss << "-" << o << " ";
+			for (auto pkg: pkgs)
+				oss << "`pkg-config --cflags " << pkg << "` ";
 			for (auto ip: includePaths)
 				oss << "-I" << ip << " ";
 			for (auto d: defines)
