@@ -5,6 +5,9 @@ using namespace std;
 
 namespace data { 
 	const string number = "number=42"; 
+	const string str = "str=\"eat this\""; 
+	const string empty_str = "str=\"\""; 
+	const string escaped_str = "str=\"\\\"\""; 
 	const string path = "[a.b.c]"; 
 	const string path_number = "[a.b.c]\nnumber=42"; 
 } 
@@ -19,6 +22,9 @@ TEST_CASE("Decoder", "[toml]")
 	using toml::ReturnCode;
 	Decoder decoder;
 	REQUIRE(ReturnCode::OK == decoder.decode(data::number));
+	REQUIRE(ReturnCode::OK == decoder.decode(data::str));
+	REQUIRE(ReturnCode::OK == decoder.decode(data::empty_str));
+	REQUIRE(ReturnCode::OK == decoder.decode(data::escaped_str));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::path));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::path_number));
 }

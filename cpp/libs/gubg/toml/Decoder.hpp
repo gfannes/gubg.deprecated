@@ -71,15 +71,11 @@ namespace gubg { namespace toml {
                                     MSS_L(KeyOrPathExpected);
                                 }
                                 break;
-                            case Key:
-                                MSS(range_.popCharIf('='), EqualSignExpected);
-                                state_ = EqualSign;
-                                break;
                             case Path:
                                 MSS(range_.popCharIf('\n'), NewlineExpected);
                                 state_ = Idle;
                                 break;
-                            case EqualSign:
+                            case Key:
                                 if (false) {}
                                 else if (range_.popDecimal(int_))
                                 {
@@ -100,13 +96,10 @@ namespace gubg { namespace toml {
                 Receiver &receiver_(){return static_cast<Receiver&>(*this);}
                 bool readKey_()
                 {
-                    key_ = range_;
-                    gubg::OnlyOnce first;
-                    for (; !range_.empty() && isKeyChar_(range_.front(), first()); range_.popFront())
-                    {
-                    }
-                    key_.diffTo(range_);
-                    return !key_.empty();
+					if (!range_.popUntil(key_, '='))
+						return false;
+					details::trimWhitespaceBack(key_);
+					return true;
                 }
                 bool readPath_()
                 {
@@ -176,7 +169,7 @@ namespace gubg { namespace toml {
                 Strange path_;
                 Strange key_;
                 long int_;
-                enum State {Idle, Key, EqualSign, Path,};
+                enum State {Idle, Key, Path,};
                 State state_;
         };
 
