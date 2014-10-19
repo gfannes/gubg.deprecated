@@ -41,6 +41,11 @@ namespace gubg {
         l_ = 0;
     }
 
+	bool Strange::contains(char ch) const
+	{
+		return nullptr != std::memchr(s_, ch, l_);
+	}
+
 	void Strange::popAll(Strange &res)
 	{
 		assert(invariants_());
@@ -60,15 +65,38 @@ namespace gubg {
 		assert(invariants_());
 		if (empty())
 			return false;
-		for (size_t i = 0; i < l_; ++i)
-			if (s_[i] == ch)
+		char *ptr = (char*)std::memchr(s_, ch, l_);
+		if (!ptr)
+			return false;
+		res.s_ = s_;
+		res.l_ = ptr-s_;
+		forward_(res.l_);
+		return true;
+	}
+	//Does not pop str
+	bool Strange::popTo(Strange &res, const std::string &str)
+	{
+		assert(invariants_());
+		if (str.empty())
+			return false;
+		//We will iteratively search for ch, and try to match the rest of str
+		const char ch = str[0];
+		const size_t s = str.size();
+		const Strange sp = *this;
+		while (char *ptr = (char*)std::memchr(s_, ch, l_))
+		{
+			const size_t l = ptr-s_;
+			forward_(l);
+			if (size() < s)
+				break;
+			if (0 == std::memcmp(str.data(), s_, s))
 			{
-				res.s_ = s_;
-				res.l_ = i;
-				forward_(i);
+				res.s_ = sp.s_;
+				res.l_ = s_-res.s_;
 				return true;
 			}
-
+		}
+		*this = sp;
 		return false;
 	}
 	bool Strange::diffTo(const Strange &strange)

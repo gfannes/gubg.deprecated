@@ -27,11 +27,14 @@ namespace gubg
             char back() const;
             void clear();
 
+			bool contains(char ch) const;
+
             void popAll(Strange &res);
             void popAll(std::string &res);
 
-            //Does not pop ch
+            //Does not pop ch or str
             bool popTo(Strange &res, const char ch);
+            bool popTo(Strange &res, const std::string &str);
             //Pops ch too, set inclusive to true if you want ch to be included in res
             bool popUntil(Strange &res, const char ch, bool inclusive = false);
             bool popUntil(std::string &res, const char ch, bool inclusive = false);

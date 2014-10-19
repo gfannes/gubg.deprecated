@@ -8,6 +8,9 @@ namespace data {
 	const string str = "str=\"eat this\""; 
 	const string empty_str = "str=\"\""; 
 	const string escaped_str = "str=\"\\\"\""; 
+	const string unescaped_str = "str=\'\\\"\'"; 
+	const string unescaped_ml_str = "str=\'\'\'\\\"\'\'\'"; 
+	const string escaped_ml_str = "str=\"\"\"\\\"\"\"\""; 
 	const string path = "[a.b.c]"; 
 	const string path_number = "[a.b.c]\nnumber=42"; 
 } 
@@ -25,6 +28,8 @@ TEST_CASE("Decoder", "[toml]")
 	REQUIRE(ReturnCode::OK == decoder.decode(data::str));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::empty_str));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::escaped_str));
+	REQUIRE(ReturnCode::OK == decoder.decode(data::unescaped_str));
+	REQUIRE(ReturnCode::OK == decoder.decode(data::unescaped_ml_str));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::path));
 	REQUIRE(ReturnCode::OK == decoder.decode(data::path_number));
 }

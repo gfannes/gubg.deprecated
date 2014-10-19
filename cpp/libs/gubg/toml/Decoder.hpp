@@ -5,6 +5,7 @@
 #include "gubg/Strange.hpp"
 #include "gubg/OnlyOnce.hpp"
 #include <string>
+#include <list>
 #include <stack>
 #include <cassert>
 
@@ -82,6 +83,11 @@ namespace gubg { namespace toml {
                                     L("Read number: " << int_);
                                     state_ = Idle;
                                 }
+                                else if (readString_())
+                                {
+                                    L("Read string: " << str_);
+                                    state_ = Idle;
+                                }
                                 else
                                 {
                                     MSS_L(ValueExpected);
@@ -96,10 +102,10 @@ namespace gubg { namespace toml {
                 Receiver &receiver_(){return static_cast<Receiver&>(*this);}
                 bool readKey_()
                 {
-					if (!range_.popUntil(key_, '='))
-						return false;
-					details::trimWhitespaceBack(key_);
-					return true;
+                    if (!range_.popUntil(key_, '='))
+                        return false;
+                    details::trimWhitespaceBack(key_);
+                    return true;
                 }
                 bool readPath_()
                 {
@@ -112,6 +118,145 @@ namespace gubg { namespace toml {
                         return false;
                     }
                     details::trimWhitespace(path_);
+                    return true;
+                }
+                bool readString_()
+                {
+                    //Keep the multiline versions first
+                    return readMultiLineEscaped_() || readMultiLineUnescaped_() || readSingleLineEscaped_() || readSingleLineUnescaped_();
+                }
+                bool readMultiLineUnescaped_()
+                {
+                    auto sp = range_;
+                    if (!range_.popString("'''"))
+                        //This is not an unescaped multiline string
+                        return false;
+                    return range_.popUntil(str_, "'''");
+                }
+                bool readMultiLineEscaped_()
+                {
+                    static const std::string marker = "\"\"\"";
+                    auto sp = range_;
+                    if (!range_.popString(marker))
+                        //This is not an unescaped multiline string
+                        return false;
+                    while (true)
+                    {
+                        if (!range_.popTo(str_, marker))
+                        {
+                            range_ = sp;
+                            return false;
+                        }
+                        if (str_.empty())
+                            break;
+                        if (str_.back() != '\\')
+                            //We found a """ sequence which is not preceded by a '\': we found the end of the string
+                            break;
+                        //We found a """ sequence which _is_ preceded by a '\': we need continue looking for the end
+                        range_.popFront();
+                    }
+                    //Compute the full string content
+                    str_ = sp; str_.popFront();
+                    str_.diffTo(range_);
+                    //Removed the trailing """ from range_
+                    range_.popString(marker);
+                    //TODO: unescaping is not OK and does not deal with all corner cases yet
+                    if (!str_.contains('\\'))
+                        //str_ has no escaped characters, we are done
+                        return true;
+                    //We have to unescape str_
+                    std::string tmp;
+                    Strange part;
+                    while (str_.popUntil(part, '\\'))
+                    {
+                        tmp.append(part.str());
+                        char ch;
+                        if (!str_.popChar(ch))
+                        {
+                            range_ = sp;
+                            return false;
+                        }
+                        switch (ch)
+                        {
+                            case 'b': tmp.push_back('\b'); break;
+                            case 't': tmp.push_back('\t'); break;
+                            case 'n': tmp.push_back('\n'); break;
+                            case 'f': tmp.push_back('\f'); break;
+                            case 'r': tmp.push_back('\r'); break;
+                            case '\"': tmp.push_back('\"'); break;
+                            case '\\': tmp.push_back('\\'); break;
+                            case '/': tmp.push_back('/'); break;
+                            default: tmp.push_back(ch); break;
+                        }
+                    }
+                    plainStrings_.push_back(std::move(tmp));
+                    str_ = plainStrings_.back();
+                    return true;
+                }
+                bool readSingleLineUnescaped_()
+                {
+                    auto sp = range_;
+                    if (!range_.popCharIf('\''))
+                        //This is not an unescaped string
+                        return false;
+                    return range_.popUntil(str_, '\'');
+                }
+                bool readSingleLineEscaped_()
+                {
+                    auto sp = range_;
+                    if (!range_.popCharIf('"'))
+                        //This is not an escaped string
+                        return false;
+                    while (true)
+                    {
+                        if (!range_.popTo(str_, '"'))
+                        {
+                            range_ = sp;
+                            return false;
+                        }
+                        if (str_.empty())
+                            break;
+                        if (str_.back() != '\\')
+                            //We found a '"' character which is not preceded by a '\': we found the end of the string
+                            break;
+                        //We found a '"' character which _is_ preceded by a '\': we need continue looking for the end
+                        range_.popFront();
+                    }
+                    //Compute the full string content
+                    str_ = sp; str_.popFront();
+                    str_.diffTo(range_);
+                    //Removed the trailing '"' from range_
+                    range_.popFront();
+                    if (!str_.contains('\\'))
+                        //str_ has no escaped characters, we are done
+                        return true;
+                    //We have to unescape str_
+                    std::string tmp;
+                    Strange part;
+                    while (str_.popUntil(part, '\\'))
+                    {
+                        tmp.append(part.str());
+                        char ch;
+                        if (!str_.popChar(ch))
+                        {
+                            range_ = sp;
+                            return false;
+                        }
+                        switch (ch)
+                        {
+                            case 'b': tmp.push_back('\b'); break;
+                            case 't': tmp.push_back('\t'); break;
+                            case 'n': tmp.push_back('\n'); break;
+                            case 'f': tmp.push_back('\f'); break;
+                            case 'r': tmp.push_back('\r'); break;
+                            case '\"': tmp.push_back('\"'); break;
+                            case '\\': tmp.push_back('\\'); break;
+                            case '/': tmp.push_back('/'); break;
+                            default: tmp.push_back(ch); break;
+                        }
+                    }
+                    plainStrings_.push_back(std::move(tmp));
+                    str_ = plainStrings_.back();
                     return true;
                 }
                 bool readChar_(char wanted)
@@ -169,6 +314,10 @@ namespace gubg { namespace toml {
                 Strange path_;
                 Strange key_;
                 long int_;
+                Strange str_;
+                //We keep all unescaped strings in a list to make sure the Stranges we give out have the same lifetime as self
+                typedef std::list<std::string> PlainStrings;
+                PlainStrings plainStrings_;
                 enum State {Idle, Key, Path,};
                 State state_;
         };

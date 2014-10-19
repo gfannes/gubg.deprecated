@@ -130,6 +130,12 @@ TEST_CASE("creation from std::string == abc", "[strange]")
 			REQUIRE(rr.empty());
 			REQUIRE(r.str() == "abc");
 		}
+		SECTION("bc")
+		{
+			REQUIRE(r.popTo(rr, "bc"));
+			REQUIRE(rr.str() == "a");
+			REQUIRE(r.str() == "bc");
+		}
 	}
     SECTION("diffTo() with strange")
     {
