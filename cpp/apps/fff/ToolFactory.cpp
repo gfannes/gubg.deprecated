@@ -1,10 +1,10 @@
 #include "fff/ToolFactory.hpp"
-#include "fff/Starter.hpp"
-#include "fff/ParseIncludes.hpp"
-#include "fff/ResolveHeader.hpp"
-#include "fff/Compiler.hpp"
-#include "fff/Linker.hpp"
-#include "fff/Runner.hpp"
+#include "fff/tools/Starter.hpp"
+#include "fff/tools/ParseIncludes.hpp"
+#include "fff/tools/ResolveHeader.hpp"
+#include "fff/tools/Compiler.hpp"
+#include "fff/tools/Linker.hpp"
+#include "fff/tools/Runner.hpp"
 using namespace std;
 
 namespace fff { 
@@ -24,7 +24,7 @@ namespace fff {
     }
     Tool_itf::Ptr ToolFactory::createTool(const string &name)
     {
-#define L_ELSE_IF(type) else if (name == #type) return Tool_itf::Ptr(new type())
+#define L_ELSE_IF(type) else if (name == #type) return Tool_itf::Ptr(new tools::type())
         if (false) {}
         L_ELSE_IF(Starter);
         L_ELSE_IF(ParseIncludes);

@@ -1,5 +1,5 @@
-#ifndef HEADER_create_ALREADY_INCLUDED
-#define HEADER_create_ALREADY_INCLUDED
+#ifndef HEADER_fff_Create_hpp_ALREADY_INCLUDED
+#define HEADER_fff_Create_hpp_ALREADY_INCLUDED
 
 #include "fff/Codes.hpp"
 #include "fff/Types.hpp"

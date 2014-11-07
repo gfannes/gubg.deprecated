@@ -74,3 +74,9 @@ source $GUBG/vim/git.vim
 
 set ignorecase
 set smartcase
+
+source $GUBG/vim/pathogen.vim
+execute pathogen#infect($GUBG.'/vim/bundle/{}')
+syntax on
+filetype plugin indent on
+

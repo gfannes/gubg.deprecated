@@ -66,6 +66,8 @@ namespace gubg
 
             bool popLine(Strange &line);
 
+            void ltrim(const char ch);
+
         private:
             bool invariants_() const;
             void forward_(const size_t nr);
@@ -75,11 +77,7 @@ namespace gubg
             size_t l_;
     };
 
-}
-
-namespace std
-{
-    inline ostream &operator<<(ostream &os, const gubg::Strange &strange)
+    inline std::ostream &operator<<(std::ostream &os, const Strange &strange)
     {
         os << strange.str();
         return os;

@@ -7,4 +7,7 @@
 *.csv
 *.log
 *.tmp
+*.*~
+*.dll
+*.rlib
 cpp/apps/da/da

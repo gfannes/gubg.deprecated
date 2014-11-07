@@ -1,9 +1,9 @@
-#ifndef HEADER_fff_ParseIncludes_hpp_ALREADY_INCLUDED
-#define HEADER_fff_ParseIncludes_hpp_ALREADY_INCLUDED
+#ifndef HEADER_fff_tools_ParseIncludes_hpp_ALREADY_INCLUDED
+#define HEADER_fff_tools_ParseIncludes_hpp_ALREADY_INCLUDED
 
 #include "fff/Tool.hpp"
 
-namespace fff { 
+namespace fff { namespace tools { 
 	class ParseIncludes: public Tool_itf
 	{
 		public:
@@ -13,6 +13,6 @@ namespace fff {
 		private:
 			size_t ix_ = 0;
 	};
-} 
+} } 
 
 #endif

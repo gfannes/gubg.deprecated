@@ -1,4 +1,4 @@
-#include "fff/Runner.hpp"
+#include "fff/tools/Runner.hpp"
 #include "fff/Board.hpp"
 #include "fff/Execute.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
@@ -8,7 +8,7 @@ using namespace std;
 
 #define GUBG_MODULE "Runner"
 #include "gubg/log/begin.hpp"
-namespace fff { 
+namespace fff { namespace tools { 
 	ReturnCode Runner::process(Board &board)
 	{
 		MSS_BEGIN(ReturnCode);
@@ -40,5 +40,5 @@ namespace fff {
 
 		MSS_END();
 	}
-} 
+} } 
 #include "gubg/log/end.hpp"

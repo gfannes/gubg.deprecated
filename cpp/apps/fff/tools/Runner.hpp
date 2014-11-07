@@ -1,9 +1,9 @@
-#ifndef HEADER_fff_Runner_hpp_ALREADY_INCLUDED
-#define HEADER_fff_Runner_hpp_ALREADY_INCLUDED
+#ifndef HEADER_fff_tools_Runner_hpp_ALREADY_INCLUDED
+#define HEADER_fff_tools_Runner_hpp_ALREADY_INCLUDED
 
 #include "fff/Tool.hpp"
 
-namespace fff { 
+namespace fff { namespace tools { 
 	class Runner: public Tool_itf
 	{
 		public:
@@ -14,6 +14,6 @@ namespace fff {
 			bool do_run_ = true;
 			size_t ix_;
 	};
-} 
+} } 
 
 #endif
