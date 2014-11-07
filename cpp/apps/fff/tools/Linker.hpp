@@ -1,10 +1,10 @@
-#ifndef HEADER_fff_Linker_hpp_ALREADY_INCLUDED
-#define HEADER_fff_Linker_hpp_ALREADY_INCLUDED
+#ifndef HEADER_fff_tools_Linker_hpp_ALREADY_INCLUDED
+#define HEADER_fff_tools_Linker_hpp_ALREADY_INCLUDED
 
 #include "fff/Tool.hpp"
 #include "gubg/OnlyOnce.hpp"
 
-namespace fff { 
+namespace fff { namespace tools { 
 	class Linker: public Tool_itf
 	{
 		public:
@@ -14,6 +14,6 @@ namespace fff {
 		private:
 			gubg::OnlyOnce run_;
 	};
-} 
+} } 
 
 #endif

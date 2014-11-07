@@ -4,7 +4,7 @@ fff-help:
 	@echo make clean
 	@echo make fff -j
 
-FFF_CPP_FILES := fff Tag Value Board Create Execute ToolFactory Starter ParseIncludes ResolveHeader Compiler Linker Runner
+FFF_CPP_FILES := fff Tag Value Board Create Execute ToolFactory tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner
 
 GUBG_CPP_FILES := OptionParser Platform file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime lua/State
 
@@ -12,8 +12,8 @@ LUA_C_FILES := lapi lauxlib lbaselib lbitlib lcode lcorolib lctype ldblib ldebug
 
 CPP_SRC_FILES := $(patsubst %,%.cpp,$(FFF_CPP_FILES)) $(patsubst %,../../libs/gubg/%.cpp,$(GUBG_CPP_FILES))
 C_SRC_FILES := $(patsubst %,../../../c/lua-5.2.3/%.c,$(LUA_C_FILES))
-CPP_OBJECT_FILES := $(patsubst %.cpp,%.fff.cpp.o,$(CPP_SRC_FILES))
-C_OBJECT_FILES := $(patsubst %.c,%.fff.c.o,$(C_SRC_FILES))
+CPP_OBJECT_FILES := $(patsubst %.cpp,%.cpp.obj,$(CPP_SRC_FILES))
+C_OBJECT_FILES := $(patsubst %.c,%.c.obj,$(C_SRC_FILES))
 
 ifeq ($(GUBG_PLATFORM),linux)
 CPP_INCLUDE_PATHS := -I.. -I../../libs -I../../../c/lua-5.2.3
@@ -54,9 +54,9 @@ fff: $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(FFF_CACHE) $(GUBG_BIN)
 	g++ $(LDFLAGS) -o fff.exe $(CPP_OBJECT_FILES) $(C_OBJECT_FILES) $(LINK_LIBS)
 	cp -p fff.exe $(FFF_EXE)
 
-%.fff.cpp.o: %.cpp
+%.cpp.obj: %.cpp
 	g++ -c $< -o $@ $(CPPFLAGS)
-%.fff.c.o: %.c
+%.c.obj: %.c
 	gcc -c $< -o $@ $(CFLAGS)
 
 .PHONY: self

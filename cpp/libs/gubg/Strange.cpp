@@ -309,6 +309,12 @@ namespace gubg {
 		return true;
 	}
 
+	void Strange::ltrim(const char ch)
+	{
+		while (!empty() and ch == front())
+			popFront();
+	}
+
 	//Privates
 	bool Strange::invariants_() const
 	{

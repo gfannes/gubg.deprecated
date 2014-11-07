@@ -1,18 +1,31 @@
 #ifndef HEADER_fff_Compiler_hpp_ALREADY_INCLUDED
 #define HEADER_fff_Compiler_hpp_ALREADY_INCLUDED
 
-#include "fff/Tool.hpp"
+#include <memory>
 
 namespace fff { 
-	class Compiler: public Tool_itf
-	{
-		public:
-			std::string name() const override {return "Compiler";}
-			ReturnCode process(Board &) override;
 
-		private:
-			size_t ix_ = 0;
-	};
+    namespace compiler { 
+        enum class Type
+        {
+            GCC, MSC, CLang,
+        };
+        class Interface
+        {
+            public:
+                virtual ~Interface(){}
+        };
+    } 
+
+    class Compiler
+    {
+        public:
+            Compiler(compiler::Type);
+
+        private:
+            typedef std::shared_ptr<compiler::Interface> Pimpl;
+            Pimpl pimpl_;
+    };
 } 
 
 #endif

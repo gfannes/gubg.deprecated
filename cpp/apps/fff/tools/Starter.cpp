@@ -1,0 +1,96 @@
+#include "fff/tools/Starter.hpp"
+#include "fff/Value.hpp"
+#include "fff/Board.hpp"
+#include "fff/ToolFactory.hpp"
+#include "gubg/file/Filesystem.hpp"
+#include "gubg/parse/Line.hpp"
+using namespace gubg;
+
+#define GUBG_MODULE_ "Starter"
+#include "gubg/log/begin.hpp"
+namespace fff { namespace tools { 
+
+	bool resolve_(file::File &f, const Value &v)
+	{
+		file::File tmp(v.string());
+		if (!MSS_IS_OK(file::resolve(tmp)))
+			return false;
+		f = tmp;
+		return true;
+	}
+
+    ReturnCode Starter::process(Board &board)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        auto tvs = board.getFrom(ix_);
+        ix_ += tvs.size();
+
+        for (auto tv: tvs)
+        {
+            SS(tv.first, tv.second);
+
+            if (tv.first != Tag("start"))
+                //We only handle tvs added from CLI arguments
+                continue;
+
+            {
+                file::File f;
+                if (resolve_(f, tv.second))
+                {
+                    MSS(processFile_(board, f));
+                    continue;
+                }
+            }
+
+            MSS(processOption_(board, tv.second.string()));
+        }
+
+        MSS_END();
+    }
+
+    ReturnCode Starter::processFile_(Board &board, const file::File &f)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        ToolFactory fact;
+
+        if (false) {}
+        else if (f.extension() == "cpp")
+        {
+            if (addExeChain_())
+            {
+                MSS(board.addTool(fact.createTool("ParseIncludes")));
+                MSS(board.addTool(fact.createTool("ResolveHeader")));
+                MSS(board.addTool(fact.createTool("Compiler")));
+                MSS(board.addTool(fact.createTool("Linker")));
+                MSS(board.addTool(fact.createTool("Runner")));
+                board.add(Tag("c++", "source"), f);
+            }
+        }
+        else if (f.extension() == "lua")
+        {
+            std::string code;
+            MSS(file::read(code, f));
+            std::string err;
+            switch (const auto rc = board.executeLua(code, err))
+            {
+                default:
+                    std::cout << "Lua error encountered:" << std::endl;
+                    for (auto line: gubg::line::split(err))
+                        std::cout << line.txt << std::endl;
+                case ReturnCode::OK:
+                    MSS(rc);
+            }
+        }
+
+        MSS_END();
+    }
+    ReturnCode Starter::processOption_(Board &board, const std::string &str)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS_END();
+    }
+
+} } 
+#include "gubg/log/end.hpp"

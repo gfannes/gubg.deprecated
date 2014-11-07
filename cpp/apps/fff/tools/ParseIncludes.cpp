@@ -1,4 +1,4 @@
-#include "fff/ParseIncludes.hpp"
+#include "fff/tools/ParseIncludes.hpp"
 #include "fff/Board.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <list>
@@ -21,7 +21,7 @@ namespace {
             }
     };
 }
-namespace fff { 
+namespace fff { namespace tools { 
 	ReturnCode ParseIncludes::process(Board &board)
 	{
 		MSS_BEGIN(ReturnCode);
@@ -45,5 +45,5 @@ namespace fff {
 
 		MSS_END();
 	}
-} 
+} } 
 #include "gubg/log/end.hpp"

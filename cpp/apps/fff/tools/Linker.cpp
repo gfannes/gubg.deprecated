@@ -1,4 +1,4 @@
-#include "fff/Linker.hpp"
+#include "fff/tools/Linker.hpp"
 #include "fff/Board.hpp"
 #include "fff/Create.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -8,7 +8,7 @@ using namespace std;
 
 #define GUBG_MODULE_ "Linker"
 #include "gubg/log/begin.hpp"
-namespace fff { 
+namespace fff { namespace tools { 
 
 	enum ExeType {Exe, Shared};
 
@@ -140,5 +140,5 @@ namespace fff {
 		
 		MSS_END();
 	}
-} 
+} }
 #include "gubg/log/end.hpp"

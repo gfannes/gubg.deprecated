@@ -1,4 +1,4 @@
-#include "fff/ResolveHeader.hpp"
+#include "fff/tools/ResolveHeader.hpp"
 #include "fff/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
@@ -8,7 +8,7 @@ using namespace std;
 
 #define GUBG_MODULE_ "ResolveHeader"
 #include "gubg/log/begin.hpp"
-namespace fff { 
+namespace fff { namespace tools { 
 	bool gubg_env_var_(file::File &f, const string &var)
 	{
 		string v;
@@ -36,6 +36,8 @@ namespace fff {
 			catch_.reset(new file::File(f << "cpp/libs/catch"));
 		if (gubg_sdks_(f))
 			sfml_.reset(new file::File(f << "SFML"));
+		if (gubg_sdks_(f))
+			chai_.reset(new file::File(f << "ChaiScript/include"));
 	}
 	ReturnCode ResolveHeader::process(Board &board)
 	{
@@ -53,7 +55,7 @@ namespace fff {
 				file::File path(tv.second.string());
 				if (MSS_IS_OK(file::resolve(path)) and path.popBasename())
 				{
-					L("Adding local (" << path << ")");
+					L("Adding local path to the forest (" << path << ")");
 					forest_.add(path, {"hpp", "cpp", "h", "c"});
 					{
 						auto ip = path; ip.popBasename();
@@ -140,6 +142,27 @@ namespace fff {
 					}
 				}
 
+				if (chai_ and roots_.count(*chai_) == 0)
+				{
+					static const regex chai_re("chaiscript/.+\\.hpp");
+					if (regex_match(tv.second.string(), chai_re))
+					{
+						L("Adding chai (" << *chai_ << ")");
+						forest_.add(*chai_, {"hpp", "cpp"});
+						roots_.insert(*chai_);
+						{
+							board.add(Tag("c++", "include_path"), *chai_, tv);
+#if 0
+							for (auto str: vector<string>{"dispatchkit", "language", "utility"})
+							{
+								auto ip = *chai_; ip << str;
+								board.add(Tag("c++", "include_path"), ip, tv);
+							}
+#endif
+						}
+					}
+				}
+
 				L("Checking forest for " << tv.second.string());
 				file::File rf;
 				if (false) {}
@@ -169,5 +192,5 @@ namespace fff {
 
 		MSS_END();
 	}
-} 
+} } 
 #include "gubg/log/end.hpp"
