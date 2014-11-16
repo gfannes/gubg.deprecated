@@ -4,6 +4,7 @@
 #include "fff/ToolFactory.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
+#include "gubg/Strange.hpp"
 using namespace gubg;
 
 #define GUBG_MODULE_ "Starter"
@@ -89,6 +90,24 @@ namespace fff { namespace tools {
     ReturnCode Starter::processOption_(Board &board, const std::string &str)
     {
         MSS_BEGIN(ReturnCode);
+        Strange strange(str);
+        Strange key;
+        if (strange.popUntil(key, ':'))
+        {
+            std::vector<std::string> key_parts;
+            {
+                Strange part;
+                while (key.popUntil(part, '.'))
+                    key_parts.push_back(part.str());
+                key.popAll(part);
+                key_parts.push_back(part.str());
+            }
+
+            Strange value;
+            strange.popAll(value);
+
+            board.add(Tag(key_parts), value.str());
+        }
         MSS_END();
     }
 
