@@ -1,3 +1,6 @@
 [submodule "vim/bundle/vim-javascript"]
 	path = vim/bundle/vim-javascript
 	url = https://github.com/pangloss/vim-javascript
+[submodule "cpp/libs/extern/eigen"]
+	path = cpp/libs/extern/eigen
+	url = https://github.com/RLovelett/eigen

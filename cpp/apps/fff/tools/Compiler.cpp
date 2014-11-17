@@ -49,7 +49,7 @@ namespace fff { namespace tools {
 		{
 			if (false) {}
 			else if (tv.first == Tag("c++", "include_path"))
-				includePaths.push_back(tv.second.file());
+				includePaths.push_back(tv.second.as_file());
 			else if (tv.first == Tag("start") && tv.second.string() == "release")
             {
                 options.push_back("O3");

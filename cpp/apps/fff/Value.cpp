@@ -55,6 +55,15 @@ namespace fff {
 			return emptyFile_;
 		return pimpl.file;
 	}
+	gubg::file::File Value::as_file() const
+	{
+		L_GET_PIMPL();
+		if (pimpl.type == String)
+			return gubg::file::File(pimpl.string);
+		if (pimpl.type != File)
+			return emptyFile_;
+		return pimpl.file;
+	}
 	const std::string &Value::string() const
 	{
 		L_GET_PIMPL();

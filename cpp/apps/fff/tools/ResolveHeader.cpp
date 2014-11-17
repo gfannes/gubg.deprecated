@@ -38,6 +38,8 @@ namespace fff { namespace tools {
             sfml_.reset(new file::File(f << "SFML"));
         if (gubg_sdks_(f))
             chai_.reset(new file::File(f << "ChaiScript/include"));
+        if (gubg_home_(f))
+            eigen_.reset(new file::File(f << "cpp/libs/extern/eigen"));
     }
     ReturnCode ResolveHeader::process(Board &board)
     {
@@ -106,6 +108,16 @@ namespace fff { namespace tools {
                             auto ip = *catch_; ip.popBasename();
                             board.add(Tag("c++", "include_path"), ip, tv);
                         }
+                    }
+                }
+
+                if (eigen_ and roots_.count(*eigen_) == 0)
+                {
+                    if (tv.second.string() == "Eigen/Eigen")
+                    {
+                        L("Adding eigen (" << *eigen_ << ")");
+                        roots_.insert(*eigen_);
+                        board.add(Tag("c++", "include_path"), *eigen_, tv);
                     }
                 }
 

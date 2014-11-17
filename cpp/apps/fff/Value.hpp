@@ -7,31 +7,34 @@
 #include <ostream>
 
 namespace fff { 
-	class Value
-	{
-		public:
-			enum Type {File, String, Integer};
+    class Value
+    {
+        public:
+            enum Type {File, String, Integer};
 
-			Value(gubg::file::File);
-			Value(std::string);
-			Value(long);
+            Value(gubg::file::File);
+            Value(std::string);
+            Value(long);
 
-			bool operator<(Value) const;
+            bool operator<(Value) const;
 
-			Type type() const;
+            Type type() const;
 
-			const gubg::file::File &file() const;
-			const std::string &string() const;
-			long integer() const;
+            const gubg::file::File &file() const;
+            const std::string &string() const;
+            long integer() const;
 
-			void stream(std::ostream &) const;
-			std::string to_str() const;
+            //Will convert a string or file, ideal for CLI args
+            gubg::file::File as_file() const;
 
-		private:
-			struct Pimpl;
-			std::shared_ptr<const Pimpl> pimpl_;
-	};
-	inline std::ostream &operator<<(std::ostream &os, const Value &v) {v.stream(os); return os;}
+            void stream(std::ostream &) const;
+            std::string to_str() const;
+
+        private:
+            struct Pimpl;
+            std::shared_ptr<const Pimpl> pimpl_;
+    };
+    inline std::ostream &operator<<(std::ostream &os, const Value &v) {v.stream(os); return os;}
 } 
 
 #endif
