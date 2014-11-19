@@ -4,12 +4,15 @@
 #include "gubg/tuple/TypeTransform.hpp"
 #include "gubg/tuple/ForEach.hpp"
 #include "gubg/tmp/IntType.hpp"
+#include "gubg/data/Codes.hpp"
+#include "gubg/file/Filesystem.hpp"
+#include "gubg/Strange.hpp"
 #include <tuple>
 #include <vector>
 #include <ostream>
 #include <cassert>
 
-#define GUBG_MODULE_ "Block"
+#define GUBG_MODULE "Block"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace data { 
 
@@ -85,6 +88,62 @@ namespace gubg { namespace data {
                         constexpr auto field_ix = FieldIX::value;
                         std::get<field_ix>(dst).swap(std::get<field_ix>(src));
                     }
+            };
+
+        template <typename Fields, typename Delimiter>
+            struct LoadFromStrange
+            {
+                Fields &fields;
+                const size_t record_ix;
+                Strange line;
+                const Delimiter &delimiter;
+                bool ok = true;
+                std::string msg;
+                Strange tmp_value_;
+                LoadFromStrange(Fields &fields, size_t record_ix, Strange line, const Delimiter &delimiter): fields(fields), record_ix(record_ix), line(line), delimiter(delimiter) { }
+                template <typename FieldIX>
+                    void operator()(FieldIX)
+                    {
+                        if (!ok)
+                            return;
+                        constexpr auto field_ix = FieldIX::value;
+                        if (field_ix == std::tuple_size<Fields>::value-1)
+                            line.popAll(tmp_value_);
+                        else
+                        {
+                            if (!line.popUntil(tmp_value_, delimiter))
+                            {
+                                ok = false;
+                                msg = std::string("No value found for field_ix ")+std::to_string(field_ix)+" for record_ix "+std::to_string(record_ix);
+                                return;
+                            }
+                        }
+                        if (!parse_and_set_(std::get<field_ix>(fields)[record_ix]))
+                            ok = false;
+                    }
+                bool parse_and_set_(int &v)
+                {
+                    if (!tmp_value_.popDecimal(v))
+                    {
+                        msg = std::string("This is not an int: ")+tmp_value_.str();
+                        return false;
+                    }
+                    return true;
+                }
+                bool parse_and_set_(double &v)
+                {
+                    if (!tmp_value_.popFloat(v))
+                    {
+                        msg = std::string("This is not a float: ")+tmp_value_.str();
+                        return false;
+                    }
+                    return true;
+                }
+                bool parse_and_set_(std::string &v)
+                {
+                    v = tmp_value_.str();
+                    return true;
+                }
             };
 
         struct PrintValue
@@ -211,6 +270,39 @@ namespace gubg { namespace data {
 
                         return newblock;
                     }
+
+                template <typename Delimiter>
+                ReturnCode load(const gubg::file::File &fn, const Delimiter &delimiter)
+                {
+                    MSS_BEGIN(ReturnCode);
+                    std::string content;
+                    MSS(file::read(content, fn));
+                    Strange line;
+                    //Count the number of lines and do a resize
+                    {
+                        Strange strange(content);
+                        size_t nr_lines = 0;
+                        while (strange.popLine(line)) { ++nr_lines; }
+                        resize(nr_lines);
+                    }
+                    Strange strange(content);
+                    Strange value;
+                    const auto s = size();
+                    for (size_t ix = 0; ix < s; ++ix)
+                    {
+                        const bool ok = strange.popLine(line);
+                        assert(ok);//Should not fail, we have done the resize() ourselves
+                        details::LoadFromStrange<Fields, Delimiter> loadFromStrange(fields_, ix, line, delimiter);
+                        tuple::for_each(field_ixs_, loadFromStrange);
+                        if (!loadFromStrange.ok)
+                        {
+                            L(loadFromStrange.msg);
+                            MSS(loadFromStrange.ok);
+                        }
+                    }
+                    assert(!strange.popLine(line));
+                    MSS_END();
+                }
 
             private:
                 template <typename...>

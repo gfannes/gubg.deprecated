@@ -2,8 +2,9 @@
 #include "gubg/data/Block.hpp"
 #include <iostream>
 using namespace gubg::data;
+using gubg::file::File;
 
-#define GUBG_MODULE_ "test"
+#define GUBG_MODULE "test"
 #include "gubg/log/begin.hpp"
 TEST_CASE("Block", "[data]")
 {
@@ -49,6 +50,14 @@ TEST_CASE("Block", "[data]")
         REQUIRE(nb.size() == 4);
         std::cout << b << std::endl;
         std::cout << nb << std::endl;
+    }
+    SECTION("load data from file")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        REQUIRE(b.load(File("data.txt"), ' ') == ReturnCode::OK);
+        REQUIRE(b.size() == 2);
+        std::cout << b << std::endl;
     }
 }
 #include "gubg/log/end.hpp"
