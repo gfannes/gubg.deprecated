@@ -1,0 +1,2 @@
+#!/usr/bin/bash
+git pull --rebase $1 $2 $3
