@@ -9,15 +9,17 @@
 #include <ostream>
 #include <cassert>
 
+#define GUBG_MODULE_ "Block"
+#include "gubg/log/begin.hpp"
 namespace gubg { namespace data { 
 
     namespace details { 
 
-        template <typename T, size_t IX>
+        template <typename T, size_t FieldIX>
             struct FieldTransform { typedef std::vector<T> Type; };
         //Can be used with tuple::for_each to go over the IXs at compile time
-        template <typename T, size_t IX>
-            struct IXTransform { typedef gubg::tmp::IntType<IX> Type; };
+        template <typename T, size_t FieldIX>
+            struct IXTransform { typedef gubg::tmp::IntType<FieldIX> Type; };
 
         template <size_t NrFields>
             struct GetSize
@@ -50,26 +52,55 @@ namespace gubg { namespace data {
                 const Fields &fields;
                 const size_t record_ix;
                 GetRecord(Record &record, const Fields &fields, size_t record_ix): record(record), fields(fields), record_ix(record_ix) {}
-                template <typename IX>
-                    void operator()(IX) const
+                template <typename FieldIX>
+                    void operator()(FieldIX) const
                     {
-                        constexpr auto field_ix = IX::value;
+                        constexpr auto field_ix = FieldIX::value;
                         std::get<field_ix>(record) = std::get<field_ix>(fields)[record_ix];
                     }
             };
 
+        template <typename SrcFields, typename DstFields>
+            struct CopyFields
+            {
+                const SrcFields &src;
+                DstFields &dst;
+                CopyFields(const SrcFields &src, DstFields &dst): src(src), dst(dst) {}
+                template <typename FieldIX>
+                    void operator()(FieldIX) const
+                    {
+                        constexpr auto field_ix = FieldIX::value;
+                        std::get<field_ix>(dst) = std::get<field_ix>(src);
+                    }
+            };
+        template <typename SrcFields, typename DstFields>
+            struct SwapFields
+            {
+                SrcFields &src;
+                DstFields &dst;
+                SwapFields(SrcFields &src, DstFields &dst): src(src), dst(dst) {}
+                template <typename FieldIX>
+                    void operator()(FieldIX) const
+                    {
+                        constexpr auto field_ix = FieldIX::value;
+                        std::get<field_ix>(dst).swap(std::get<field_ix>(src));
+                    }
+            };
 
         struct PrintValue
         {
             std::ostream &os;
             PrintValue(std::ostream &os): os(os) {}
-            template <typename V, typename IX>
-                void operator()(const V &v, IX) const
+            template <typename V, typename FieldIX>
+                void operator()(const V &v, FieldIX) const
                 {
-                    if (IX::value > 0)
+                    if (FieldIX::value > 0)
                         os << ", ";
-                    os << v;
+                    print_(v);
                 }
+            template <typename V>
+                void print_(const V &v) const { os << v; }
+            void print_(const std::string &v) const { os << '\"' << v << '\"'; }
         };
         struct PrintRecord
         {
@@ -91,6 +122,12 @@ namespace gubg { namespace data {
             public:
                 typedef std::tuple<Types...> Record;
 
+                Block(){}
+                Block(size_t nr)
+                {
+                    resize(nr);
+                }
+
                 size_t size() const
                 {
                     return details::GetSize<std::tuple_size<Fields>::value>::size(fields_);
@@ -104,6 +141,7 @@ namespace gubg { namespace data {
 
                 void stream(std::ostream &os) const
                 {
+                    os << std::tuple_size<Fields>::value << " fields" << std::endl;
                     each_record(details::PrintRecord(os));
                 }
 
@@ -124,7 +162,59 @@ namespace gubg { namespace data {
                             ftor(record(ix));
                     }
 
+                //Transforms field FieldIX with the value from ftor(record)
+                template <size_t FieldIX, typename Ftor>
+                    void transform(const Ftor &ftor)
+                    {
+                        const auto s = size();
+                        for (size_t ix = 0; ix < s; ++ix)
+                            std::get<FieldIX>(fields_)[ix] = ftor(record(ix));
+                    }
+
+                template <typename T, typename Ftor>
+                    Block<Types..., T> expand(const Ftor &ftor) const
+                    {
+                        S();
+                        typedef Block<Types..., T> NewBlock;
+                        NewBlock newblock;
+
+                        //Copy all fields from this to newblock
+                        details::CopyFields<Fields, typename NewBlock::Fields> copyFields(fields_, newblock.fields_);
+                        tuple::for_each(field_ixs_, copyFields);
+
+                        //Create the new field into newblock
+                        const auto s = size();
+                        std::get<std::tuple_size<Fields>::value>(newblock.fields_).resize(s);
+                        for (size_t ix = 0; ix < s; ++ix)
+                            std::get<std::tuple_size<Fields>::value>(newblock.fields_)[ix] = ftor(record(ix));
+
+                        return newblock;
+                    }
+
+                template <typename T, typename Ftor>
+                    Block<Types..., T> swap_expand(const Ftor &ftor)
+                    {
+                        S();
+                        typedef Block<Types..., T> NewBlock;
+                        NewBlock newblock;
+
+                        //Create the new field into newblock
+                        const auto s = size();
+                        std::get<std::tuple_size<Fields>::value>(newblock.fields_).resize(s);
+                        for (size_t ix = 0; ix < s; ++ix)
+                            std::get<std::tuple_size<Fields>::value>(newblock.fields_)[ix] = ftor(record(ix));
+
+                        //Swap all fields from this to newblock
+                        //Keep this _after_ the creation of the new field, else, the content of this will be gone
+                        details::SwapFields<Fields, typename NewBlock::Fields> swapFields(fields_, newblock.fields_);
+                        tuple::for_each(field_ixs_, swapFields);
+
+                        return newblock;
+                    }
+
             private:
+                template <typename...>
+                    friend class Block;
                 typedef typename tuple::TypeTransform<Record, details::FieldTransform>::Type Fields;
                 Fields fields_;
                 typedef typename tuple::TypeTransform<Record, details::IXTransform>::Type FieldIXs;
@@ -141,5 +231,6 @@ namespace gubg { namespace data {
         }
 
 } } 
+#include "gubg/log/end.hpp"
 
 #endif
