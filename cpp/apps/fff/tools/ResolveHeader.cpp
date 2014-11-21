@@ -78,6 +78,19 @@ namespace fff { namespace tools {
                     board.add(Tag("c++", "include_path"), ip, tv);
                 }
             }
+            else if (tv.first == Tag("c++", "utree"))
+            {
+                MSS(tv.second.type() == Value::String);
+                file::File path = tv.second.string();
+                MSS(file::resolve(path));
+                if (roots_.count(path) == 0)
+                {
+                    forest_.add(path, {"hpp", "cpp"});
+                    roots_.insert(path);
+                    auto ip = path;
+                    board.add(Tag("c++", "include_path"), ip, tv);
+                }
+            }
             else if (tv.first == Tag("c++", "include"))
             {
                 MSS(tv.second.type() == Value::String);
