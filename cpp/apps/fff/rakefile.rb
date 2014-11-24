@@ -2,8 +2,10 @@ require("rake/clean")
 
 os = case RUBY_PLATFORM
      when "x64-mingw32" then :windows
+     when "x86_64-linux" then :linux
      else nil
      end
+fail("Could not determine OS") unless os
 config = case ENV["config"]
          when "debug", "DEBUG" then :debug
          else :release
@@ -66,7 +68,7 @@ rule ".obj" => ".c" do |task|
 end
 file fff_exe_fn => objects do
     flags = {windows: "", linux: "-pthread"}[os]
-    sh "g++ -std=c++0x #{flags} -o #{fff_exe_fn} #{objects*" "}"
+    sh "g++ -std=c++0x -o #{fff_exe_fn} #{objects*" "} #{flags}"
 
 end
 
