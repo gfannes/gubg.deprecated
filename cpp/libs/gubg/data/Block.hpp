@@ -146,6 +146,20 @@ namespace gubg { namespace data {
                 }
             };
 
+        template <typename Fields, typename Record>
+            struct PushBackRecord
+            {
+                Fields &fields;
+                const Record &record;
+                PushBackRecord(Fields &fields, const Record &record): fields(fields), record(record) { }
+                template <typename FieldIX>
+                    void operator()(FieldIX)
+                    {
+                        constexpr auto field_ix = FieldIX::value;
+                        std::get<field_ix>(fields).push_back(std::get<field_ix>(record));
+                    }
+            };
+
         struct PrintValue
         {
             std::ostream &os;
@@ -302,6 +316,12 @@ namespace gubg { namespace data {
                     }
                     assert(!strange.popLine(line));
                     MSS_END();
+                }
+
+                void push_back(const Record &record)
+                {
+                    details::PushBackRecord<Fields, Record> pushBackRecord(fields_, record);
+                    tuple::for_each(field_ixs_, pushBackRecord);
                 }
 
             private:

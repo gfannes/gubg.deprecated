@@ -59,5 +59,14 @@ TEST_CASE("Block", "[data]")
         REQUIRE(b.size() == 2);
         std::cout << b << std::endl;
     }
+    SECTION("push_back record")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        REQUIRE(b.size() == 0);
+        b.push_back(B::Record(42, 0.42, "answer"));
+        REQUIRE(b.size() == 1);
+        std::cout << b << std::endl;
+    }
 }
 #include "gubg/log/end.hpp"
