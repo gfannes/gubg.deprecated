@@ -4,10 +4,11 @@
 #include <algorithm>
 #include <cassert>
 
-#define GUBG_MODULE_ "Median"
+#define GUBG_MODULE "Median"
 #include "gubg/log/begin.hpp"
 namespace gubg { namespace math { 
 
+    //WARNING: the begin-end range might be permutated
     template <typename It>
         typename It::value_type median(It begin, It end)
         {
@@ -15,6 +16,7 @@ namespace gubg { namespace math {
             const auto s = (end - begin);
             L(STREAM(s));
             assert(s != 0);
+            //TODO: sorting is sub-optimal, use quickselect or binmedian/binapprox for better performance
             std::sort(begin, end);
             begin += (s-1)/2;
             if (s%2 == 1)
