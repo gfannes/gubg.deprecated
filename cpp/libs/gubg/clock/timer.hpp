@@ -1,7 +1,7 @@
 #ifndef HEADER_gubg_clock_timer_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_clock_timer_hpp_ALREADY_INCLUDED
 
-#include <sys/time.h>
+#include "gubg/Platform.hpp"
 #include <iostream>
 
 namespace gubg
@@ -18,7 +18,7 @@ namespace gubg
         //Elapsed difference in seconds
         double difference()
         {
-            auto diff = getCurrentTime_() - startTime_;
+            auto diff = durationSinceEpoch_sec() - startTime_;
             if (ResetType::Auto == resetType_)
                 reset();
             return diff;
@@ -26,20 +26,10 @@ namespace gubg
 
         void reset()
         {
-            startTime_ = getCurrentTime_();
+            startTime_ = durationSinceEpoch_sec();
         }
 
         private:
-        static double getCurrentTime_()
-        {
-            struct timeval timeVal;
-            if (gettimeofday(&timeVal, 0))
-            {
-                std::cerr << "Could not get the time" << std::endl;
-                return false;
-            }
-            return (double)timeVal.tv_sec + 0.000001*timeVal.tv_usec;
-        }
         double startTime_;
         ResetType resetType_;
     };

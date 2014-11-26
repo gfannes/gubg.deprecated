@@ -113,13 +113,11 @@ namespace gubg
 
 #define MSS_1(v)          MSS_DIRECT(v)
 #define MSS_2(v, nc)      MSS_TRANS(v, nc)
-#define MSS_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__,MSS_2,MSS_1)
-#define MSS(...) MSS_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS(...) GUBG_GET_ARG_3((__VA_ARGS__,MSS_2,MSS_1))(__VA_ARGS__)
 
 #define MSS_Q_1(v)          MSS_DIRECT(v)
 #define MSS_Q_2(v, nc)      MSS_TRANS(v, nc)
-#define MSS_Q_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__,MSS_Q_2,MSS_Q_1)
-#define MSS_Q(...) MSS_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS_Q(...) GUBG_GET_ARG_3((__VA_ARGS__,MSS_Q_2,MSS_Q_1))(__VA_ARGS__)
 
 #define MSS_L(c) MSS_DIRECT(mss_return_code_type::c)
 #define MSS_QL(c) MSS_DIRECT(mss_return_code_type::c)

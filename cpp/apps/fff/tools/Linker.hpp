@@ -5,15 +5,15 @@
 #include "gubg/OnlyOnce.hpp"
 
 namespace fff { namespace tools { 
-	class Linker: public Tool_itf
-	{
-		public:
-			std::string name() const override {return "Linker";}
-			ReturnCode process(Board &) override;
+    class Linker: public Tool_itf
+    {
+        public:
+            std::string name() const override {return "Linker";}
+            ReturnCode process(Board &) override;
 
-		private:
-			gubg::OnlyOnce run_;
-	};
+        private:
+            gubg::OnlyOnce run_;
+    };
 } } 
 
 #endif

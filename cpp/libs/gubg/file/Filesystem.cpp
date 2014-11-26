@@ -67,7 +67,7 @@ namespace
     };
 }
 #endif
-#ifndef GUBG_LINUX
+#if defined(GUBG_POSIX) && !defined(GUBG_LINUX)
 //Some things are missing for MinGW
 #define NAME_MAX FILENAME_MAX
 int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)

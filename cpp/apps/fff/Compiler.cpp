@@ -4,50 +4,68 @@
 #include "gubg/log/begin.hpp"
 namespace fff { 
 
-    class GCC: public compiler::Interface
-    {
-        public:
-            void stream_Command(Stream &stream) const override { stream << "g++ -std=c++0x -c"; }
-            void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
-            void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " -o " << obj; }
-            void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " -I" << ip; }
-            void stream_Define(Stream &stream, const std::string &def) const override { stream << " -D" << def; }
-
-            void debug() override
-            {
-                options.push_back("-g");
-                defines.push_back("DEBUG");
-            }
-    };
-    class CLang: public GCC
-    {
-        public:
-            void stream_Command(Stream &stream) const override { stream << "clang -c"; }
-            //All the rest is the same as gcc
-    };
-    class MSC: public compiler::Interface
-    {
-        public:
-            void stream_Command(Stream &stream) const override { stream << "cl -c"; }
-            void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
-            void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " /Fo" << obj; }
-            void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " /I" << ip; }
-            void stream_Define(Stream &stream, const std::string &def) const override { stream << " /D" << def; }
-
-            void debug() override
-            {
-                options.push_back("/Zi");
-                defines.push_back("DEBUG");
-            }
-    };
-
-    Compiler::Compiler(compiler::Type type)
-    {
-        switch (type)
+    namespace compiler { 
+        class GCC: public Interface
         {
-            case compiler::Type::GCC: itf_.reset(new GCC); break;
-            case compiler::Type::MSC: itf_.reset(new MSC); break;
-            case compiler::Type::CLang: itf_.reset(new CLang); break;
+            public:
+                void stream_Command(Stream &stream, Language language) const override
+                {
+                    switch (language)
+                    {
+                        case Language::Cpp: stream << "g++ -std=c++0x"; break;
+                        case Language::C: stream << "gcc"; break;
+                    }
+                    stream << " -c";
+                }
+                void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
+                void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " -o " << obj; }
+                void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " -I" << ip; }
+                void stream_Define(Stream &stream, const std::string &def) const override { stream << " -D" << def; }
+
+                void debug() override
+                {
+                    options.push_back("-g");
+                    defines.push_back("DEBUG");
+                }
+        };
+        class CLang: public GCC
+        {
+            public:
+                void stream_Command(Stream &stream, Language language) const override { stream << "clang -c"; }
+                //All the rest is the same as gcc
+        };
+        class MSC: public Interface
+        {
+            public:
+                void stream_Command(Stream &stream, Language language) const override
+                {
+                    switch (language)
+                    {
+                        case Language::Cpp: stream << "cl"; break;
+                        case Language::C: stream << "cl /TC"; break;
+                    }
+                    stream << " -c";
+                }
+                void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
+                void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " /Fo" << obj; }
+                void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " /I" << ip; }
+                void stream_Define(Stream &stream, const std::string &def) const override { stream << " /D" << def; }
+
+                void debug() override
+                {
+                    options.push_back("/Zi");
+                    defines.push_back("DEBUG");
+                }
+        };
+    } 
+
+    Compiler::Compiler(compiler::Vendor vendor)
+    {
+        switch (vendor)
+        {
+            case compiler::Vendor::GCC: itf_.reset(new compiler::GCC); break;
+            case compiler::Vendor::MSC: itf_.reset(new compiler::MSC); break;
+            case compiler::Vendor::CLang: itf_.reset(new compiler::CLang); break;
         }
     }
 
@@ -78,12 +96,12 @@ namespace fff {
         MSS_END();
     }
 
-    ReturnCode Compiler::compile(std::string &cli, const gubg::file::File &src, const gubg::file::File &obj) const
+    ReturnCode Compiler::compile(std::string &cli, const gubg::file::File &src, const gubg::file::File &obj, compiler::Language language) const
     {
         MSS_BEGIN(ReturnCode);
         MSS((bool)itf_);
         compiler::Interface::Stream stream;
-        itf_->stream_Command(stream);
+        itf_->stream_Command(stream, language);
         itf_->stream_Source(stream, src);
         itf_->stream_Object(stream, obj);
         for (const auto &ip: itf_->includePaths)

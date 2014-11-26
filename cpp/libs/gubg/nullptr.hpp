@@ -3,7 +3,7 @@
 
 #include "gubg/Platform.hpp"
 
-#if GCC_VERSION < 40600
+#if defined(GCC_VERSION) && (GCC_VERSION < 40600)
 #define nullptr (0)
 
 namespace std

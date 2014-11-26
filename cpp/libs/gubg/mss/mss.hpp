@@ -313,8 +313,7 @@ namespace gubg
                                      S()
 #define MSS_BEGIN_2(type, msg)       MSS_BEGIN_RC_WRAPPER(type); \
                                      S(); L(msg)
-#define MSS_BEGIN_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_BEGIN_2,MSS_BEGIN_1)
-#define MSS_BEGIN(...)               MSS_BEGIN_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS_BEGIN(...) GUBG_GET_ARG_3((__VA_ARGS__, MSS_BEGIN_2,MSS_BEGIN_1))(__VA_ARGS__)
 
 #define MSS_BEGIN_J()        gubg::mss::ReturnCodeWrapper<void> MSS_RC_VAR;
 #define MSS_BEGIN_PROFILE(t, msg) std::ostringstream l_mss_elapse_reporter_msg; \
@@ -398,20 +397,17 @@ MSS_BEGIN(t)
 #define MSS_1(v)          MSS_DIRECT(Unknown, v, "")
 #define MSS_2(v, nc)      MSS_TRANS(Unknown, v, nc, "")
 #define MSS_3(v, nc, msg) MSS_TRANS(Unknown, v, nc, msg)
-#define MSS_MACRO_CHOOSER(...) GUBG_GET_4TH_ARG(__VA_ARGS__, MSS_3,MSS_2,MSS_1)
-#define MSS(...) MSS_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS(...) GUBG_GET_ARG_4((__VA_ARGS__, MSS_3,MSS_2,MSS_1))(__VA_ARGS__)
 
 #define MSS_Q_1(v)          MSS_DIRECT_Q(v)
 #define MSS_Q_2(v, nc)      MSS_TRANS_Q(v, nc)
-#define MSS_Q_MACRO_CHOOSER(...) GUBG_GET_3TH_ARG(__VA_ARGS__, MSS_Q_2,MSS_Q_1)
-#define MSS_Q(...) MSS_Q_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS_Q(...) GUBG_GET_ARG_3((__VA_ARGS__, MSS_Q_2,MSS_Q_1))(__VA_ARGS__)
 
 #define MSS__1(level) You have to specify also a value
 #define MSS__2(level, v)          MSS_DIRECT(level, v, "")
 #define MSS__3(level, v, nc)      MSS_TRANS(level, v, nc, "")
 #define MSS__4(level, v, nc, msg) MSS_TRANS(level, v, nc, msg)
-#define MSS__MACRO_CHOOSER(...) GUBG_GET_5TH_ARG(__VA_ARGS__, MSS__4,MSS__3,MSS__2,MSS__1)
-#define MSS_(...) MSS__MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define MSS_(...) GUBG_GET_ARG_5((__VA_ARGS__, MSS__4,MSS__3,MSS__2,MSS__1))(__VA_ARGS__)
 
 //Direct return of a hardcoded value, c should be a value of the enum type specified in MSS_BEGIN(type)
 #define MSS_L_(level, c, msg) MSS_DIRECT(level, mss_return_code_type::c, msg)

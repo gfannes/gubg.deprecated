@@ -30,7 +30,11 @@ namespace gubg
                     threadId_(threadId()),
                     verboseDtor_(verboseDtor)
             {
+#ifdef _MSC_VER
+                static __declspec(thread) NameStack *nameStack = 0;
+#else
                 thread_local NameStack *nameStack = 0;
+#endif
                 if (!(nameStack_ = nameStack))
                 {
                     std::ostringstream oss;

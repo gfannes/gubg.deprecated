@@ -15,8 +15,7 @@ namespace gubg
 #define DATA_EVENT_3(tn, t1, n1)         struct tn {t1 n1; tn(t1 ln1):n1(ln1){}}
 #define DATA_EVENT_4(_1, _2, _3, _4)     error
 #define DATA_EVENT_5(tn, t1, n1, t2, n2) struct tn {t1 n1; t2 n2; tn(t1 ln1, t2 ln2):n1(ln1),n2(ln2){}}
-#define DATA_EVENT_MACRO_CHOOSER(...) GUBG_GET_6TH_ARG(__VA_ARGS__, DATA_EVENT_5,DATA_EVENT_4,DATA_EVENT_3,DATA_EVENT_2,DATA_EVENT_1)
-#define DATA_EVENT(...) DATA_EVENT_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
+#define DATA_EVENT(...) GUBG_GET_ARG_6((__VA_ARGS__, DATA_EVENT_5,DATA_EVENT_4,DATA_EVENT_3,DATA_EVENT_2,DATA_EVENT_1))(__VA_ARGS__)
 
     template <typename Outer, typename StateT, StateT StartState>
         class StateMachine_ftop

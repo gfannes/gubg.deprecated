@@ -21,7 +21,7 @@ def c_fn(obj_fn)
     obj_fn.gsub(/\.obj$/, ".c")
 end
 
-fff_cpp_fns = %w[fff Tag Value Board Create Execute ToolFactory tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner].map{|str|"#{str}.cpp"}
+fff_cpp_fns = %w[fff Tag Value Board Create Execute ToolFactory Compiler Linker tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner].map{|str|"#{str}.cpp"}
 gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime lua/State].map{|str|"../../libs/gubg/#{str}.cpp"}
 lua_c_fns = %w[lapi lauxlib lbaselib lbitlib lcode lcorolib lctype ldblib ldebug ldo ldump lfunc lgc linit liolib llex lmathlib lmem loadlib lobject lopcodes loslib lparser lstate lstring lstrlib ltable ltablib ltm lundump lvm lzio].map{|str|"../../../c/lua-5.2.3/#{str}.c"}
 cpp_objects = (fff_cpp_fns+gubg_cpp_fns).map{|fn|obj_fn(fn)}
