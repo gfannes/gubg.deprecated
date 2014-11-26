@@ -1,4 +1,5 @@
 require("rake/clean")
+require("benchmark")
 
 task :default => :help
 
@@ -23,21 +24,87 @@ task :fff do
     end
 end
 
-#run unit tests
-task :uts do
-    tests = FileList["cpp/libs/gubg/**/test/*_tests.cpp"]
-    tests.exclude("cpp/libs/gubg/file/test/Descriptor_tests.cpp")
-    tests.exclude("cpp/libs/gubg/internet/test/Client_tests.cpp")
-    tests.exclude("cpp/libs/gubg/internet/test/Server_tests.cpp")
-    tests.exclude("cpp/libs/gubg/tcp/test/Socket_tests.cpp")
-    report = {}
-    tests.each do |test|
-        sh "fff #{test}" do |ok, res|
-            report[test] = ok
+#testing
+def find_tests(type)
+    tests = FileList["cpp/libs/gubg/**/test/*_#{type}.cpp"]
+    tests.exclude("cpp/libs/gubg/deprecated/**/*_#{type}.cpp")
+    tests
+end
+def build_tests(type)
+        report = {}
+        total_duration = Benchmark.realtime do
+            find_tests(type).each do |test|
+                sh "fff #{test} norun" do |ok, res|
+                    report[test] = {status: ok}
+                end
+            end
         end
+        report.each do |test, info|
+            puts("#{test} FAILED") unless info[:status]
+        end
+        puts("BUILD: #{report.values.select{|info|info[:status]}.length}/#{report.length} OK")
+        puts("BUILD: #{total_duration} s")
+end
+def run_tests(type)
+        report = {}
+        total_duration = Benchmark.realtime do
+            find_tests(type).each do |test|
+                duration = Benchmark.realtime do
+                    sh "fff #{test}" do |ok, res|
+                        report[test] = {status: ok}
+                    end
+                end
+                report[test][:duration] = duration
+            end
+        end
+        report.each do |test, info|
+            if not info[:status]
+                puts("#{test} FAILED")
+            elsif info[:duration] > 1.0
+                puts("#{test} SLOW #{info[:duration]}") 
+            end
+        end
+        puts("RUN: #{report.values.select{|info|info[:status]}.length}/#{report.length} OK")
+        puts("RUN: #{total_duration} s")
+end
+#unit tests
+namespace :uts do
+    task :build do
+        build_tests("tests")
     end
-    report.each do |test, ok|
-        puts("#{test} FAILED") unless ok
+    task :run => :build do
+        run_tests("tests")
     end
-    puts("#{report.values.select{|ok|ok}.length}/#{report.length} OK")
+end
+#manual tests
+namespace :mts do
+    task :build do
+        build_tests("mtests")
+    end
+    task :run => :build do
+        run_tests("mtests")
+    end
+end
+#scenario tests
+namespace :sts do
+    task :build do
+        build_tests("stests")
+    end
+    task :run => :build do
+        run_tests("stests")
+    end
+end
+#performance tests
+namespace :pts do
+    task :build do
+        build_tests("ptests")
+    end
+    task :run => :build do
+        run_tests("ptests")
+    end
+end
+#all tests
+namespace :ats do
+    task :build => %w[uts:build sts:build pts:build]
+    task :run => %w[uts:run sts:run pts:run]
 end

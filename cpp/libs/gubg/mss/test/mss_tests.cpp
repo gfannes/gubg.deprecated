@@ -110,7 +110,7 @@ ReturnCode do_if()
 ReturnCode time()
 {
     MSS_BEGIN_PROFILE(ReturnCode, "blabla");
-    gubg::nanosleep(2, 5000000);
+    gubg::nanosleep(0, 5000000);
     MSS_END();
 }
 

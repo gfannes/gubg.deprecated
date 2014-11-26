@@ -45,7 +45,7 @@ namespace gubg
 				std::string total_elapse_hr() const
 				{
 					std::ostringstream oss;
-					oss << 0.001*total_elapse_as<std::chrono::milliseconds>().count() << " ms";
+					oss << 0.001*total_elapse_as<std::chrono::milliseconds>().count() << " s";
 					return oss.str();
 				}
 

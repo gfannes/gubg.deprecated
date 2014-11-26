@@ -26,7 +26,7 @@ int main()
     }
     {
         TEST_TAG(stress);
-        const size_t Nr = 10000000;
+        const size_t Nr = 1000000;
         vector<long>   ls(Nr);
         iota(ls.begin(), ls.end(), 0);
         vector<string> strs(Nr);
