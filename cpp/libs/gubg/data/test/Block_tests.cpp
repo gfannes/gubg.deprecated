@@ -68,5 +68,61 @@ TEST_CASE("Block", "[data]")
         REQUIRE(b.size() == 1);
         std::cout << b << std::endl;
     }
+    SECTION("iterator default ctor")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        B::const_iterator it;
+    }
+    SECTION("iterator begin/end on empty block")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        auto begin = b.begin();
+        auto end = b.end();
+        REQUIRE(begin == end);
+        REQUIRE(!(begin != end));
+    }
+    SECTION("iterator begin/end on non-empty block")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        REQUIRE(b.load(File("data.txt"), ' ') == ReturnCode::OK);
+        auto begin = b.begin();
+        auto end = b.end();
+        REQUIRE(!(begin == end));
+        REQUIRE(begin != end);
+    }
+    SECTION("iterator dereference")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        REQUIRE(b.load(File("data.txt"), ' ') == ReturnCode::OK);
+        auto r = *b.begin();
+        REQUIRE(1 == std::get<0>(r));
+        REQUIRE(2.4 == std::get<1>(r));
+        REQUIRE(std::string("abc") == std::get<2>(r));
+    }
+    SECTION("iterator increment and dereference")
+    {
+        typedef Block<int, double, std::string> B;
+        B b;
+        REQUIRE(b.load(File("data.txt"), ' ') == ReturnCode::OK);
+        auto it = b.begin();
+        {
+            ++it;
+            auto r = *it;
+            REQUIRE(2 == std::get<0>(r));
+            REQUIRE(4.2 == std::get<1>(r));
+            REQUIRE(std::string("aoeuaoeuaoeuaoeuaoeuaoeu") == std::get<2>(r));
+        }
+        {
+            --it;
+            auto r = *it;
+            REQUIRE(1 == std::get<0>(r));
+            REQUIRE(2.4 == std::get<1>(r));
+            REQUIRE(std::string("abc") == std::get<2>(r));
+        }
+    }
 }
 #include "gubg/log/end.hpp"

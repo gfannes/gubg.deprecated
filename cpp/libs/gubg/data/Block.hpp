@@ -194,11 +194,66 @@ namespace gubg { namespace data {
         {
             public:
                 typedef std::tuple<Types...> Record;
+                typedef Block<Types...> Self;
+
+                class const_iterator
+                {
+                    public:
+                        bool operator==(const const_iterator &rhs) const
+                        {
+                            assert(self_ == rhs.self_);
+                            return ix_ == rhs.ix_;
+                        }
+                        bool operator!=(const const_iterator &rhs) const {return !operator==(rhs);}
+                        Record operator*() const
+                        {
+                            assert((bool)self_);
+                            return self_->record(ix_);
+                        }
+                        const_iterator &operator++()
+                        {
+                            assert((bool)self_);
+                            ++ix_;
+                            return *this;
+                        }
+                        const_iterator &operator--()
+                        {
+                            assert((bool)self_);
+                            --ix_;
+                            return *this;
+                        }
+                        const_iterator operator+(size_t d) const
+                        {
+                            assert((bool)self_);
+                            auto it = *this;
+                            it.ix_ += d;
+                            return it;
+                        }
+                    private:
+                        friend class Block<Types...>;
+                        size_t ix_;
+                        const Self *self_ = nullptr;
+                };
 
                 Block(){}
                 Block(size_t nr)
                 {
                     resize(nr);
+                }
+
+                const_iterator begin() const
+                {
+                    const_iterator it;
+                    it.ix_ = 0;
+                    it.self_ = this;
+                    return it;
+                }
+                const_iterator end() const
+                {
+                    const_iterator it;
+                    it.ix_ = size();
+                    it.self_ = this;
+                    return it;
                 }
 
                 size_t size() const
