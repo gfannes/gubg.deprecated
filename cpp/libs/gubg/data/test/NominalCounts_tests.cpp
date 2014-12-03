@@ -21,12 +21,12 @@ TEST_CASE("collecting nominal values", "[tabledistr]")
 {
     S();
     NC nc;
-    nc << NV(0);
-    nc << NV(1);
-    nc << NV(1);
-    nc << NV(1);
-    nc << NV(2);
-    nc << NV(2);
+    nc += NV(0);
+    nc += NV(1);
+    nc += NV(1);
+    nc += NV(1);
+    nc += NV(2);
+    nc += NV(2);
     L(hr(nc.counts()));
 }
 TEST_CASE("Summing", "[tabledistr]")
@@ -34,21 +34,21 @@ TEST_CASE("Summing", "[tabledistr]")
     S();
     NC nc1;
     {
-        nc1 << NV(0);
-        nc1 << NV(1);
-        nc1 << NV(1);
-        nc1 << NV(1);
-        nc1 << NV(2);
-        nc1 << NV(2);
+        nc1 += NV(0);
+        nc1 += NV(1);
+        nc1 += NV(1);
+        nc1 += NV(1);
+        nc1 += NV(2);
+        nc1 += NV(2);
     }
     NC nc2;
     {
-        nc2 << NV(0);
-        nc2 << NV(0);
-        nc2 << NV(0);
-        nc2 << NV(1);
-        nc2 << NV(2);
-        nc2 << NV(2);
+        nc2 += NV(0);
+        nc2 += NV(0);
+        nc2 += NV(0);
+        nc2 += NV(1);
+        nc2 += NV(2);
+        nc2 += NV(2);
     }
     nc1 += nc2;
     L(hr(nc1.counts()));

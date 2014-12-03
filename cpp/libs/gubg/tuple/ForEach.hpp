@@ -29,6 +29,13 @@ namespace gubg { namespace tuple {
                         tmp::IntType<Nr-1> ix;
                         ftor(std::get<Nr-1>(tp), ix);
                     }
+                template <typename Tuple, typename Ftor>
+                    static void process_with_ix(const Tuple &tp, Ftor &ftor)
+                    {
+                        Process<Nr-1>::process_with_ix(tp, ftor);
+                        tmp::IntType<Nr-1> ix;
+                        ftor(std::get<Nr-1>(tp), ix);
+                    }
             };
         template <>
             struct Process<0>
@@ -39,6 +46,8 @@ namespace gubg { namespace tuple {
                     static void process(Tuple &, Tuple &, Ftor &) { }
                 template <typename Tuple, typename Ftor>
                     static void process_with_ix(Tuple &, Ftor &) { }
+                template <typename Tuple, typename Ftor>
+                    static void process_with_ix(const Tuple &, Ftor &) { }
             };
     } 
 
@@ -56,6 +65,12 @@ namespace gubg { namespace tuple {
         }
     template <typename Tuple, typename Ftor>
         void for_each_with_ix(Tuple &tp, Ftor &ftor)
+        {
+            constexpr size_t tuple_size =  std::tuple_size<Tuple>::value;
+            details::Process<tuple_size>::process_with_ix(tp, ftor);
+        }
+    template <typename Tuple, typename Ftor>
+        void for_each_with_ix(const Tuple &tp, Ftor &ftor)
         {
             constexpr size_t tuple_size =  std::tuple_size<Tuple>::value;
             details::Process<tuple_size>::process_with_ix(tp, ftor);

@@ -3,6 +3,7 @@
 
 #include "gubg/data/Nominal.hpp"
 #include <array>
+#include <ostream>
 
 namespace gubg { namespace data { 
 
@@ -22,9 +23,16 @@ namespace gubg { namespace data {
                     return *this;
                 }
 
-                Self &operator<<(const Nominal<NrValues> &nv)
+                Self &operator+=(const Nominal<NrValues> &nv)
                 {
                     counts_[nv.value()] += 1;
+                    return *this;
+                }
+
+                Self &operator*=(double factor)
+                {
+                    for (size_t ix = 0; ix < NrValues; ++ix)
+                        counts_[ix] *= factor;
                     return *this;
                 }
 
@@ -41,6 +49,21 @@ namespace gubg { namespace data {
             private:
                 Counts counts_{};
         };
+
+    template <size_t NrValues, typename T>
+        std::ostream &operator<<(std::ostream &os, const NominalCounts<NrValues, T> &nc)
+        {
+            const auto counts = nc.counts();
+            os << "[";
+            for (size_t ix = 0; ix < NrValues; ++ix)
+            {
+                if (ix > 0)
+                    os << ", ";
+                os << counts[ix];
+            }
+            os << "]";
+            return os;
+        }
 
 } } 
 
