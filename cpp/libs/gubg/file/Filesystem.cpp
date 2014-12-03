@@ -169,7 +169,12 @@ ReturnCode gubg::file::determineType(File &file)
 #ifdef GUBG_LINUX
     auto res = ::lstat(file.name().c_str(), &statbuf);
 #else
+#ifdef __GNUC__
     auto res = ::stat(file.name().c_str(), &statbuf);
+#endif
+#ifdef _MSC_VER
+    auto res = _stat(file.name().c_str(), &statbuf);
+#endif
 #endif
     if (res != 0)
     {

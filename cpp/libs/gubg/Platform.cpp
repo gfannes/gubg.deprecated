@@ -1,18 +1,21 @@
 #include "gubg/Platform.hpp"
 #include <fstream>
 
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #endif
-#ifdef GUBG_WIN32
+#ifdef GUBG_API_WIN32
 #include "Windows.h"
-#include <unistd.h>
-#include <cstdlib>
+#include <process.h>
 #endif
+#ifdef GUBG_API_POSIX
+#include <unistd.h>
+#endif
+//#include <cstdlib>
+
 #include <chrono>
 
 using namespace std;
@@ -23,8 +26,8 @@ namespace gubg
 {
     bool spawn(const string &command)
     {
-#ifdef GUBG_LINUX
-        switch (fork())
+#ifdef GUBG_API_LINUX
+        switch (::fork())
         {
             case -1:
                 //Something went wrong
@@ -39,8 +42,7 @@ namespace gubg
                 return true;
                 break;
         }
-#endif
-#ifdef GUBG_WIN32
+#else
 		std::system(command.c_str());
 #endif
         return false;
@@ -60,24 +62,28 @@ namespace gubg
 
     ProcessId processId()
     {
+#ifdef GUBG_API_POSIX
         static const ProcessId pid = ::getpid();
+#elif defined(GUBG_API_WIN32)
+        static const ProcessId pid = _getpid();
+#endif
         return pid;
     }
     ThreadId threadId()
     {
         //We cannot use std::this_thread::get_id(), that is to be used for comparison only, but is not the id reported by the OS
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
         thread_local const ThreadId tid = ::syscall(SYS_gettid);
 #endif
-#ifdef GUBG_WIN32
-        thread_local const ThreadId tid = ::GetCurrentThreadId();
+#ifdef GUBG_API_WIN32
+        ThreadId tid = ::GetCurrentThreadId();
 #endif
         return tid;
     }
 
     double durationSinceEpoch_sec()
     {
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
         struct timeval timeVal;
         if (gettimeofday(&timeVal, 0))
         {
@@ -85,8 +91,7 @@ namespace gubg
             return false;
         }
         return (double)timeVal.tv_sec + 0.000001*timeVal.tv_usec;
-#endif
-#ifdef GUBG_WIN32
+#else
         const auto now = std::chrono::system_clock::now();
         auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
         return duration_ms.count()*0.001;
