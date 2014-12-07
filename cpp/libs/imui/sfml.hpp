@@ -1,7 +1,9 @@
 #ifndef HEADER_imui_sfml_hpp_ALREADY_INCLUDED
 #define HEADER_imui_sfml_hpp_ALREADY_INCLUDED
 
+#include "imui/Region.hpp"
 #include "SFML/Graphics.hpp"
+#include "SFML/System/Vector2.hpp"
 #include <string>
 
 namespace imui { 
@@ -15,7 +17,8 @@ namespace imui {
 
         protected:
             virtual void update(){}
-            virtual void render(){}
+
+            virtual void render(const Region &){}
 
         private:
             void processEvents_();

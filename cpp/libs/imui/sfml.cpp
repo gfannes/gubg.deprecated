@@ -32,7 +32,7 @@ namespace imui {
     void App::render_()
     {
         renderWindow_.clear();
-        render();
+        render(Region(sf::Vector2f(renderWindow_.getSize()), sf::Vector2f(sf::Mouse::getPosition(renderWindow_))));
         renderWindow_.display();
     }
 
