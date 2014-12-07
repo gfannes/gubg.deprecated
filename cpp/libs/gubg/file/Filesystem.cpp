@@ -4,15 +4,15 @@
 #include <cstdio>
 #include <cstring>
 #include <cstddef>
-#ifdef GUBG_POSIX
+#ifdef GUBG_API_POSIX
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
 #include <stdlib.h>
 #endif
-#ifdef GUBG_MINGW
+#ifdef GUBG_API_WIN32
 #include "Windows.h"
 #endif
 using namespace gubg::file;
@@ -52,7 +52,7 @@ ReturnCode gubg::file::read(SmartRange<string> &range, const File &file)
     MSS_END();
 }
 
-#ifdef GUBG_POSIX
+#ifdef GUBG_API_POSIX
 namespace 
 {
     struct Dir
@@ -67,7 +67,7 @@ namespace
     };
 }
 #endif
-#if defined(GUBG_POSIX) && !defined(GUBG_LINUX)
+#if defined(GUBG_API_POSIX) && !defined(GUBG_API_LINUX)
 //Some things are missing for MinGW
 #define NAME_MAX FILENAME_MAX
 int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)
@@ -89,7 +89,7 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 {
     MSS_BEGIN(ReturnCode, file.name());
     MSS(File::Unknown == file.type() || File::Directory ==  file.type(), ExpectedDirectory);
-#ifdef GUBG_POSIX
+#ifdef GUBG_API_POSIX
     //Open the directory in a RAII
     Dir dir(::opendir(file.name().c_str()));
     MSS(dir.h, CouldNotOpenDir);
@@ -110,7 +110,7 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
 
         {
             File::Type type = File::Unknown;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
             switch (entryp->d_type)
             {
                 case DT_DIR: type = File::Directory; break;
@@ -166,7 +166,7 @@ ReturnCode gubg::file::determineType(File &file)
 {
     MSS_BEGIN(ReturnCode);
     struct stat statbuf;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     auto res = ::lstat(file.name().c_str(), &statbuf);
 #else
 #ifdef __GNUC__
@@ -186,7 +186,7 @@ ReturnCode gubg::file::determineType(File &file)
         case S_IFREG: file.setType(File::Regular); break;
         case S_IFDIR: file.setType(File::Directory); break;
         case S_IFIFO: file.setType(File::FIFO); break;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
         case S_IFLNK: file.setType(File::Symbolic); break;
 #endif
         default: MSS_L(UnknownFileType); break;
@@ -198,10 +198,10 @@ ReturnCode gubg::file::resolve(File &file)
 {
     MSS_BEGIN(ReturnCode);
     char buffer[PATH_MAX];
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     MSS(::realpath(file.name().c_str(), buffer));
 #endif
-#ifdef GUBG_MINGW
+#ifdef GUBG_API_WIN32
 	const auto len = ::GetFullPathName(file.name().c_str(), PATH_MAX, buffer, 0);
     MSS(len < PATH_MAX);
 #endif
@@ -213,7 +213,7 @@ ReturnCode gubg::file::resolve(File &file)
 bool gubg::file::exists(const File &file)
 {
     struct stat statbuf;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     if (0 != ::lstat(file.name().c_str(), &statbuf))
         return false;
 #else
@@ -225,7 +225,7 @@ bool gubg::file::exists(const File &file)
 bool gubg::file::isRegular(const File &file)
 {
     struct stat statbuf;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     if (0 != ::lstat(file.name().c_str(), &statbuf))
         return false;
 #else
@@ -237,7 +237,7 @@ bool gubg::file::isRegular(const File &file)
 bool gubg::file::isDirectory(const File &file)
 {
     struct stat statbuf;
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     if (0 != ::lstat(file.name().c_str(), &statbuf))
         return false;
 #else
@@ -269,7 +269,7 @@ gubg::file::File gubg::file::getcwd()
 ReturnCode gubg::file::chmod(const File &file, const Mode &mode)
 {
     MSS_BEGIN(ReturnCode);
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
     mode_t m = 0;
     if (mode.user  & Read)    m |= S_IRUSR;
     if (mode.user  & Write)   m |= S_IWUSR;

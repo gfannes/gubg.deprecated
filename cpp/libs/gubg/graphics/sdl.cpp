@@ -1,5 +1,4 @@
 #include "gubg/graphics/sdl.hpp"
-#include "gubg/l.hpp"
 #include "SDL/SDL.h"
 #include "boost/thread/mutex.hpp"
 #include <exception>
@@ -10,6 +9,8 @@ namespace
     boost::mutex mutex;
 }
 
+#define GUBG_MODULE "SDL"
+#include "gubg/log/begin.hpp"
 namespace gubg
 {
     SDLPtr SDL::initialize()
@@ -22,6 +23,7 @@ namespace gubg
 
     SDL::SDL()
     {
+        S();
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
             throw new std::runtime_error("Could not initialize SDL");
         SDL_EnableUNICODE(1);
@@ -29,7 +31,9 @@ namespace gubg
     }
     SDL::~SDL()
     {
+        S();
         SDL_Quit();
         L("SDL is finalized");
     }
 }
+#include "gubg/log/end.hpp"

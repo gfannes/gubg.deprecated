@@ -57,7 +57,7 @@ rule ".obj" => ".cpp" do |task|
     options = []
     options << {debug: "-g", release: "-O3"}[config]
     defines = []
-    defines << {debug: "DEBUG", release: "NDEBUG"}[config]
+    defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
     sh "g++ -std=c++0x -c -o #{task.name} #{source_fn} #{options*" "} #{include_paths} #{defines.map{|d|"-D#{d}"}*" "}"
 end
 rule ".obj" => ".c" do |task|

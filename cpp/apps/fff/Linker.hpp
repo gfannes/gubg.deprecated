@@ -38,6 +38,7 @@ namespace fff {
                 virtual void stream_Library(Stream &, const std::string &) const = 0;
 
                 virtual void debug() = 0;
+                virtual void thread() = 0;
         };
     } 
 

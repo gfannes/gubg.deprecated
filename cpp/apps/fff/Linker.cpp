@@ -14,10 +14,8 @@ namespace fff {
                 void stream_LibraryPath(Stream &stream, const gubg::file::File &lp) const override { stream << " -L" << lp; }
                 void stream_Library(Stream &stream, const std::string &lib) const override { stream << " -l" << lib; }
 
-                void debug() override
-                {
-                    options.push_back("-g");
-                }
+                void debug() override { options.push_back("-g"); }
+                void thread() override { options.push_back("-pthread"); }
         };
         class CLang: public GCC
         {
@@ -34,10 +32,8 @@ namespace fff {
                 void stream_LibraryPath(Stream &stream, const gubg::file::File &lp) const override { stream << " /LIBPATH:" << lp; }
                 void stream_Library(Stream &stream, const std::string &lib) const override { stream << " " << lib; }
 
-                void debug() override
-                {
-                    options.push_back("/DEBUG");
-                }
+                void debug() override { options.push_back("/DEBUG"); }
+                void thread() override { }
         };
     } 
 
@@ -79,6 +75,7 @@ namespace fff {
         MSS((bool)itf_);
         if (false) {}
         else if (option == "debug") { itf_->debug(); }
+        else if (option == "thread") { itf_->thread(); }
         else
         {
             MSS_L(UnknownOption);

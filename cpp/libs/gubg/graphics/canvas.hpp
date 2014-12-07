@@ -1,9 +1,9 @@
 #ifndef HEADER_gubg_graphics_canvas_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_graphics_canvas_hpp_ALREADY_INCLUDED
 
-#include "graphics/style.hpp"
-#include "graphics/sdl.hpp"
-#include "point.hpp"
+#include "gubg/graphics/style.hpp"
+#include "gubg/graphics/sdl.hpp"
+#include "gubg/point/point.hpp"
 
 namespace gubg
 {

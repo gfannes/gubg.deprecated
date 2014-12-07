@@ -1,7 +1,7 @@
 #ifndef HEADER_gubg_graphics_imui_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_graphics_imui_hpp_ALREADY_INCLUDED
 
-#include "point.hpp"
+#include "gubg/point/point.hpp"
 #include "gubg/graphics/imui_key.hpp"
 #include "gubg/Location.hpp"
 #include <deque>

@@ -58,13 +58,13 @@ namespace fff { namespace tools {
             }
             else if (tv.first == Tag("c++", "include"))
             {
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
                 if (tv.second.string() == "dlfcn.h")
                     lnk.addLibrary("dl");
 #endif
-#ifdef GUBG_POSIX
+#ifdef GUBG_API_POSIX
                 if (tv.second.string() == "thread")
-                    lnk.addOption("pthread");
+                    lnk.addOption("thread");
 #endif
             }
             else if (tv.first == Tag("c++", "library_path"))

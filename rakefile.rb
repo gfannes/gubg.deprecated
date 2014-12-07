@@ -24,6 +24,30 @@ task :fff do
     end
 end
 
+sdks_dir = ENV["GUBG_SDKS"]
+directory sdks_dir
+namespace :sfml do
+    sfml_dir = "#{sdks_dir}/SFML"
+    task :clean do
+        rm_rf sfml_dir
+    end
+    file sfml_dir => sdks_dir do
+        Dir.chdir(sdks_dir) do
+            sh "git clone -b master https://github.com/LaurentGomila/SFML.git"
+        end
+    end
+    task :install => sfml_dir do
+        Dir.chdir(sfml_dir) do
+            mkdir "build"
+            Dir.chdir("build") do
+                sh "cmake .."
+                sh "make"
+                sh "sudo make install"
+            end
+        end
+    end
+end
+
 #testing
 def find_tests(type)
     tests = FileList["cpp/libs/gubg/**/test/*_#{type}.cpp"]

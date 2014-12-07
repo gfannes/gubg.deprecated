@@ -1,16 +1,16 @@
 #include "gubg/env/Variables.hpp"
 #include "gubg/Platform.hpp"
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
 #include <unistd.h>
 #endif
-#ifdef GUBG_MINGW
+#ifdef GUBG_API_WIN32
 #include <Windows.h>
 #include <cstring>
 #endif
 using namespace gubg::env;
 using namespace std;
 
-#ifdef GUBG_LINUX
+#ifdef GUBG_API_LINUX
 extern char **environ;
 Variables Variables::shell()
 {
@@ -27,7 +27,7 @@ Variables Variables::shell()
     return variables;
 }
 #endif
-#ifdef GUBG_MINGW
+#ifdef GUBG_API_WIN32
 Variables Variables::shell()
 {
 	const char *env = ::GetEnvironmentStrings();

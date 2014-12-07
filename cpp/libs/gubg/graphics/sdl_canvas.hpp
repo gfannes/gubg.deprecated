@@ -1,9 +1,9 @@
 #ifndef HEADER_gubg_graphics_sdl_canvas_hpp_ALREADY_INCLUDED
 #define HEADER_gubg_graphics_sdl_canvas_hpp_ALREADY_INCLUDED
 
-#include "graphics/canvas.hpp"
-#include "graphics/sdl.hpp"
-#include "graphics/imui.hpp"
+#include "gubg/graphics/canvas.hpp"
+#include "gubg/graphics/sdl.hpp"
+#include "gubg/graphics/imui.hpp"
 #include "SDL/SDL.h"
 #include "SDL/SDL_syswm.h"
 #include "cairomm/context.h"

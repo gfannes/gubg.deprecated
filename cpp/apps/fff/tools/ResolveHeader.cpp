@@ -31,6 +31,8 @@ namespace fff { namespace tools {
         if (gubg_home_(f))
             gubg_.reset(new file::File(f << "cpp/libs/gubg"));
         if (gubg_home_(f))
+            imui_.reset(new file::File(f << "cpp/libs/imui"));
+        if (gubg_home_(f))
             lua_.reset(new file::File(f << "c/lua-5.2.3"));
         if (gubg_home_(f))
             catch_.reset(new file::File(f << "cpp/libs/catch"));
@@ -110,6 +112,21 @@ namespace fff { namespace tools {
                     }
                 }
 
+                if (imui_ and roots_.count(*imui_) == 0)
+                {
+                    static const regex gubg_re("imui/.+\\.hpp");
+                    if (regex_match(tv.second.string(), gubg_re))
+                    {
+                        L("Adding imui (" << *imui_ << ")");
+                        forest_.add(*imui_, {"hpp", "cpp"});
+                        roots_.insert(*imui_);
+                        {
+                            auto ip = *imui_; ip.popBasename();
+                            board.add(Tag("c++", "include_path"), ip, tv);
+                        }
+                    }
+                }
+
                 if (catch_ and roots_.count(*catch_) == 0)
                 {
                     if (tv.second.string() == "catch/catch.hpp")
@@ -176,6 +193,7 @@ namespace fff { namespace tools {
                             board.add(Tag("c++", "library"), Value("sfml-window"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-audio"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-network"), tv);
+                            board.add(Tag("c++", "library"), Value("GLEW"), tv);
                         }
                     }
                 }

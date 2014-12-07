@@ -15,6 +15,7 @@ namespace fff { namespace tools {
 
 		private:
 			std::unique_ptr<const gubg::file::File> gubg_;
+			std::unique_ptr<const gubg::file::File> imui_;
 			std::unique_ptr<const gubg::file::File> lua_;
 			std::unique_ptr<const gubg::file::File> catch_;
 			std::unique_ptr<const gubg::file::File> sfml_;
