@@ -2,6 +2,7 @@
 #define HEADER_imui_sfml_hpp_ALREADY_INCLUDED
 
 #include "imui/Region.hpp"
+#include "imui/State.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/System/Vector2.hpp"
 #include <string>
@@ -26,6 +27,7 @@ namespace imui {
             void render_();
 
             sf::RenderWindow renderWindow_;
+            State state_;
     };
 
 } 

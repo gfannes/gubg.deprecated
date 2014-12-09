@@ -1,6 +1,6 @@
 #include "imui/sfml.hpp"
 
-#define GUBG_MODULE_ "test"
+#define GUBG_MODULE "test"
 #include "gubg/log/begin.hpp"
 namespace { 
     class App: public imui::App
@@ -10,10 +10,24 @@ namespace {
 
             void render(const imui::Region &region) override
             {
-                auto r = region.sub(50, 150, 100, 100);
-                if (r.isMouseInside())
+                using namespace imui;
+                const Vector2 size{5, 5};
+                for (int i = 0; i < 20; ++i)
                 {
-                    S();L(region.mouse().x << " " << region.mouse().y);
+                    for (int j = 0; j < 40; ++j)
+                    {
+                        const Vector2 pos{i*size.x, j*size.y};
+                        auto r = region.sub(pos, size);
+                        if (r.isMouseInside())
+                        {
+                            S();L(region.mouse().x << " " << region.mouse().y);
+                            sf::RectangleShape r;
+                            r.setPosition(pos);
+                            r.setSize(size);
+                            r.setFillColor(sf::Color::Cyan);
+                            region.draw(r);
+                        }
+                    }
                 }
             }
 

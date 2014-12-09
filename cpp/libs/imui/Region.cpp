@@ -1,36 +1,34 @@
 #include "imui/Region.hpp"
-#include "SFML/Graphics/Rect.hpp"
 
+#define GUBG_MODULE "Region"
+#include "gubg/log/begin.hpp"
 namespace imui { 
 
-    Region::Region(sf::Vector2f wh, sf::Vector2f mouse)
-        :wh_(wh), mouse_(mouse)
+    Region::Region(const Rect &rect, const State &state, sf::RenderWindow &rw)
+        :rect_(rect), state_(state), rw_(rw)
     {
     }
 
-    float Region::width() const { return wh_.x; }
-    float Region::height() const { return wh_.y; }
+    float Region::width() const { return rect_.width; }
+    float Region::height() const { return rect_.height; }
 
     bool Region::isMouseInside() const
     {
-        if (mouse_.x < 0)
-            return false;
-        if (mouse_.y < 0)
-            return false;
-        if (mouse_.x >= wh_.x)
-            return false;
-        if (mouse_.y >= wh_.y)
-            return false;
-        return true;
+        return rect_.contains(state_.mouse());
     }
 
     Region Region::sub(float x, float y, float w, float h) const
     {
-        const sf::FloatRect mine(sf::Vector2f(), wh_);
-        sf::FloatRect is;
-        if (!mine.intersects(sf::FloatRect(x, y, w, h), is))
-            return Region(sf::Vector2f(), sf::Vector2f());
-        return Region(sf::Vector2f(is.width, is.height), mouse_ - sf::Vector2f(x, y));
+        sf::FloatRect rect;
+        rect_.intersects(Rect(x+rect_.left, y+rect_.top, w, h), rect);
+        return Region(rect, state_, rw_);
+    }
+    Region Region::sub(const Vector2 &pos, const Vector2 &size) const
+    {
+        sf::FloatRect rect;
+        rect_.intersects(Rect(pos + Vector2{rect_.left, rect_.top}, size), rect);
+        return Region(rect, state_, rw_);
     }
 
 } 
+#include "gubg/log/end.hpp"

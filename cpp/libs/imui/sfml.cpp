@@ -24,6 +24,7 @@ namespace imui {
             if (event.type == sf::Event::Closed)
                 renderWindow_.close();
         }
+        state_.process(renderWindow_);
     }
     void App::update_()
     {
@@ -31,8 +32,9 @@ namespace imui {
     }
     void App::render_()
     {
+        using namespace sf;
         renderWindow_.clear();
-        render(Region(sf::Vector2f(renderWindow_.getSize()), sf::Vector2f(sf::Mouse::getPosition(renderWindow_))));
+        render(Region(Rect(Vector2{}, Vector2(renderWindow_.getSize())), state_, renderWindow_));
         renderWindow_.display();
     }
 

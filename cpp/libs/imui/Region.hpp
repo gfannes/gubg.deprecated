@@ -1,26 +1,33 @@
 #ifndef HEADER_imui_Region_hpp_ALREADY_INCLUDED
 #define HEADER_imui_Region_hpp_ALREADY_INCLUDED
 
-#include "SFML/System/Vector2.hpp"
+#include "imui/Types.hpp"
+#include "imui/State.hpp"
+#include "SFML/Graphics.hpp"
 
 namespace imui { 
 
     class Region
     {
         public:
-            Region(sf::Vector2f wh, sf::Vector2f mouse);
+            Region(const Rect &rect, const State &state, sf::RenderWindow &rw);
 
             float width() const;
             float height() const;
-            const sf::Vector2f &mouse() const {return mouse_;}
+            const Vector2 &mouse() const {return state_.mouse();}
 
             bool isMouseInside() const;
 
             Region sub(float x, float y, float w, float h) const;
+            Region sub(const Vector2 &pos, const Vector2 &size) const;
+
+            template <typename Drawable>
+                void draw(const Drawable &drawable) const {rw_.draw(drawable);}
 
         private:
-            const sf::Vector2f wh_;
-            const sf::Vector2f mouse_;
+            const Rect rect_;
+            const State &state_;
+            sf::RenderWindow &rw_;
     };
 
 } 
