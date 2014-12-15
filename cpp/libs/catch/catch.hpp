@@ -5103,7 +5103,7 @@ namespace Catch {
     public:
         // !TBD We need to do this another way!
         bool aborting() const {
-            return m_totals.assertions.failed == static_cast<std::size_t>( m_config->abortAfter() );
+            return m_totals.assertions.failed >= static_cast<std::size_t>( m_config->abortAfter() );
         }
 
     private:

@@ -37,8 +37,7 @@ namespace fff {
                 virtual void stream_LibraryPath(Stream &, const gubg::file::File &) const = 0;
                 virtual void stream_Library(Stream &, const std::string &) const = 0;
 
-                virtual void debug() = 0;
-                virtual void thread() = 0;
+                virtual bool setOption(const std::string &option) = 0;
         };
     } 
 

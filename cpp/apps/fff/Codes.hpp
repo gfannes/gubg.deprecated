@@ -8,7 +8,7 @@ namespace fff {
 	{
 		MSS_DEFAULT_CODES,
 		NoSeedGiven, TagValueAlreadyExists, AlreadyStarted, NoNewEntries, HashAlreadySet,
-		ToolAlreadyPresent, CompileFailure, LinkFailure, UnknownOption,
+		ToolAlreadyPresent, CompileFailure, LinkFailure, UnknownOption, UnknownCommand,
 	};
 } 
 

@@ -34,7 +34,7 @@ namespace fff {
                 virtual void stream_IncludePath(Stream &, const gubg::file::File &) const = 0;
                 virtual void stream_Define(Stream &, const std::string &) const = 0;
 
-                virtual void debug() = 0;
+                virtual bool setOption(const std::string &option) = 0;
         };
     } 
 

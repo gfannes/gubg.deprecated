@@ -32,12 +32,12 @@ namespace fff { namespace tools {
 
 		for (auto tv: tvs)
 		{
-			if (tv.first != Tag("c++", "source") && tv.first != Tag("c++", "header"))
+			if (tv.tag != Tag("c++", "source") && tv.tag != Tag("c++", "header"))
 				continue;
-			MSS(tv.second.type() == Value::File);
+			MSS(tv.value.type() == Value::File);
 			IncludeParser ip;
-			if (!MSS_IS_OK(ip.process(tv.second.file())))
-				std::cerr << "Failed to parse include statements for " << tv.second.file() << std::endl;
+			if (!MSS_IS_OK(ip.process(tv.value.file())))
+				std::cerr << "Failed to parse include statements for " << tv.value.file() << std::endl;
 			else
 				for (auto inc: ip.includes)
 					board.add(Tag("c++", "include"), inc, tv);

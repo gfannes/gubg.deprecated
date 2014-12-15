@@ -17,7 +17,7 @@ namespace fff { namespace tools {
         while (!stage.empty())
         {
             TagValue tv = stage.front(); stage.pop_front();
-            if (tv.first == Tag("c++", "source") || tv.first == Tag("c++", "header"))
+            if (tv.tag == Tag("c++", "source") || tv.tag == Tag("c++", "header"))
                 //Only headers and the source file should be taken into account
                 dependencies.insert(tv);
             auto deps = board.getDependencies(tv);
@@ -25,7 +25,7 @@ namespace fff { namespace tools {
             {
                 //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
                 //We only take the headers, the corresponding c++.source does not influence whoever is using the header
-                if (d.first == Tag("c++", "include") || d.first == Tag("c++", "header"))
+                if (d.tag == Tag("c++", "include") || d.tag == Tag("c++", "header"))
                 {
                     if (!dependencies.count(d))
                         stage.push_back(d);
@@ -48,33 +48,28 @@ namespace fff { namespace tools {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.first == Tag("start") && tv.second.string() == "cl")
+            else if (tv.tag == Tag("start") && tv.value.string() == "cl")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
             }
-            else if (tv.first == Tag("c++", "include_path"))
+            else if (tv.tag == Tag("c++", "include_path"))
             {
-                compiler_.addIncludePath(tv.second.as_file());
+                compiler_.addIncludePath(tv.value.as_file());
             }
-            else if (tv.first == Tag("start") && tv.second.string() == "release")
+            else if (tv.tag == Tag("start") && tv.value.string() == "release")
             {
-                compiler_.addOption("O3");
-                compiler_.addDefine("GUBG_RELEASE");
+                compiler_.addOption("release");
                 build_type_was_set_ = true;
             }
-            else if (tv.first == Tag("start"))
+            else if (tv.tag == Tag("start") && tv.value.string() == "shared")
             {
-                if (tv.second.string() == "shared")
-                {
-                    compiler_.addOption("fPIC");
-                }
+                compiler_.addOption("shared");
             }
         }
         if (!build_type_was_set_)
         {
-            compiler_.addOption("g");
-            compiler_.addDefine("GUBG_DEBUG");
+            compiler_.addOption("debug");
             build_type_was_set_ = true;
         }
 
@@ -84,13 +79,13 @@ namespace fff { namespace tools {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.first == Tag("cache"))
+            else if (tv.tag == Tag("cache"))
             {
-                create_mgr.setCache(tv.second.file());
+                create_mgr.setCache(tv.value.file());
             }
-            else if (tv.first == Tag("c++", "source"))
+            else if (tv.tag == Tag("c++", "source"))
             {
-                const auto source = tv.second.file();
+                const auto source = tv.value.file();
                 SS(source);
                 file::File obj = source; obj.setExtension("cpp.obj");
                 string cmd;
@@ -102,9 +97,9 @@ namespace fff { namespace tools {
                 jobs.push_back(job);
                 board.add(Tag("c++", "object"), obj);
             }
-            else if (tv.first == Tag("c", "source"))
+            else if (tv.tag == Tag("c", "source"))
             {
-                const auto source = tv.second.file();
+                const auto source = tv.value.file();
                 SS(source);
                 file::File obj = source; obj.setExtension("c.obj");
                 string cmd;

@@ -8,7 +8,7 @@ namespace fff {
     class ToolFactory
     {
         public:
-            ToolChain createToolChain(const std::string &name);
+            //ToolChain createToolChain(const std::string &name);
             Tool_itf::Ptr createTool(const std::string &name);
     };
 } 

@@ -153,12 +153,12 @@ namespace fff {
 			if (p == hashPerTV_.end())
 			{
 				Stream md5;
-				md5 << tv.first.to_str() << tv.second.to_str();
-				switch (tv.second.type())
+				md5 << tv.tag.to_str() << tv.tag.to_str();
+				switch (tv.value.type())
 				{
 					case Value::File:
 						{
-							std::string content; gubg::file::read(content, tv.second.file());
+							std::string content; gubg::file::read(content, tv.value.file());
 							md5 << content;
 						}
 						break;
@@ -167,7 +167,7 @@ namespace fff {
 				p = hashPerTV_.find(tv);
 			}
 			assert(p != hashPerTV_.end());
-			L(p->second.to_hex() << ": " << tv.second);
+			L(p->second.to_hex() << ": " << tv.value);
 			hash ^= p->second;
 		}
 		L("Final hash: " << hash.to_hex());

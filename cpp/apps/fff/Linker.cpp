@@ -14,8 +14,24 @@ namespace fff {
                 void stream_LibraryPath(Stream &stream, const gubg::file::File &lp) const override { stream << " -L" << lp; }
                 void stream_Library(Stream &stream, const std::string &lib) const override { stream << " -l" << lib; }
 
-                void debug() override { options.push_back("-g"); }
-                void thread() override { options.push_back("-pthread"); }
+                bool setOption(const std::string &option) override
+                {
+                    if (false) {}
+                    else if (option == "debug")
+                    {
+                        options.push_back("-g");
+                    }
+                    else if (option == "release")
+                    {
+                    }
+                    else if (option == "thread")
+                    {
+                        options.push_back("-pthread");
+                    }
+                    else
+                        return false;
+                    return true;
+                }
         };
         class CLang: public GCC
         {
@@ -30,10 +46,25 @@ namespace fff {
                 void stream_Output(Stream &stream, const gubg::file::File &src) const override { stream << " /OUT:" << src; }
                 void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " " << obj; }
                 void stream_LibraryPath(Stream &stream, const gubg::file::File &lp) const override { stream << " /LIBPATH:" << lp; }
-                void stream_Library(Stream &stream, const std::string &lib) const override { stream << " " << lib; }
+                void stream_Library(Stream &stream, const std::string &lib) const override { stream << " " << lib << ".lib"; }
 
-                void debug() override { options.push_back("/DEBUG"); }
-                void thread() override { }
+                bool setOption(const std::string &option) override
+                {
+                    if (false) {}
+                    else if (option == "debug")
+                    {
+                        options.push_back("/DEBUG");
+                    }
+                    else if (option == "release")
+                    {
+                    }
+                    else if (option == "thread")
+                    {
+                    }
+                    else
+                        return false;
+                    return true;
+                }
         };
     } 
 
@@ -73,13 +104,7 @@ namespace fff {
     {
         MSS_BEGIN(ReturnCode);
         MSS((bool)itf_);
-        if (false) {}
-        else if (option == "debug") { itf_->debug(); }
-        else if (option == "thread") { itf_->thread(); }
-        else
-        {
-            MSS_L(UnknownOption);
-        }
+        MSS(itf_->setOption(option), UnknownOption);
         MSS_END();
     }
 

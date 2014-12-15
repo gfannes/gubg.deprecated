@@ -10,6 +10,13 @@ task :help do
     puts("fff: build the flexible file factory")
 end
 
+def os()
+    case RUBY_PLATFORM
+    when /mingw/ then :win
+    else nil end
+end
+fail("Could not guess os from #{RUBY_PLATFORM}") if os.nil?
+
 #clean
 CLEAN.include(FileList["**/*.cpp_obj"])
 CLEAN.include(FileList["**/*.obj"])
@@ -25,6 +32,10 @@ task :fff do
 end
 
 sdks_dir = ENV["GUBG_SDKS"]
+bin_dir = ENV["GUBG_BIN"]
+inc_dir = ENV["GUBG_INC"]
+lib_dir = ENV["GUBG_LIB"]
+
 directory sdks_dir
 namespace :sfml do
     sfml_dir = "#{sdks_dir}/SFML"
@@ -36,12 +47,29 @@ namespace :sfml do
             sh "git clone -b master https://github.com/gfannes/SFML"
         end
     end
+    task :build => sfml_dir do
+        Dir.chdir(sfml_dir) do
+            mkdir "build" unless File.exist?("build")
+            Dir.chdir("build") do
+                generator = {win: "-G \"Visual Studio 12 2013 Win64\""}[os]
+                sh "cmake .. #{generator}"
+                case os
+                when :win
+                    fail("Could not find solution") unless File.exist?("SFML.sln")
+                    sh "msbuild /p:Platform=x64 /p:Configuration=Release SFML.sln /t:Build"
+                else
+                    sh "make"
+                end
+            end
+        end
+    end
     task :install => sfml_dir do
         Dir.chdir(sfml_dir) do
-            mkdir "build"
-            Dir.chdir("build") do
-                sh "cmake .."
-                sh "make"
+            if File.exist?("build/SFML.sln")
+                cp FileList["build/lib/Release/*.dll"], bin_dir
+                cp FileList["build/lib/Release/*.lib"], lib_dir
+                cp_r "include/SFML", inc_dir
+            else
                 sh "sudo make install"
             end
         end

@@ -29,22 +29,28 @@ namespace fff { namespace tools {
 
         for (auto tv: tvs)
         {
-            SS(tv.first, tv.second);
+            SS(tv.tag, tv.value);
 
-            if (tv.first != Tag("start"))
+            if (tv.tag != Tag("start"))
                 //We only handle tvs added from CLI arguments
                 continue;
 
             {
                 file::File f;
-                if (resolve_(f, tv.second))
+                if (resolve_(f, tv.value))
                 {
                     MSS(processFile_(board, f));
                     continue;
                 }
             }
 
-            MSS(processOption_(board, tv.second.string()));
+            {
+                const std::string str = tv.value.string();
+                if (MSS_IS_OK(processCommand_(board, str)))
+                    continue;
+            }
+
+            MSS(processOption_(board, tv.value.string()));
         }
 
         MSS_END();
@@ -87,6 +93,22 @@ namespace fff { namespace tools {
 
         MSS_END();
     }
+    ReturnCode Starter::processCommand_(Board &board, const std::string &str)
+    {
+        MSS_BEGIN(ReturnCode);
+
+        ToolFactory fact;
+
+        if (false) {}
+        else if (str == "search")
+        {
+            MSS(board.addTool(fact.createTool("Search")));
+        }
+        else
+            MSS_QL(UnknownCommand);
+
+        MSS_END();
+    }
     ReturnCode Starter::processOption_(Board &board, const std::string &str)
     {
         MSS_BEGIN(ReturnCode);
@@ -94,6 +116,7 @@ namespace fff { namespace tools {
         Strange key;
         if (strange.popUntil(key, ':'))
         {
+            //Split the key on '.'
             std::vector<std::string> key_parts;
             {
                 Strange part;
@@ -103,6 +126,7 @@ namespace fff { namespace tools {
                 key_parts.push_back(part.str());
             }
 
+            //Value is the part after the ':'
             Strange value;
             strange.popAll(value);
 

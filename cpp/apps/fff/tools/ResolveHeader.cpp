@@ -25,6 +25,14 @@ namespace fff { namespace tools {
     {
         return gubg_env_var_(f, "GUBG_SDKS");
     }
+    bool gubg_inc_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG_INC");
+    }
+    bool gubg_lib_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG_LIB");
+    }
     ResolveHeader::ResolveHeader()
     {
         file::File f;
@@ -54,23 +62,27 @@ namespace fff { namespace tools {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.first == Tag("start"))
+            else if (tv.tag == Tag("start"))
             {
-                file::File path(tv.second.string());
-                if (MSS_IS_OK(file::resolve(path)) and path.popBasename())
+                if (false) {}
+                else
                 {
-                    L("Adding local path to the forest (" << path << ")");
-                    forest_.add(path, {"hpp", "cpp", "h", "c"});
+                    file::File path(tv.value.string());
+                    if (MSS_IS_OK(file::resolve(path)) and path.popBasename())
                     {
-                        auto ip = path; ip.popBasename();
-                        board.add(Tag("c++", "include_path"), ip, tv);
+                        L("Adding local path to the forest (" << path << ")");
+                        forest_.add(path, {"hpp", "cpp", "h", "c"});
+                        {
+                            auto ip = path; ip.popBasename();
+                            board.add(Tag("c++", "include_path"), ip, tv);
+                        }
                     }
                 }
             }
-            else if (tv.first == Tag("c++", "tree"))
+            else if (tv.tag == Tag("c++", "tree"))
             {
-                MSS(tv.second.type() == Value::String);
-                file::File path = tv.second.string();
+                MSS(tv.value.type() == Value::String);
+                file::File path = tv.value.string();
                 MSS(file::resolve(path));
                 if (roots_.count(path) == 0)
                 {
@@ -80,10 +92,10 @@ namespace fff { namespace tools {
                     board.add(Tag("c++", "include_path"), ip, tv);
                 }
             }
-            else if (tv.first == Tag("c++", "utree"))
+            else if (tv.tag == Tag("c++", "utree"))
             {
-                MSS(tv.second.type() == Value::String);
-                file::File path = tv.second.string();
+                MSS(tv.value.type() == Value::String);
+                file::File path = tv.value.string();
                 MSS(file::resolve(path));
                 if (roots_.count(path) == 0)
                 {
@@ -93,14 +105,14 @@ namespace fff { namespace tools {
                     board.add(Tag("c++", "include_path"), ip, tv);
                 }
             }
-            else if (tv.first == Tag("c++", "include"))
+            else if (tv.tag == Tag("c++", "include"))
             {
-                MSS(tv.second.type() == Value::String);
+                MSS(tv.value.type() == Value::String);
 
                 if (gubg_ and roots_.count(*gubg_) == 0)
                 {
                     static const regex gubg_re("gubg/.+\\.hpp");
-                    if (regex_match(tv.second.string(), gubg_re))
+                    if (regex_match(tv.value.string(), gubg_re))
                     {
                         L("Adding gubg (" << *gubg_ << ")");
                         forest_.add(*gubg_, {"hpp", "cpp"});
@@ -115,7 +127,7 @@ namespace fff { namespace tools {
                 if (imui_ and roots_.count(*imui_) == 0)
                 {
                     static const regex gubg_re("imui/.+\\.hpp");
-                    if (regex_match(tv.second.string(), gubg_re))
+                    if (regex_match(tv.value.string(), gubg_re))
                     {
                         L("Adding imui (" << *imui_ << ")");
                         forest_.add(*imui_, {"hpp", "cpp"});
@@ -129,7 +141,7 @@ namespace fff { namespace tools {
 
                 if (catch_ and roots_.count(*catch_) == 0)
                 {
-                    if (tv.second.string() == "catch/catch.hpp")
+                    if (tv.value.string() == "catch/catch.hpp")
                     {
                         L("Adding catch (" << *catch_ << ")");
                         forest_.add(*catch_, {"hpp", "cpp"});
@@ -143,7 +155,7 @@ namespace fff { namespace tools {
 
                 if (eigen_ and roots_.count(*eigen_) == 0)
                 {
-                    if (tv.second.string() == "Eigen/Eigen")
+                    if (tv.value.string() == "Eigen/Eigen")
                     {
                         L("Adding eigen (" << *eigen_ << ")");
                         roots_.insert(*eigen_);
@@ -154,7 +166,7 @@ namespace fff { namespace tools {
                 if (lua_ and roots_.count(*lua_) == 0)
                 {
                     static const regex lua_re("lua.hpp");
-                    if (regex_match(tv.second.string(), lua_re))
+                    if (regex_match(tv.value.string(), lua_re))
                     {
                         L("Adding lua (" << *lua_ << ")");
                         board.add(Tag("c++", "include_path"), *lua_, tv);
@@ -176,24 +188,26 @@ namespace fff { namespace tools {
                 if (sfml_ and roots_.count(*sfml_) == 0)
                 {
                     static const regex sfml_re("SFML/.+\\.hpp");
-                    if (regex_match(tv.second.string(), sfml_re))
+                    if (regex_match(tv.value.string(), sfml_re))
                     {
                         L("Adding sfml (" << *sfml_ << ")");
                         forest_.add(*sfml_, {"hpp", "cpp"});
                         roots_.insert(*sfml_);
                         {
-                            auto ip = *sfml_; ip << "include";
-                            board.add(Tag("c++", "include_path"), ip, tv);
+                            file::File ip;
+                            if (gubg_inc_(ip))
+                                board.add(Tag("c++", "include_path"), ip, tv);
                         }
                         {
-                            auto lp = *sfml_; lp << "build/lib";
-                            board.add(Tag("c++", "library_path"), lp, tv);
+                            file::File lp;
+                            if (gubg_lib_(lp))
+                                board.add(Tag("c++", "library_path"), lp, tv);
                             board.add(Tag("c++", "library"), Value("sfml-system"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-graphics"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-window"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-audio"), tv);
                             board.add(Tag("c++", "library"), Value("sfml-network"), tv);
-                            board.add(Tag("c++", "library"), Value("GLEW"), tv);
+                            //board.add(Tag("c++", "library"), Value("GLEW"), tv);
                         }
                     }
                 }
@@ -201,7 +215,7 @@ namespace fff { namespace tools {
                 if (chai_ and roots_.count(*chai_) == 0)
                 {
                     static const regex chai_re("chaiscript/.+\\.hpp");
-                    if (regex_match(tv.second.string(), chai_re))
+                    if (regex_match(tv.value.string(), chai_re))
                     {
                         L("Adding chai (" << *chai_ << ")");
                         forest_.add(*chai_, {"hpp", "cpp"});
@@ -219,19 +233,19 @@ namespace fff { namespace tools {
                     }
                 }
 
-                L("Checking forest for " << tv.second.string());
+                L("Checking forest for " << tv.value.string());
                 file::File rf;
                 if (false) {}
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()), 1)))
+                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.string()), 1)))
                     board.add(Tag("c++", "header"), rf, tv);
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.second.string()), 0)))
+                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.string()), 0)))
                     board.add(Tag("c++", "header"), rf, tv);
                 else
                     L("Not found ...");
             }
-            else if (tv.first == Tag("c++", "header"))
+            else if (tv.tag == Tag("c++", "header"))
             {
-                const auto header = tv.second.file();
+                const auto header = tv.value.file();
                 file::File source = header;
                 {
                     source.setExtension("cpp");

@@ -5,9 +5,11 @@
 #include "fff/tools/Compiler.hpp"
 #include "fff/tools/Linker.hpp"
 #include "fff/tools/Runner.hpp"
+#include "fff/tools/Search.hpp"
 using namespace std;
 
 namespace fff { 
+#if 0
     ToolChain ToolFactory::createToolChain(const string &name)
     {
         ToolChain res;
@@ -22,6 +24,7 @@ namespace fff {
         }
         return res;
     }
+#endif
     Tool_itf::Ptr ToolFactory::createTool(const string &name)
     {
 #define L_ELSE_IF(type) else if (name == #type) return Tool_itf::Ptr(new tools::type())
@@ -32,6 +35,7 @@ namespace fff {
         L_ELSE_IF(Compiler);
         L_ELSE_IF(Linker);
         L_ELSE_IF(Runner);
+        L_ELSE_IF(Search);
         return Tool_itf::Ptr();
     }
 } 

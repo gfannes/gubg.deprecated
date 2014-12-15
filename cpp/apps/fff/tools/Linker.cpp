@@ -24,12 +24,12 @@ namespace fff { namespace tools {
         linker::OutputType exeType = linker::OutputType::Exe;
         for (auto tv: tvs)
         {
-            if (tv.first == Tag("start"))
+            if (tv.tag == Tag("start"))
             {
                 if (false) {}
-                else if (tv.second.string() == "cl")
+                else if (tv.value.string() == "cl")
                     vendor = linker::Vendor::MSC;
-                else if (tv.second.string() == "shared")
+                else if (tv.value.string() == "shared")
                     exeType = linker::OutputType::Shared;
             }
         }
@@ -42,35 +42,41 @@ namespace fff { namespace tools {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.first == Tag("cache"))
+            else if (tv.tag == Tag("cache"))
             {
-                create_mgr.setCache(tv.second.file());
+                create_mgr.setCache(tv.value.file());
             }
-            else if (tv.first == Tag("c++", "source"))
+            else if (tv.tag == Tag("start"))
+            {
+                if (false) {}
+                else if (tv.value.string() == "debug")
+                    lnk.addOption("debug");
+            }
+            else if (tv.tag == Tag("c++", "source"))
             {
                 if (setExecutable())
-                    executable = tv.second.file();
+                    executable = tv.value.file();
             }
-            else if (tv.first == Tag("c++", "object") || tv.first == Tag("c", "object"))
+            else if (tv.tag == Tag("c++", "object") || tv.tag == Tag("c", "object"))
             {
-                lnk.addObject(tv.second.file());
+                lnk.addObject(tv.value.file());
                 dependencies.insert(tv);
             }
-            else if (tv.first == Tag("c++", "include"))
+            else if (tv.tag == Tag("c++", "include"))
             {
 #ifdef GUBG_API_LINUX
-                if (tv.second.string() == "dlfcn.h")
+                if (tv.value.string() == "dlfcn.h")
                     lnk.addLibrary("dl");
 #endif
 #ifdef GUBG_API_POSIX
-                if (tv.second.string() == "thread")
+                if (tv.value.string() == "thread")
                     lnk.addOption("thread");
 #endif
             }
-            else if (tv.first == Tag("c++", "library_path"))
-                lnk.addLibraryPath(tv.second.file());
-            else if (tv.first == Tag("c++", "library"))
-                lnk.addLibrary(tv.second.string());
+            else if (tv.tag == Tag("c++", "library_path"))
+                lnk.addLibraryPath(tv.value.file());
+            else if (tv.tag == Tag("c++", "library"))
+                lnk.addLibrary(tv.value.string());
         }
 
         switch (exeType)

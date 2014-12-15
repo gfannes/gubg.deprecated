@@ -22,10 +22,28 @@ namespace fff {
                 void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " -I" << ip; }
                 void stream_Define(Stream &stream, const std::string &def) const override { stream << " -D" << def; }
 
-                void debug() override
+                bool setOption(const std::string &option) override
                 {
-                    options.push_back("-g");
-                    defines.push_back("DEBUG");
+                    if (false) {}
+                    else if (option == "debug")
+                    {
+                        options.push_back("-g");
+                        defines.push_back("DEBUG");
+                        defines.push_back("GUBG_DEBUG");
+                    }
+                    else if (option == "release")
+                    {
+                        options.push_back("-O3");
+                        defines.push_back("NDEBUG");
+                        defines.push_back("GUBG_RELEASE");
+                    }
+                    else if (option == "shared")
+                    {
+                        options.push_back("-fPIC");
+                    }
+                    else
+                        return false;
+                    return true;
                 }
         };
         class CLang: public GCC
@@ -41,8 +59,8 @@ namespace fff {
                 {
                     switch (language)
                     {
-                        case Language::Cpp: stream << "cl"; break;
-                        case Language::C: stream << "cl /TC"; break;
+                        case Language::Cpp: stream << "cl /FS"; break;
+                        case Language::C: stream << "cl /FS /TC"; break;
                     }
                     stream << " -c";
                 }
@@ -51,10 +69,27 @@ namespace fff {
                 void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " /I" << ip; }
                 void stream_Define(Stream &stream, const std::string &def) const override { stream << " /D" << def; }
 
-                void debug() override
+                bool setOption(const std::string &option) override
                 {
-                    options.push_back("/Zi");
-                    defines.push_back("DEBUG");
+                    if (false) {}
+                    else if (option == "debug")
+                    {
+                        options.push_back("/Zi");
+                        defines.push_back("DEBUG");
+                        defines.push_back("GUBG_DEBUG");
+                    }
+                    else if (option == "release")
+                    {
+                        options.push_back("/O3");
+                        defines.push_back("NDEBUG");
+                        defines.push_back("GUBG_RELEASE");
+                    }
+                    else if (option == "shared")
+                    {
+                    }
+                    else
+                        return false;
+                    return true;
                 }
         };
     } 
@@ -87,12 +122,7 @@ namespace fff {
     {
         MSS_BEGIN(ReturnCode);
         MSS((bool)itf_);
-        if (false) {}
-        else if (option == "debug") { itf_->debug(); }
-        else
-        {
-            MSS_L(UnknownOption);
-        }
+        MSS(itf_->setOption(option), UnknownOption);
         MSS_END();
     }
 

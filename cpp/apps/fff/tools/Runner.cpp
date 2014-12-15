@@ -19,16 +19,16 @@ namespace fff { namespace tools {
 		for (auto tv: tvs)
 		{
 			if (false) {}
-			else if (tv.first == Tag("start"))
+			else if (tv.tag == Tag("start"))
 			{
-				if (tv.second.string() == "norun")
+				if (tv.value.string() == "norun")
 					do_run_ = false;
 			}
-			else if (tv.first == Tag("c++", "executable"))
+			else if (tv.tag == Tag("c++", "executable"))
 			{
 				if (do_run_)
 				{
-					ostringstream command; command << tv.second.file();
+					ostringstream command; command << tv.value.file();
 					cout << string(50, '*') << " " << command.str() << endl;
 					gubg::chrono::Stopwatch<> sw;
 					MSS(execute(command.str()));

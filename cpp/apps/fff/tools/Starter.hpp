@@ -15,6 +15,7 @@ namespace fff { namespace tools {
 
 		private:
 			ReturnCode processFile_(Board &, const gubg::file::File &);
+			ReturnCode processCommand_(Board &, const std::string &);
 			ReturnCode processOption_(Board &, const std::string &);
 
 			gubg::OnlyOnce addExeChain_;
