@@ -1,4 +1,5 @@
 #include "gubg/StateMachine.hpp"
+#include "gubg/chrono/Stopwatch.hpp"
 #include "imui/sfml.hpp"
 #include "imui/Region.hpp"
 #include "SFML/Audio/SoundBufferRecorder.hpp"
@@ -34,6 +35,8 @@ namespace recorder {
             sf::SoundBuffer word_sound_;
             std::string word_str_;
             sf::Sound sound_;
+            gubg::chrono::Stopwatch<> word_sw_;
+
             std::string error_msg_;
 
             sf::Font font_;

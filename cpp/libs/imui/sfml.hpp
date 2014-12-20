@@ -21,6 +21,8 @@ namespace imui {
 
             virtual void render(const Region &){}
 
+            void quitASAP();
+
         private:
             void processEvents_();
             void update_();
@@ -28,6 +30,7 @@ namespace imui {
 
             sf::RenderWindow renderWindow_;
             State state_;
+            bool quitASAP_ = false;
     };
 
 } 

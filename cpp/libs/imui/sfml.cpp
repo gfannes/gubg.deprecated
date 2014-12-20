@@ -16,10 +16,19 @@ namespace imui {
         return renderWindow_.isOpen();
     }
 
+    void App::quitASAP()
+    {
+        quitASAP_ = true;
+    }
+
     void App::processEvents_()
     {
         state_.keys.clear();
         state_.texts.clear();
+
+        if (quitASAP_)
+            renderWindow_.close();
+
         sf::Event event;
         while (renderWindow_.pollEvent(event))
         {

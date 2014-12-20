@@ -5,11 +5,9 @@
 #include <sstream>
 #include <iomanip>
 
-namespace gubg
-{
-    namespace chrono
-    {
-        template <typename Clock = std::chrono::high_resolution_clock>
+namespace gubg { namespace chrono {
+
+    template <typename Clock = std::chrono::high_resolution_clock>
         class Stopwatch
         {
             public:
@@ -36,25 +34,25 @@ namespace gubg
                 //Last mark time
                 time_point mark_time() const {return mark_;}
 
-				//There is a bug in g++ 4.8.1 with O3 with duration_cast, hence we do it ourselves
-				template <typename Duration>
-					Duration total_elapse_as() const { return Duration((total_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
-				template <typename Duration>
-					Duration mark_elapse_as() const { return Duration((mark_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
+                //There is a bug in g++ 4.8.1 with O3 with duration_cast, hence we do it ourselves
+                template <typename Duration>
+                    Duration total_elapse_as() const { return Duration((total_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
+                template <typename Duration>
+                    Duration mark_elapse_as() const { return Duration((mark_elapse().count()*clock::period::num*Duration::period::den)/clock::period::den/Duration::period::num); }
 
-				std::string total_elapse_hr() const
-				{
-					std::ostringstream oss;
-					oss << 0.001*total_elapse_as<std::chrono::milliseconds>().count() << " s";
-					return oss.str();
-				}
+                std::string total_elapse_hr() const
+                {
+                    std::ostringstream oss;
+                    oss << 0.001*total_elapse_as<std::chrono::milliseconds>().count() << " s";
+                    return oss.str();
+                }
 
             private:
                 time_point start_;
                 time_point prevMark_;
                 time_point mark_;
         };
-    }
-}
+
+} }
 
 #endif

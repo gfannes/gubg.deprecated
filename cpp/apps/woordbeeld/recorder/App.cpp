@@ -41,6 +41,7 @@ namespace recorder {
                 break;
             case State::Recording:
                 recorder_.start();
+                word_sw_.reset();
                 break;
             case State::ReadName:
                 word_str_.clear();
@@ -102,6 +103,9 @@ namespace recorder {
     {
         switch (s())
         {
+            case State::Idle:
+                quitASAP();
+                break;
             case State::ReadName:
                 {
                     const int backspace_char = 8;
@@ -126,26 +130,38 @@ namespace recorder {
     }
     void App::sm_event(SM::State &s, Render r)
     {
-        sf::Text t; t.setFont(font_);
-        const int x = t.getCharacterSize()*0.5;
-        t.setPosition(x, 0);
+        const int char_size = 30;
+        const int nr_lines = 4;
+        const int dy = font_.getLineSpacing(char_size);
+        const int x = 0.5*dy;
+        std::array<sf::Text, nr_lines> lines;
+        for (auto it = lines.begin(); it != lines.end(); ++it)
+        {
+            it->setFont(font_);
+            it->setPosition(x, (it-lines.begin())*dy);
+        }
         switch (s())
         {
             case State::Idle:
-                t.setString("Press <space> to start recording");
+                lines[0].setString("<space>: start recording");
+                lines[1].setString("<q>:     quit application");
                 break;
              case State::Recording:
-                t.setString("Recording in progress ...");
+                lines[0].setString("Recording in progress ...");
+                word_sw_.mark();
+                lines[2].setString(word_sw_.total_elapse_hr());
                 break;
              case State::ReadName:
                 {
-                    t.setString("Type the word you just recorded");
-                    sf::Text word(word_str_, font_); word.setPosition(x, word.getCharacterSize());
-                    r.region.draw(word);
+                    lines[0].setString("Type the word you just recorded");
+                    lines[1].setString(" <enter>:  accept word");
+                    lines[2].setString(" <escape>: drop word");
+                    lines[3].setString(word_str_);
                 }
                 break;
-       }
-        r.region.draw(t);
+        }
+        for (const auto &line: lines)
+            r.region.draw(line);
     }
     void App::sm_event(SM::State &s, const Error &err)
     {
