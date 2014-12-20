@@ -1,76 +1,76 @@
-#include "gubg/Testing.hpp"
+#include "catch/catch.hpp"
 #include "gubg/file/File.hpp"
 using namespace gubg::file;
 using namespace std;
 
 #define GUBG_MODULE "test"
 #include "gubg/log/begin.hpp"
-int main()
+TEST_CASE("Ctor", "[file]")
 {
-    TEST_TAG(FileTests);
+    SECTION("Default")
     {
-        TEST_TAG(Ctor);
-        {
-            File file;
-            TEST_EQ("", file.name());
-            TEST_EQ(File::Unknown, file.type());
-        }
-        {
-            File file("abc");
-            TEST_EQ("abc", file.name());
-            TEST_EQ(File::Unknown, file.type());
-        }
-        {
-            File file(string("abc"));
-            TEST_EQ("abc", file.name());
-            TEST_EQ(File::Unknown, file.type());
-        }
-        {
-            File file("abc", File::Regular);
-            TEST_EQ("abc", file.name());
-            TEST_EQ(File::Regular, file.type());
-        }
-        {
-            File file(string("abc"), File::Regular);
-            TEST_EQ("abc", file.name());
-            TEST_EQ(File::Regular, file.type());
-        }
-    }
-    {
-        TEST_TAG(Setters);
         File file;
-        file.setName("abc");
-        TEST_EQ("abc", file.name());
-        TEST_EQ(File::Unknown, file.type());
-        file.setType(File::Regular);
-        TEST_EQ(File::Regular, file.type());
-        file.setName("ABC").setType(File::Directory);
-        TEST_EQ("ABC", file.name());
-        file.setType(File::Directory);
+        REQUIRE(file.name().empty());
+        REQUIRE(File::Unknown == file.type());
     }
+    SECTION("From const char *")
     {
-        TEST_TAG(Append);
-        File file;
-        file << "a";
-        TEST_EQ("a", file.name());
-        file << "b";
-        TEST_EQ("a/b", file.name());
-        file << "/c";
-        TEST_EQ("a/b/c", file.name());
-        file << "";
-        TEST_EQ("a/b/c", file.name());
+        File file("abc");
+        REQUIRE(file.name() == "abc");
+        REQUIRE(File::Unknown == file.type());
     }
+    SECTION("From std::string")
     {
-        TEST_TAG(extension);
-        File f("a/b/c");
-        TEST_EQ("a/b/c", f.name());
-        f.setExtension("obj");
-        TEST_EQ("a/b/c.obj", f.name());
-        f.setExtension("obj");
-        TEST_EQ("a/b/c.obj", f.name());
-        f.setExtension("obj2");
-        TEST_EQ("a/b/c.obj2", f.name());
+        File file(string("abc"));
+        REQUIRE(file.name() == "abc");
+        REQUIRE(File::Unknown == file.type());
     }
-    return 0;
+    SECTION("From const char * with type")
+    {
+        File file("abc", File::Regular);
+        REQUIRE(file.name() == "abc");
+        REQUIRE(File::Regular == file.type());
+    }
+    SECTION("From std::string with type")
+    {
+        File file(string("abc"), File::Regular);
+        REQUIRE(file.name() == "abc");
+        REQUIRE(File::Regular == file.type());
+    }
+}
+TEST_CASE("Setters", "[file]")
+{
+    File file;
+    file.setName("abc");
+    REQUIRE(file.name() == "abc");
+    REQUIRE(File::Unknown == file.type());
+    file.setType(File::Regular);
+    REQUIRE(File::Regular == file.type());
+    file.setName("ABC").setType(File::Directory);
+    REQUIRE(file.name() == "ABC");
+    file.setType(File::Directory);
+}
+TEST_CASE("Append", "[file]")
+{
+    File file;
+    file << "a";
+    REQUIRE(file.name() == "a");
+    file << "b";
+    REQUIRE(file.name() == "a/b");
+    file << "/c";
+    REQUIRE(file.name() == "a/b/c");
+    file << "";
+    REQUIRE(file.name() =="a/b/c");
+}
+TEST_CASE("Extension", "[file]")
+{
+    File f("a/b/c");
+    REQUIRE(f.name() == "a/b/c");
+    f.setExtension("obj");
+    REQUIRE(f.name() == "a/b/c.obj");
+    f.setExtension("obj");
+    REQUIRE(f.name() == "a/b/c.obj");
+    f.setExtension("obj2");
+    REQUIRE(f.name() == "a/b/c.obj2");
 }
 #include "gubg/log/end.hpp"

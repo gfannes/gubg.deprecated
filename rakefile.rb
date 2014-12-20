@@ -13,6 +13,7 @@ end
 def os()
     case RUBY_PLATFORM
     when /mingw/ then :win
+    when /linux/ then :linux
     else nil end
 end
 fail("Could not guess os from #{RUBY_PLATFORM}") if os.nil?
@@ -51,7 +52,7 @@ namespace :sfml do
         Dir.chdir(sfml_dir) do
             mkdir "build" unless File.exist?("build")
             Dir.chdir("build") do
-                generator = {win: "-G \"Visual Studio 12 2013 Win64\""}[os]
+                generator = {win: "-G \"Visual Studio 12 2013 Win64\"", linux: ""}[os]
                 sh "cmake .. #{generator}"
                 case os
                 when :win
