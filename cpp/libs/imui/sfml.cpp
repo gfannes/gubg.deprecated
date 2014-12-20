@@ -18,11 +18,14 @@ namespace imui {
 
     void App::processEvents_()
     {
+        state_.keys.clear();
         sf::Event event;
         while (renderWindow_.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
                 renderWindow_.close();
+            if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
+                state_.keys.push_back(event);
         }
         state_.process(renderWindow_);
     }

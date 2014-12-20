@@ -62,7 +62,20 @@ TEST_CASE("Append", "[file]")
     file << "";
     REQUIRE(file.name() =="a/b/c");
 }
-TEST_CASE("Extension", "[file]")
+TEST_CASE("extension", "[file]")
+{
+    SECTION("With one dot")
+    {
+        File f("a.b");
+        REQUIRE(f.extension() == "b");
+    }
+    SECTION("With two dots")
+    {
+        File f("a.b.c");
+        REQUIRE(f.extension() == "c");
+    }
+}
+TEST_CASE("setExtension", "[file]")
 {
     File f("a/b/c");
     REQUIRE(f.name() == "a/b/c");

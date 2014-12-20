@@ -1,0 +1,2 @@
+#!/usr/bin/bash
+fff search.ext:cpp search.ext:hpp search.ext:c search.ext:h search.ext:rb search $1 $2 $3 $4
