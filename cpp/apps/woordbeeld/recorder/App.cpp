@@ -8,15 +8,16 @@ namespace recorder {
         imui::App(640, 480, "Woordbeeld recorder"),
         sm_(*this)
     {
+        sm_.process(DoInit{});
     }
 
     void App::render(const imui::Region &region)
     {
-        sm_.process(Tick{});
         for (auto evt: region.keys())
             sm_.process(evt);
         for (auto evt: region.texts())
             sm_.process(Character{(int)evt.text.unicode});
+        sm_.process(Render{region});
     }
 
     void App::sm_enter(SM::State &s)
@@ -24,9 +25,12 @@ namespace recorder {
         S();L("Entering state " << (int)s());
         switch (s())
         {
-            case State::CheckHW:
+            case State::Init:
                 {
                     S();
+                    if (!font_.loadFromFile("anonymous_pro.ttf"))
+                        return error_("Font not found");
+                    L("Font was found");
                     if (!sf::SoundBufferRecorder::isAvailable())
                         return error_("No sound recorder found");
                     L("Recorder was found");
@@ -56,11 +60,8 @@ namespace recorder {
                 break;
         }
     }
-    void App::sm_event(SM::State &s, Tick)
+    void App::sm_event(SM::State &s, DoInit)
     {
-        switch (s())
-        {
-        }
     }
     void App::sm_event(SM::State &s, const imui::Event &evt)
     {
@@ -102,18 +103,49 @@ namespace recorder {
         switch (s())
         {
             case State::ReadName:
-                if (false) {}
-                else if (32 <= ch.ch and ch.ch <= 127)
                 {
-                    word_str_.push_back(ch.ch);
-                }
-                else if (ch.ch == 8)
-                {
-                    if (!word_str_.empty())
-                        word_str_.pop_back();
+                    const int backspace_char = 8;
+                    const int space_char = 32;
+                    const int first_valid_char = 32;
+                    const int last_valid_char = 126;
+                    if (false) {}
+                    else if (first_valid_char <= ch.ch and ch.ch <= last_valid_char)
+                    {
+                        const bool leading_space = (ch.ch == space_char and word_str_.empty());
+                        if (!leading_space)
+                            word_str_.push_back(ch.ch);
+                    }
+                    else if (ch.ch == backspace_char)
+                    {
+                        if (!word_str_.empty())
+                            word_str_.pop_back();
+                    }
                 }
                 break;
         }
+    }
+    void App::sm_event(SM::State &s, Render r)
+    {
+        sf::Text t; t.setFont(font_);
+        const int x = t.getCharacterSize()*0.5;
+        t.setPosition(x, 0);
+        switch (s())
+        {
+            case State::Idle:
+                t.setString("Press <space> to start recording");
+                break;
+             case State::Recording:
+                t.setString("Recording in progress ...");
+                break;
+             case State::ReadName:
+                {
+                    t.setString("Type the word you just recorded");
+                    sf::Text word(word_str_, font_); word.setPosition(x, word.getCharacterSize());
+                    r.region.draw(word);
+                }
+                break;
+       }
+        r.region.draw(t);
     }
     void App::sm_event(SM::State &s, const Error &err)
     {
