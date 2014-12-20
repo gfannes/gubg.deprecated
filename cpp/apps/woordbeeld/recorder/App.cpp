@@ -104,7 +104,8 @@ namespace recorder {
         switch (s())
         {
             case State::Idle:
-                quitASAP();
+                if (ch.ch == 'q')
+                    quitASAP();
                 break;
             case State::ReadName:
                 {
