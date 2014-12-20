@@ -9,7 +9,8 @@ namespace imui {
     class State
     {
         public:
-            Keys keys;
+            KeyEvents keys;
+            TextEvents texts;
             const Vector2 &mouse() const {return mouse_;}
 
             void process(const sf::RenderWindow &);

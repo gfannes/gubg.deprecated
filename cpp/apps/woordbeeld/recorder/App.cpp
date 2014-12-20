@@ -15,6 +15,8 @@ namespace recorder {
         sm_.process(Tick{});
         for (auto evt: region.keys())
             sm_.process(evt);
+        for (auto evt: region.texts())
+            sm_.process(Character{(int)evt.text.unicode});
     }
 
     void App::sm_enter(SM::State &s)
@@ -54,6 +56,12 @@ namespace recorder {
                 break;
         }
     }
+    void App::sm_event(SM::State &s, Tick)
+    {
+        switch (s())
+        {
+        }
+    }
     void App::sm_event(SM::State &s, const imui::Event &evt)
     {
         typedef sf::Keyboard::Key Key;
@@ -85,18 +93,26 @@ namespace recorder {
                     {
                         s.changeTo(State::Idle);
                     }
-                    else if (Key::A <= code and code <= Key::Z)
-                    {
-                        word_str_.push_back('a'+code);
-                    }
                 }
                 break;
         }
     }
-    void App::sm_event(SM::State &s, Tick)
+    void App::sm_event(SM::State &s, const Character &ch)
     {
         switch (s())
         {
+            case State::ReadName:
+                if (false) {}
+                else if (32 <= ch.ch and ch.ch <= 127)
+                {
+                    word_str_.push_back(ch.ch);
+                }
+                else if (ch.ch == 8)
+                {
+                    if (!word_str_.empty())
+                        word_str_.pop_back();
+                }
+                break;
         }
     }
     void App::sm_event(SM::State &s, const Error &err)

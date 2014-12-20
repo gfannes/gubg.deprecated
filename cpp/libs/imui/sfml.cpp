@@ -19,6 +19,7 @@ namespace imui {
     void App::processEvents_()
     {
         state_.keys.clear();
+        state_.texts.clear();
         sf::Event event;
         while (renderWindow_.pollEvent(event))
         {
@@ -26,6 +27,8 @@ namespace imui {
                 renderWindow_.close();
             if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
                 state_.keys.push_back(event);
+            if (event.type == sf::Event::TextEntered)
+                state_.texts.push_back(event);
         }
         state_.process(renderWindow_);
     }

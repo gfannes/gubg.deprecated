@@ -18,9 +18,11 @@ namespace recorder {
             SM sm_;
             void sm_enter(SM::State &);
             void sm_exit(State);
-            void sm_event(SM::State &, const imui::Event &);
             DATA_EVENT(Tick);
             void sm_event(SM::State &, Tick);
+            void sm_event(SM::State &, const imui::Event &);
+            DATA_EVENT(Character, int, ch);
+            void sm_event(SM::State &, const Character &);
             DATA_EVENT(Error, std::string, msg);
             void sm_event(SM::State &, const Error &);
             void error_(const std::string &);

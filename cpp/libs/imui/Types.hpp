@@ -11,7 +11,8 @@ namespace imui {
     typedef sf::Vector2f Vector2;
     typedef sf::FloatRect Rect;
     typedef sf::Event Event;
-    typedef std::vector<Event> Keys;
+    typedef std::vector<Event> KeyEvents;
+    typedef std::vector<Event> TextEvents;
 
 } 
 

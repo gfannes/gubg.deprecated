@@ -15,7 +15,8 @@ namespace imui {
             float width() const;
             float height() const;
             const Vector2 &mouse() const {return state_.mouse();}
-            const Keys &keys() const {return state_.keys;}
+            const KeyEvents &keys() const {return state_.keys;}
+            const TextEvents &texts() const {return state_.texts;}
 
             bool isMouseInside() const;
 
