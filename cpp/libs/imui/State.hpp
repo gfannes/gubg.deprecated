@@ -36,6 +36,8 @@ namespace imui {
             State(const State &);
             State &operator=(const State &);
 
+            //We collect _all_ hot ids for one render operation; if widgets overlap, we will
+            //take the last drawn (ie, hot_ids_.back())
             typedef std::vector<WidgetId> WidgetIds;
             mutable WidgetIds hot_ids_;
             WidgetId hot_id_;

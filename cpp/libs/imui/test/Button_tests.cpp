@@ -24,7 +24,7 @@ class App: public imui::App
             }
             for (int ix = 0; ix < 5; ++ix)
             {
-                Button b(r, IMUI_ID_IX(ix)); b.setPosition(Vector2{ix*50+50, 200}).setSize(Vector2{30, 30});
+                Button b(r, IMUI_ID_IX(ix)); b.setPosition(Vector2{ix*50+50, 200}).setSize(Vector2{70, 70});
                 switch (b())
                 {
                     case Event::Clicked:
