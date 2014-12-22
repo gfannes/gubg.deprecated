@@ -1,4 +1,5 @@
 #include "recorder/App.hpp"
+#include <array>
 
 #define GUBG_MODULE_ "App"
 #include "gubg/log/begin.hpp"
@@ -114,9 +115,9 @@ namespace recorder {
                     const int first_valid_char = 32;
                     const int last_valid_char = 126;
                     if (false) {}
-                    else if (first_valid_char <= ch.ch and ch.ch <= last_valid_char)
+                    else if (first_valid_char <= ch.ch && ch.ch <= last_valid_char)
                     {
-                        const bool leading_space = (ch.ch == space_char and word_str_.empty());
+                        const bool leading_space = (ch.ch == space_char && word_str_.empty());
                         if (!leading_space)
                             word_str_.push_back(ch.ch);
                     }
