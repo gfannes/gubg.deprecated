@@ -1,5 +1,5 @@
-#ifndef HEADER_imui_sfml_hpp_ALREADY_INCLUDED
-#define HEADER_imui_sfml_hpp_ALREADY_INCLUDED
+#ifndef HEADER_imui_App_hpp_ALREADY_INCLUDED
+#define HEADER_imui_App_hpp_ALREADY_INCLUDED
 
 #include "imui/Region.hpp"
 #include "imui/State.hpp"
@@ -14,6 +14,7 @@ namespace imui {
         public:
             App(size_t width, size_t height, const std::string &caption);
 
+            //Keep processing until false
             bool operator()();
 
         protected:

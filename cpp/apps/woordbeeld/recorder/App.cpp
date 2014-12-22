@@ -65,25 +65,26 @@ namespace recorder {
     void App::sm_event(SM::State &s, DoInit)
     {
     }
-    void App::sm_event(SM::State &s, const imui::Event &evt)
+    void App::sm_event(SM::State &s, const imui::backend::Event &evt)
     {
         typedef sf::Keyboard::Key Key;
+        typedef imui::backend::Event Event;
         switch (s())
         {
             case State::Idle:
                 if (evt.key.code != Key::Space)
                     return;
-                if (evt.type == sf::Event::KeyPressed)
+                if (evt.type == Event::KeyPressed)
                     s.changeTo(State::Recording);
                 break;
             case State::Recording:
                 if (evt.key.code != Key::Space)
                     return;
-                if (evt.type == sf::Event::KeyReleased)
+                if (evt.type == Event::KeyReleased)
                     s.changeTo(State::ReadName);
                 break;
             case State::ReadName:
-                if (evt.type == sf::Event::KeyPressed)
+                if (evt.type == Event::KeyPressed)
                 {
                     const auto code = evt.key.code;
                     if (false) {}

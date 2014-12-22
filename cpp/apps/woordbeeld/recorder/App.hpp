@@ -3,7 +3,7 @@
 
 #include "gubg/StateMachine.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
-#include "imui/sfml.hpp"
+#include "imui/App.hpp"
 #include "imui/Region.hpp"
 #include "SFML/Audio/SoundBufferRecorder.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -25,7 +25,7 @@ namespace recorder {
             void sm_exit(State);
             DATA_EVENT(DoInit);
             void sm_event(SM::State &, DoInit);
-            void sm_event(SM::State &, const imui::Event &);
+            void sm_event(SM::State &, const imui::backend::Event &);
             DATA_EVENT(Character, int, ch);
             void sm_event(SM::State &, const Character &);
             DATA_EVENT(Render, const imui::Region &, region);

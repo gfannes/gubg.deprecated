@@ -10,13 +10,14 @@ namespace imui {
     class Region
     {
         public:
+            const State &state;
+
             Region(const Rect &rect, const State &state, sf::RenderWindow &rw);
 
             float width() const;
             float height() const;
-            const Vector2 &mouse() const {return state_.mouse();}
-            const KeyEvents &keys() const {return state_.keys;}
-            const TextEvents &texts() const {return state_.texts;}
+            const backend::KeyEvents &keys() const {return state.keys;}
+            const backend::TextEvents &texts() const {return state.texts;}
 
             bool isMouseInside() const;
 
@@ -28,7 +29,6 @@ namespace imui {
 
         private:
             const Rect rect_;
-            const State &state_;
             sf::RenderWindow &rw_;
     };
 

@@ -2,21 +2,43 @@
 #define HEADER_imui_State_hpp_ALREADY_INCLUDED
 
 #include "imui/Types.hpp"
+#include "imui/WidgetId.hpp"
 #include "SFML/Graphics.hpp"
+#include <vector>
 
 namespace imui { 
 
     class State
     {
         public:
-            KeyEvents keys;
-            TextEvents texts;
-            const Vector2 &mouse() const {return mouse_;}
+            backend::KeyEvents keys;
+            backend::TextEvents texts;
+
+            struct Mouse
+            {
+                bool left_button = false;
+                bool right_button = false;
+                bool left_clicked = false;
+                bool right_clicked = false;
+                Vector2 position;
+            };
+            Mouse mouse;
+
+            State(){}
 
             void process(const sf::RenderWindow &);
 
+            void setHot(const WidgetId &id) const;
+            bool isHot(const WidgetId &id) const;
+
         private:
-            Vector2 mouse_;
+            //No copying
+            State(const State &);
+            State &operator=(const State &);
+
+            typedef std::vector<WidgetId> WidgetIds;
+            mutable WidgetIds hot_ids_;
+            WidgetId hot_id_;
     };
 
 } 

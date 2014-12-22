@@ -1,4 +1,4 @@
-#include "imui/sfml.hpp"
+#include "imui/App.hpp"
 
 namespace imui { 
 
@@ -29,14 +29,14 @@ namespace imui {
         if (quitASAP_)
             renderWindow_.close();
 
-        sf::Event event;
+        backend::Event event;
         while (renderWindow_.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            if (event.type == backend::Event::Closed)
                 renderWindow_.close();
-            if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased)
+            if (event.type == backend::Event::KeyPressed || event.type == backend::Event::KeyReleased)
                 state_.keys.push_back(event);
-            if (event.type == sf::Event::TextEntered)
+            if (event.type == backend::Event::TextEntered)
                 state_.texts.push_back(event);
         }
         state_.process(renderWindow_);

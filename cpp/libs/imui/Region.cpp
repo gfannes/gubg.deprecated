@@ -5,7 +5,7 @@
 namespace imui { 
 
     Region::Region(const Rect &rect, const State &state, sf::RenderWindow &rw)
-        :rect_(rect), state_(state), rw_(rw)
+        :rect_(rect), state(state), rw_(rw)
     {
     }
 
@@ -14,20 +14,20 @@ namespace imui {
 
     bool Region::isMouseInside() const
     {
-        return rect_.contains(state_.mouse());
+        return rect_.contains(state.mouse.position);
     }
 
     Region Region::sub(float x, float y, float w, float h) const
     {
         sf::FloatRect rect;
         rect_.intersects(Rect(x+rect_.left, y+rect_.top, w, h), rect);
-        return Region(rect, state_, rw_);
+        return Region(rect, state, rw_);
     }
     Region Region::sub(const Vector2 &pos, const Vector2 &size) const
     {
         sf::FloatRect rect;
         rect_.intersects(Rect(pos + Vector2{rect_.left, rect_.top}, size), rect);
-        return Region(rect, state_, rw_);
+        return Region(rect, state, rw_);
     }
 
 } 
