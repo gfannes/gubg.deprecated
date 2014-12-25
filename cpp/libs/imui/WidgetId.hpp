@@ -10,7 +10,7 @@ namespace imui {
     {
         public:
             WidgetId();
-            WidgetId(const char *file, size_t line, size_t ix);
+            WidgetId(const char *file, int line, int ix);
 
             bool operator==(const WidgetId &) const;
 
@@ -21,8 +21,8 @@ namespace imui {
 
         private:
             const char *file_ = nullptr;
-            size_t line_ = 0;
-            size_t ix_ = 0;
+            int line_ = 0;
+            int ix_ = 0;
     };
 #define IMUI_ID_IX(ix) WidgetId{__FILE__, __LINE__, ix}
 #define IMUI_ID() IMUI_ID_IX(0)

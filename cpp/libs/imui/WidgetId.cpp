@@ -5,7 +5,7 @@ namespace imui {
     WidgetId::WidgetId()
     {
     }
-    WidgetId::WidgetId(const char *file, size_t line, size_t ix): file_(file), line_(line), ix_(ix)
+    WidgetId::WidgetId(const char *file, int line, int ix): file_(file), line_(line), ix_(ix)
     {
     }
     bool WidgetId::operator==(const WidgetId &rhs) const

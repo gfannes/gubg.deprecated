@@ -68,7 +68,23 @@ namespace gubg
 
             void ltrim(const char ch);
 
+            bool popLSB(std::uint8_t &);
+            bool popLSB(std::uint16_t &);
+            bool popLSB(std::uint32_t &);
+            bool popLSB(std::uint64_t &);
+
+            bool popMSB(std::uint8_t &);
+            bool popMSB(std::uint16_t &);
+            bool popMSB(std::uint32_t &);
+            bool popMSB(std::uint64_t &);
+
+            bool popRaw(char *dst, size_t nr);
+
         private:
+            template <typename T>
+                bool popLSB_(T &);
+            template <typename T>
+                bool popMSB_(T &);
             bool invariants_() const;
             void forward_(const size_t nr);
             void shrink_(const size_t nr);

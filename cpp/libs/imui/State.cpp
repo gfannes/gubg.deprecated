@@ -1,4 +1,5 @@
 #include "imui/State.hpp"
+#include "imui/Stream.hpp"
 #include "SFML/Graphics.hpp"
 
 #define GUBG_MODULE "State"
@@ -9,8 +10,9 @@ namespace imui {
     {
         S();
         {
-            auto pos = rw.getPosition();
-            mouse.position = Vector2(sf::Mouse::getPosition()-pos);
+            const auto window_pos = rw.getPosition();
+            const auto mouse_pos = sf::Mouse::getPosition();
+            mouse.position = Vector2(mouse_pos-window_pos);
         }
         {
             const bool lb = sf::Mouse::isButtonPressed(sf::Mouse::Left);
