@@ -309,30 +309,81 @@ namespace gubg {
 		return true;
 	}
 
-	void Strange::ltrim(const char ch)
-	{
-		while (!empty() and ch == front())
-			popFront();
-	}
+    template <typename T>
+        bool Strange::popLSB_(T &v)
+        {
+            assert(invariants_());
+            if (l_ < sizeof(v))
+                return false;
+            for (int i = 0; i < sizeof(v); ++i)
+            {
+                T tmp = *(const T *)(s_+i);
+                tmp <<= i*8;
+                v |= tmp;
+            }
+            forward_(sizeof(v));
+            return true;
+        }
+    bool Strange::popLSB(std::uint8_t &v)  { return popLSB_(v); }
+    bool Strange::popLSB(std::uint16_t &v) { return popLSB_(v); }
+    bool Strange::popLSB(std::uint32_t &v) { return popLSB_(v); }
+    bool Strange::popLSB(std::uint64_t &v) { return popLSB_(v); }
 
-	//Privates
-	bool Strange::invariants_() const
-	{
-		if (!s_ && l_)
-			return false;
-		return true;
-	}
-	void Strange::forward_(const size_t nr)
-	{
-		assert(nr <= l_);
-		l_ -= nr;
-		s_ += nr;
-	}
-	void Strange::shrink_(const size_t nr)
-	{
-		assert(nr <= l_);
-		l_ -= nr;
-	}
+    template <typename T>
+        bool Strange::popMSB_(T &v)
+        {
+            assert(invariants_());
+            if (l_ < sizeof(v))
+                return false;
+            v = 0;
+            for (int i = 0; i < sizeof(v); ++i)
+            {
+                v <<= 8;
+                v |= *(std::uint8_t*)(s_+i);
+            }
+            forward_(sizeof(v));
+            return true;
+        }
+    bool Strange::popMSB(std::uint8_t &v)  { return popMSB_(v); }
+    bool Strange::popMSB(std::uint16_t &v) { return popMSB_(v); }
+    bool Strange::popMSB(std::uint32_t &v) { return popMSB_(v); }
+    bool Strange::popMSB(std::uint64_t &v) { return popMSB_(v); }
+
+    bool Strange::popRaw(char *dst, size_t nr)
+    {
+        if (!dst)
+            return false;
+        if (l_ < nr)
+            return false;
+        std::memcpy(dst, s_, nr);
+        forward_(nr);
+        return true;
+    }
+
+    void Strange::ltrim(const char ch)
+    {
+        while (!empty() and ch == front())
+            popFront();
+    }
+
+    //Privates
+    bool Strange::invariants_() const
+    {
+        if (!s_ && l_)
+            return false;
+        return true;
+    }
+    void Strange::forward_(const size_t nr)
+    {
+        assert(nr <= l_);
+        l_ -= nr;
+        s_ += nr;
+    }
+    void Strange::shrink_(const size_t nr)
+    {
+        assert(nr <= l_);
+        l_ -= nr;
+    }
 
 } 
 #include "gubg/log/end.hpp"

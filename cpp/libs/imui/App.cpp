@@ -1,5 +1,7 @@
 #include "imui/App.hpp"
 
+#define GUBG_MODULE_ "App"
+#include "gubg/log/begin.hpp"
 namespace imui { 
 
     App::App(size_t width, size_t height, const std::string &caption)
@@ -54,3 +56,4 @@ namespace imui {
     }
 
 } 
+#include "gubg/log/end.hpp"

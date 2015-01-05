@@ -20,7 +20,7 @@ namespace player {
             App();
             void render(const imui::Region &) override;
         private:
-            enum class State {Init, Idle, ReadName, Error};
+            enum class State {Init, Idle, PlayingWord, CheckingLettersKnown, ReadLetters, SpellLetters, Wrong, Error};
             typedef gubg::StateMachine_ftop<App, State, State::Init> SM;
             friend SM;
             SM sm_;
@@ -42,9 +42,19 @@ namespace player {
             Files word_fns_;
 
             sf::SoundBuffer word_sound_;
+            std::string wanted_word_str_;
             std::string word_str_;
             sf::Sound sound_;
-            gubg::chrono::Stopwatch<> word_sw_;
+            gubg::chrono::Stopwatch<> idle_sw_;
+            gubg::chrono::Stopwatch<> wrong_sw_;
+
+            struct Stats
+            {
+                int ok = 0;
+                int ko = 0;
+                int refused = 0;
+            };
+            Stats stats_;
 
             std::string error_msg_;
 
