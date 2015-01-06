@@ -58,6 +58,13 @@ namespace gubg { namespace file {
                 auto ix = name_.rfind(Delimiter);
                 return name_.substr((ix == std::string::npos ? 0 : ix+1));
             }
+            Name basename(const std::string &ext) const
+            {
+                auto bn = basename();
+                if (ext == extension() && !ext.empty())
+                    bn = bn.substr(0, bn.size()-ext.size()-1);
+                return bn;
+            }
 
             //Setters
             File &setName(const Name & name){name_ = name;            canonicalize_(); return *this;}

@@ -134,7 +134,7 @@ namespace recorder {
     void App::sm_event(SM::State &s, Render r)
     {
         const int char_size = 30;
-        const int nr_lines = 4;
+        const int nr_lines = 6;
         const int dy = font_.getLineSpacing(char_size);
         const int x = 0.5*dy;
         std::array<sf::Text, nr_lines> lines;
@@ -157,9 +157,9 @@ namespace recorder {
              case State::ReadName:
                 {
                     lines[0].setString("Type the word you just recorded");
-                    lines[1].setString(" <enter>:  accept word");
-                    lines[2].setString(" <escape>: drop word");
-                    lines[3].setString(word_str_);
+                    lines[2].setString(word_str_);
+                    lines[4].setString(" <enter>:  accept word");
+                    lines[5].setString(" <escape>: drop word");
                 }
                 break;
         }

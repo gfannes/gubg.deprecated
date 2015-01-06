@@ -40,6 +40,7 @@ lib_dir = ENV["GUBG_LIB"]
 directory sdks_dir
 namespace :sfml do
     sfml_dir = "#{sdks_dir}/SFML"
+    sfml_build_dir = "#{sdks_dir}/SFML/build"
     task :clean do
         rm_rf sfml_dir
     end
@@ -49,23 +50,21 @@ namespace :sfml do
         end
     end
     task :build => sfml_dir do
-        Dir.chdir(sfml_dir) do
-            mkdir "build" unless File.exist?("build")
-            Dir.chdir("build") do
-                generator = {win: "-G \"Visual Studio 12 2013 Win64\"", linux: ""}[os]
-                sh "cmake .. #{generator}"
-                case os
-                when :win
-                    fail("Could not find solution") unless File.exist?("SFML.sln")
-                    sh "msbuild /p:Platform=x64 /p:Configuration=Release SFML.sln /t:Build"
-                else
-                    sh "make"
-                end
+        mkdir sfml_build_dir unless File.exist?(sfml_build_dir)
+        Dir.chdir(sfml_build_dir) do
+            generator = {win: "-G \"Visual Studio 12 2013 Win64\"", linux: ""}[os]
+            sh "cmake .. #{generator}"
+            case os
+            when :win
+                fail("Could not find solution") unless File.exist?("SFML.sln")
+                sh "msbuild /p:Platform=x64 /p:Configuration=Release SFML.sln /t:Build"
+            else
+                sh "make"
             end
         end
     end
-    task :install => sfml_dir do
-        Dir.chdir(sfml_dir) do
+    task :install => sfml_build_dir do
+        Dir.chdir(sfml_build_dir) do
             if File.exist?("build/SFML.sln")
                 cp FileList["build/lib/Release/*.dll"], bin_dir
                 cp FileList["build/lib/Release/*.lib"], lib_dir

@@ -2,7 +2,7 @@
 #include "imui/Stream.hpp"
 #include "SFML/Graphics.hpp"
 
-#define GUBG_MODULE "State"
+#define GUBG_MODULE_ "State"
 #include "gubg/log/begin.hpp"
 namespace imui { 
 
@@ -10,7 +10,11 @@ namespace imui {
     {
         S();
         {
-            const auto window_pos = rw.getPosition();
+            auto pos = rw.getPosition();
+            L(pos);
+        }
+        {
+            const auto window_pos = rw.getClientAreaPosition();
             const auto mouse_pos = sf::Mouse::getPosition();
             mouse.position = Vector2(mouse_pos-window_pos);
             mouse.position = Vector2(sf::Mouse::getPosition(rw));
