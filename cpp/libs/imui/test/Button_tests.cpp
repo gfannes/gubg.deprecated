@@ -40,8 +40,8 @@ class App: public imui::App
 
 int main()
 {
-    App app;
-    while (app())
+    App app, app2;
+    while (app() && app2())
     {
     }
     return 0;
