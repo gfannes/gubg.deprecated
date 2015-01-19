@@ -12,6 +12,9 @@ This software package implements general functionality:
 
 ## Getting started ##
 
+### Linux ###
+
+* Install rake
 * Clone/extract the gubg repo somewhere
 
 ```bash
@@ -24,6 +27,22 @@ git clone https://github.com/gfannes/gubg
 export $GUBG=$HOME/gubg
 . $GUBG/bash/bash.sh
 ```
+
+* Build fff
+
+```bash
+cd $GUBG
+rake fff
+```
+
+### Windows ###
+
+* Install [MSYS2](https://msys2.github.io/)
+* Install rake
+```bash
+pacman -S rake
+```
+* Follow the rest of the linux procedure
 
 ## Languages ##
 

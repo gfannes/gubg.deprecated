@@ -46,7 +46,7 @@ namespace :sfml do
     end
     file sfml_dir => sdks_dir do
         Dir.chdir(sdks_dir) do
-            sh "git clone -b master https://github.com/gfannes/SFML"
+            sh "git clone -b master https://github.com/LaurentGomila/SFML"
         end
     end
     task :build => sfml_dir do

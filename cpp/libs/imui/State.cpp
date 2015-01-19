@@ -10,14 +10,8 @@ namespace imui {
     {
         S();
         {
-            auto pos = rw.getPosition();
-            L(pos);
-        }
-        {
-            const auto window_pos = rw.getClientAreaPosition();
-            const auto mouse_pos = sf::Mouse::getPosition();
-            mouse.position = Vector2(mouse_pos-window_pos);
             mouse.position = Vector2(sf::Mouse::getPosition(rw));
+            L(mouse.position);
         }
         {
             const bool lb = sf::Mouse::isButtonPressed(sf::Mouse::Left);
