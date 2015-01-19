@@ -7,7 +7,11 @@ echo "== Configuring packages"
 . $GUBG_BASH/nana.sh
 . $GUBG_BASH/decode-it.sh
 echo "== Loading personal settings"
-. $GUBG_BASH/personal.$USER.sh
+if [ ! $GUBG_BASH/personal.$USER.sh ];then
+	. $GUBG_BASH/personal.$USER.sh
+else
+	. $GUBG_BASH/personal.default.sh
+fi
 #alias g="gvim -u $GUBG/vim/config.linux.vim --remote-tab-silent "
 #alias g="gvim --remote-tab-silent "
 export SDKS=$HOME/sdks

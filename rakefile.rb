@@ -25,6 +25,12 @@ CLEAN.include(FileList["**/*.o"])
 CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])
 
+build_dir = ENV["GUBG_BUILD"]
+raise("You have to define GUBG_BUILD, the location where I can place my mojo") unless build_dir
+directory build_dir
+sdks_dir = ENV["GUBG_SDKS"] || File.expand_path("sdks", build_dir)
+directory sdks_dir
+
 #fff
 task :fff do
     Dir.chdir("cpp/apps/fff") do
@@ -32,12 +38,6 @@ task :fff do
     end
 end
 
-sdks_dir = ENV["GUBG_SDKS"]
-bin_dir = ENV["GUBG_BIN"]
-inc_dir = ENV["GUBG_INC"]
-lib_dir = ENV["GUBG_LIB"]
-
-directory sdks_dir
 namespace :sfml do
     sfml_dir = "#{sdks_dir}/SFML"
     sfml_build_dir = "#{sdks_dir}/SFML/build"
