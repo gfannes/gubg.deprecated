@@ -14,12 +14,15 @@ This software package implements general functionality:
 
 * Clone/extract the gubg repo somewhere
 * Export GUBG to this dir and source bash.sh, e.g.:
-** export $GUBG=$HOME/gubg
-** . $GUBG/bash/bash.sh
+
+```bash
+export $GUBG=$HOME/gubg
+. $GUBG/bash/bash.sh
+```
 
 ## Languages ##
 
-* [C++](http://cppreference.org): Current development is mainly for C++. Some of the earlier code was also written in C++, after some experimentation with D and D2, all effort is back on C++.
+* [C++](http://cppreference.com): Current development is mainly for C++. Some of the earlier code was also written in C++, after some experimentation with D and D2, all effort is back on C++.
 * [Rust](http://rust-lang.org) seems very interesting
 * [Ruby](http://ruby-lang.org): Great for doing various things
 * [D](http://www.digitalmars.com/d) seemed great at the time, but it is not part of the plan anymore
