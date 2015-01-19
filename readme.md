@@ -13,7 +13,12 @@ This software package implements general functionality:
 ## Getting started ##
 
 * Clone/extract the gubg repo somewhere
-* Export GUBG to this dir and source bash.sh, e.g.:
+
+```bash
+git clone https://github.com/gfannes/gubg
+```
+
+* Export GUBG to this dir and source bash/bash.sh from your .bashrc, e.g. by appending to following at the bottom of .bashrc:
 
 ```bash
 export $GUBG=$HOME/gubg
