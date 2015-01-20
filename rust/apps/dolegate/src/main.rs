@@ -23,7 +23,7 @@ fn main()
 	let window = Sdl2Window::new(
 		opengl,
 		WindowSettings {
-			title: "Dolegate".to_string(),
+			title: "Dolegate, wishful thinking for the masses".to_string(),
 			size: [1180, 580],
 			fullscreen: false,
 			exit_on_esc: true,
@@ -31,7 +31,7 @@ fn main()
 		}
 		);
 	let window_ref = RefCell::new(window);
-	//Uses quack::Set
+	//Uses quack::Set. Ups are the updates/s.
 	let mut event_iter = Events::new(&window_ref).set(Ups(180)).set(MaxFps(60));
 	let mut gl = Gl::new(opengl);
 	let font_path = Path::new("./assets/Anonymous_Pro.ttf");
@@ -53,4 +53,5 @@ fn main()
 fn draw_ui(gl: &mut Gl, uic: &mut UiContext)
 {
 	uic.background().color(Color::black()).draw(gl);	
+	uic.label("Wishful thinking").position(30.0, 30.0).size(48u32).color(Color::white()).draw(gl);
 }
