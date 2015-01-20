@@ -1,0 +1,23 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "cpp/libs/gubg",
+			"name": "gubg_cpp"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "cpp/apps/fff",
+			"name": "fff"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "rust"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "ruby"
+		}
+	]
+}

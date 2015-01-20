@@ -30,11 +30,26 @@ raise("You have to define GUBG_BUILD, the location where I can place my mojo") u
 directory build_dir
 sdks_dir = ENV["GUBG_SDKS"] || File.expand_path("sdks", build_dir)
 directory sdks_dir
+bin_dir = ENV["GUBG_BIN"] || File.expand_path("bin", build_dir)
+directory bin_dir
 
 #fff
 task :fff do
     Dir.chdir("cpp/apps/fff") do
         sh "rake clean fff self"
+    end
+end
+
+#git_tools
+task :git_tools do
+    bash = "\#!"+`which bash`
+    Dir.chdir(bin_dir) do
+        File.open("qs", "w"){|fo|fo.puts(bash);fo.puts("git status")}
+        File.chmod(0755, "qs")
+        File.open("qd", "w"){|fo|fo.puts(bash);fo.puts("git diff")}
+        File.chmod(0755, "qd")
+        File.open("qc", "w"){|fo|fo.puts(bash);fo.puts("git commit -a")}
+        File.chmod(0755, "qc")
     end
 end
 
