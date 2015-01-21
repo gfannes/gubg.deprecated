@@ -12,3 +12,4 @@
 *.rlib
 cpp/apps/da/da
 all.sublime-workspace
+build/

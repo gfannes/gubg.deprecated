@@ -41,7 +41,7 @@ task :fff do
 end
 
 #git_tools
-task :git_tools do
+task :git_tools => bin_dir do
     bash = "\#!"+`which bash`
     Dir.chdir(bin_dir) do
         File.open("qs", "w"){|fo|fo.puts(bash);fo.puts("git status")}
