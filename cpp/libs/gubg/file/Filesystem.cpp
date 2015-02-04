@@ -13,12 +13,18 @@
 #include <stdlib.h>
 #endif
 #ifdef GUBG_API_WIN32
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <errno.h>
+#include <direct.h>
 #include "Windows.h"
 #endif
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE "Filesystem"
+#define GUBG_MODULE_ "Filesystem"
 #include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)
@@ -132,7 +138,21 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
         }
     }
 #else
-    MSS_L(NotImplemented);
+    HANDLE hFind;
+    WIN32_FIND_DATA FindFileData;
+
+    File pattern(file); pattern << "*";
+    if ((hFind = FindFirstFile(pattern.name().c_str(), &FindFileData)) != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            File f(file); f << FindFileData.cFileName;
+		    if (mss::isOK(determineType(f)))
+			    files.push_back(f);
+        }
+        while (FindNextFile(hFind, &FindFileData));
+        FindClose(hFind);
+    }
 #endif
     MSS_END();
 }
@@ -165,7 +185,11 @@ ReturnCode gubg::file::copy(const File &from, const File &to)
 ReturnCode gubg::file::determineType(File &file)
 {
     MSS_BEGIN(ReturnCode);
+#ifdef _MSC_VER
+    struct _stat statbuf;
+#else
     struct stat statbuf;
+#endif
 #ifdef GUBG_API_LINUX
     auto res = ::lstat(file.name().c_str(), &statbuf);
 #else
@@ -185,8 +209,8 @@ ReturnCode gubg::file::determineType(File &file)
     {
         case S_IFREG: file.setType(File::Regular); break;
         case S_IFDIR: file.setType(File::Directory); break;
-        case S_IFIFO: file.setType(File::FIFO); break;
 #ifdef GUBG_API_LINUX
+        case S_IFIFO: file.setType(File::FIFO); break;
         case S_IFLNK: file.setType(File::Symbolic); break;
 #endif
         default: MSS_L(UnknownFileType); break;
@@ -197,13 +221,18 @@ ReturnCode gubg::file::determineType(File &file)
 ReturnCode gubg::file::resolve(File &file)
 {
     MSS_BEGIN(ReturnCode);
-    char buffer[PATH_MAX];
+#ifdef _MSC_VER
+    const size_t path_max = MAX_PATH;
+#else
+    const size_t path_max = PATH_MAX;
+#endif
+    char buffer[path_max];
 #ifdef GUBG_API_LINUX
     MSS(::realpath(file.name().c_str(), buffer));
 #endif
 #ifdef GUBG_API_WIN32
-	const auto len = ::GetFullPathName(file.name().c_str(), PATH_MAX, buffer, 0);
-    MSS(len < PATH_MAX);
+	const auto len = ::GetFullPathName(file.name().c_str(), path_max, buffer, 0);
+    MSS(len < path_max);
 #endif
     file.setName(buffer);
     MSS(determineType(file));
@@ -252,7 +281,11 @@ ReturnCode gubg::file::getcwd(File &file)
     MSS_BEGIN(ReturnCode);
     const size_t size = 4096;
     string cwd(size, '\0');
+#ifdef _MSC_VER
+    MSS(0 != _getcwd(&cwd[0], size), CouldNotGetCWD);
+#else
     MSS(0 != ::getcwd(&cwd[0], size), CouldNotGetCWD);
+#endif
     cwd.resize(strlen(&cwd[0]));
     file.setName(cwd);
     MSS(determineType(file));

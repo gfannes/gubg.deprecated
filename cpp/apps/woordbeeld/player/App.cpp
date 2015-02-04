@@ -1,5 +1,6 @@
 #include "player/App.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include <array>
 #include <algorithm>
 #include <random>
 #include <thread>
@@ -172,9 +173,9 @@ namespace player {
             case State::ReadLetters:
                 {
                     if (false) {}
-                    else if (first_valid_char <= ch.ch and ch.ch <= last_valid_char)
+                    else if (first_valid_char <= ch.ch && ch.ch <= last_valid_char)
                     {
-                        const bool leading_space = (ch.ch == space_char and word_str_.empty());
+                        const bool leading_space = (ch.ch == space_char && word_str_.empty());
                         if (!leading_space)
                             word_str_.insert(0, 1, ch.ch);
                     }
@@ -188,9 +189,9 @@ namespace player {
              case State::SpellLetters:
                 {
                     if (false) {}
-                    else if (first_valid_char <= ch.ch and ch.ch <= last_valid_char)
+                    else if (first_valid_char <= ch.ch && ch.ch <= last_valid_char)
                     {
-                        const bool leading_space = (ch.ch == space_char and word_str_.empty());
+                        const bool leading_space = (ch.ch == space_char && word_str_.empty());
                         if (!leading_space)
                             word_str_.push_back(ch.ch);
                     }
@@ -301,8 +302,9 @@ namespace player {
     {
         MSS_BEGIN(ReturnCode);
         using namespace gubg::file;
-        const File dir{"/home/gfannes/gubg/cpp/apps/woordbeeld/test_woorden"};
-        MSS(read(word_fns_, dir));
+        auto cwd = getcwd();
+        L(STREAM(cwd.name()));
+        MSS(read(word_fns_, getcwd()));
         auto new_end = std::remove_if(word_fns_.begin(), word_fns_.end(), [](const File &file){ return file.extension() != "ogg"; });
         word_fns_.erase(new_end, word_fns_.end());
         MSS_END();
