@@ -28,13 +28,13 @@ namespace gubg
 
                         MSS(!str.empty(), XMLEmpty);
                         str_ = str;
-                        while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
+                        while (str_.popCharIf('\n') || str_.popCharBackIf('\n') || str_.popCharIf('\r') || str_.popCharBackIf('\r')){}
                         path_.clear();
 
 						switch (const auto rc = readVersion_())
 						{
 							case ReturnCode::OK:
-								while (str_.popCharIf('\n') || str_.popCharBack('\n') || str_.popCharIf('\r') || str_.popCharBack('\r')){}
+								while (str_.popCharIf('\n') || str_.popCharBackIf('\n') || str_.popCharIf('\r') || str_.popCharBackIf('\r')){}
 								break;
 							case ReturnCode::NoVersionFound:
 								break;
@@ -144,14 +144,14 @@ namespace gubg
                             {
                                 //no attributes
                                 all.popAll(tag);
-                                if (tag.popCharBack('/'))
+                                if (tag.popCharBackIf('/'))
                                     flags |= Close;
                             }
                             else
                             {
                                 //attributes
                                 all.popAll(attr);
-                                if (attr.popCharBack('/'))
+                                if (attr.popCharBackIf('/'))
                                     flags |= Close;
                             }
                         }
