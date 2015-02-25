@@ -6,12 +6,19 @@
 #include <vector>
 #include <array>
 #include <tuple>
+#include <set>
 
 namespace gubg { namespace log {
 
     std::string hr(const double &d)
     {
         return std::to_string(d);
+    }
+    std::string hr(const std::string &str)
+    {
+        std::ostringstream oss;
+        oss << "\"" << str << "\"";
+        return oss.str();
     }
     template <typename T>
         std::string hr(const T &t)
@@ -26,8 +33,19 @@ namespace gubg { namespace log {
             std::ostringstream oss;
             oss << '{';
             OnlyOnce skipComma;
-            for (auto v: vec)
-                oss << (skipComma() ? "" : ", ") << v;
+            for (const auto &v: vec)
+                oss << (skipComma() ? "" : ", ") << hr(v);
+            oss << '}';
+            return oss.str();
+        }
+    template <typename T>
+        std::string hr(const std::set<T> &vec)
+        {
+            std::ostringstream oss;
+            oss << '{';
+            OnlyOnce skipComma;
+            for (const auto &v: vec)
+                oss << (skipComma() ? "" : ", ") << hr(v);
             oss << '}';
             return oss.str();
         }
@@ -38,8 +56,8 @@ namespace gubg { namespace log {
             std::ostringstream oss;
             oss << '{';
             OnlyOnce skipComma;
-            for (auto v: ary)
-                oss << (skipComma() ? "" : ", ") << v;
+            for (const auto &v: ary)
+                oss << (skipComma() ? "" : ", ") << hr(v);
             oss << '}';
             return oss.str();
         }

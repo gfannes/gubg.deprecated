@@ -8,7 +8,7 @@
 #include <string>
 #include <map>
 
-#define GUBG_MODULE_ "xml::Parser"
+#define GUBG_MODULE "xml::Parser"
 #include "gubg/log/begin.hpp"
 namespace gubg
 {
@@ -51,7 +51,7 @@ namespace gubg
                             {
                                 L(STREAM(text));
                                 std::string t;
-                                MSS(decode(t, text.str()));
+                                MSS(decode(t, text.str(), AllowQuote));
                                 receiver_().parser_text(t, path_);
                             }
 
@@ -62,6 +62,17 @@ namespace gubg
                                 {
                                     L(STREAM(comment));
                                     receiver_().parser_comment(comment.str(), path_);
+                                    continue;
+                                }
+                            }
+
+                            //Check for a CDATA
+                            {
+                                Strange cdata;
+                                if (MSS_IS_OK(readCDATA_(cdata)))
+                                {
+                                    L(STREAM(cdata));
+                                    receiver_().parser_text(cdata.str(), path_);
                                     continue;
                                 }
                             }
@@ -122,6 +133,13 @@ namespace gubg
                         MSS_BEGIN(ReturnCode);
                         MSS_Q(str_.popString("<!--"));
                         MSS(str_.popUntil(comment, "-->"));
+                        MSS_END();
+                    }
+                    ReturnCode readCDATA_(Strange &cdata)
+                    {
+                        MSS_BEGIN(ReturnCode);
+                        MSS_Q(str_.popString("<![CDATA["));
+                        MSS(str_.popUntil(cdata, "]]>"));
                         MSS_END();
                     }
                     ReturnCode readTag_(Strange &tag, Strange &attr, Flags &flags)

@@ -23,12 +23,17 @@ namespace pa
 			categoryName(catName)
 		{
 			using namespace gubg::planning;
-			planning.addWorker("gfa", 1.0);
-			planning.addWorker("wba", 0.4);
+			planning.addWorker("geertf", 0.8);
+			planning.addWorker("wimc", 0.8);
+			planning.addWorker("hermanh", 0.8);
+			planning.addWorker("emilev", 0.8);
+			planning.addWorker("ismaild", 0.8);
+			planning.addWorker("marnicr", 0.8);
 			for (auto d: workDays(1000))
 			{
 				planning.addDay(d);
 			}
+#if 0
 #ifdef PAST
 			for (auto d: dayRange(Day(2013, 7, 4), Day(2013, 7, 18)))
 				planning.absence("gfa", d);
@@ -74,6 +79,7 @@ namespace pa
 				planning.absence("gfa", d);
 				planning.absence("wba", d);
 			}
+#endif
 		}
 
 		ReturnCode run()

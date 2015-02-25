@@ -40,6 +40,14 @@ task :fff do
     end
 end
 
+#pa
+task :pa do
+    Dir.chdir("cpp/apps/pa") do
+        sh "fff pa.cpp norun"
+        cp("pa.exe", bin_dir)
+    end
+end
+
 #git_tools
 task :git_tools => bin_dir do
     bash = "\#!"+`which bash`

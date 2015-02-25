@@ -57,10 +57,11 @@ namespace pa
 			{
 				auto it = attrs.find("TEXT");
 				auto id = attrs.find("ID");
-				MSS(it != attrs.end() && id != attrs.end());
+				MSS(it != attrs.end());
 				L(it->second);
 				location.back()->desc = it->second;
-				location.back()->id = id->second;
+                if (id != attrs.end())
+                    location.back()->id = id->second;
 			}
 			if (path.back() == "attribute")
 			{
@@ -83,7 +84,7 @@ namespace pa
 						gubg::Strange strange(v->second);
 						MSS(strange.popFloat(location.back()->value));
 					}
-					L("Detected " << value << " for " << location.back()->desc << ": " << location.back()->value);
+					L("Detected value " << value << " for " << location.back()->desc << ": " << location.back()->value);
 				}
 				else if (n->second == fraction)
 				{
@@ -101,14 +102,14 @@ namespace pa
 						gubg::Strange strange(v->second);
 						MSS(strange.popFloat(location.back()->fraction));
 					}
-					L("Detected " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
+					L("Detected fraction " << fraction << " for " << location.back()->desc << ": " << location.back()->fraction);
 				}
 				else
 				{
 					//General attribute
 					MSS(!location.empty());
 					location.back()->attributes[n->second] = v->second;
-					L("Detected " << n->second << " for " << location.back()->desc << ": " << v->second);
+					L("Detected something else " << n->second << " for " << location.back()->desc << ": " << v->second);
 				}
 			}
 			MSS_END();
@@ -139,6 +140,7 @@ namespace
 		template <typename Path>
 			bool open(Node &n, Path &p) const
 			{
+                SS(n.desc);
 				Path pp(p);
 				pp.push_back(&n);
 				for (const auto &ap: allowedPaths)
@@ -152,6 +154,7 @@ namespace
 					if (std::equal(ap_beg, ap_end, pp_beg, Compare()))
 						return true;
 				}
+                L("Pruning this branch");
 				n.childs.clear();
 				n.fraction = 0;
 				return false;
@@ -212,16 +215,20 @@ pa::ReturnCode LoadMindMap::execute(const Options &options)
 
     Parser p(model(), options.value, options.fraction, defaultFraction);
     MSS(p.process(xml));
+    L(STREAM(model().total()));
 
 	{
 		Pruner pruner;
 		for (auto line: options.lines)
 			pruner.add(gubg::parse::tokenize(line, "/"));
 		gubg::tree::dfs::iterate(model(), pruner);
+        L(STREAM(model().total()));
 	}
 	gubg::tree::dfs::iterate(model(), Aggregate());
+    L(STREAM(model().total()));
 	if (!options.category.empty())
 		gubg::tree::dfs::iterate(model(), Distribute(options.category));
+    L(STREAM(model().total()));
 
 	MSS_END();
 }
