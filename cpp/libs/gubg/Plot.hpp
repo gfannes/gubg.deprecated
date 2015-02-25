@@ -6,10 +6,10 @@
 #include <tuple>
 #include <sstream>
 
-#define GUBG_MODULE "Plot"
+#define GUBG_MODULE_ "Plot"
 #include "gubg/log/begin.hpp"
-namespace gubg
-{
+namespace gubg {
+
     class Plot
     {
         public:
@@ -35,9 +35,17 @@ namespace gubg
                 oss << "plot " << f;
                 send_(oss.str());
             }
+            template <typename Vs>
+                bool scatter(const Vs &vs)
+                {
+                    auto xs = vs;
+                    std::iota(xs.begin(), xs.end(), 0);
+                    return scatter(xs, vs);
+                }
             template <typename Xs, typename Ys>
                 bool scatter(const Xs &xs, const Ys &ys)
                 {
+                    SS(xs.size(), ys.size());
                     if (xs.size() != ys.size())
                         return false;
                     auto ix = xs.begin();
