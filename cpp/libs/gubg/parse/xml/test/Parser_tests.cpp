@@ -10,6 +10,7 @@ namespace data
     const char * openclose_attr = "<abc id=\"1\"/>";
     const char * text = "<abc>text</abc>";
     const char * comment = "<abc><!--this is a comment--></abc>";
+    const char * cdata = "<abc><![CDATA[this is cdata <a><b><c>]]></abc>";
     namespace illegal
     {
         const char * duplicate_attr = "<abc id=\"1\" id=\"2\"></abc>";
@@ -66,6 +67,7 @@ int main()
         TEST_OK(p.process(data::openclose_attr));
         TEST_OK(p.process(data::text));
         TEST_OK(p.process(data::comment));
+        TEST_OK(p.process(data::cdata));
     }
     {
         TEST_TAG(neg);
