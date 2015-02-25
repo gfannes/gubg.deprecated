@@ -16,6 +16,9 @@ namespace imui {
             Context(Context &&);
             ~Context();
 
+            template <typename Drawable>
+                void draw(const Drawable &drawable) const {renderWindow_.draw(drawable);}
+
         private:
             Context(const Context &) = delete;
 
