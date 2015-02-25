@@ -242,72 +242,81 @@ namespace gubg {
 		return true;
 	}
 
-	bool Strange::popString(const std::string &str)
-	{
-		assert(invariants_());
-		const auto s = str.size();
-		if (l_ < s)
-			return false;
-		if (std::memcmp(str.data(), s_, s))
-			return false;
-		forward_(s);
-		return true;
-	}
+    bool Strange::popString(std::string &str, size_t nr)
+    {
+        assert(invariants_());
+        if (l_ < nr)
+            return false;
+        str.assign(s_, nr);
+        forward_(nr);
+        return true;
+    }
+    bool Strange::popStringIf(const std::string &str)
+    {
+        assert(invariants_());
+        const auto s = str.size();
+        if (l_ < s)
+            return false;
+        if (std::memcmp(str.data(), s_, s))
+            return false;
+        forward_(s);
+        return true;
+    }
 
-	bool Strange::popLine(Strange &line)
-	{
-		S();
-		assert(invariants_());
+    bool Strange::popLine(Strange &line)
+    {
+        S();
+        assert(invariants_());
 
-		if (empty())
-			return false;
+        if (empty())
+            return false;
 
-		L(str());
+        L(str());
 
-		//We start looking for 0xa because that is the most likely indicator of an end-of-line
-		//0xd can occur on its own, but that is old-mac style, which is not used anymore
-		const char *ptr = (const char *)std::memchr(s_, '\x0a', l_);
-		if (!ptr)
-		{
-			L("No 0xa found, lets look for a 0xd (old-mac)");
-			ptr = (const char *)std::memchr(s_, '\x0d', l_);
-			if (!ptr)
-			{
-				L("old-mac wasn't found either, we return everything we got, this is the last line");
-				line = *this;
-				forward_(l_);
-				return true;
-			}
-			L("An old-mac end-of-line was found");
-			line.s_ = s_;
-			line.l_ = ptr-s_;
-			forward_(line.l_+1);
-			return true;
-		}
-		L("0xa was found, we still need to determine if it is a unix or dos style end-of-line");
-		if (ptr == s_)
-		{
-			L("This is an empty line, it does not make sense to check for 0xd");
-			line.s_ = s_;
-			line.l_ = 0;
-			forward_(1);
-			return true;
-		}
-		L("We have to check for 0xd");
-		if (ptr[-1] == '\x0d')
-		{
-			L("This line is dos-style terminated");
-			line.s_ = s_;
-			line.l_ = ptr-s_-1;
-			forward_(line.l_+2);
-			return true;
-		}
-		L("No 0xd was found before ptr so we have a unix-style terminated line");
-		line.s_ = s_;
-		line.l_ = ptr-s_;
-		forward_(line.l_+1);
-		return true;
-	}
+        //We start looking for 0xa because that is the most likely indicator of an end-of-line
+        //0xd can occur on its own, but that is old-mac style, which is not used anymore
+        const char *ptr = (const char *)std::memchr(s_, '\x0a', l_);
+        if (!ptr)
+        {
+            L("No 0xa found, lets look for a 0xd (old-mac)");
+            ptr = (const char *)std::memchr(s_, '\x0d', l_);
+            if (!ptr)
+            {
+                L("old-mac wasn't found either, we return everything we got, this is the last line");
+                line = *this;
+                forward_(l_);
+                return true;
+            }
+            L("An old-mac end-of-line was found");
+            line.s_ = s_;
+            line.l_ = ptr-s_;
+            forward_(line.l_+1);
+            return true;
+        }
+        L("0xa was found, we still need to determine if it is a unix or dos style end-of-line");
+        if (ptr == s_)
+        {
+            L("This is an empty line, it does not make sense to check for 0xd");
+            line.s_ = s_;
+            line.l_ = 0;
+            forward_(1);
+            return true;
+        }
+        L("We have to check for 0xd");
+        if (ptr[-1] == '\x0d')
+        {
+            L("This line is dos-style terminated");
+            line.s_ = s_;
+            line.l_ = ptr-s_-1;
+            forward_(line.l_+2);
+            return true;
+        }
+        L("No 0xd was found before ptr so we have a unix-style terminated line");
+        line.s_ = s_;
+        line.l_ = ptr-s_;
+        forward_(line.l_+1);
+        return true;
+    }
 
     template <typename T>
         bool Strange::popLSB_(T &v)
@@ -315,6 +324,7 @@ namespace gubg {
             assert(invariants_());
             if (l_ < sizeof(v))
                 return false;
+            v = 0;
             for (int i = 0; i < sizeof(v); ++i)
             {
                 T tmp = *(const T *)(s_+i);
@@ -328,6 +338,10 @@ namespace gubg {
     bool Strange::popLSB(std::uint16_t &v) { return popLSB_(v); }
     bool Strange::popLSB(std::uint32_t &v) { return popLSB_(v); }
     bool Strange::popLSB(std::uint64_t &v) { return popLSB_(v); }
+    bool Strange::popLSB(std::int8_t &v)   { return popLSB_(v); }
+    bool Strange::popLSB(std::int16_t &v)  { return popLSB_(v); }
+    bool Strange::popLSB(std::int32_t &v)  { return popLSB_(v); }
+    bool Strange::popLSB(std::int64_t &v)  { return popLSB_(v); }
 
     template <typename T>
         bool Strange::popMSB_(T &v)
@@ -348,6 +362,27 @@ namespace gubg {
     bool Strange::popMSB(std::uint16_t &v) { return popMSB_(v); }
     bool Strange::popMSB(std::uint32_t &v) { return popMSB_(v); }
     bool Strange::popMSB(std::uint64_t &v) { return popMSB_(v); }
+    bool Strange::popMSB(std::int8_t &v)   { return popMSB_(v); }
+    bool Strange::popMSB(std::int16_t &v)  { return popMSB_(v); }
+    bool Strange::popMSB(std::int32_t &v)  { return popMSB_(v); }
+    bool Strange::popMSB(std::int64_t &v)  { return popMSB_(v); }
+
+    bool Strange::popCount(size_t nr)
+    {
+        if (l_ < nr)
+            return false;
+        forward_(nr);
+        return true;
+    }
+    bool Strange::popCount(Strange &res, size_t nr)
+    {
+        if (l_ < nr)
+            return false;
+        res.s_ = s_;
+        res.l_ = nr;
+        forward_(nr);
+        return true;
+    }
 
     bool Strange::popRaw(char *dst, size_t nr)
     {

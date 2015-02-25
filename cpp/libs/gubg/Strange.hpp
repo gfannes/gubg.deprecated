@@ -10,14 +10,13 @@
 //TODO: the methods that take a Strange& as argument are currently not correct when this argument
 //is the same as the this pointer
 
-namespace gubg
-{
+namespace gubg {
 
     class Strange
     {
         public:
             Strange();
-			//Make sure str outlives Strange
+            //Make sure str outlives Strange
             Strange(const std::string &);
 
             bool empty() const;
@@ -27,7 +26,7 @@ namespace gubg
             char back() const;
             void clear();
 
-			bool contains(char ch) const;
+            bool contains(char ch) const;
 
             void popAll(Strange &res);
             void popAll(std::string &res);
@@ -62,7 +61,8 @@ namespace gubg
             bool popBack();
             bool popChar(char &ch);
 
-            bool popString(const std::string &str);
+            bool popString(std::string &, size_t nr);
+            bool popStringIf(const std::string &);
 
             bool popLine(Strange &line);
 
@@ -72,11 +72,22 @@ namespace gubg
             bool popLSB(std::uint16_t &);
             bool popLSB(std::uint32_t &);
             bool popLSB(std::uint64_t &);
+            bool popLSB(std::int8_t &);
+            bool popLSB(std::int16_t &);
+            bool popLSB(std::int32_t &);
+            bool popLSB(std::int64_t &);
 
             bool popMSB(std::uint8_t &);
             bool popMSB(std::uint16_t &);
             bool popMSB(std::uint32_t &);
             bool popMSB(std::uint64_t &);
+            bool popMSB(std::int8_t &);
+            bool popMSB(std::int16_t &);
+            bool popMSB(std::int32_t &);
+            bool popMSB(std::int64_t &);
+
+            bool popCount(size_t nr);
+            bool popCount(Strange &, size_t nr);
 
             bool popRaw(char *dst, size_t nr);
 
