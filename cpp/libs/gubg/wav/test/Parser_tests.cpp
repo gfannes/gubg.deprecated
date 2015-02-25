@@ -10,10 +10,20 @@ namespace  {
     class Parser: public wav::Parser_crtp<Parser>
     {
         public:
-            void wav_format(const wav::Format &fmt)
+            size_t expected_sample_count = 0;
+            size_t sample_count = 0;
+            wav::Format fmt;
+
+            void wav_begin() { S(); }
+            void wav_format(const wav::Format &f)
             {
                 SS(fmt);
-                fmt_ = fmt;
+                fmt = f;
+            }
+            void wav_begin_samples(size_t count)
+            {
+                SS(count);
+                expected_sample_count = count;
             }
             template <typename T>
             void wav_sample(const std::vector<T> &sample)
@@ -21,14 +31,11 @@ namespace  {
                 SS_(log::hr(sample));
                 ++sample_count;
             }
-            void wav_done()
+            void wav_end_samples()
             {
-                SS(sample_count);
+                SS(expected_sample_count, sample_count);
             }
-
-        private:
-            wav::Format fmt_;
-            size_t sample_count = 0;
+            void wav_end() { S(); }
     };
 } 
 
@@ -36,5 +43,6 @@ TEST_CASE("WAV parser test", "[wav]")
 {
     Parser parser;
     REQUIRE(MSS_IS_OK(parser(file::File("piano2.wav"))));
+    REQUIRE(parser.expected_sample_count == parser.sample_count);
 }
 #include "gubg/log/end.hpp"

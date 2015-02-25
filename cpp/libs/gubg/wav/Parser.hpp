@@ -16,6 +16,15 @@ namespace gubg { namespace wav {
         class Parser_crtp
         {
             public:
+                //Default implementation of event receivers
+                void wav_begin() { }
+                void wav_format(const wav::Format &f) { }
+                void wav_begin_samples(size_t count) { }
+                template <typename T>
+                    void wav_sample(const std::vector<T> &sample) { }
+                void wav_end_samples() { }
+                void wav_end() { }
+
                 ReturnCode operator()(const file::File &file)
                 {
                     MSS_BEGIN(ReturnCode);
@@ -38,6 +47,7 @@ namespace gubg { namespace wav {
                     MSS(strange.size() == file_size);
                     MSS(strange.popStringIf("WAVE"));
 
+                    receiver_().wav_begin();
                     Format fmt;
                     while (!strange.empty())
                     {
@@ -57,6 +67,7 @@ namespace gubg { namespace wav {
                         }
                         else if (id == "data")
                         {
+                            receiver_().wav_begin_samples(subchunk.size()/fmt.block_size);
                             Strange block;
                             typedef std::vector<std::int16_t> PCM16;
                             PCM16 pcm16(fmt.channel_count);
@@ -83,9 +94,10 @@ namespace gubg { namespace wav {
                                         break;
                                 }
                             }
+                            receiver_().wav_end_samples();
                         }
                     }
-                    receiver_().wav_done();
+                    receiver_().wav_end();
 
                     MSS_END();
                 }
