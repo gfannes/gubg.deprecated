@@ -8,6 +8,8 @@ task :help do
     puts("Help for gubg. These are the rake tasks that currently exist:")
     puts("clean: remove unwanted files")
     puts("fff: build the flexible file factory")
+    puts("git_tools: install git helper scripts")
+    puts("vim: install vim goodies")
 end
 
 def os()
@@ -62,6 +64,14 @@ task :git_tools => bin_dir do
             File.open(h[:name], "w"){|fo|fo.puts(bash);fo.puts(h[:command])}
             File.chmod(0755, h[:name])
         end
+    end
+end
+
+task :vim do
+    gubg_dir = Dir.getwd
+    Dir.chdir(ENV['HOME']) do
+        symlink(File.join(gubg_dir, "vim/"), '.vim') unless File.exist?('.vim')
+        symlink(File.join(gubg_dir, "vim/config.linux.vim"), '.vimrc') unless File.exist?('.vimrc')
     end
 end
 
