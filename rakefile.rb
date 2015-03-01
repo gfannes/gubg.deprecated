@@ -52,12 +52,16 @@ end
 task :git_tools => bin_dir do
     bash = "\#!"+`which bash`
     Dir.chdir(bin_dir) do
-        File.open("qs", "w"){|fo|fo.puts(bash);fo.puts("git status")}
-        File.chmod(0755, "qs")
-        File.open("qd", "w"){|fo|fo.puts(bash);fo.puts("git diff")}
-        File.chmod(0755, "qd")
-        File.open("qc", "w"){|fo|fo.puts(bash);fo.puts("git commit -a")}
-        File.chmod(0755, "qc")
+        [
+            {name: 'qs', command: 'git status'},
+            {name: 'qd', command: 'git diff'},
+            {name: 'qc', command: 'git commit -a'},
+            {name: 'qp', command: 'git pull --rebase'},
+        ].each do |h|
+            puts("Creating #{h[:name]}")
+            File.open(h[:name], "w"){|fo|fo.puts(bash);fo.puts(h[:command])}
+            File.chmod(0755, h[:name])
+        end
     end
 end
 
