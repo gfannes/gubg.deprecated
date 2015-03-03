@@ -74,7 +74,7 @@ namespace fff { namespace tools {
 #endif
             }
             else if (tv.tag == Tag("c++", "library_path"))
-                lnk.addLibraryPath(tv.value.file());
+                lnk.addLibraryPath(tv.value.as_file());
             else if (tv.tag == Tag("c++", "library"))
                 lnk.addLibrary(tv.value.string());
         }
