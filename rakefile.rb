@@ -34,6 +34,7 @@ directory build_dir
 sdks_dir = ENV["GUBG_SDKS"] || File.join(build_dir, "sdks")
 directory sdks_dir
 bin_dir = ENV["GUBG_BIN"] || File.join(build_dir, "bin"); ENV["GUBG_BIN"] = bin_dir
+ENV["PATH"] = ENV["PATH"] + ':' + bin_dir
 directory bin_dir
 
 #fff
