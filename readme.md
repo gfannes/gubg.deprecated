@@ -1,5 +1,7 @@
 # GUBG: Generic Utilities by GUBG #
 
+[![Build Status](https://travis-ci.org/gfannes/gubg.svg?branch=master)](https://travis-ci.org/gfannes/gubg)
+
 ## Introduction ##
 
 This software package implements general functionality:
