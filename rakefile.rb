@@ -27,12 +27,13 @@ CLEAN.include(FileList["**/*.o"])
 CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])
 
-build_dir = ENV["GUBG_BUILD"] || File.join(Dir.getwd, 'GUBG_BUILD')
+gubg_dir = ENV["GUBG"] || Dir.getwd; ENV["GUBG"] = gubg_dir
+build_dir = ENV["GUBG_BUILD"] || File.join(gubg_dir, 'GUBG_BUILD')
 raise("You have to define GUBG_BUILD, the location where I can place my mojo") unless build_dir
 directory build_dir
-sdks_dir = ENV["GUBG_SDKS"] || File.expand_path("sdks", build_dir)
+sdks_dir = ENV["GUBG_SDKS"] || File.join(build_dir, "sdks")
 directory sdks_dir
-bin_dir = ENV["GUBG_BIN"] || File.expand_path("bin", build_dir)
+bin_dir = ENV["GUBG_BIN"] || File.join(build_dir, "bin"); ENV["GUBG_BIN"] = bin_dir
 directory bin_dir
 
 #fff
