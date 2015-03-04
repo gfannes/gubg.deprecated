@@ -1,5 +1,7 @@
 require("rake/clean")
 
+sh 'g++ --version'
+
 os = case RUBY_PLATFORM
      when "x64-mingw32" then :windows
      when "x86_64-linux" then :linux
