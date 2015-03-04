@@ -27,7 +27,7 @@ CLEAN.include(FileList["**/*.o"])
 CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])
 
-build_dir = ENV["GUBG_BUILD"]
+build_dir = ENV["GUBG_BUILD"] || File.join(Dir.getwd, 'GUBG_BUILD')
 raise("You have to define GUBG_BUILD, the location where I can place my mojo") unless build_dir
 directory build_dir
 sdks_dir = ENV["GUBG_SDKS"] || File.expand_path("sdks", build_dir)
