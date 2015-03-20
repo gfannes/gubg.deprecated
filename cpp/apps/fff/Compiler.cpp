@@ -62,7 +62,7 @@ namespace fff {
                         case Language::Cpp: stream << "cl /FS"; break;
                         case Language::C: stream << "cl /FS /TC"; break;
                     }
-                    stream << " -c";
+                    stream << " -c /bigobj";
                 }
                 void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
                 void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " /Fo" << obj; }
