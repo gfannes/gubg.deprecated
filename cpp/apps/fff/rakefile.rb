@@ -24,11 +24,8 @@ def c_fn(obj_fn)
 end
 
 fff_cpp_fns = %w[fff Tag Value Board Create Execute ToolFactory Compiler Linker tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner tools/Search].map{|str|"#{str}.cpp"}
-gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime lua/State].map{|str|"../../libs/gubg/#{str}.cpp"}
-lua_c_fns = %w[lapi lauxlib lbaselib lbitlib lcode lcorolib lctype ldblib ldebug ldo ldump lfunc lgc linit liolib llex lmathlib lmem loadlib lobject lopcodes loslib lparser lstate lstring lstrlib ltable ltablib ltm lundump lvm lzio].map{|str|"../../../c/lua-5.2.3/#{str}.c"}
-cpp_objects = (fff_cpp_fns+gubg_cpp_fns).map{|fn|obj_fn(fn)}
-c_objects = (lua_c_fns).map{|fn|obj_fn(fn)}
-objects = cpp_objects+c_objects
+gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime].map{|str|"../../libs/gubg/#{str}.cpp"}
+objects = (fff_cpp_fns+gubg_cpp_fns).map{|fn|obj_fn(fn)}
 #Keep this the same name as created by fff to ensure the self-test is ok
 fff_exe_fn = "fff.exe"
 install_dir = ENV["GUBG_BIN"]
@@ -55,18 +52,12 @@ task :build => [install_dir, cache_dir] do
 end
 rule ".obj" => ".cpp" do |task|
     source_fn = cpp_fn(task.name)
-    include_paths = "-I.. -I../../libs -I../../../c/lua-5.2.3"
+    include_paths = "-I.. -I../../libs"
     options = []
     options << {debug: "-g", release: "-O3"}[config]
     defines = []
     defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
     sh "g++ -std=c++0x -c -o #{task.name} #{source_fn} #{options*" "} #{include_paths} #{defines.map{|d|"-D#{d}"}*" "}"
-end
-rule ".obj" => ".c" do |task|
-    source_fn = c_fn(task.name)
-    include_paths = ""
-    options = "-O3"
-    sh "gcc -c -o #{task.name} #{source_fn} #{options} #{include_paths}"
 end
 file fff_exe_fn => objects do
     flags = {windows: "", linux: "-pthread"}[os]

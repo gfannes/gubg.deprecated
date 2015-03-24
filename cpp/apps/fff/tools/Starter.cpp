@@ -75,21 +75,6 @@ namespace fff { namespace tools {
                 board.add(Tag("c++", "source"), f);
             }
         }
-        else if (f.extension() == "lua")
-        {
-            std::string code;
-            MSS(file::read(code, f));
-            std::string err;
-            switch (const auto rc = board.executeLua(code, err))
-            {
-                default:
-                    std::cout << "Lua error encountered:" << std::endl;
-                    for (auto line: gubg::line::split(err))
-                        std::cout << line.txt << std::endl;
-                case ReturnCode::OK:
-                    MSS(rc);
-            }
-        }
 
         MSS_END();
     }

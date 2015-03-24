@@ -44,12 +44,12 @@ namespace fff { namespace tools {
             lua_.reset(new file::File(f << "c/lua-5.2.3"));
         if (gubg_home_(f))
             catch_.reset(new file::File(f << "cpp/libs/catch"));
-        if (gubg_sdks_(f))
-            sfml_.reset(new file::File(f << "SFML"));
-        if (gubg_sdks_(f))
-            chai_.reset(new file::File(f << "ChaiScript/include"));
+        if (gubg_home_(f))
+            chai_.reset(new file::File(f << "cpp/libs/extern/ChaiScript/include"));
         if (gubg_home_(f))
             eigen_.reset(new file::File(f << "cpp/libs/extern/eigen"));
+        if (gubg_sdks_(f))
+            sfml_.reset(new file::File(f << "SFML"));
     }
     ReturnCode ResolveHeader::process(Board &board)
     {
