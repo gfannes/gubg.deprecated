@@ -222,6 +222,9 @@ namespace fff { namespace tools {
                         roots_.insert(*chai_);
                         {
                             board.add(Tag("c++", "include_path"), *chai_, tv);
+#ifdef GUBG_API_LINUX
+                            board.add(Tag("c++", "library"), string("dl"), tv);
+#endif
 #if 0
                             for (auto str: vector<string>{"dispatchkit", "language", "utility"})
                             {
