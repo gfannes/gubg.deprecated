@@ -60,10 +60,16 @@ file installed_fff_exe => fff_exe_fn do
 end
 task :install => installed_fff_exe
 
-task :self do
+task :self => fff_exe_fn do
+	tmp_fff_exe = 'tmp_fff.exe'
+	rm_f tmp_fff_exe
+	mv fff_exe_fn, tmp_fff_exe
     rm_f fff_exe_fn
     cnf = {debug: "debug", release: "release"}[config]
-    sh "fff fff.cpp norun #{cnf}"
+    case os
+    when :linux then sh('./'+tmp_fff_exe, 'fff.cpp', 'norun', cnf)
+    when :windows then sh(tmp_fff_exe, 'fff.cpp', 'norun', cnf)
+    else raise("Unknown os #{os}") end
     fail("fff did not create #{fff_exe_fn}") unless File.exist?(fff_exe_fn)
     Rake::Task[:install].invoke
 end
