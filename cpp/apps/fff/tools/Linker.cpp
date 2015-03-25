@@ -27,9 +27,9 @@ namespace fff { namespace tools {
             if (tv.tag == Tag("start"))
             {
                 if (false) {}
-                else if (tv.value.string() == "cl")
+                else if (tv.value.as_string() == "cl")
                     vendor = linker::Vendor::MSC;
-                else if (tv.value.string() == "shared")
+                else if (tv.value.as_string() == "shared")
                     exeType = linker::OutputType::Shared;
             }
         }
@@ -44,39 +44,39 @@ namespace fff { namespace tools {
             if (false) {}
             else if (tv.tag == Tag("cache"))
             {
-                create_mgr.setCache(tv.value.file());
+                create_mgr.setCache(tv.value.as_file());
             }
             else if (tv.tag == Tag("start"))
             {
                 if (false) {}
-                else if (tv.value.string() == "debug")
+                else if (tv.value.as_string() == "debug")
                     lnk.addOption("debug");
             }
             else if (tv.tag == Tag("c++", "source"))
             {
                 if (setExecutable())
-                    executable = tv.value.file();
+                    executable = tv.value.as_file();
             }
             else if (tv.tag == Tag("c++", "object") || tv.tag == Tag("c", "object"))
             {
-                lnk.addObject(tv.value.file());
+                lnk.addObject(tv.value.as_file());
                 dependencies.insert(tv);
             }
             else if (tv.tag == Tag("c++", "include"))
             {
 #ifdef GUBG_API_LINUX
-                if (tv.value.string() == "dlfcn.h")
+                if (tv.value.as_string() == "dlfcn.h")
                     lnk.addLibrary("dl");
 #endif
 #ifdef GUBG_API_POSIX
-                if (tv.value.string() == "thread")
+                if (tv.value.as_string() == "thread")
                     lnk.addOption("thread");
 #endif
             }
             else if (tv.tag == Tag("c++", "library_path"))
                 lnk.addLibraryPath(tv.value.as_file());
             else if (tv.tag == Tag("c++", "library"))
-                lnk.addLibrary(tv.value.string());
+                lnk.addLibrary(tv.value.as_string());
         }
 
         switch (exeType)

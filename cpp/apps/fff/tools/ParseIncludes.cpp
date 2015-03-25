@@ -34,10 +34,9 @@ namespace fff { namespace tools {
 		{
 			if (tv.tag != Tag("c++", "source") && tv.tag != Tag("c++", "header"))
 				continue;
-			MSS(tv.value.type() == Value::File);
 			IncludeParser ip;
-			if (!MSS_IS_OK(ip.process(tv.value.file())))
-				std::cerr << "Failed to parse include statements for " << tv.value.file() << std::endl;
+			if (!MSS_IS_OK(ip.process(tv.value.as_file())))
+				std::cerr << "Failed to parse include statements for " << tv.value.as_file() << std::endl;
 			else
 				for (auto inc: ip.includes)
 					board.add(Tag("c++", "include"), inc, tv);

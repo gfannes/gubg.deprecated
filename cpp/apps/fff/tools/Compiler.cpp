@@ -48,7 +48,7 @@ namespace fff { namespace tools {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("start") && tv.value.string() == "cl")
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "cl")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
@@ -57,12 +57,12 @@ namespace fff { namespace tools {
             {
                 compiler_.addIncludePath(tv.value.as_file());
             }
-            else if (tv.tag == Tag("start") && tv.value.string() == "release")
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "release")
             {
                 compiler_.addOption("release");
                 build_type_was_set_ = true;
             }
-            else if (tv.tag == Tag("start") && tv.value.string() == "shared")
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "shared")
             {
                 compiler_.addOption("shared");
             }
@@ -81,11 +81,11 @@ namespace fff { namespace tools {
             if (false) {}
             else if (tv.tag == Tag("cache"))
             {
-                create_mgr.setCache(tv.value.file());
+                create_mgr.setCache(tv.value.as_file());
             }
             else if (tv.tag == Tag("c++", "source"))
             {
-                const auto source = tv.value.file();
+                const auto source = tv.value.as_file();
                 SS(source);
                 file::File obj = source;
                 {
@@ -107,7 +107,7 @@ namespace fff { namespace tools {
             }
             else if (tv.tag == Tag("c", "source"))
             {
-                const auto source = tv.value.file();
+                const auto source = tv.value.as_file();
                 SS(source);
                 file::File obj = source;
                 {

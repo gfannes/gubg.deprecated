@@ -13,16 +13,13 @@ namespace fff {
 		Type type;
 		gubg::file::File file;
 		std::string string;
-		long integer;
 
 		Pimpl(gubg::file::File f): type(File), file(f) {}
 		Pimpl(std::string s): type(String), string(s) {}
-		Pimpl(long v): type(File), integer(v) {}
 	};
 
 	Value::Value(gubg::file::File file): pimpl_(new Pimpl(file)) {}
 	Value::Value(std::string str): pimpl_(new Pimpl(str)) {}
-	Value::Value(long v): pimpl_(new Pimpl(v)) {}
 
 	bool Value::operator<(Value rhs) const
 	{
@@ -36,7 +33,6 @@ namespace fff {
 		{
 			case File:    return pimpl_->file    < rhs.pimpl_->file;
 			case String:  return pimpl_->string  < rhs.pimpl_->string;
-			case Integer: return pimpl_->integer < rhs.pimpl_->integer;
 		}
 		assert(false);
 		return false;
@@ -48,13 +44,6 @@ namespace fff {
 		L_GET_PIMPL();
 		return pimpl.type;
 	}
-	const gubg::file::File &Value::file() const
-	{
-		L_GET_PIMPL();
-		if (pimpl.type != File)
-			return emptyFile_;
-		return pimpl.file;
-	}
 	gubg::file::File Value::as_file() const
 	{
 		L_GET_PIMPL();
@@ -64,19 +53,14 @@ namespace fff {
 			return emptyFile_;
 		return pimpl.file;
 	}
-	const std::string &Value::string() const
+	std::string Value::as_string() const
 	{
 		L_GET_PIMPL();
+		if (pimpl.type == File)
+			return pimpl.file.name();
 		if (pimpl.type != String)
-			return emptyString_;
+			return "";
 		return pimpl.string;
-	}
-	long Value::integer() const
-	{
-		L_GET_PIMPL();
-		if (pimpl.type != Integer)
-			return 0;
-		return pimpl.integer;
 	}
 
 	void Value::stream(std::ostream &os) const
@@ -90,7 +74,6 @@ namespace fff {
 		{
 			case File:    os << "File: "    << pimpl_->file;    break;
 			case String:  os << "String: "  << pimpl_->string;  break;
-			case Integer: os << "Integer: " << pimpl_->integer; break;
 			default:      os << "Unknown type";                 break;
 		}
 	}

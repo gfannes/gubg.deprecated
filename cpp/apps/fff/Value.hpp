@@ -10,22 +10,18 @@ namespace fff {
     class Value
     {
         public:
-            enum Type {File, String, Integer};
+            enum Type {File, String};
 
             Value(gubg::file::File);
             Value(std::string);
-            Value(long);
 
             bool operator<(Value) const;
 
             Type type() const;
 
-            const gubg::file::File &file() const;
-            const std::string &string() const;
-            long integer() const;
-
             //Will convert a string or file, ideal for CLI args
             gubg::file::File as_file() const;
+            std::string as_string() const;
 
             void stream(std::ostream &) const;
             std::string to_str() const;

@@ -97,7 +97,7 @@ namespace fff { namespace tools {
             if (false) {}
             else if (tv.tag == Tag("start"))
             {
-                if (tv.value.string() == "search")
+                if (tv.value.as_string() == "search")
                 {
                     //The search command indicates no more search options will come, all other
                     //start:* TVs will be interpreted as search keys
@@ -114,13 +114,13 @@ namespace fff { namespace tools {
             if (false) {}
             else if (tv.tag == Tag("start"))
             {
-                L("Looking for searchkey \"" << tv.value.string() << "\"");
-                needles.push_back(tv.value.string());
+                L("Looking for searchkey \"" << tv.value.as_string() << "\"");
+                needles.push_back(tv.value.as_string());
             }
             else if (tv.tag == Tag("search", "ext"))
             {
-                L("Looking for extension \"" << tv.value.string() << "\"");
-                extensions.insert(tv.value.string());
+                L("Looking for extension \"" << tv.value.as_string() << "\"");
+                extensions.insert(tv.value.as_string());
             }
         }
 

@@ -68,7 +68,7 @@ namespace fff {
 				{
 					case Value::File:
 						{
-							std::string content; gubg::file::read(content, tv.value.file());
+							std::string content; gubg::file::read(content, tv.value.as_file());
 							md5 << content;
 						}
 						break;

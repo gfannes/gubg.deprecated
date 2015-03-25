@@ -27,6 +27,9 @@ CLEAN.include(FileList["**/.*.obj"])
 CLEAN.include(FileList["**/*.o"])
 CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])
+task :clean do
+    Dir.chdir("cpp/apps/fff"){sh "rake clean"}
+end
 
 gubg_dir = ENV["GUBG"] || Dir.getwd; ENV["GUBG"] = gubg_dir
 build_dir = ENV["GUBG_BUILD"] || File.join(gubg_dir, 'GUBG_BUILD')
@@ -40,9 +43,7 @@ directory bin_dir
 
 #fff
 task :fff do
-    Dir.chdir("cpp/apps/fff") do
-        sh "rake build self"
-    end
+    Dir.chdir("cpp/apps/fff"){sh "rake build self"}
 end
 
 #pa

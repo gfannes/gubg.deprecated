@@ -13,7 +13,7 @@ namespace fff { namespace tools {
 
 	bool resolve_(file::File &f, const Value &v)
 	{
-		file::File tmp(v.string());
+		file::File tmp(v.as_string());
 		if (!MSS_IS_OK(file::resolve(tmp)))
 			return false;
 		f = tmp;
@@ -45,12 +45,12 @@ namespace fff { namespace tools {
             }
 
             {
-                const std::string str = tv.value.string();
+                const std::string str = tv.value.as_string();
                 if (MSS_IS_OK(processCommand_(board, str)))
                     continue;
             }
 
-            MSS(processOption_(board, tv.value.string()));
+            MSS(processOption_(board, tv.value.as_string()));
         }
 
         MSS_END();
