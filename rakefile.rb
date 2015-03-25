@@ -23,6 +23,7 @@ fail("Could not guess os from #{RUBY_PLATFORM}") if os.nil?
 #clean
 CLEAN.include(FileList["**/*.cpp_obj"])
 CLEAN.include(FileList["**/*.obj"])
+CLEAN.include(FileList["**/.*.obj"])
 CLEAN.include(FileList["**/*.o"])
 CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])

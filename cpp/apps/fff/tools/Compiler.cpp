@@ -87,7 +87,15 @@ namespace fff { namespace tools {
             {
                 const auto source = tv.value.file();
                 SS(source);
-                file::File obj = source; obj.setExtension("cpp.obj");
+                file::File obj = source;
+                {
+                    obj.setExtension("cpp.obj");
+                    //Make the object file hidden. We place is next to the original cpp file,
+                    //else, we have to create a directory somewhere
+                    string basename;
+                    if (obj.popBasename(basename))
+                        obj << (string(".")+basename);
+                }
                 string cmd;
                 compiler_.compile(cmd, source, obj, compiler::Language::Cpp);
                 CreateJob job;
@@ -101,7 +109,15 @@ namespace fff { namespace tools {
             {
                 const auto source = tv.value.file();
                 SS(source);
-                file::File obj = source; obj.setExtension("c.obj");
+                file::File obj = source;
+                {
+                    obj.setExtension("c.obj");
+                    //Make the object file hidden. We place is next to the original cpp file,
+                    //else, we have to create a directory somewhere
+                    string basename;
+                    if (obj.popBasename(basename))
+                        obj << (string(".")+basename);
+                }
                 string cmd;
                 compiler_.compile(cmd, source, obj, compiler::Language::C);
                 CreateJob job;
