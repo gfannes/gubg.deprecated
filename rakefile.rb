@@ -40,7 +40,7 @@ directory bin_dir
 #fff
 task :fff do
     Dir.chdir("cpp/apps/fff") do
-        sh "rake clean fff self"
+        sh "rake build self"
     end
 end
 

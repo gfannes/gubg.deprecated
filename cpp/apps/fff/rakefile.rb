@@ -1,47 +1,45 @@
 require("rake/clean")
 
-sh 'g++ --version'
-
 os = case RUBY_PLATFORM
      when "x64-mingw32" then :windows
      when "x86_64-linux" then :linux
      else nil
      end
 fail("Could not determine OS") unless os
+
 config = case ENV["config"]
          when "debug", "DEBUG" then :debug
          else :release
          end
 
-def obj_fn(src_fn)
-    src_fn.gsub(/\.(c|cpp)$/, ".obj")
-end
-def cpp_fn(obj_fn)
-    obj_fn.gsub(/\.obj$/, ".cpp")
-end
-def c_fn(obj_fn)
-    obj_fn.gsub(/\.obj$/, ".c")
-end
-
 fff_cpp_fns = %w[fff Tag Value Board Create Execute ToolFactory Compiler Linker tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner tools/Search].map{|str|"#{str}.cpp"}
 gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime].map{|str|"../../libs/gubg/#{str}.cpp"}
-objects = (fff_cpp_fns+gubg_cpp_fns).map{|fn|obj_fn(fn)}
+source_fns = fff_cpp_fns+gubg_cpp_fns
+
+object_fns = []
+cache_dir = File.join(Dir.getwd, '.cache')
+directory cache_dir
+source_fns.each do |source_fn|
+    object_fn = File.join(cache_dir, source_fn.gsub(/[\.\/\\:]/, '_')+'.obj')
+    include_paths = "-I.. -I../../libs"
+    options = []
+    options << {debug: "-g", release: "-O3"}[config]
+    defines = []
+    defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
+    rule object_fn => cache_dir do
+        sh "g++ -std=c++0x -c -o #{object_fn} #{source_fn} #{options*" "} #{include_paths} #{defines.map{|d|"-D#{d}"}*" "}"
+    end
+    object_fns << object_fn
+end
+
 #Keep this the same name as created by fff to ensure the self-test is ok
 fff_exe_fn = "fff.exe"
 install_dir = ENV["GUBG_BIN"]
-cache_dir = File.expand_path("fff", ENV["GUBG_TMP"])
-
-task :fff do
-    Rake::Task[:build].invoke
-    Rake::Task[:install].invoke
-end
 
 directory install_dir
-directory cache_dir
 
 CLEAN.include(FileList["*.obj"])
 CLEAN.include(FileList["*.exe"])
-CLEAN.include(objects)
 task :clean do
     rm_rf cache_dir
     Rake::Task[cache_dir].invoke
@@ -50,24 +48,17 @@ end
 task :build => [install_dir, cache_dir] do
     Rake::Task[fff_exe_fn].invoke
 end
-rule ".obj" => ".cpp" do |task|
-    source_fn = cpp_fn(task.name)
-    include_paths = "-I.. -I../../libs"
-    options = []
-    options << {debug: "-g", release: "-O3"}[config]
-    defines = []
-    defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
-    sh "g++ -std=c++0x -c -o #{task.name} #{source_fn} #{options*" "} #{include_paths} #{defines.map{|d|"-D#{d}"}*" "}"
-end
-file fff_exe_fn => objects do
+file fff_exe_fn => object_fns do
     flags = {windows: "", linux: "-pthread"}[os]
-    sh "g++ -std=c++0x -o #{fff_exe_fn} #{objects*" "} #{flags}"
+    sh "g++ -std=c++0x -o #{fff_exe_fn} #{object_fns*" "} #{flags}"
 
 end
 
-task :install => fff_exe_fn do
-    cp fff_exe_fn, File.expand_path({windows: "fff.exe", linux: "fff"}[os], install_dir)
+installed_fff_exe = File.join(install_dir, {windows: "fff.exe", linux: "fff"}[os])
+file installed_fff_exe => fff_exe_fn do
+    cp fff_exe_fn, installed_fff_exe
 end
+task :install => installed_fff_exe
 
 task :self do
     rm_f fff_exe_fn
