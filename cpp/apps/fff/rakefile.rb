@@ -70,6 +70,7 @@ task :self => fff_exe_fn do
     when :linux then sh('./'+tmp_fff_exe, 'fff.cpp', 'norun', cnf)
     when :windows then sh(tmp_fff_exe, 'fff.cpp', 'norun', cnf)
     else raise("Unknown os #{os}") end
+    rm tmp_fff_exe
     fail("fff did not create #{fff_exe_fn}") unless File.exist?(fff_exe_fn)
     Rake::Task[:install].invoke
 end
