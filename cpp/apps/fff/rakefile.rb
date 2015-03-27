@@ -12,21 +12,22 @@ config = case ENV["config"]
          else :release
          end
 
-fff_cpp_fns = %w[fff Tag Value Board Create Execute AgentFactory Compiler Linker agents/Starter agents/ParseIncludes agents/ResolveHeader agents/Compiler agents/Linker agents/Runner agents/Search].map{|str|"#{str}.cpp"}
-gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime].map{|str|"../../libs/gubg/#{str}.cpp"}
-source_fns = fff_cpp_fns+gubg_cpp_fns
+fff_cpp_fns = %w[fff Tag Value Board Create Execute AgentFactory Compiler Linker].map{|str|"#{str}.cpp"}
+agents_cpp_fns = %w[Starter ParseIncludes ResolveHeader Compiler Linker Runner Search Chai].map{|str|"agents/#{str}.cpp"}
+gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime chai/Engine].map{|str|"../../libs/gubg/#{str}.cpp"}
+source_fns = fff_cpp_fns+agents_cpp_fns+gubg_cpp_fns
 
 object_fns = []
 cache_dir = File.join(Dir.getwd, '.cache')
 directory cache_dir
 source_fns.each do |source_fn|
     object_fn = File.join(cache_dir, source_fn.gsub(/[\.\/\\:]/, '_')+'.obj')
-    include_paths = "-I.. -I../../libs"
+    include_paths = "-I.. -I../../libs -I../../libs/extern/ChaiScript/include"
     options = []
     options << {debug: "-g", release: "-O3"}[config]
     defines = []
     defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
-    rule object_fn => cache_dir do
+    rule object_fn => [cache_dir, source_fn] do
         sh "g++ -std=c++0x -c -o #{object_fn} #{source_fn} #{options*" "} #{include_paths} #{defines.map{|d|"-D#{d}"}*" "}"
     end
     object_fns << object_fn
@@ -49,7 +50,7 @@ task :build => [install_dir, cache_dir] do
     Rake::Task[fff_exe_fn].invoke
 end
 file fff_exe_fn => object_fns do
-    flags = {windows: "", linux: "-pthread"}[os]
+    flags = {windows: "", linux: "-pthread -ldl"}[os]
     sh "g++ -std=c++0x -o #{fff_exe_fn} #{object_fns*" "} #{flags}"
 
 end

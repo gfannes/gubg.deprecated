@@ -2,7 +2,6 @@
 #define HEADER_fff_agents_Search_hpp_ALREADY_INCLUDED
 
 #include "fff/Agent.hpp"
-#include "gubg/file/Forest.hpp"
 
 namespace fff { namespace agents { 
 	class Search: public Agent_itf
