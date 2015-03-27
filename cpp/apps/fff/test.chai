@@ -1,0 +1,11 @@
+print("hello from chai");
+on_item(
+fun(tag, value, nr_left)
+{
+    print("${tag} : ${value}, and ${nr_left} more to follow");
+    if (nr_left == 0)
+    {
+        print("this was the last tv from this patch\n");
+    }
+}
+);

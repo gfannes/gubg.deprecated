@@ -9,6 +9,7 @@ namespace fff {
 		MSS_DEFAULT_CODES,
 		NoSeedGiven, TagValueAlreadyExists, AlreadyStarted, NoNewEntries, HashAlreadySet,
 		AgentAlreadyPresent, CompileFailure, LinkFailure, UnknownOption, UnknownCommand,
+        ChaiScriptLoadFailed,
 	};
 } 
 

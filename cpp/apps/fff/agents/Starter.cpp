@@ -75,6 +75,12 @@ namespace fff { namespace agents {
                 board.add(Tag("c++", "source"), f);
             }
         }
+        else if (f.extension() == "chai")
+        {
+            auto chai = fact.createChai(f);
+            MSS((bool)chai, ChaiScriptLoadFailed);
+            MSS(board.addAgent(chai));
+        }
 
         MSS_END();
     }

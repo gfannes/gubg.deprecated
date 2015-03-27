@@ -4,7 +4,6 @@
 
 #define GUBG_MODULE_ "Board"
 #include "gubg/log/begin.hpp"
-
 namespace fff { 
 
 	ReturnCode Board::add(Tag tag, Value value)

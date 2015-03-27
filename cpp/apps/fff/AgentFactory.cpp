@@ -6,25 +6,11 @@
 #include "fff/agents/Linker.hpp"
 #include "fff/agents/Runner.hpp"
 #include "fff/agents/Search.hpp"
+#include "fff/agents/Chai.hpp"
 using namespace std;
 
 namespace fff { 
-#if 0
-    AgentChain AgentFactory::createAgentChain(const string &name)
-    {
-        AgentChain res;
-        if (false) {}
-        else if (name == "exe")
-        {
-            res.push_back(createAgent("Starter"));
-            res.push_back(createAgent("ParseIncludes"));
-            res.push_back(createAgent("ResolveHeader"));
-            res.push_back(createAgent("Compiler"));
-            res.push_back(createAgent("Linker"));
-        }
-        return res;
-    }
-#endif
+
     Agent_itf::Ptr AgentFactory::createAgent(const string &name)
     {
 #define L_ELSE_IF(type) else if (name == #type) return Agent_itf::Ptr(new agents::type())
@@ -38,4 +24,13 @@ namespace fff {
         L_ELSE_IF(Search);
         return Agent_itf::Ptr();
     }
+
+    Agent_itf::Ptr AgentFactory::createChai(const gubg::file::File &script)
+    {
+        auto chai = std::make_shared<agents::Chai>(script);
+        if (!chai->ok())
+            chai.reset();
+        return chai;
+    }
+
 }

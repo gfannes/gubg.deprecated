@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 			return -1;
 			break;
 		default:
-			std::cerr << "Error code " << (int)rc << std::endl;
+			std::cerr << "ReturnCode " << (int)rc << std::endl;
 			return -1;
 			break;
 	}
