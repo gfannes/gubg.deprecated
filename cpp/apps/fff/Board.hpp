@@ -3,7 +3,7 @@
 
 #include "fff/Codes.hpp"
 #include "fff/Types.hpp"
-#include "fff/Tool.hpp"
+#include "fff/Agent.hpp"
 #include <vector>
 #include <map>
 #include <set>
@@ -22,11 +22,11 @@ namespace fff {
 
 			Hash hash(const Dependencies &) const;
 
-			ReturnCode addTool(Tool_itf::Ptr);
+			ReturnCode addAgent(Agent_itf::Ptr);
 			ReturnCode expand();
 
         private:
-			ToolChain toolChain_;
+			Agents agents_;
 
 			TagValues tagValues_;
 

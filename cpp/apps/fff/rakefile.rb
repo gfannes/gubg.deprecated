@@ -12,7 +12,7 @@ config = case ENV["config"]
          else :release
          end
 
-fff_cpp_fns = %w[fff Tag Value Board Create Execute ToolFactory Compiler Linker tools/Starter tools/ParseIncludes tools/ResolveHeader tools/Compiler tools/Linker tools/Runner tools/Search].map{|str|"#{str}.cpp"}
+fff_cpp_fns = %w[fff Tag Value Board Create Execute AgentFactory Compiler Linker agents/Starter agents/ParseIncludes agents/ResolveHeader agents/Compiler agents/Linker agents/Runner agents/Search].map{|str|"#{str}.cpp"}
 gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime].map{|str|"../../libs/gubg/#{str}.cpp"}
 source_fns = fff_cpp_fns+gubg_cpp_fns
 

@@ -84,15 +84,15 @@ namespace fff {
 		return hash;
 	}
 
-	ReturnCode Board::addTool(Tool_itf::Ptr tool)
+	ReturnCode Board::addAgent(Agent_itf::Ptr agent)
 	{
 		MSS_BEGIN(ReturnCode);
-		MSS((bool)tool);
-		L(tool->name());
+		MSS((bool)agent);
+		L(agent->name());
 		LockGuard lg(mutex_);
-		for (auto t: toolChain_)
-			MSS(t->name() != tool->name(), ToolAlreadyPresent);
-		toolChain_.push_back(tool);
+		for (auto t: agents_)
+			MSS(t->name() != agent->name(), AgentAlreadyPresent);
+		agents_.push_back(agent);
 		MSS_END();
 	}
 	ReturnCode Board::expand()
@@ -101,30 +101,30 @@ namespace fff {
 		size_t ix = 0;
 		while (true)
 		{
-			size_t board_size, toolchain_size;
-			Tool_itf::Ptr tool_ptr;
+			size_t board_size, nr_agents;
+			Agent_itf::Ptr agent_ptr;
 			{
 				LockGuard lg(mutex_);
 				board_size = tagValues_.size();
-				toolchain_size = toolChain_.size();
-				if (ix >= toolchain_size)
-					//We are done, no more tools to run
+				nr_agents = agents_.size();
+				if (ix >= nr_agents)
+					//We are done, no more agents to run
 					break;
-				tool_ptr = toolChain_[ix];
+				agent_ptr = agents_[ix];
 			}
 
-			assert(tool_ptr);
-			auto &tool = *tool_ptr;
+			assert(agent_ptr);
+			auto &agent = *agent_ptr;
 
-            SS(tool.name());
-			MSS(tool.process(*this));
+            SS(agent.name());
+			MSS(agent.process(*this));
 
 			bool boardWasModified = false;
 			{
 				LockGuard lg(mutex_);
 				if (tagValues_.size() != board_size)
 					boardWasModified = true;
-				if (toolChain_.size() != toolchain_size)
+				if (agents_.size() != nr_agents)
 					boardWasModified = true;
 			}
 			if (boardWasModified)

@@ -1,7 +1,7 @@
 #include "fff/Codes.hpp"
 #include "fff/Options.hpp"
 #include "fff/Board.hpp"
-#include "fff/ToolFactory.hpp"
+#include "fff/AgentFactory.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
@@ -69,8 +69,8 @@ namespace fff {
 		for (auto seed: options.seeds)
 			MSS(board.add(Tag("start"), seed));
 
-		ToolFactory fact;
-		MSS(board.addTool(fact.createTool("Starter")));
+		AgentFactory fact;
+		MSS(board.addAgent(fact.createAgent("Starter")));
 
 		MSS(board.expand());
 
