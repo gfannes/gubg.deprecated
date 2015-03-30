@@ -6,7 +6,19 @@
 #include "gubg/log/begin.hpp"
 namespace fff { 
 
-	ReturnCode Board::add(Tag tag, Value value)
+    void Board::setTypeForTag(Tag tag, Type type)
+    {
+        typePerTag_[tag] = type;
+    }
+    Type Board::typeForTag(Tag tag) const
+    {
+        auto it = typePerTag_.find(tag);
+        if (it == typePerTag_.end())
+            return Type::String;
+        return it->second;
+    }
+
+	ReturnCode Board::addItem(Tag tag, Value value)
 	{
 		MSS_BEGIN(ReturnCode, STREAM(tag, value));
 		LockGuard lg(mutex_);
@@ -18,7 +30,7 @@ namespace fff {
 		tagsPerValue_[value].insert(tag);
 		MSS_END();
 	}
-	ReturnCode Board::add(Tag tag, Value value, TagValue orig)
+	ReturnCode Board::addItem(Tag tag, Value value, TagValue orig)
 	{
 		MSS_BEGIN(ReturnCode, STREAM(tag, value));
 		auto tv = TagValue(tag, value);
@@ -63,9 +75,9 @@ namespace fff {
 			{
 				Stream md5;
 				md5 << tv.tag.to_str() << tv.tag.to_str();
-				switch (tv.value.type())
+				switch (typeForTag(tv.tag))
 				{
-					case Value::File:
+					case Type::File:
 						{
 							std::string content; gubg::file::read(content, tv.value.as_file());
 							md5 << content;

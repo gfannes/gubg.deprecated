@@ -11,11 +11,16 @@
 
 namespace fff { 
 
+    enum class Type {File, String};
+
     class Board
     {
         public:
-			ReturnCode add(Tag, Value);
-			ReturnCode add(Tag, Value, TagValue);
+            void setTypeForTag(Tag, Type);
+            Type typeForTag(Tag) const;
+
+			ReturnCode addItem(Tag, Value);
+			ReturnCode addItem(Tag, Value, TagValue);
 
 			TagValues getFrom(size_t ix) const;
 			Dependencies getDependencies(const TagValue &) const;
@@ -27,6 +32,9 @@ namespace fff {
 
         private:
 			Agents agents_;
+
+            typedef std::map<Tag, Type> TypePerTag;
+            TypePerTag typePerTag_;
 
 			TagValues tagValues_;
 

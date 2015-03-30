@@ -103,8 +103,20 @@ namespace fff { namespace agents {
 
         switch (exeType)
         {
-            case linker::OutputType::Exe:    board.add(Tag("c++", "executable"), executable); break;
-            case linker::OutputType::Shared: board.add(Tag("c++", "shared_object"), executable); break;
+            case linker::OutputType::Exe:
+                {
+                    const Tag tag("c++", "executable");
+                    board.setTypeForTag(tag, Type::File);
+                    board.addItem(tag, executable);
+                }
+                break;
+            case linker::OutputType::Shared:
+                {
+                    const Tag tag("c++", "shared_object");
+                    board.setTypeForTag(tag, Type::File);
+                    board.addItem(tag, executable);
+                }
+                break;
         }
 
         MSS_END();

@@ -39,7 +39,7 @@ namespace fff { namespace agents {
 				std::cerr << "Failed to parse include statements for " << tv.value.as_file() << std::endl;
 			else
 				for (auto inc: ip.includes)
-					board.add(Tag("c++", "include"), inc, tv);
+					board.addItem(Tag("c++", "include"), inc, tv);
 		}
 
 		MSS_END();

@@ -64,10 +64,10 @@ namespace fff {
 		if (!gubg::file::isDirectory(cache))
 			std::cout << "Cache directory (" << cache << ") not found, working without cache" << std::endl;
 		else
-			MSS(board.add(Tag("cache"), cache));
+			MSS(board.addItem(Tag("cache"), cache));
 
 		for (auto seed: options.seeds)
-			MSS(board.add(Tag("start"), seed));
+			MSS(board.addItem(Tag("start"), seed));
 
 		AgentFactory fact;
 		MSS(board.addAgent(fact.createAgent("Starter")));
@@ -89,11 +89,11 @@ int main(int argc, char **argv)
 			break;
 		case fff::ReturnCode::NoSeedGiven:
 			std::cerr << "You have to give me a seed to start the process" << std::endl;
-			return -1;
+			return -(int)rc;
 			break;
 		default:
 			std::cerr << "ReturnCode " << (int)rc << std::endl;
-			return -1;
+			return -(int)rc;
 			break;
 	}
 	return 0;

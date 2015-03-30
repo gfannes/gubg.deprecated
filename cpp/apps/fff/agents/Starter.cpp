@@ -72,7 +72,9 @@ namespace fff { namespace agents {
                 MSS(board.addAgent(fact.createAgent("Compiler")));
                 MSS(board.addAgent(fact.createAgent("Linker")));
                 MSS(board.addAgent(fact.createAgent("Runner")));
-                board.add(Tag("c++", "source"), f);
+                const Tag tag("c++", "source");
+                board.setTypeForTag(tag, Type::File);
+                board.addItem(tag, f);
             }
         }
         else if (f.extension() == "chai")
@@ -121,7 +123,7 @@ namespace fff { namespace agents {
             Strange value;
             strange.popAll(value);
 
-            board.add(Tag(key_parts), value.str());
+            board.addItem(Tag(key_parts), value.str());
         }
         MSS_END();
     }

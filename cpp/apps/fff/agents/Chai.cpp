@@ -6,11 +6,12 @@
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
 
-    Chai::Chai(const gubg::file::File &script): name_(script.name()), engine_(gubg::chai::create_engine())
+    Chai::Chai(const gubg::file::File &script): engine_(gubg::chai::create_engine())
     {
         SS("Loading chai script from " << script);
 
         engine_->add(chaiscript::fun(&Chai::add_callback_, std::ref(*this)), "on_item");
+        engine_->add(chaiscript::fun(&Chai::add_item_, std::ref(*this)), "add_item");
 
         try
         {
@@ -25,12 +26,18 @@ namespace fff { namespace agents {
         }
     }
 
-    void Chai::add_callback_(const Callback &cb)
+    void Chai::add_callback_(const std::string &name, const Callback &cb)
     {
-        S();L("Adding a callback");
+        S();L("Adding callback " << name);
+        name_ = name;
         callback_ = cb;
         cb_was_set_ = true;
         L(STREAM(cb_was_set_));
+    }
+    void Chai::add_item_(const std::string &tag, const std::string &value)
+    {
+        S();L("Adding item " << STREAM(tag, value));
+        items_.push(std::make_pair(tag, value));
     }
 
     std::string Chai::name() const
@@ -54,6 +61,12 @@ namespace fff { namespace agents {
                 L("Calling into the callback");
                 callback_(tv.tag.to_str(), tv.value.as_string(), --nr_left);
             }
+        }
+
+        while (!items_.empty())
+        {
+            auto p = items_.front(); items_.pop();
+            board.addItem(Tag(p.first), Value(p.second));
         }
 
         MSS_END();

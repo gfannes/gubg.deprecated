@@ -74,7 +74,7 @@ namespace fff { namespace agents {
                         forest_.add(path, {"hpp", "cpp", "h", "c"});
                         {
                             auto ip = path; ip.popBasename();
-                            board.add(Tag("c++", "include_path"), ip, tv);
+                            board.addItem(Tag("c++", "include_path"), ip, tv);
                         }
                     }
                 }
@@ -88,7 +88,7 @@ namespace fff { namespace agents {
                     forest_.add(path, {"hpp", "cpp"});
                     roots_.insert(path);
                     auto ip = path; ip.popBasename();
-                    board.add(Tag("c++", "include_path"), ip, tv);
+                    board.addItem(Tag("c++", "include_path"), ip, tv);
                 }
             }
             else if (tv.tag == Tag("c++", "utree"))
@@ -100,7 +100,7 @@ namespace fff { namespace agents {
                     forest_.add(path, {"hpp", "cpp"});
                     roots_.insert(path);
                     auto ip = path;
-                    board.add(Tag("c++", "include_path"), ip, tv);
+                    board.addItem(Tag("c++", "include_path"), ip, tv);
                 }
             }
             else if (tv.tag == Tag("c++", "include"))
@@ -115,7 +115,7 @@ namespace fff { namespace agents {
                         roots_.insert(*gubg_);
                         {
                             auto ip = *gubg_; ip.popBasename();
-                            board.add(Tag("c++", "include_path"), ip, tv);
+                            board.addItem(Tag("c++", "include_path"), ip, tv);
                         }
                     }
                 }
@@ -130,7 +130,7 @@ namespace fff { namespace agents {
                         roots_.insert(*imui_);
                         {
                             auto ip = *imui_; ip.popBasename();
-                            board.add(Tag("c++", "include_path"), ip, tv);
+                            board.addItem(Tag("c++", "include_path"), ip, tv);
                         }
                     }
                 }
@@ -144,7 +144,7 @@ namespace fff { namespace agents {
                         roots_.insert(*catch_);
                         {
                             auto ip = *catch_; ip.popBasename();
-                            board.add(Tag("c++", "include_path"), ip, tv);
+                            board.addItem(Tag("c++", "include_path"), ip, tv);
                         }
                     }
                 }
@@ -155,7 +155,7 @@ namespace fff { namespace agents {
                     {
                         L("Adding eigen (" << *eigen_ << ")");
                         roots_.insert(*eigen_);
-                        board.add(Tag("c++", "include_path"), *eigen_, tv);
+                        board.addItem(Tag("c++", "include_path"), *eigen_, tv);
                     }
                 }
 
@@ -165,7 +165,7 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value.as_string(), lua_re))
                     {
                         L("Adding lua (" << *lua_ << ")");
-                        board.add(Tag("c++", "include_path"), *lua_, tv);
+                        board.addItem(Tag("c++", "include_path"), *lua_, tv);
                         vector<file::File> files;
                         MSS(file::read(files, *lua_));
                         for (auto f: files)
@@ -176,7 +176,9 @@ namespace fff { namespace agents {
                                 continue;
                             if (f.basename() == "lua.c")
                                 continue;
-                            board.add(Tag("c", "source"), f, tv);
+                            const Tag tag("c", "source");
+                            board.setTypeForTag(tag, Type::File);
+                            board.addItem(tag, f, tv);
                         }
                     }
                 }
@@ -192,18 +194,18 @@ namespace fff { namespace agents {
                         {
                             file::File ip;
                             if (gubg_inc_(ip))
-                                board.add(Tag("c++", "include_path"), ip, tv);
+                                board.addItem(Tag("c++", "include_path"), ip, tv);
                         }
                         {
                             file::File lp;
                             if (gubg_lib_(lp))
-                                board.add(Tag("c++", "library_path"), lp, tv);
-                            board.add(Tag("c++", "library"), Value("sfml-system"), tv);
-                            board.add(Tag("c++", "library"), Value("sfml-graphics"), tv);
-                            board.add(Tag("c++", "library"), Value("sfml-window"), tv);
-                            board.add(Tag("c++", "library"), Value("sfml-audio"), tv);
-                            board.add(Tag("c++", "library"), Value("sfml-network"), tv);
-                            //board.add(Tag("c++", "library"), Value("GLEW"), tv);
+                                board.addItem(Tag("c++", "library_path"), lp, tv);
+                            board.addItem(Tag("c++", "library"), Value("sfml-system"), tv);
+                            board.addItem(Tag("c++", "library"), Value("sfml-graphics"), tv);
+                            board.addItem(Tag("c++", "library"), Value("sfml-window"), tv);
+                            board.addItem(Tag("c++", "library"), Value("sfml-audio"), tv);
+                            board.addItem(Tag("c++", "library"), Value("sfml-network"), tv);
+                            //board.addItem(Tag("c++", "library"), Value("GLEW"), tv);
                         }
                     }
                 }
@@ -217,15 +219,15 @@ namespace fff { namespace agents {
                         forest_.add(*chai_, {"hpp", "cpp"});
                         roots_.insert(*chai_);
                         {
-                            board.add(Tag("c++", "include_path"), *chai_, tv);
+                            board.addItem(Tag("c++", "include_path"), *chai_, tv);
 #ifdef GUBG_API_LINUX
-                            board.add(Tag("c++", "library"), string("dl"), tv);
+                            board.addItem(Tag("c++", "library"), string("dl"), tv);
 #endif
 #if 0
                             for (auto str: vector<string>{"dispatchkit", "language", "utility"})
                             {
                                 auto ip = *chai_; ip << str;
-                                board.add(Tag("c++", "include_path"), ip, tv);
+                                board.addItem(Tag("c++", "include_path"), ip, tv);
                             }
 #endif
                         }
@@ -236,9 +238,17 @@ namespace fff { namespace agents {
                 file::File rf;
                 if (false) {}
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 1)))
-                    board.add(Tag("c++", "header"), rf, tv);
+                {
+                    const Tag tag("c++", "header");
+                    board.setTypeForTag(tag, Type::File);
+                    board.addItem(tag, rf, tv);
+                }
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 0)))
-                    board.add(Tag("c++", "header"), rf, tv);
+                {
+                    const Tag tag("c++", "header");
+                    board.setTypeForTag(tag, Type::File);
+                    board.addItem(tag, rf, tv);
+                }
                 else
                     L("Not found ...");
             }
@@ -249,12 +259,21 @@ namespace fff { namespace agents {
                 {
                     source.setExtension("cpp");
                     if (forest_.contains(source))
-                        board.add(Tag("c++", "source"), source, tv);
+                    {
+                        const Tag tag("c++", "source");
+                        board.setTypeForTag(tag, Type::File);
+                        board.addItem(tag, source, tv);
+
+                    }
                 }
                 {
                     source.setExtension("c");
                     if (forest_.contains(source))
-                        board.add(Tag("c", "source"), source, tv);
+                    {
+                        const Tag tag("c", "source");
+                        board.setTypeForTag(tag, Type::File);
+                        board.addItem(tag, source, tv);
+                    }
                 }
             }
         }

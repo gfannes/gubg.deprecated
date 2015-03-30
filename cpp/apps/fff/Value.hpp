@@ -3,32 +3,25 @@
 
 #include "gubg/file/File.hpp"
 #include <string>
-#include <memory>
 #include <ostream>
 
 namespace fff { 
     class Value
     {
         public:
-            enum Type {File, String};
-
-            Value(gubg::file::File);
+            Value(const gubg::file::File &);
             Value(std::string);
 
-            bool operator<(Value) const;
-
-            Type type() const;
+            bool operator<(const Value &) const;
 
             //Will convert a string or file, ideal for CLI args
             gubg::file::File as_file() const;
             std::string as_string() const;
 
             void stream(std::ostream &) const;
-            std::string to_str() const;
 
         private:
-            struct Pimpl;
-            std::shared_ptr<const Pimpl> pimpl_;
+            std::string str_;
     };
     inline std::ostream &operator<<(std::ostream &os, const Value &v) {v.stream(os); return os;}
 } 
