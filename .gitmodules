@@ -16,3 +16,6 @@
 [submodule "cpp/libs/extern/ChaiScript"]
 	path = cpp/libs/extern/ChaiScript
 	url = https://github.com/ChaiScript/ChaiScript
+[submodule "cpp/libs/extern/poco"]
+	path = cpp/libs/extern/poco
+	url = https://github.com/pocoproject/poco.git

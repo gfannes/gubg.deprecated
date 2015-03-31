@@ -71,6 +71,29 @@ task :git_tools => bin_dir do
     end
 end
 
+#poco
+namespace :poco do
+    dir = 'cpp/libs/extern/poco'
+    task :update do
+        if !File.exist?(File.join(dir, 'configure'))
+            sh "git submodule --init update #{dir}"
+        end
+    end
+    task :clean do
+        Dir.chdir(dir) do
+            sh 'make clean'
+            rm_rf File.join(dir, 'lib')
+        end
+    end
+    task :build do
+        Dir.chdir(dir) do
+            sh './configure --static --no-tests --omit=XML,JSON,Util,Net,Crypto,NetSSL_OpenSSL,Data,Data/SQLite,Data/ODBC,Data/MySQL,MongoDB,Zip,PageCompiler,PageCompiler/File2Page,CppParser,PDF'
+            sh 'make -j8'
+        end
+    end
+end
+task :poco => %w[poco:update poco:build]
+
 task :vim do
     gubg_dir = Dir.getwd
     Dir.chdir(ENV['HOME']) do
