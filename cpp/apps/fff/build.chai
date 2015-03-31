@@ -1,5 +1,7 @@
 //The source file to get things started
 add_item("c++.source_ref", "fff.cpp");
+add_item("start", "norun");
+add_item("start", "release");
 
 on_item("build_fff", fun(tag, value, nr_left)
 {
