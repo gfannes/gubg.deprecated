@@ -32,14 +32,14 @@ namespace fff { namespace agents {
 
 		for (auto tv: tvs)
 		{
-			if (tv.tag != Tag("c++", "source") && tv.tag != Tag("c++", "header"))
+			if (tv.tag != Tag("c++.source") && tv.tag != Tag("c++.header"))
 				continue;
 			IncludeParser ip;
 			if (!MSS_IS_OK(ip.process(tv.value.as_file())))
 				std::cerr << "Failed to parse include statements for " << tv.value.as_file() << std::endl;
 			else
 				for (auto inc: ip.includes)
-					board.addItem(Tag("c++", "include"), inc, tv);
+					board.addItem(Tag("c++.include"), inc, tv);
 		}
 
 		MSS_END();

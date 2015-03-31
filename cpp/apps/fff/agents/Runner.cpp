@@ -24,7 +24,7 @@ namespace fff { namespace agents {
 				if (tv.value.as_string() == "norun")
 					do_run_ = false;
 			}
-			else if (tv.tag == Tag("c++", "executable"))
+			else if (tv.tag == Tag("c++.executable"))
 			{
 				if (do_run_)
 				{

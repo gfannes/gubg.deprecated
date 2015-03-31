@@ -52,17 +52,17 @@ namespace fff { namespace agents {
                 else if (tv.value.as_string() == "debug")
                     lnk.addOption("debug");
             }
-            else if (tv.tag == Tag("c++", "source"))
+            else if (tv.tag == Tag("c++.source"))
             {
                 if (setExecutable())
                     executable = tv.value.as_file();
             }
-            else if (tv.tag == Tag("c++", "object") || tv.tag == Tag("c", "object"))
+            else if (tv.tag == Tag("c++.object") || tv.tag == Tag("c.object"))
             {
                 lnk.addObject(tv.value.as_file());
                 dependencies.insert(tv);
             }
-            else if (tv.tag == Tag("c++", "include"))
+            else if (tv.tag == Tag("c++.include"))
             {
 #ifdef GUBG_API_LINUX
                 if (tv.value.as_string() == "dlfcn.h")
@@ -73,9 +73,9 @@ namespace fff { namespace agents {
                     lnk.addOption("thread");
 #endif
             }
-            else if (tv.tag == Tag("c++", "library_path"))
+            else if (tv.tag == Tag("c++.library_path"))
                 lnk.addLibraryPath(tv.value.as_file());
-            else if (tv.tag == Tag("c++", "library"))
+            else if (tv.tag == Tag("c++.library"))
                 lnk.addLibrary(tv.value.as_string());
         }
 
@@ -105,14 +105,14 @@ namespace fff { namespace agents {
         {
             case linker::OutputType::Exe:
                 {
-                    const Tag tag("c++", "executable");
+                    const Tag tag("c++.executable");
                     board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, executable);
                 }
                 break;
             case linker::OutputType::Shared:
                 {
-                    const Tag tag("c++", "shared_object");
+                    const Tag tag("c++.shared_object");
                     board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, executable);
                 }

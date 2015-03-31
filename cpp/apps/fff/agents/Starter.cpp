@@ -31,23 +31,56 @@ namespace fff { namespace agents {
         {
             SS(tv.tag, tv.value);
 
-            if (tv.tag != Tag("start"))
-                //We only handle tvs added from CLI arguments
-                continue;
-
+            if (tv.tag == Tag("start"))
             {
-                file::File f;
-                if (resolve_(f, tv.value))
                 {
-                    MSS(processFile_(board, f));
-                    continue;
+                    file::File f;
+                    if (resolve_(f, tv.value))
+                    {
+                        MSS(processFileRef_(board, tv.value.as_file()));
+                        continue;
+                    }
+                }
+                {
+                    const std::string str = tv.value.as_string();
+                    if (MSS_IS_OK(processCommand_(board, str)))
+                        continue;
                 }
             }
-
+            if (tv.tag == Tag("c++.source_ref"))
             {
-                const std::string str = tv.value.as_string();
-                if (MSS_IS_OK(processCommand_(board, str)))
-                    continue;
+                file::File f;
+                MSS(resolve_(f, tv.value));
+                const Tag tag("c++.source");
+                board.setTypeForTag(tag, Type::File);
+                board.addItem(tag, f);
+            }
+            if (tv.tag == Tag("c++.source"))
+            {
+                if (addExeChain_())
+                {
+                    AgentFactory fact;
+                    MSS(board.addAgent(fact.createAgent("ParseIncludes")));
+                    MSS(board.addAgent(fact.createAgent("ResolveHeader")));
+                    MSS(board.addAgent(fact.createAgent("Compiler")));
+                    MSS(board.addAgent(fact.createAgent("Linker")));
+                    MSS(board.addAgent(fact.createAgent("Runner")));
+                }
+            }
+            if (tv.tag == Tag("chai.script_ref"))
+            {
+                file::File f;
+                MSS(resolve_(f, tv.value));
+                const Tag tag("chai.script");
+                board.setTypeForTag(tag, Type::File);
+                board.addItem(tag, f);
+            }
+            if (tv.tag == Tag("chai.script"))
+            {
+                AgentFactory fact;
+                auto chai = fact.createChai(tv.value.as_file());
+                MSS((bool)chai, ChaiScriptLoadFailed);
+                MSS(board.addAgent(chai));
             }
 
             MSS(processOption_(board, tv.value.as_string()));
@@ -56,32 +89,20 @@ namespace fff { namespace agents {
         MSS_END();
     }
 
-    ReturnCode Starter::processFile_(Board &board, const file::File &f)
+    ReturnCode Starter::processFileRef_(Board &board, const file::File &ref)
     {
         MSS_BEGIN(ReturnCode);
 
         AgentFactory fact;
 
         if (false) {}
-        else if (f.extension() == "cpp")
+        else if (ref.extension() == "cpp")
         {
-            if (addExeChain_())
-            {
-                MSS(board.addAgent(fact.createAgent("ParseIncludes")));
-                MSS(board.addAgent(fact.createAgent("ResolveHeader")));
-                MSS(board.addAgent(fact.createAgent("Compiler")));
-                MSS(board.addAgent(fact.createAgent("Linker")));
-                MSS(board.addAgent(fact.createAgent("Runner")));
-                const Tag tag("c++", "source");
-                board.setTypeForTag(tag, Type::File);
-                board.addItem(tag, f);
-            }
+            board.addItem(Tag("c++.source_ref"), ref);
         }
-        else if (f.extension() == "chai")
+        else if (ref.extension() == "chai")
         {
-            auto chai = fact.createChai(f);
-            MSS((bool)chai, ChaiScriptLoadFailed);
-            MSS(board.addAgent(chai));
+            board.addItem(Tag("chai.script_ref"), ref);
         }
 
         MSS_END();

@@ -2,16 +2,14 @@
 #define HEADER_fff_Tag_hpp_ALREADY_INCLUDED
 
 #include <string>
-#include <memory>
-#include <ostream>
 #include <vector>
+#include <ostream>
 
 namespace fff { 
 	class Tag
 	{
 		public:
 			Tag(std::string);
-			Tag(std::string, std::string);
 			Tag(const std::vector<std::string> &);
 
 			bool operator<(Tag) const;
@@ -22,8 +20,7 @@ namespace fff {
 			std::string to_str() const;
 
 		private:
-			struct Pimpl;
-			std::shared_ptr<const Pimpl> pimpl_;
+            std::string str_;
 	};
 	inline std::ostream &operator<<(std::ostream &os, const Tag &t) {t.stream(os); return os;}
 } 

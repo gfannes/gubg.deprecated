@@ -14,7 +14,7 @@ namespace fff { namespace agents {
 			ReturnCode process(Board &) override;
 
 		private:
-			ReturnCode processFile_(Board &, const gubg::file::File &);
+			ReturnCode processFileRef_(Board &, const gubg::file::File &);
 			ReturnCode processCommand_(Board &, const std::string &);
 			ReturnCode processOption_(Board &, const std::string &);
 

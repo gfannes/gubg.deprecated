@@ -117,7 +117,7 @@ namespace fff { namespace agents {
                 L("Looking for searchkey \"" << tv.value.as_string() << "\"");
                 needles.push_back(tv.value.as_string());
             }
-            else if (tv.tag == Tag("search", "ext"))
+            else if (tv.tag == Tag("search.ext"))
             {
                 L("Looking for extension \"" << tv.value.as_string() << "\"");
                 extensions.insert(tv.value.as_string());

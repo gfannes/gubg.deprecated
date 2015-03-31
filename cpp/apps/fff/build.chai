@@ -1,5 +1,7 @@
-print("hello from chai");
-on_item("test_chai", fun(tag, value, nr_left)
+//The source file to get things started
+add_item("c++.source_ref", "fff.cpp");
+
+on_item("build_fff", fun(tag, value, nr_left)
 {
     print("${tag} : ${value}, and ${nr_left} more to follow");
     if (nr_left == 0)

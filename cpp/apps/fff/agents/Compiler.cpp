@@ -17,7 +17,7 @@ namespace fff { namespace agents {
         while (!stage.empty())
         {
             TagValue tv = stage.front(); stage.pop_front();
-            if (tv.tag == Tag("c++", "source") || tv.tag == Tag("c++", "header"))
+            if (tv.tag == Tag("c++.source") || tv.tag == Tag("c++.header"))
                 //Only headers and the source file should be taken into account
                 dependencies.insert(tv);
             auto deps = board.getDependencies(tv);
@@ -25,7 +25,7 @@ namespace fff { namespace agents {
             {
                 //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
                 //We only take the headers, the corresponding c++.source does not influence whoever is using the header
-                if (d.tag == Tag("c++", "include") || d.tag == Tag("c++", "header"))
+                if (d.tag == Tag("c++.include") || d.tag == Tag("c++.header"))
                 {
                     if (!dependencies.count(d))
                         stage.push_back(d);
@@ -53,7 +53,7 @@ namespace fff { namespace agents {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
             }
-            else if (tv.tag == Tag("c++", "include_path"))
+            else if (tv.tag == Tag("c++.include_path"))
             {
                 compiler_.addIncludePath(tv.value.as_file());
             }
@@ -83,7 +83,7 @@ namespace fff { namespace agents {
             {
                 create_mgr.setCache(tv.value.as_file());
             }
-            else if (tv.tag == Tag("c++", "source"))
+            else if (tv.tag == Tag("c++.source"))
             {
                 const auto source = tv.value.as_file();
                 SS(source);
@@ -103,11 +103,11 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                const Tag tag("c++", "object");
+                const Tag tag("c++.object");
                 board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, obj);
             }
-            else if (tv.tag == Tag("c", "source"))
+            else if (tv.tag == Tag("c.source"))
             {
                 const auto source = tv.value.as_file();
                 SS(source);
@@ -127,7 +127,7 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                const Tag tag("c", "object");
+                const Tag tag("c.object");
                 board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, obj);
             }
