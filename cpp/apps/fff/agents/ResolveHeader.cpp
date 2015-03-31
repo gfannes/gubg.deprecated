@@ -48,6 +48,8 @@ namespace fff { namespace agents {
             chai_.reset(new file::File(f << "cpp/libs/extern/ChaiScript/include"));
         if (gubg_home_(f))
             eigen_.reset(new file::File(f << "cpp/libs/extern/eigen"));
+        if (gubg_home_(f))
+            poco_.reset(new file::File(f << "cpp/libs/extern/poco"));
         if (gubg_sdks_(f))
             sfml_.reset(new file::File(f << "SFML"));
     }
@@ -156,6 +158,25 @@ namespace fff { namespace agents {
                         L("Adding eigen (" << *eigen_ << ")");
                         roots_.insert(*eigen_);
                         board.addItem(Tag("c++.include_path"), *eigen_, tv);
+                    }
+                }
+
+                if (poco_ and roots_.count(*poco_) == 0)
+                {
+                    static const regex poco_re("Poco/.+\\.h");
+                    if (regex_match(tv.value.as_string(), poco_re))
+                    {
+                        L("Adding poco (" << *poco_ << ")");
+                        roots_.insert(*poco_);
+                        {
+                            file::File ip = *poco_; ip << "Foundation/include";
+                            board.addItem(Tag("c++.include_path"), ip, tv);
+                        }
+                        {
+                            file::File lp = *poco_; lp << "lib/Linux/x86_64";
+                            board.addItem(Tag("c++.library_path"), lp, tv);
+                            board.addItem(Tag("c++.library"), Value("PocoFoundation"), tv);
+                        }
                     }
                 }
 

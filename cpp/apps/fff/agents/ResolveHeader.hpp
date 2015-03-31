@@ -21,6 +21,7 @@ namespace fff { namespace agents {
 			std::unique_ptr<const gubg::file::File> sfml_;
 			std::unique_ptr<const gubg::file::File> chai_;
 			std::unique_ptr<const gubg::file::File> eigen_;
+			std::unique_ptr<const gubg::file::File> poco_;
 
 			size_t ix_ = 0;
 			std::set<gubg::file::File> roots_;
