@@ -42,6 +42,7 @@ namespace fff {
     {
         public:
             Compiler(compiler::Vendor);
+            Compiler &operator=(Compiler&&dying);
 
             ReturnCode addIncludePath(const gubg::file::File &);
             ReturnCode addIncludePath(const std::string &str) {return addIncludePath(gubg::file::File(str));}

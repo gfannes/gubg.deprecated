@@ -59,8 +59,8 @@ namespace fff {
                 {
                     switch (language)
                     {
-                        case Language::Cpp: stream << "cl /FS"; break;
-                        case Language::C: stream << "cl /FS /TC"; break;
+                        case Language::Cpp: stream << "cl /nologo /FS"; break;
+                        case Language::C: stream << "cl /nologo /FS /TC"; break;
                     }
                     stream << " -c /bigobj";
                 }
@@ -102,6 +102,11 @@ namespace fff {
             case compiler::Vendor::MSC: itf_.reset(new compiler::MSC); break;
             case compiler::Vendor::CLang: itf_.reset(new compiler::CLang); break;
         }
+    }
+    Compiler &Compiler::operator=(Compiler &&dying)
+    {
+        itf_ = std::move(dying.itf_);
+        return *this;
     }
 
     ReturnCode Compiler::addIncludePath(const gubg::file::File &ip)

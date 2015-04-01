@@ -66,7 +66,7 @@ namespace gubg
 			{
 				InfoSetter(ReturnCode code, Level level, const string &t, const string &c)
 				{
-					InfoMgr<ReturnCode>::instance().set(code, level, t, c);
+					InfoMgr<ReturnCode>::instance_meyers().set(code, level, t, c);
 				}
 			};
 

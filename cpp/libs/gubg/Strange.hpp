@@ -6,6 +6,7 @@
 #include <cassert>
 #include <ostream>
 #include <cstring>
+#include <cstdint>
 
 //TODO: the methods that take a Strange& as argument are currently not correct when this argument
 //is the same as the this pointer

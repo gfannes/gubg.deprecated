@@ -102,7 +102,10 @@ namespace fff {
 		L(agent->name());
 		LockGuard lg(mutex_);
 		for (auto t: agents_)
-			MSS(t->name() != agent->name(), AgentAlreadyPresent);
+        {
+            const auto rc = (t->name() != agent->name());
+			MSS(rc, AgentAlreadyPresent);
+        }
 		agents_.push_back(agent);
 		MSS_END();
 	}

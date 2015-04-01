@@ -15,6 +15,7 @@
             Type &operator=(const Type &); \
         public: \
             static Type &instance(){return gubg::Singleton<Type>::instance();} \
+            static Type &instance_meyers(){return gubg::Singleton<Type>::instance_meyers();} \
         private:
 
 namespace gubg
@@ -23,11 +24,17 @@ namespace gubg
     class Singleton
     {
         public:
+            //Use before main to get around the static initialization order fiasco
+            static T &instance_meyers()
+            {
+                static T instance_;
+                return instance_;
+            }
             static T &instance()
             {
                 std::lock_guard<std::mutex> lock(instanceMutex__);
                 if (!instance__)
-                    instance__ = new T;
+                    instance__ = &instance_meyers();
                 return *instance__;
             }
 

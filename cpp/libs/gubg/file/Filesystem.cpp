@@ -147,6 +147,10 @@ ReturnCode gubg::file::read(std::vector<File> &files, const File &file)
         do
         {
             File f(file); f << FindFileData.cFileName;
+            const auto bn = f.basename();
+            if (bn == "." || bn == "..")
+                //We skip "." and ".."
+                continue;
 		    if (mss::isOK(determineType(f)))
 			    files.push_back(f);
         }

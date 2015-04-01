@@ -397,7 +397,7 @@ namespace gubg {
 
     void Strange::ltrim(const char ch)
     {
-        while (!empty() and ch == front())
+        while (!empty() && ch == front())
             popFront();
     }
 

@@ -70,7 +70,7 @@ namespace fff { namespace agents {
                 else
                 {
                     file::File path(tv.value.as_string());
-                    if (MSS_IS_OK(file::resolve(path)) and path.popBasename())
+                    if (MSS_IS_OK(file::resolve(path)) && path.popBasename())
                     {
                         L("Adding local path to the forest (" << path << ")");
                         forest_.add(path, {"hpp", "cpp", "h", "c"});
@@ -107,7 +107,7 @@ namespace fff { namespace agents {
             }
             else if (tv.tag == Tag("c++.include"))
             {
-                if (gubg_ and roots_.count(*gubg_) == 0)
+                if (gubg_ && roots_.count(*gubg_) == 0)
                 {
                     static const regex gubg_re("gubg/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), gubg_re))
@@ -122,7 +122,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (imui_ and roots_.count(*imui_) == 0)
+                if (imui_ && roots_.count(*imui_) == 0)
                 {
                     static const regex gubg_re("imui/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), gubg_re))
@@ -137,7 +137,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (catch_ and roots_.count(*catch_) == 0)
+                if (catch_ && roots_.count(*catch_) == 0)
                 {
                     if (tv.value.as_string() == "catch/catch.hpp")
                     {
@@ -151,7 +151,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (eigen_ and roots_.count(*eigen_) == 0)
+                if (eigen_ && roots_.count(*eigen_) == 0)
                 {
                     if (tv.value.as_string() == "Eigen/Eigen")
                     {
@@ -180,7 +180,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (lua_ and roots_.count(*lua_) == 0)
+                if (lua_ && roots_.count(*lua_) == 0)
                 {
                     static const regex lua_re("lua.hpp");
                     if (regex_match(tv.value.as_string(), lua_re))
@@ -204,7 +204,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (sfml_ and roots_.count(*sfml_) == 0)
+                if (sfml_ && roots_.count(*sfml_) == 0)
                 {
                     static const regex sfml_re("SFML/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), sfml_re))
@@ -231,7 +231,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (chai_ and roots_.count(*chai_) == 0)
+                if (chai_ && roots_.count(*chai_) == 0)
                 {
                     static const regex chai_re("chaiscript/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), chai_re))

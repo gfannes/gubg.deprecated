@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <iomanip>
 
+#include <iostream>
+
 #define GUBG_MODULE_ "fff"
 #include "gubg/log/begin.hpp"
 namespace fff { 
@@ -17,7 +19,7 @@ namespace fff {
 	void showHelp()
 	{
 		std::cout << g_help;
-		std::cout << "Geert Fannes" << std::endl;
+		std::cout << "Geert Fannes (" << __DATE__ << " " << __TIME__ << ")" << std::endl;
 	}
 
 	ReturnCode parseOptions(Options &options, int argc, char **argv)
@@ -67,7 +69,10 @@ namespace fff {
 			MSS(board.addItem(Tag("cache"), cache));
 
 		for (auto seed: options.seeds)
-			MSS(board.addItem(Tag("start"), seed));
+        {
+            const auto rc = board.addItem(Tag("start"), seed);
+			MSS(rc);
+        }
 
 		AgentFactory fact;
 		MSS(board.addAgent(fact.createAgent("Starter")));

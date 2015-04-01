@@ -42,7 +42,7 @@ namespace fff {
         class MSC: public Interface
         {
             public:
-                void stream_Command(Stream &stream) const override { stream << "link"; }
+                void stream_Command(Stream &stream) const override { stream << "link /nologo"; }
                 void stream_Output(Stream &stream, const gubg::file::File &src) const override { stream << " /OUT:" << src; }
                 void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " " << obj; }
                 void stream_LibraryPath(Stream &stream, const gubg::file::File &lp) const override { stream << " /LIBPATH:" << lp; }
