@@ -161,7 +161,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (poco_ and roots_.count(*poco_) == 0)
+                if (poco_ && roots_.count(*poco_) == 0)
                 {
                     static const regex poco_re("Poco/.+\\.h");
                     if (regex_match(tv.value.as_string(), poco_re))

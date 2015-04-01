@@ -46,6 +46,7 @@ namespace fff { namespace agents {
                     if (MSS_IS_OK(processCommand_(board, str)))
                         continue;
                 }
+                MSS(processOption_(board, tv.value.as_string()));
             }
             if (tv.tag == Tag("c++.source_ref"))
             {
@@ -82,8 +83,6 @@ namespace fff { namespace agents {
                 MSS((bool)chai, ChaiScriptLoadFailed);
                 MSS(board.addAgent(chai));
             }
-
-            MSS(processOption_(board, tv.value.as_string()));
         }
 
         MSS_END();
