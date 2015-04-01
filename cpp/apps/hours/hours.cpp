@@ -34,7 +34,6 @@ int main()
     string line;
     while (true)
     {
-        cout << "Total hours: " << total << endl;
         if (!getline(cin, line))
             return -1;
         Strange strange(line);
@@ -48,6 +47,7 @@ int main()
                 continue;
             }
             total = stop-start-lunch;
+            cout << "Total hours: " << total << endl;
         }
         else
         {
