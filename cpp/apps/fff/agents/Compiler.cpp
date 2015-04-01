@@ -53,9 +53,17 @@ namespace fff { namespace agents {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
             }
+            else if (tv.tag == Tag("c++.define"))
+            {
+                compiler_.addDefine(tv.value.as_string());
+            }
             else if (tv.tag == Tag("c++.include_path"))
             {
                 compiler_.addIncludePath(tv.value.as_file());
+            }
+            else if (tv.tag == Tag("c++.force_include"))
+            {
+                compiler_.addForceInclude(tv.value.as_file());
             }
             else if (tv.tag == Tag("start") && tv.value.as_string() == "release")
             {

@@ -22,6 +22,8 @@ namespace fff {
             public:
                 typedef std::vector<gubg::file::File> IncludePaths;
                 IncludePaths includePaths;
+                typedef std::vector<gubg::file::File> ForceIncludes;
+                ForceIncludes forceIncludes;
                 typedef std::vector<std::string> Defines;
                 Defines defines;
                 typedef std::vector<std::string> Options;
@@ -32,6 +34,7 @@ namespace fff {
                 virtual void stream_Source(Stream &, const gubg::file::File &) const = 0;
                 virtual void stream_Object(Stream &, const gubg::file::File &) const = 0;
                 virtual void stream_IncludePath(Stream &, const gubg::file::File &) const = 0;
+                virtual void stream_ForceInclude(Stream &, const gubg::file::File &) const = 0;
                 virtual void stream_Define(Stream &, const std::string &) const = 0;
 
                 virtual bool setOption(const std::string &option) = 0;
@@ -46,6 +49,8 @@ namespace fff {
 
             ReturnCode addIncludePath(const gubg::file::File &);
             ReturnCode addIncludePath(const std::string &str) {return addIncludePath(gubg::file::File(str));}
+            ReturnCode addForceInclude(const gubg::file::File &);
+            ReturnCode addForceInclude(const std::string &str) {return addForceInclude(gubg::file::File(str));}
             ReturnCode addDefine(const std::string &);
 
             ReturnCode addOption(const std::string &);

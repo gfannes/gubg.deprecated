@@ -20,6 +20,7 @@ namespace fff {
                 void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
                 void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " -o " << obj; }
                 void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " -I" << ip; }
+                void stream_ForceInclude(Stream &stream, const gubg::file::File &fi) const override { stream << " -include " << fi; }
                 void stream_Define(Stream &stream, const std::string &def) const override { stream << " -D" << def; }
 
                 bool setOption(const std::string &option) override
@@ -67,6 +68,7 @@ namespace fff {
                 void stream_Source(Stream &stream, const gubg::file::File &src) const override { stream << " " << src; }
                 void stream_Object(Stream &stream, const gubg::file::File &obj) const override { stream << " /Fo" << obj; }
                 void stream_IncludePath(Stream &stream, const gubg::file::File &ip) const override { stream << " /I" << ip; }
+                void stream_ForceInclude(Stream &stream, const gubg::file::File &fi) const override { stream << " /FI" << fi; }
                 void stream_Define(Stream &stream, const std::string &def) const override { stream << " /D" << def; }
 
                 bool setOption(const std::string &option) override
@@ -80,7 +82,7 @@ namespace fff {
                     }
                     else if (option == "release")
                     {
-                        options.push_back("/O3");
+                        options.push_back("/O2");
                         defines.push_back("NDEBUG");
                         defines.push_back("GUBG_RELEASE");
                     }
@@ -116,6 +118,13 @@ namespace fff {
         itf_->includePaths.push_back(ip);
         MSS_END();
     }
+    ReturnCode Compiler::addForceInclude(const gubg::file::File &fi)
+    {
+        MSS_BEGIN(ReturnCode);
+        MSS((bool)itf_);
+        itf_->forceIncludes.push_back(fi);
+        MSS_END();
+    }
     ReturnCode Compiler::addDefine(const std::string &def)
     {
         MSS_BEGIN(ReturnCode);
@@ -141,6 +150,8 @@ namespace fff {
         itf_->stream_Object(stream, obj);
         for (const auto &ip: itf_->includePaths)
             itf_->stream_IncludePath(stream, ip);
+        for (const auto &fi: itf_->forceIncludes)
+            itf_->stream_ForceInclude(stream, fi);
         for (const auto &def: itf_->defines)
             itf_->stream_Define(stream, def);
         for (const auto &option: itf_->options)
