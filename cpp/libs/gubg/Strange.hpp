@@ -29,8 +29,11 @@ namespace gubg {
 
             bool contains(char ch) const;
 
-            void popAll(Strange &res);
-            void popAll(std::string &res);
+            bool strip(char ch);
+
+            //Return true if !res.empty()
+            bool popAll(Strange &res);
+            bool popAll(std::string &res);
 
             //Does not pop ch or str
             bool popTo(Strange &res, const char ch);

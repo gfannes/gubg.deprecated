@@ -46,18 +46,28 @@ namespace gubg {
 		return nullptr != std::memchr(s_, ch, l_);
 	}
 
-	void Strange::popAll(Strange &res)
+    bool Strange::strip(char ch)
+    {
+        if (!popCharIf(ch))
+            return false;
+        while (popCharIf(ch)){}
+        return true;
+    }
+
+	bool Strange::popAll(Strange &res)
 	{
 		assert(invariants_());
 		res = *this;
 		clear();
+        return !res.empty();
 	}
-	void Strange::popAll(std::string &res)
+	bool Strange::popAll(std::string &res)
 	{
 		assert(invariants_());
 		Strange s;
 		popAll(s);
 		res = s.str();
+        return !res.empty();
 	}
 	//Does not pop ch
 	bool Strange::popTo(Strange &res, const char ch)
