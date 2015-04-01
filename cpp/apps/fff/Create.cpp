@@ -54,15 +54,25 @@ namespace fff {
 		}
 
 		if (!all_found_in_cache)
+        {
+            //Remove all files before we will create them. This way, we can check that execution actually created these files.
+			for (auto f: job.files)
+                gubg::file::remove(f);
 			MSS(execute_(job));
+            //Check that execute_ created the necessary files
+			for (auto f: job.files)
+                MSS(gubg::file::exists(f));
+        }
 
 		if (cacheExists_())
 		{
 			for (auto p: hfPerFile)
 			{
 				if (all_found_in_cache)
+                    //Copy from cache to here
 					gubg::file::copy(p.second, p.first);
 				else
+                    //Copy into the cache
 					gubg::file::copy(p.first, p.second);
 			}
 		}
