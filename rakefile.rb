@@ -10,6 +10,7 @@ task :help do
     puts("fff: build the flexible file factory")
     puts("git_tools: install git helper scripts")
     puts("vim: install vim goodies")
+    puts("poco: install the poco library")
 end
 
 def os()
@@ -71,7 +72,9 @@ task :git_tools => bin_dir do
     end
 end
 
-#poco
+#poco: requires glibc-static to be installed on arch, maybe some tests link against librt statically.
+#Installation of glibc-static failed on gpg problems, removed ~/.gnupg and getting the missing keys
+#via "gpg --recv-keys <key>" twice solved the issue.
 namespace :poco do
     dir = 'cpp/libs/extern/poco'
     task :update do
