@@ -1,4 +1,4 @@
-#include "fff/agents/ParseIncludes.hpp"
+#include "fff/agents/ExtractIncludes.hpp"
 #include "fff/Board.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <list>
@@ -7,7 +7,7 @@
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE "ParseIncludes"
+#define GUBG_MODULE "ExtractIncludes"
 #include "gubg/log/begin.hpp"
 namespace {
     struct IncludeParser: gubg::parse::cpp::Includes_crtp<IncludeParser>
@@ -22,7 +22,7 @@ namespace {
     };
 }
 namespace fff { namespace agents { 
-	ReturnCode ParseIncludes::process(Board &board)
+	ReturnCode ExtractIncludes::process(Board &board)
 	{
 		MSS_BEGIN(ReturnCode);
 
