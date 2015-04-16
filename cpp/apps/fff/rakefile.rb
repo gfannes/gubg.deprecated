@@ -13,7 +13,7 @@ config = case ENV["config"]
          end
 
 fff_cpp_fns = %w[fff Tag Value Board Create Execute AgentFactory Compiler Linker].map{|str|"#{str}.cpp"}
-agents_cpp_fns = %w[Starter ExtractIncludes ResolveHeader Compiler Linker Runner Search Chai].map{|str|"agents/#{str}.cpp"}
+agents_cpp_fns = %w[Starter ExtractIncludes ParseInclude ResolveHeader Compiler Linker Runner Search Chai].map{|str|"agents/#{str}.cpp"}
 gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/Forest env/Util env/Variables hash/MD5 parse/cpp/pp/Lexer parse/cpp/pp/Token parse/Line chrono/Uptime chai/Engine].map{|str|"../../libs/gubg/#{str}.cpp"}
 source_fns = fff_cpp_fns+agents_cpp_fns+gubg_cpp_fns
 

@@ -1,4 +1,4 @@
-#include "fff/agents/ResolveHeader.hpp"
+#include "fff/agents/ParseInclude.hpp"
 #include "fff/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
@@ -6,17 +6,34 @@
 using namespace gubg;
 using namespace std;
 
-#define GUBG_MODULE_ "ResolveHeader"
+#define GUBG_MODULE_ "ParseInclude"
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
-
-    bool gubg_env_var_(file::File &f, const string &var);
-    bool gubg_home_(file::File &f);
-    bool gubg_sdks_(file::File &f);
-    bool gubg_inc_(file::File &f);
-    bool gubg_lib_(file::File &f);
-
-    ResolveHeader::ResolveHeader()
+    bool gubg_env_var_(file::File &f, const string &var)
+    {
+        string v;
+        if (!env::Variables::shell().get(v, var))
+            return false;
+        f = v;
+        return true;
+    }
+    bool gubg_home_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG");
+    }
+    bool gubg_sdks_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG_SDKS");
+    }
+    bool gubg_inc_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG_INC");
+    }
+    bool gubg_lib_(file::File &f)
+    {
+        return gubg_env_var_(f, "GUBG_LIB");
+    }
+    ParseInclude::ParseInclude()
     {
         file::File f;
         if (gubg_home_(f))
@@ -36,9 +53,10 @@ namespace fff { namespace agents {
         if (gubg_sdks_(f))
             sfml_.reset(new file::File(f << "SFML"));
     }
-    ReturnCode ResolveHeader::process(Board &board)
+    ReturnCode ParseInclude::process(Board &board)
     {
         MSS_BEGIN(ReturnCode);
+        MSS_RETURN_OK();
 
         auto tvs = board.getFrom(ix_);
         MSS(!tvs.empty(), NoNewEntries);
