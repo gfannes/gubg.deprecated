@@ -8,21 +8,10 @@ namespace fff { namespace agents {
 	class ResolveHeader: public Agent_itf
 	{
 		public:
-			ResolveHeader();
-
 			std::string name() const override {return "ResolveHeader";}
 			ReturnCode process(Board &) override;
 
 		private:
-			std::unique_ptr<const gubg::file::File> gubg_;
-			std::unique_ptr<const gubg::file::File> imui_;
-			std::unique_ptr<const gubg::file::File> lua_;
-			std::unique_ptr<const gubg::file::File> catch_;
-			std::unique_ptr<const gubg::file::File> sfml_;
-			std::unique_ptr<const gubg::file::File> chai_;
-			std::unique_ptr<const gubg::file::File> eigen_;
-			std::unique_ptr<const gubg::file::File> poco_;
-
 			size_t ix_ = 0;
 			std::set<gubg::file::File> roots_;
 			gubg::file::Forest forest_;

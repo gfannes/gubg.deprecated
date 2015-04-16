@@ -56,7 +56,6 @@ namespace fff { namespace agents {
     ReturnCode ParseInclude::process(Board &board)
     {
         MSS_BEGIN(ReturnCode);
-        MSS_RETURN_OK();
 
         auto tvs = board.getFrom(ix_);
         MSS(!tvs.empty(), NoNewEntries);
@@ -74,101 +73,56 @@ namespace fff { namespace agents {
                     if (MSS_IS_OK(file::resolve(path)) && path.popBasename())
                     {
                         L("Adding local path to the forest (" << path << ")");
-                        forest_.add(path, {"hpp", "cpp", "h", "c"});
-                        {
-                            auto ip = path; ip.popBasename();
-                            board.addItem(Tag("c++.include_path"), ip, tv);
-                        }
+                        board.addItem(Tag("c++.tree"), path, tv);
                     }
-                }
-            }
-            else if (tv.tag == Tag("c++.tree"))
-            {
-                file::File path = tv.value.as_string();
-                MSS(file::resolve(path));
-                if (roots_.count(path) == 0)
-                {
-                    forest_.add(path, {"hpp", "cpp"});
-                    roots_.insert(path);
-                    auto ip = path; ip.popBasename();
-                    board.addItem(Tag("c++.include_path"), ip, tv);
-                }
-            }
-            else if (tv.tag == Tag("c++.utree"))
-            {
-                file::File path = tv.value.as_string();
-                MSS(file::resolve(path));
-                if (roots_.count(path) == 0)
-                {
-                    forest_.add(path, {"hpp", "cpp"});
-                    roots_.insert(path);
-                    auto ip = path;
-                    board.addItem(Tag("c++.include_path"), ip, tv);
                 }
             }
             else if (tv.tag == Tag("c++.include"))
             {
-                if (gubg_ && roots_.count(*gubg_) == 0)
+                if (gubg_)
                 {
                     static const regex gubg_re("gubg/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), gubg_re))
                     {
                         L("Adding gubg (" << *gubg_ << ")");
-                        forest_.add(*gubg_, {"hpp", "cpp"});
-                        roots_.insert(*gubg_);
-                        {
-                            auto ip = *gubg_; ip.popBasename();
-                            board.addItem(Tag("c++.include_path"), ip, tv);
-                        }
+                        board.addItem(Tag("c++.tree"), *gubg_, tv);
                     }
                 }
 
-                if (imui_ && roots_.count(*imui_) == 0)
+                if (imui_)
                 {
                     static const regex gubg_re("imui/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), gubg_re))
                     {
                         L("Adding imui (" << *imui_ << ")");
-                        forest_.add(*imui_, {"hpp", "cpp"});
-                        roots_.insert(*imui_);
-                        {
-                            auto ip = *imui_; ip.popBasename();
-                            board.addItem(Tag("c++.include_path"), ip, tv);
-                        }
+                        board.addItem(Tag("c++.tree"), *imui_, tv);
                     }
                 }
 
-                if (catch_ && roots_.count(*catch_) == 0)
+                if (catch_)
                 {
                     if (tv.value.as_string() == "catch/catch.hpp")
                     {
                         L("Adding catch (" << *catch_ << ")");
-                        forest_.add(*catch_, {"hpp", "cpp"});
-                        roots_.insert(*catch_);
-                        {
-                            auto ip = *catch_; ip.popBasename();
-                            board.addItem(Tag("c++.include_path"), ip, tv);
-                        }
+                        board.addItem(Tag("c++.tree"), *catch_, tv);
                     }
                 }
 
-                if (eigen_ && roots_.count(*eigen_) == 0)
+                if (eigen_)
                 {
                     if (tv.value.as_string() == "Eigen/Eigen")
                     {
                         L("Adding eigen (" << *eigen_ << ")");
-                        roots_.insert(*eigen_);
                         board.addItem(Tag("c++.include_path"), *eigen_, tv);
                     }
                 }
 
-                if (poco_ && roots_.count(*poco_) == 0)
+                if (poco_)
                 {
                     static const regex poco_re("Poco/.+\\.h");
                     if (regex_match(tv.value.as_string(), poco_re))
                     {
                         L("Adding poco (" << *poco_ << ")");
-                        roots_.insert(*poco_);
                         {
                             file::File ip = *poco_; ip << "Foundation/include";
                             board.addItem(Tag("c++.include_path"), ip, tv);
@@ -181,7 +135,7 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (lua_ && roots_.count(*lua_) == 0)
+                if (lua_)
                 {
                     static const regex lua_re("lua.hpp");
                     if (regex_match(tv.value.as_string(), lua_re))
@@ -205,14 +159,13 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (sfml_ && roots_.count(*sfml_) == 0)
+                if (sfml_)
                 {
                     static const regex sfml_re("SFML/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), sfml_re))
                     {
                         L("Adding sfml (" << *sfml_ << ")");
-                        forest_.add(*sfml_, {"hpp", "cpp"});
-                        roots_.insert(*sfml_);
+                        board.addItem(Tag("c++.tree"), *sfml_, tv);
                         {
                             file::File ip;
                             if (gubg_inc_(ip))
@@ -232,16 +185,14 @@ namespace fff { namespace agents {
                     }
                 }
 
-                if (chai_ && roots_.count(*chai_) == 0)
+                if (chai_)
                 {
                     static const regex chai_re("chaiscript/.+\\.hpp");
                     if (regex_match(tv.value.as_string(), chai_re))
                     {
                         L("Adding chai (" << *chai_ << ")");
-                        forest_.add(*chai_, {"hpp", "cpp"});
-                        roots_.insert(*chai_);
+                        board.addItem(Tag("c++.utree"), *chai_, tv);
                         {
-                            board.addItem(Tag("c++.include_path"), *chai_, tv);
 #ifdef GUBG_API_LINUX
                             board.addItem(Tag("c++.library"), string("dl"), tv);
 #endif
@@ -253,48 +204,6 @@ namespace fff { namespace agents {
                             }
 #endif
                         }
-                    }
-                }
-
-                L("Checking forest for " << tv.value.as_string());
-                file::File rf;
-                if (false) {}
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 1)))
-                {
-                    const Tag tag("c++.header");
-                    board.setTypeForTag(tag, Type::File);
-                    board.addItem(tag, rf, tv);
-                }
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 0)))
-                {
-                    const Tag tag("c++.header");
-                    board.setTypeForTag(tag, Type::File);
-                    board.addItem(tag, rf, tv);
-                }
-                else
-                    L("Not found ...");
-            }
-            else if (tv.tag == Tag("c++.header"))
-            {
-                const auto header = tv.value.as_file();
-                file::File source = header;
-                {
-                    source.setExtension("cpp");
-                    if (forest_.contains(source))
-                    {
-                        const Tag tag("c++.source");
-                        board.setTypeForTag(tag, Type::File);
-                        board.addItem(tag, source, tv);
-
-                    }
-                }
-                {
-                    source.setExtension("c");
-                    if (forest_.contains(source))
-                    {
-                        const Tag tag("c.source");
-                        board.setTypeForTag(tag, Type::File);
-                        board.addItem(tag, source, tv);
                     }
                 }
             }

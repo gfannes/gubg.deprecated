@@ -24,8 +24,6 @@ namespace fff { namespace agents {
 			std::unique_ptr<const gubg::file::File> poco_;
 
 			size_t ix_ = 0;
-			std::set<gubg::file::File> roots_;
-			gubg::file::Forest forest_;
 	};
 } } 
 
