@@ -63,7 +63,8 @@ file fff_exe_fn => object_fns do
     case os
     when :linux
         flags = '-pthread'
-        libs = %w[dl PocoFoundation]
+        #libs = %w[dl PocoFoundation]
+        libs = %w[dl]
         libs_str = libs.map{|lib|"-l#{lib}"}*' '
         lib_paths = %w[../../libs/extern/poco/lib/Linux/x86_64]
         lib_paths_str = lib_paths.map{|p|"-L#{p}"}*' '
