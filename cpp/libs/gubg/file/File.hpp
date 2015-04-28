@@ -6,6 +6,8 @@
 #include <vector>
 #include <ostream>
 
+#define GUBG_MODULE "File"
+#include "gubg/log/begin.hpp"
 namespace gubg { namespace file {
 
     class File
@@ -85,17 +87,38 @@ namespace gubg { namespace file {
 
             bool popBasename(std::string &bn)
             {
+                SS(bn);
+                if (name_.empty())
+                    return false;
                 auto ix = name_.rfind(Delimiter);
                 if (ix == std::string::npos)
+                {
+                    L("Relative file, we remove it all");
+                    bn.swap(name_);
+                    name_.clear();
+                    return true;
+                }
+                if (name_.size() == 1)
+                {
+                    L("We are at root");
                     return false;
+                }
                 bn = name_.substr(ix+1);
                 name_.resize(ix);
                 return true;
             }
             bool popBasename()
             {
+                if (name_.empty())
+                    return false;
                 auto ix = name_.rfind(Delimiter);
                 if (ix == std::string::npos)
+                {
+                    name_.clear();
+                    return true;
+                }
+                if (name_.size() == 1)
+                    //We are at root
                     return false;
                 name_.resize(ix);
                 return true;
@@ -188,5 +211,6 @@ namespace gubg { namespace file {
     }
 
 } }
+#include "gubg/log/end.hpp"
 
 #endif

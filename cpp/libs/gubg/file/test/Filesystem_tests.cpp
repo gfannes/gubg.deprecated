@@ -1,9 +1,9 @@
-#include "gubg/Testing.hpp"
+#include "catch/catch.hpp"
 #include "gubg/file/Filesystem.hpp"
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE_ "test"
+#define GUBG_MODULE "test"
 #include "gubg/log/begin.hpp"
 namespace 
 {
@@ -21,51 +21,51 @@ namespace
     }
 }
 
-int main()
+TEST_CASE("FilesystemTests", "[ut]")
 {
-    TEST_TAG(FilesystemTests);
+    S();
+    SECTION("resolve")
     {
-        TEST_TAG(resolve);
         File file(".");
-        TEST_OK(resolve(file));
+        REQUIRE(MSS_IS_OK(resolve(file)));
         L(file);
     }
+    SECTION("getcwd")
     {
-        TEST_TAG(getcwd);
         L(gubg::file::getcwd().name());
     }
+    SECTION("read")
     {
-        TEST_TAG(read);
+        SECTION("regular")
         {
-            TEST_TAG(regular);
             const File f(__FILE__);
             size_t s;
-            TEST_OK(size(s, f));
+            REQUIRE(MSS_IS_OK(size(s, f)));
             L("File size for " << f.name() << ": " << s << " bytes");
             string content;
-            TEST_OK(read(content, f));
+            REQUIRE(MSS_IS_OK(read(content, f)));
             L(content);
         }
+        SECTION("directory")
         {
-            TEST_TAG(directory);
             const File root("/");
             const File home("/home/gfannes");
             const File gubg("/home/gfannes/gubg");
             vector<File> files;
-            TEST_OK(read(files, home));
+            REQUIRE(MSS_IS_OK(read(files, home)));
             L("I found " << files.size() << " files in " << home.name());
             for (auto f: files)
                 cout << f.name() << "(" << f.type() << "), ";
             cout << endl;
 
+            SECTION("countNrFiles")
             {
-                TEST_TAG(countNrFiles);
                 size_t nrFiles = 0;
                 countNrFiles(nrFiles, gubg);
                 L("I found " << nrFiles << " files and dirs in " << gubg.name());
             }
+            SECTION("recurse")
             {
-                TEST_TAG(recurse);
                 struct Counter
                 {
                     size_t count;
@@ -85,22 +85,31 @@ int main()
             }
         }
     }
+    SECTION("remove")
     {
-        TEST_TAG(remove);
         File file("remove_me.txt");
-        TEST_OK(write("abc", file));
-        TEST_OK(remove(file));
-        TEST_KO(remove(file));
+        REQUIRE(MSS_IS_OK(write("abc", file)));
+        REQUIRE(MSS_IS_OK(remove(file)));
+        REQUIRE(!MSS_IS_OK(remove(file)));
     }
+    SECTION("copy")
     {
-        TEST_TAG(copy);
         File file("remove_me.txt");
-        TEST_OK(write("abc", file));
+        REQUIRE(MSS_IS_OK(write("abc", file)));
         File file2("remove_me_2.txt");
-        TEST_OK(copy(file, file2));
-        TEST_OK(remove(file));
-        TEST_OK(remove(file2));
+        REQUIRE(MSS_IS_OK(copy(file, file2)));
+        REQUIRE(MSS_IS_OK(remove(file)));
+        REQUIRE(MSS_IS_OK(remove(file2)));
     }
-    return 0;
+    SECTION("mkdir")
+    {
+        File dir("test_dir/aaa");
+        if (isDirectory(dir))
+            remove(dir);
+        REQUIRE(!isDirectory(dir));
+        REQUIRE(MSS_IS_OK(mkdir(dir)));
+        REQUIRE(isDirectory(dir));
+        //remove(dir);
+    }
 }
 #include "gubg/log/end.hpp"

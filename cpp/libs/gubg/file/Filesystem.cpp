@@ -24,7 +24,7 @@
 using namespace gubg::file;
 using namespace std;
 
-#define GUBG_MODULE_ "Filesystem"
+#define GUBG_MODULE "Filesystem"
 #include "gubg/log/begin.hpp"
 
 ReturnCode gubg::file::size(size_t &fileSize, const File &file)
@@ -278,6 +278,33 @@ bool gubg::file::isDirectory(const File &file)
         return false;
 #endif
     return (statbuf.st_mode & S_IFMT) == S_IFDIR;
+}
+
+namespace  { 
+    ReturnCode mkdir_recursive_(File dir)
+    {
+        MSS_BEGIN(ReturnCode, dir);
+        if (isDirectory(dir))
+            MSS_RETURN_OK();
+        std::string bn;
+        MSS(dir.popBasename(bn));
+        if (!dir.empty())
+            MSS(mkdir_recursive_(dir));
+        dir << bn;
+#ifdef GUBG_API_LINUX
+        const auto rc = ::mkdir(dir.name().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        MSS(rc == 0);
+#else
+        MSS(ReturnCode::NotImplemented);
+#endif
+        MSS_END();
+    }
+} 
+ReturnCode gubg::file::mkdir(const File &dir)
+{
+    MSS_BEGIN(ReturnCode, dir);
+    MSS(mkdir_recursive_(dir));
+    MSS_END();
 }
 
 ReturnCode gubg::file::getcwd(File &file)

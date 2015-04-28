@@ -36,6 +36,8 @@ namespace gubg { namespace file {
     bool isRegular(const File &);
     bool isDirectory(const File &);
 
+    ReturnCode mkdir(const File &);
+
     ReturnCode getcwd(File &);
     File getcwd();
 
