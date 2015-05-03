@@ -42,6 +42,10 @@ bin_dir = ENV["GUBG_BIN"] || File.join(build_dir, "bin"); ENV["GUBG_BIN"] = bin_
 ENV["PATH"] = ENV["PATH"] + ':' + bin_dir
 directory bin_dir
 
+task :submods do
+    sh 'git submodule update --init'
+end
+
 #fff
 task :fff do
     Dir.chdir("cpp/apps/fff"){sh "rake build self"}
