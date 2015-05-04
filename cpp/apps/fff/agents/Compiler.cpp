@@ -48,10 +48,20 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "gcc")
+            {
+                if (is_default_compiler_())
+                    compiler_ = fff::Compiler(compiler::Vendor::GCC);
+            }
             else if (tv.tag == Tag("start") && tv.value.as_string() == "cl")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
+            }
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "clang")
+            {
+                if (is_default_compiler_())
+                    compiler_ = fff::Compiler(compiler::Vendor::CLang);
             }
             else if (tv.tag == Tag("c++.define"))
             {
