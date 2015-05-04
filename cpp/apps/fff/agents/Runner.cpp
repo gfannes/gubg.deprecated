@@ -24,11 +24,17 @@ namespace fff { namespace agents {
 				if (tv.value.as_string() == "norun")
 					do_run_ = false;
 			}
+			else if (tv.tag == Tag("run.argument"))
+			{
+                args_.push_back(tv.value.as_string());
+			}
 			else if (tv.tag == Tag("c++.executable"))
 			{
 				if (do_run_)
 				{
 					ostringstream command; command << tv.value.as_file();
+                    for (auto arg: args_)
+                        command << " " << arg;
 					cout << string(50, '*') << " " << command.str() << endl;
 					gubg::chrono::Stopwatch<> sw;
 					MSS(execute(command.str()));

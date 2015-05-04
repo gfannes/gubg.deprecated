@@ -2,6 +2,8 @@
 #define HEADER_fff_agents_Runner_hpp_ALREADY_INCLUDED
 
 #include "fff/Agent.hpp"
+#include <string>
+#include <vector>
 
 namespace fff { namespace agents { 
 	class Runner: public Agent_itf
@@ -13,6 +15,8 @@ namespace fff { namespace agents {
 		private:
 			bool do_run_ = true;
 			size_t ix_;
+            typedef std::vector<std::string> Arguments;
+            Arguments args_;
 	};
 } } 
 
