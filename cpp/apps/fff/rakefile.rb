@@ -1,10 +1,11 @@
 require("rake/clean")
 
-os = case RUBY_PLATFORM
-     when "x64-mingw32" then :windows
-     when "x86_64-linux" then :linux
-     else nil
-     end
+def os()
+    case RUBY_PLATFORM
+    when /mingw/ then :win
+    when /linux/ then :linux
+    else nil end
+end
 fail("Could not determine OS") unless os
 
 config = case ENV["config"]
