@@ -43,7 +43,9 @@ namespace fff {
                         options.push_back("-fPIC");
                     }
                     else
-                        return false;
+                    {
+                        options.push_back(options);
+                    }
                     return true;
                 }
         };
@@ -90,7 +92,9 @@ namespace fff {
                     {
                     }
                     else
-                        return false;
+                    {
+                        options.push_back(options);
+                    }
                     return true;
                 }
         };

@@ -63,6 +63,10 @@ namespace fff { namespace agents {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::CLang);
             }
+            else if (tv.tag == Tag("c++.flag"))
+            {
+                compiler_.addOption(tv.value.as_string());
+            }
             else if (tv.tag == Tag("c++.define"))
             {
                 compiler_.addDefine(tv.value.as_string());
