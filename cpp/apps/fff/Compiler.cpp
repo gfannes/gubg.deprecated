@@ -44,7 +44,7 @@ namespace fff {
                     }
                     else
                     {
-                        options.push_back(options);
+                        options.push_back(option);
                     }
                     return true;
                 }
@@ -93,7 +93,7 @@ namespace fff {
                     }
                     else
                     {
-                        options.push_back(options);
+                        options.push_back(option);
                     }
                     return true;
                 }
