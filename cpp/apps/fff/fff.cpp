@@ -55,10 +55,10 @@ namespace fff {
 
 		auto cache = gubg::file::File("/tmp/fff");
         {
-            std::string gubg_tmp;
-            if (gubg::env::Variables::shell().get(gubg_tmp, "GUBG_TMP"))
+            std::string str;
+            if (gubg::env::Variables::shell().get(str, "FFF_CACHE"))
             {
-                gubg::file::File c = gubg_tmp; c << "fff";
+                gubg::file::File c = str;
                 if (gubg::file::isDirectory(c))
                     cache = c;
             }
