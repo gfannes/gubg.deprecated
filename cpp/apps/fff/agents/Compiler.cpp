@@ -84,6 +84,11 @@ namespace fff { namespace agents {
                 compiler_.addOption("release");
                 build_type_was_set_ = true;
             }
+            else if (tv.tag == Tag("start") && tv.value.as_string() == "debug")
+            {
+                compiler_.addOption("debug");
+                build_type_was_set_ = true;
+            }
             else if (tv.tag == Tag("start") && tv.value.as_string() == "shared")
             {
                 compiler_.addOption("shared");
