@@ -58,9 +58,10 @@ namespace fff {
             std::string str;
             if (gubg::env::Variables::shell().get(str, "FFF_CACHE"))
             {
-                gubg::file::File c = str;
-                if (gubg::file::isDirectory(c))
-                    cache = c;
+                gubg::file::File dir = str;
+                gubg::file::mkdir(dir);
+                if (gubg::file::isDirectory(dir))
+                    cache = dir;
             }
         }
 		if (!gubg::file::isDirectory(cache))
