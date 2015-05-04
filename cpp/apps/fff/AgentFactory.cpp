@@ -3,6 +3,7 @@
 #include "fff/agents/ExtractIncludes.hpp"
 #include "fff/agents/ParseInclude.hpp"
 #include "fff/agents/ResolveHeader.hpp"
+#include "fff/agents/Hasher.hpp"
 #include "fff/agents/Compiler.hpp"
 #include "fff/agents/Linker.hpp"
 #include "fff/agents/Runner.hpp"
@@ -20,6 +21,7 @@ namespace fff {
         L_ELSE_IF(ExtractIncludes);
         L_ELSE_IF(ParseInclude);
         L_ELSE_IF(ResolveHeader);
+        L_ELSE_IF(Hasher);
         L_ELSE_IF(Compiler);
         L_ELSE_IF(Linker);
         L_ELSE_IF(Runner);

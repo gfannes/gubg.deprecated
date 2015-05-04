@@ -64,6 +64,7 @@ namespace fff { namespace agents {
                     MSS(board.addAgent(fact.createAgent("ExtractIncludes")));
                     MSS(board.addAgent(fact.createAgent("ParseInclude")));
                     MSS(board.addAgent(fact.createAgent("ResolveHeader")));
+                    MSS(board.addAgent(fact.createAgent("Hasher")));
                     MSS(board.addAgent(fact.createAgent("Compiler")));
                     MSS(board.addAgent(fact.createAgent("Linker")));
                     MSS(board.addAgent(fact.createAgent("Runner")));

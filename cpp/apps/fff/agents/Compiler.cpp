@@ -42,6 +42,13 @@ namespace fff { namespace agents {
     {
         MSS_BEGIN(ReturnCode);
 
+        if (addHashTags_())
+        {
+            board.addItem(Tag("hash.tag"), Value("c++.source"));
+            board.addItem(Tag("hash.tag"), Value("c++.header"));
+            MSS_RETURN_OK();
+        }
+
         auto tvs = board.getFrom(ix_);
         ix_ += tvs.size();
 
