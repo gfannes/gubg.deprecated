@@ -61,6 +61,7 @@ autocmd BufEnter,BufNewFile,BufRead *.puml source $GUBG/vim/plantuml.vim
 autocmd BufEnter,BufNewFile,BufRead *.tjp source $GUBG/vim/tjp.vim
 autocmd BufEnter,BufNewFile,BufRead *.tji source $GUBG/vim/tjp.vim
 "au! BufRead,BufNewFile *.json set filetype=json foldmethod=syntax 
+autocmd BufNewFile,BufReadPost *.md set filetype=markdown
 
 source $GUBG/vim/hexmode.vim
 
@@ -78,6 +79,9 @@ set ignorecase
 set smartcase
 
 source $GUBG/vim/autoload/pathogen.vim
-execute pathogen#infect()
+execute pathogen#infect($GUBG.'/vim/bundle/{}')
 syntax on
 filetype plugin indent on
+
+set complete-=i
+set wrap
