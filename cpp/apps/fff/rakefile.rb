@@ -19,11 +19,11 @@ gubg_cpp_fns = %w[OptionParser Platform Strange file/File file/Filesystem file/F
 source_fns = fff_cpp_fns+agents_cpp_fns+gubg_cpp_fns
 
 object_fns = []
-cache_dir = File.join(Dir.getwd, '.cache')
+cache_dir = '.cache'
 directory cache_dir
 source_fns.each do |source_fn|
     object_fn = File.join(cache_dir, source_fn.gsub(/[\.\/\\:]/, '_')+'.obj')
-    include_paths = %w[.. ../../libs ../../libs/extern/ChaiScript/include ../../libs/extern/poco/Foundation/include]
+    include_paths = %w[.. ../../libs ../../libs/extern/ChaiScript/include]
     include_paths_str = include_paths.map{|p|"-I#{p}"}*' '
     options = []
     case os
@@ -34,10 +34,10 @@ source_fns.each do |source_fn|
     defines = []
     defines += {debug: %w[DEBUG GUBG_DEBUG], release: %w[NDEBUG GUBG_RELEASE]}[config]
     defines_str = defines.map{|d|"-D#{d}"}*' '
-    rule object_fn => [cache_dir, source_fn] do
+    file object_fn => [cache_dir, source_fn] do
         case os
-        when :linux then sh "g++ -std=c++0x -c -o #{object_fn} #{source_fn} #{options*' '} #{include_paths_str} #{defines_str}"
-        when :windows then sh "cl /nologo -c /bigobj /EHsc /Fo#{object_fn} #{source_fn} #{options*" "} #{include_paths_str} #{defines_str}"
+        when :linux then sh "g++ -std=c++0x -c #{options*' '} #{include_paths_str} #{defines_str} -o #{object_fn} #{source_fn}"
+        when :windows then sh "cl /nologo -c /bigobj /EHsc #{options*" "} #{include_paths_str} #{defines_str} /Fo#{object_fn} #{source_fn}"
         else raise("Unknown os #{os}") end
     end
     object_fns << object_fn
@@ -64,10 +64,9 @@ file fff_exe_fn => object_fns do
     case os
     when :linux
         flags = '-pthread'
-        #libs = %w[dl PocoFoundation]
         libs = %w[dl]
         libs_str = libs.map{|lib|"-l#{lib}"}*' '
-        lib_paths = %w[../../libs/extern/poco/lib/Linux/x86_64]
+        lib_paths = %w[]
         lib_paths_str = lib_paths.map{|p|"-L#{p}"}*' '
     when :windows
     else raise("Unknown os #{os}") end
