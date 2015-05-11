@@ -23,6 +23,13 @@ namespace gubg { namespace db {
                 file::mkdir(dir);
             }
 
+            ReturnCode valid() const
+            {
+                MSS_BEGIN(ReturnCode);
+                MSS(file::isDirectory(dir_));
+                MSS_END();
+            }
+
             ReturnCode get(Value &value, const Key &key)
             {
                 MSS_BEGIN(ReturnCode);

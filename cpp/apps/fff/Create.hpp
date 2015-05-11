@@ -3,8 +3,9 @@
 
 #include "fff/Codes.hpp"
 #include "fff/Types.hpp"
-#include "gubg/file/File.hpp"
+#include "gubg/db/KeyValue.hpp"
 #include <string>
+#include <memory>
 
 namespace fff { 
     struct CreateJob
@@ -22,10 +23,8 @@ namespace fff {
             ReturnCode create(const CreateJob &);
 
         private:
-			ReturnCode execute_(const CreateJob &);
-			bool cacheExists_() const;
-
-            gubg::file::File cache_;
+            using DB = std::unique_ptr<gubg::db::KeyValue>;
+            DB cache_db_;
     };
 } 
 

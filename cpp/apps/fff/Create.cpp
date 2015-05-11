@@ -2,6 +2,7 @@
 #include "fff/Execute.hpp"
 #include "gubg/file/Filesystem.hpp"
 using namespace std;
+using namespace gubg;
 
 #define GUBG_MODULE_ "Create"
 #include "gubg/log/begin.hpp"
@@ -9,71 +10,50 @@ namespace fff {
 	ReturnCode CreateMgr::setCache(gubg::file::File cache)
 	{
 		MSS_BEGIN(ReturnCode);
-		MSS(gubg::file::exists(cache));
-		cache_ = cache;
+        DB db{new gubg::db::KeyValue{cache}};
+        MSS(db->valid());
+        cache_db_.swap(db);
 		MSS_END();
 	}
 	ReturnCode CreateMgr::create(const CreateJob &job)
 	{
 		MSS_BEGIN(ReturnCode, job.file);
 
-		std::map<gubg::file::File, gubg::file::File> hfPerFile;
-		bool found_in_cache = false;
-		if (cacheExists_())
+        //Remove the file before we will create it. This way, we can check that execution actually worked.
+        gubg::file::remove(job.file);
+
+        db::Key deps;
         {
-            found_in_cache = true;
-            using namespace gubg::hash::md5;
-            Hash hash;
+            ostringstream key;
+            key << job.command << endl;
+            key << job.file << endl;
+            key << job.dependencies.to_hex() << endl;
+            deps = key.str();
+        }
+        db::Value content;
+
+        if (cache_db_ && MSS_IS_OK(cache_db_->get(content, deps)))
+        {
+            //Copy from cache to here
+            gubg::file::write(content, job.file);
+        }
+        else
+        {
+            MSS(execute(job.command));
+
+            //Copy into the cache
+            if (cache_db_)
             {
-                Stream md5;
-                md5 << job.command;
-                md5 << job.file.name();
-                hash = md5.hash();
-                L("before: " << hash.to_hex());
-                L("depend: " << job.dependencies.to_hex());
-                hash ^= job.dependencies;
-                L("after:  " << hash.to_hex());
-            }
-            auto ff = cache_; ff << hash.to_hex();
-            hfPerFile[job.file] = ff;
-            if (!gubg::file::exists(ff))
-            {
-                L("Could not find " << job.file << " in the cache (" << ff << ")");
-                found_in_cache = false;
+                //Storing into the cache can fail, but reading the file should not.
+                MSS(gubg::file::read(content, job.file));
+                cache_db_->set(deps, content);
             }
         }
 
-		if (!found_in_cache)
-        {
-            //Remove the file before we will create it. This way, we can check that execution actually worked.
-            gubg::file::remove(job.file);
-			MSS(execute_(job));
-            //Check that execute_ created the file
-            MSS(gubg::file::exists(job.file));
-        }
+        //Double-check that the file is present
+        MSS(gubg::file::isRegular(job.file));
 
-		if (cacheExists_())
-		{
-			for (auto p: hfPerFile)
-			{
-				if (found_in_cache)
-                    //Copy from cache to here
-					gubg::file::copy(p.second, p.first);
-				else
-                    //Copy into the cache
-					gubg::file::copy(p.first, p.second);
-			}
-		}
-
-		MSS_END();
-	}
-	ReturnCode CreateMgr::execute_(const CreateJob &job)
-	{
-		return execute(job.command);
-	}
-	bool CreateMgr::cacheExists_() const
-	{
-		return !cache_.empty();
-	}
+        MSS_END();
+    }
 } 
 #include "gubg/log/end.hpp"
