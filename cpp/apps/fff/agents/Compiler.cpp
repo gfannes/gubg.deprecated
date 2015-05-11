@@ -133,7 +133,7 @@ namespace fff { namespace agents {
                 string cmd;
                 compiler_.compile(cmd, source, obj, compiler::Language::Cpp);
                 CreateJob job;
-                job.files.insert(obj);
+                job.file = obj;
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
@@ -157,7 +157,7 @@ namespace fff { namespace agents {
                 string cmd;
                 compiler_.compile(cmd, source, obj, compiler::Language::C);
                 CreateJob job;
-                job.files.insert(obj);
+                job.file = obj;
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);

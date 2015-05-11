@@ -30,6 +30,7 @@ CLEAN.include(FileList["**/*.exe"])
 CLEAN.include(FileList["**/*.dll"])
 task :clean do
     Dir.chdir("cpp/apps/fff"){sh "rake clean"}
+    rm_rf ENV['FFF_CACHE'] if ENV['FFF_CACHE']
 end
 
 gubg_dir = ENV["GUBG"] || Dir.getwd; ENV["GUBG"] = gubg_dir

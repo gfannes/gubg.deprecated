@@ -90,7 +90,7 @@ namespace fff { namespace agents {
         }
 
         CreateJob job;
-        job.files.insert(executable);
+        job.file = executable;
         std::string cmd;
         lnk.link(cmd, executable);
         job.command = cmd;

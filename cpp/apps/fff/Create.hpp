@@ -9,8 +9,7 @@
 namespace fff { 
     struct CreateJob
     {
-        typedef std::set<gubg::file::File> Files;
-        Files files;
+        gubg::file::File file;
         std::string command;
 		Hash dependencies;
     };
