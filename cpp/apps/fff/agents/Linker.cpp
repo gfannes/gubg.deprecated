@@ -15,6 +15,13 @@ namespace fff { namespace agents {
     {
         MSS_BEGIN(ReturnCode);
 
+        if (addHashTags_())
+        {
+            board.addItem(Tag("hash.tag"), Value("c++.object"));
+            board.addItem(Tag("hash.tag"), Value("c.object"));
+            MSS_RETURN_OK();
+        }
+
         if (!run_())
             MSS_RETURN_OK();
 
@@ -38,7 +45,7 @@ namespace fff { namespace agents {
         file::File executable;
         OnlyOnce setExecutable;
         CreateMgr create_mgr;
-        Dependencies dependencies;
+        RecursiveDependencies rdeps;
         for (auto tv: tvs)
         {
             if (false) {}
@@ -60,7 +67,8 @@ namespace fff { namespace agents {
             else if (tv.tag == Tag("c++.object") || tv.tag == Tag("c.object"))
             {
                 lnk.addObject(tv.value.as_file());
-                dependencies.insert(tv);
+                for (auto p: board.getRecursiveDependencies(tv))
+                    rdeps[p.first] = p.second;
             }
             else if (tv.tag == Tag("c++.include"))
             {
@@ -94,7 +102,7 @@ namespace fff { namespace agents {
         std::string cmd;
         lnk.link(cmd, executable);
         job.command = cmd;
-        job.dependencies = board.hash(dependencies);
+        job.dependencies = rdeps;
         MSS(create_mgr.create(job), LinkFailure);
         {
             using namespace gubg::file;

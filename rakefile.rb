@@ -51,6 +51,7 @@ end
 task :fff do
     Dir.chdir("cpp/apps/fff") do
         sh "rake -j8 -m build"
+        # sh "rake build"
         sh "rake self"
     end
 end

@@ -1,6 +1,7 @@
 #include "fff/agents/Hasher.hpp"
 #include "fff/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/hash/MD5.hpp"
 #include <iostream>
 using namespace std;
 

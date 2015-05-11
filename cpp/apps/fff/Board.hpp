@@ -19,38 +19,42 @@ namespace fff {
             void setTypeForTag(Tag, Type);
             Type typeForTag(Tag) const;
 
-			ReturnCode addItem(Tag, Value);
-			ReturnCode addItem(Tag, Value, TagValue);
+            ReturnCode addItem(Tag, Value);
+            ReturnCode addItem(Tag, Value, TagValue);
 
-			TagValues getFrom(size_t ix) const;
-			Dependencies getDependencies(const TagValue &) const;
+            bool isDirty() const;
 
-			Hash hash(const Dependencies &) const;
+            TagValues getFrom(size_t ix) const;
+            Dependencies getDependencies(const TagValue &) const;
+            RecursiveDependencies getRecursiveDependencies(const TagValue &, const Tags &excludes = Tags{}) const;
 
-			ReturnCode addAgent(Agent_itf::Ptr);
-			ReturnCode expand();
+            ReturnCode addAgent(Agent_itf::Ptr);
+            ReturnCode expand();
 
         private:
-			Agents agents_;
+            //The agents looking and expanding the items on the board
+            Agents agents_;
 
             typedef std::map<Tag, Type> TypePerTag;
             TypePerTag typePerTag_;
 
-			TagValues tagValues_;
+            //The items on the board
+            TagValues tagValues_;
 
-			typedef std::set<Tag> Tags;
-			typedef std::map<Value, Tags> TagsPerValue;
-			TagsPerValue tagsPerValue_;
+            //If this flag is set, expand will start with the first agent again.
+            bool isDirty_ = true;
 
-			typedef std::map<TagValue, Dependencies> DependenciesPerTV;
-			DependenciesPerTV dependenciesPerTV_;
+            //Faster checking if a tag-value already exists
+            typedef std::set<Tag> Tags;
+            typedef std::map<Value, Tags> TagsPerValue;
+            TagsPerValue tagsPerValue_;
 
-			typedef std::map<TagValue, Hash> HashPerTV;
-			mutable HashPerTV hashPerTV_;
+            typedef std::map<TagValue, Dependencies> DependenciesPerTV;
+            DependenciesPerTV dependenciesPerTV_;
 
-			typedef std::mutex Mutex;
-			typedef std::lock_guard<Mutex> LockGuard;
-			mutable Mutex mutex_;
+            typedef std::mutex Mutex;
+            typedef std::lock_guard<Mutex> LockGuard;
+            mutable Mutex mutex_;
     };
 
 } 

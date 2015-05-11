@@ -7,17 +7,17 @@ using namespace gubg;
 #define GUBG_MODULE_ "Create"
 #include "gubg/log/begin.hpp"
 namespace fff { 
-	ReturnCode CreateMgr::setCache(gubg::file::File cache)
-	{
-		MSS_BEGIN(ReturnCode);
+    ReturnCode CreateMgr::setCache(gubg::file::File cache)
+    {
+        MSS_BEGIN(ReturnCode);
         DB db{new gubg::db::KeyValue{cache}};
         MSS(db->valid());
         cache_db_.swap(db);
-		MSS_END();
-	}
-	ReturnCode CreateMgr::create(const CreateJob &job)
-	{
-		MSS_BEGIN(ReturnCode, job.file);
+        MSS_END();
+    }
+    ReturnCode CreateMgr::create(const CreateJob &job)
+    {
+        MSS_BEGIN(ReturnCode, job.file);
 
         //Remove the file before we will create it. This way, we can check that execution actually worked.
         gubg::file::remove(job.file);
@@ -27,7 +27,12 @@ namespace fff {
             ostringstream key;
             key << job.command << endl;
             key << job.file << endl;
-            key << job.dependencies.to_hex() << endl;
+            for (auto p: job.dependencies)
+            {
+                key << p.first << endl;
+                for (auto dep: p.second)
+                    key << "  " << dep << endl;
+            }
             deps = key.str();
         }
         db::Value content;

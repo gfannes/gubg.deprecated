@@ -2,14 +2,13 @@
 #define HEADER_fff_Types_hpp_ALREADY_INCLUDED
 
 #include "fff/TagValue.hpp"
-#include "gubg/hash/MD5.hpp"
-#include <string>
 #include <set>
+#include <map>
 
 namespace fff { 
 
-	typedef gubg::hash::md5::Hash Hash;
-    typedef std::set<TagValue> Dependencies;
+    using Dependencies = std::set<TagValue>;
+    using RecursiveDependencies = std::map<TagValue, Dependencies>;
 
 } 
 

@@ -12,7 +12,7 @@ namespace fff {
     {
         gubg::file::File file;
         std::string command;
-		Hash dependencies;
+        RecursiveDependencies dependencies;
     };
 
     class CreateMgr

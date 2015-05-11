@@ -9,30 +9,12 @@ using namespace std;
 #define GUBG_MODULE_ "Compiler"
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
-    Hash collectAndHashDependencies_(const TagValue &tv, const Board &board)
+    RecursiveDependencies collectAndHashDependencies_(const TagValue &tv, const Board &board)
     {
-        Dependencies dependencies;
-        typedef std::list<TagValue> Stage;
-        Stage stage; stage.push_back(tv);
-        while (!stage.empty())
-        {
-            TagValue tv = stage.front(); stage.pop_front();
-            if (tv.tag == Tag("c++.source") || tv.tag == Tag("c++.header"))
-                //Only headers and the source file should be taken into account
-                dependencies.insert(tv);
-            auto deps = board.getDependencies(tv);
-            for (auto d: deps)
-            {
-                //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
-                //We only take the headers, the corresponding c++.source does not influence whoever is using the header
-                if (d.tag == Tag("c++.include") || d.tag == Tag("c++.header"))
-                {
-                    if (!dependencies.count(d))
-                        stage.push_back(d);
-                }
-            }
-        }
-        return board.hash(dependencies);
+        //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
+        //We only take the headers, the corresponding c++.source does not influence whoever is using the header
+        Tags excludes; excludes.insert(Tag{"c++.source"}); excludes.insert(Tag{"c.source"});
+        return board.getRecursiveDependencies(tv, excludes);
     }
     Compiler::Compiler()
         : compiler_(compiler::Vendor::GCC)
@@ -45,7 +27,9 @@ namespace fff { namespace agents {
         if (addHashTags_())
         {
             board.addItem(Tag("hash.tag"), Value("c++.source"));
+            board.addItem(Tag("hash.tag"), Value("c.source"));
             board.addItem(Tag("hash.tag"), Value("c++.header"));
+            board.addItem(Tag("hash.tag"), Value("c.header"));
             MSS_RETURN_OK();
         }
 
