@@ -174,7 +174,27 @@ ReturnCode gubg::file::write(const std::string &content, const File &file)
 
 ReturnCode gubg::file::remove(const File &file)
 {
-    return (::remove(file.name().c_str()) == 0 ? ReturnCode::OK : ReturnCode::CouldNotRemove);
+    MSS_BEGIN(ReturnCode);
+    MSS_Q(exists(file), FileDoesNotExist);
+#ifdef GUBG_API_LINUX
+    MSS(::remove(file.name().c_str()) == 0, CouldNotRemove);
+#else
+    auto f = file;
+    MSS(determineType(f));
+    switch (f.type())
+    {
+        case File::Regular:
+            MSS(::remove(file.name().c_str()) == 0, CouldNotRemove);
+            break;
+        case File::Directory:
+            MSS(!!::RemoveDirectory(file.name().c_str()), CouldNotRemove);
+            break;
+        default:
+            MSS(ReturnCode::UnknownFileType);
+            break;
+    }
+#endif
+    MSS_END();
 }
 
 ReturnCode gubg::file::copy(const File &from, const File &to)
@@ -295,7 +315,7 @@ namespace  {
         const auto rc = ::mkdir(dir.name().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         MSS(rc == 0);
 #else
-        MSS(ReturnCode::NotImplemented);
+        MSS(!!::CreateDirectory(dir.name().c_str(), nullptr));
 #endif
         MSS_END();
     }

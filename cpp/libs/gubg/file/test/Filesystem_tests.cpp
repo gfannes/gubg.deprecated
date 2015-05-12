@@ -46,6 +46,7 @@ TEST_CASE("FilesystemTests", "[ut]")
             REQUIRE(MSS_IS_OK(read(content, f)));
             L(content);
         }
+#if 0
         SECTION("directory")
         {
             const File root("/");
@@ -84,6 +85,7 @@ TEST_CASE("FilesystemTests", "[ut]")
                 L("Filecount: " << counter.count);
             }
         }
+#endif
     }
     SECTION("remove")
     {
@@ -105,7 +107,9 @@ TEST_CASE("FilesystemTests", "[ut]")
     {
         File dir("test_dir/aaa");
         if (isDirectory(dir))
-            remove(dir);
+        {
+            REQUIRE(MSS_IS_OK(remove(dir)));
+        }
         REQUIRE(!isDirectory(dir));
         REQUIRE(MSS_IS_OK(mkdir(dir)));
         REQUIRE(isDirectory(dir));
