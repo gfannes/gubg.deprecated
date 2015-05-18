@@ -123,6 +123,11 @@ namespace fff { namespace agents {
         {
             MSS(board.addAgent(fact.createAgent("FixIncludeGuard")));
         }
+        else if (str == "IG")
+        {
+            MSS(board.addAgent(fact.createAgent("FixIncludeGuard")));
+            MSS(board.addItem(Tag{"ig.fix"}, Value{"true"}));
+        }
         else
             MSS_QL(UnknownCommand);
 

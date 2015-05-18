@@ -4,6 +4,7 @@
 #include "gubg/parse/Line.hpp"
 #include <string>
 #include <set>
+#include <iostream>
 #include <cassert>
 using namespace gubg;
 using namespace std;
@@ -37,14 +38,18 @@ namespace {
                     MSS_Q(lines.size() >= 3, Skip);
                     MSS_Q(lines[0].txt.substr(0, 8) == "#ifndef ", Skip);
                     MSS_Q(lines[1].txt.substr(0, 8) == "#define ", Skip);
-                    MSS_Q(lines.back().txt.substr(0, 6) == "#endif ", Skip);
+                    MSS_Q(lines.back().txt.substr(0, 6) == "#endif", Skip);
                     const auto wanted_define = define_(rel.name());
                     MSS_Q(lines[0].txt.substr(8) != wanted_define || lines[1].txt.substr(8) != wanted_define, Skip);
+                    cout << "Include guard problem detected for " << f << endl;
                     lines[0].txt = "#ifndef "; lines[0].txt += wanted_define;
                     lines[1].txt = "#define "; lines[1].txt += wanted_define;
                     content = line::join(lines);
                     if (fix_it_)
+                    {
+                        cout << "    => changing to " << wanted_define << endl;
                         MSS(write(content, f), Skip);
+                    }
                 }
                 MSS_END();
             }
@@ -54,7 +59,7 @@ namespace {
                 for (auto &ch: rel)
                     if (needles_.count(ch) == 1)
                         ch = '_';
-                return string{"HEADER_"}+rel+"_INCLUDED";
+                return string{"HEADER_"}+rel+"_ALREADY_INCLUDED";
             }
             const file::File dir_;
             const Extensions &exts_;
@@ -83,7 +88,12 @@ namespace fff { namespace agents {
 			if (tv.tag == Tag("ig.ext"))
                 extensions.insert(tv.value.as_string());
 			if (tv.tag == Tag("ig.fix"))
-                fix_it = true;
+            {
+                if (tv.value == Value{"true"})
+                    fix_it = true;
+                if (tv.value == Value{"false"})
+                    fix_it = false;
+            }
 		}
 
         const auto wd = file::getcwd();

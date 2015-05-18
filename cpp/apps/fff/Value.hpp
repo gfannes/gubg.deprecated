@@ -13,6 +13,7 @@ namespace fff {
             Value(std::string);
 
             bool operator<(const Value &) const;
+            bool operator==(const Value &) const;
 
             //Will convert a string or file, ideal for CLI args
             gubg::file::File as_file() const;

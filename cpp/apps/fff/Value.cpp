@@ -11,6 +11,10 @@ namespace fff {
 	{
         return str_ < rhs.str_;
 	}
+	bool Value::operator==(const Value &rhs) const
+	{
+        return str_ == rhs.str_;
+	}
 
 	gubg::file::File Value::as_file() const
 	{
