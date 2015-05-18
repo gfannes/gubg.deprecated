@@ -59,13 +59,11 @@ namespace fff { namespace agents {
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 1)))
                 {
                     const Tag tag("c++.header");
-                    board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, rf, tv);
                 }
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 0)))
                 {
                     const Tag tag("c++.header");
-                    board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, rf, tv);
                 }
                 else
@@ -80,7 +78,6 @@ namespace fff { namespace agents {
                     if (forest_.contains(source))
                     {
                         const Tag tag("c++.source");
-                        board.setTypeForTag(tag, Type::File);
                         board.addItem(tag, source, tv);
 
                     }
@@ -90,7 +87,6 @@ namespace fff { namespace agents {
                     if (forest_.contains(source))
                     {
                         const Tag tag("c.source");
-                        board.setTypeForTag(tag, Type::File);
                         board.addItem(tag, source, tv);
                     }
                 }

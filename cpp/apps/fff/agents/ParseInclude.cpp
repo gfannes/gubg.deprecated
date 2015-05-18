@@ -153,7 +153,6 @@ namespace fff { namespace agents {
                             if (f.basename() == "lua.c")
                                 continue;
                             const Tag tag("c.source");
-                            board.setTypeForTag(tag, Type::File);
                             board.addItem(tag, f, tv);
                         }
                     }

@@ -53,7 +53,6 @@ namespace fff { namespace agents {
                 file::File f;
                 MSS(resolve_(f, tv.value));
                 const Tag tag("c++.source");
-                board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, f);
             }
             if (tv.tag == Tag("c++.source"))
@@ -75,7 +74,6 @@ namespace fff { namespace agents {
                 file::File f;
                 MSS(resolve_(f, tv.value));
                 const Tag tag("chai.script");
-                board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, f);
             }
             if (tv.tag == Tag("chai.script"))

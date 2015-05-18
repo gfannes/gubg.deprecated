@@ -114,14 +114,12 @@ namespace fff { namespace agents {
             case linker::OutputType::Exe:
                 {
                     const Tag tag("c++.executable");
-                    board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, executable);
                 }
                 break;
             case linker::OutputType::Shared:
                 {
                     const Tag tag("c++.shared_object");
-                    board.setTypeForTag(tag, Type::File);
                     board.addItem(tag, executable);
                 }
                 break;

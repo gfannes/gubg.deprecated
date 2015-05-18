@@ -6,18 +6,6 @@
 #include "gubg/log/begin.hpp"
 namespace fff { 
 
-    void Board::setTypeForTag(Tag tag, Type type)
-    {
-        typePerTag_[tag] = type;
-    }
-    Type Board::typeForTag(Tag tag) const
-    {
-        auto it = typePerTag_.find(tag);
-        if (it == typePerTag_.end())
-            return Type::String;
-        return it->second;
-    }
-
     ReturnCode Board::addItem(Tag tag, Value value)
     {
         MSS_BEGIN(ReturnCode, STREAM(tag, value));

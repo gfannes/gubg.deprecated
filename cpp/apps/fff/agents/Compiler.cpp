@@ -122,7 +122,6 @@ namespace fff { namespace agents {
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
                 const Tag tag("c++.object");
-                board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, obj);
             }
             else if (tv.tag == Tag("c.source"))
@@ -146,7 +145,6 @@ namespace fff { namespace agents {
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
                 const Tag tag("c.object");
-                board.setTypeForTag(tag, Type::File);
                 board.addItem(tag, obj);
             }
         }
