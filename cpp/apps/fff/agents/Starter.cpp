@@ -119,6 +119,10 @@ namespace fff { namespace agents {
         {
             MSS(board.addAgent(fact.createAgent("Search")));
         }
+        else if (str == "ig")
+        {
+            MSS(board.addAgent(fact.createAgent("FixIncludeGuard")));
+        }
         else
             MSS_QL(UnknownCommand);
 

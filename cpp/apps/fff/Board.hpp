@@ -22,7 +22,7 @@ namespace fff {
             ReturnCode addItem(Tag, Value);
             ReturnCode addItem(Tag, Value, TagValue);
 
-            bool isDirty() const;
+            bool isDirty() const {return isDirty_;}
 
             TagValues getFrom(size_t ix) const;
             Dependencies getDependencies(const TagValue &) const;
