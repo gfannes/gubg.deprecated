@@ -1,35 +1,36 @@
 #include "fff/agents/Compiler.hpp"
-#include "fff/Board.hpp"
 #include "fff/Create.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/parallel/ForEach.hpp"
 #include <list>
 using namespace gubg;
+using namespace gubg::bbs;
 using namespace std;
 
 #define GUBG_MODULE_ "Compiler"
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
-    RecursiveDependencies collectAndHashDependencies_(const TagValue &tv, const Board &board)
+    RecursiveDependencies collectAndHashDependencies_(const Item &tv, const Board &board)
     {
         //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
         //We only take the headers, the corresponding c++.source does not influence whoever is using the header
-        Tags excludes; excludes.insert(Tag{"c++.source"}); excludes.insert(Tag{"c.source"});
+        Tags excludes; excludes.insert("c++.source"); excludes.insert("c.source");
         return board.getRecursiveDependencies(tv, excludes);
     }
     Compiler::Compiler()
         : compiler_(compiler::Vendor::GCC)
     {
     }
-    ReturnCode Compiler::process(Board &board)
+    gubg::bbs::ReturnCode Compiler::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         if (addHashTags_())
         {
-            board.addItem(Tag("hash.tag"), Value("c++.source"));
-            board.addItem(Tag("hash.tag"), Value("c.source"));
-            board.addItem(Tag("hash.tag"), Value("c++.header"));
-            board.addItem(Tag("hash.tag"), Value("c.header"));
+            board.addItem("hash.tag", "c++.source");
+            board.addItem("hash.tag", "c.source");
+            board.addItem("hash.tag", "c++.header");
+            board.addItem("hash.tag", "c.header");
             MSS_RETURN_OK();
         }
 
@@ -39,48 +40,48 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "gcc")
+            else if (tv.tag == "start" && tv.value == "gcc")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::GCC);
             }
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "cl")
+            else if (tv.tag == "start" && tv.value == "cl")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
             }
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "clang")
+            else if (tv.tag == "start" && tv.value == "clang")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::CLang);
             }
-            else if (tv.tag == Tag("c++.flag"))
+            else if (tv.tag == "c++.flag")
             {
-                compiler_.addOption(tv.value.as_string());
+                compiler_.addOption(tv.value);
             }
-            else if (tv.tag == Tag("c++.define"))
+            else if (tv.tag == "c++.define")
             {
-                compiler_.addDefine(tv.value.as_string());
+                compiler_.addDefine(tv.value);
             }
-            else if (tv.tag == Tag("c++.include_path"))
+            else if (tv.tag == "c++.include_path")
             {
-                compiler_.addIncludePath(tv.value.as_file());
+                compiler_.addIncludePath(tv.value);
             }
-            else if (tv.tag == Tag("c++.force_include"))
+            else if (tv.tag == "c++.force_include")
             {
-                compiler_.addForceInclude(tv.value.as_file());
+                compiler_.addForceInclude(tv.value);
             }
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "release")
+            else if (tv.tag == "start" && tv.value == "release")
             {
                 compiler_.addOption("release");
                 build_type_was_set_ = true;
             }
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "debug")
+            else if (tv.tag == "start" && tv.value == "debug")
             {
                 compiler_.addOption("debug");
                 build_type_was_set_ = true;
             }
-            else if (tv.tag == Tag("start") && tv.value.as_string() == "shared")
+            else if (tv.tag == "start" && tv.value == "shared")
             {
                 compiler_.addOption("shared");
             }
@@ -97,13 +98,13 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("cache"))
+            else if (tv.tag == "cache")
             {
-                create_mgr.setCache(tv.value.as_file());
+                create_mgr.setCache(tv.value);
             }
-            else if (tv.tag == Tag("c++.source"))
+            else if (tv.tag == "c++.source")
             {
-                const auto source = tv.value.as_file();
+                const file::File source = tv.value;
                 SS(source);
                 file::File obj = source;
                 {
@@ -121,12 +122,11 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                const Tag tag("c++.object");
-                board.addItem(tag, obj);
+                board.addItem("c++.object", obj);
             }
-            else if (tv.tag == Tag("c.source"))
+            else if (tv.tag == "c.source")
             {
-                const auto source = tv.value.as_file();
+                const file::File source = tv.value;
                 SS(source);
                 file::File obj = source;
                 {
@@ -144,8 +144,7 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                const Tag tag("c.object");
-                board.addItem(tag, obj);
+                board.addItem("c.object", obj);
             }
         }
 
@@ -172,7 +171,7 @@ namespace fff { namespace agents {
                 }
             };
             gubg::parallel::for_each(jobs.begin(), jobs.end(), ftor, 0);
-            MSS(errors.empty(), CompileFailure);
+            MSS(errors.empty());//CompileFailure
         }
 
         MSS_END();

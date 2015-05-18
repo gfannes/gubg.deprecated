@@ -1,11 +1,11 @@
 #include "fff/agents/Starter.hpp"
-#include "fff/Value.hpp"
-#include "fff/Board.hpp"
 #include "fff/AgentFactory.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
 #include "gubg/Strange.hpp"
 using namespace gubg;
+using namespace gubg::bbs;
 
 #define GUBG_MODULE_ "Starter"
 #include "gubg/log/begin.hpp"
@@ -13,16 +13,16 @@ namespace fff { namespace agents {
 
 	bool resolve_(file::File &f, const Value &v)
 	{
-		file::File tmp(v.as_string());
+		file::File tmp(v);
 		if (!MSS_IS_OK(file::resolve(tmp)))
 			return false;
 		f = tmp;
 		return true;
 	}
 
-    ReturnCode Starter::process(Board &board)
+    gubg::bbs::ReturnCode Starter::process(Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         auto tvs = board.getFrom(ix_);
         ix_ += tvs.size();
@@ -37,25 +37,23 @@ namespace fff { namespace agents {
                     file::File f;
                     if (resolve_(f, tv.value))
                     {
-                        MSS(processFileRef_(board, tv.value.as_file()));
+                        MSS(processFileRef_(board, tv.value));
                         continue;
                     }
                 }
                 {
-                    const std::string str = tv.value.as_string();
-                    if (MSS_IS_OK(processCommand_(board, str)))
+                    if (MSS_IS_OK(processCommand_(board, tv.value)))
                         continue;
                 }
-                MSS(processOption_(board, tv.value.as_string()));
+                MSS(processOption_(board, tv.value));
             }
-            if (tv.tag == Tag("c++.source_ref"))
+            if (tv.tag == "c++.source_ref")
             {
                 file::File f;
                 MSS(resolve_(f, tv.value));
-                const Tag tag("c++.source");
-                board.addItem(tag, f);
+                board.addItem("c++.source", f);
             }
-            if (tv.tag == Tag("c++.source"))
+            if (tv.tag == "c++.source")
             {
                 if (addExeChain_())
                 {
@@ -69,18 +67,17 @@ namespace fff { namespace agents {
                     MSS(board.addAgent(fact.createAgent("Runner")));
                 }
             }
-            if (tv.tag == Tag("chai.script_ref"))
+            if (tv.tag == "chai.script_ref")
             {
                 file::File f;
                 MSS(resolve_(f, tv.value));
-                const Tag tag("chai.script");
-                board.addItem(tag, f);
+                board.addItem("chai.script", f);
             }
-            if (tv.tag == Tag("chai.script"))
+            if (tv.tag == "chai.script")
             {
                 AgentFactory fact;
-                auto chai = fact.createChai(tv.value.as_file());
-                MSS((bool)chai, ChaiScriptLoadFailed);
+                auto chai = fact.createChai(tv.value);
+                MSS((bool)chai);
                 MSS(board.addAgent(chai));
             }
         }
@@ -97,11 +94,11 @@ namespace fff { namespace agents {
         if (false) {}
         else if (ref.extension() == "cpp")
         {
-            board.addItem(Tag("c++.source_ref"), ref);
+            board.addItem("c++.source_ref", ref);
         }
         else if (ref.extension() == "chai")
         {
-            board.addItem(Tag("chai.script_ref"), ref);
+            board.addItem("chai.script_ref", ref);
         }
 
         MSS_END();
@@ -124,7 +121,7 @@ namespace fff { namespace agents {
         else if (str == "IG")
         {
             MSS(board.addAgent(fact.createAgent("FixIncludeGuard")));
-            MSS(board.addItem(Tag{"ig.fix"}, Value{"true"}));
+            MSS(board.addItem("ig.fix", "true"));
         }
         else
             MSS_QL(UnknownCommand);
@@ -152,7 +149,7 @@ namespace fff { namespace agents {
             Strange value;
             strange.popAll(value);
 
-            board.addItem(Tag(key_parts), value.str());
+            board.addItem(key_parts, value.str());
         }
         MSS_END();
     }

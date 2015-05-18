@@ -1,10 +1,11 @@
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
+#include "gubg/string_algo.hpp"
 #include <cassert>
 
 #define GUBG_MODULE_ "Board"
 #include "gubg/log/begin.hpp"
-namespace fff { 
+namespace gubg { namespace bbs { 
 
     ReturnCode Board::addItem(Tag tag, Value value)
     {
@@ -14,36 +15,40 @@ namespace fff {
             const auto p = tagsPerValue_.find(value);
             MSS_Q(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
         }
-        tagValues_.push_back(TagValue(tag, value));
+        items_.push_back(Item(tag, value));
         tagsPerValue_[value].insert(tag);
         isDirty_ = true;
         MSS_END();
     }
-    ReturnCode Board::addItem(Tag tag, Value value, TagValue orig)
+    ReturnCode Board::addItem(const TagParts &parts, Value v)
+    {
+        return addItem(gubg::string_algo::join(parts, '.'), v);
+    }
+    ReturnCode Board::addItem(Tag tag, Value value, Item orig)
     {
         MSS_BEGIN(ReturnCode, STREAM(tag, value));
-        auto tv = TagValue(tag, value);
+        auto tv = Item(tag, value);
         LockGuard lg(mutex_);
         dependenciesPerTV_[orig].insert(tv);
         {
             const auto p = tagsPerValue_.find(value);
             MSS_Q(p == tagsPerValue_.end() || p->second.count(tag) == 0, TagValueAlreadyExists);
         }
-        tagValues_.push_back(tv);
+        items_.push_back(tv);
         tagsPerValue_[value].insert(tag);
         isDirty_ = true;
         MSS_END();
     }
 
 
-    TagValues Board::getFrom(size_t ix) const
+    Items Board::getFrom(size_t ix) const
     {
         LockGuard lg(mutex_);
-        if (ix >= tagValues_.size())
-            return TagValues();
-        return TagValues(tagValues_.begin()+ix, tagValues_.end());
+        if (ix >= items_.size())
+            return Items{};
+        return Items{items_.begin()+ix, items_.end()};
     }
-    Dependencies Board::getDependencies(const TagValue &tv) const
+    Dependencies Board::getDependencies(const Item &tv) const
     {
         Dependencies deps;
         LockGuard lg(mutex_);
@@ -52,7 +57,7 @@ namespace fff {
             deps = p->second;
         return deps;
     }
-    RecursiveDependencies Board::getRecursiveDependencies(const TagValue &tv, const Tags &excludes) const
+    RecursiveDependencies Board::getRecursiveDependencies(const Item &tv, const Tags &excludes) const
     {
         RecursiveDependencies rdeps;
         Dependencies new_ones = getDependencies(tv);
@@ -126,5 +131,6 @@ namespace fff {
         }
         MSS_END();
     }
-} 
+
+} } 
 #include "gubg/log/end.hpp"

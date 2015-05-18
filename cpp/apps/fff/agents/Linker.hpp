@@ -1,15 +1,15 @@
 #ifndef HEADER_fff_agents_Linker_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_Linker_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Agent.hpp"
 #include "gubg/OnlyOnce.hpp"
 
 namespace fff { namespace agents { 
-    class Linker: public Agent_itf
+    class Linker: public gubg::bbs::Agent_itf
     {
         public:
             std::string name() const override {return "Linker";}
-            ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
         private:
             gubg::OnlyOnce addHashTags_;

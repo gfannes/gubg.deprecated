@@ -1,5 +1,5 @@
 #include "fff/agents/ResolveHeader.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
 #include <regex>
@@ -10,9 +10,9 @@ using namespace std;
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
 
-    ReturnCode ResolveHeader::process(Board &board)
+    gubg::bbs::ReturnCode ResolveHeader::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         auto tvs = board.getFrom(ix_);
         MSS(!tvs.empty(), NoNewEntries);
@@ -22,28 +22,28 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("c++.tree"))
+            else if (tv.tag == "c++.tree")
             {
-                file::File path = tv.value.as_string();
+                file::File path = tv.value;
                 MSS(file::resolve(path));
                 if (roots_.count(path) == 0)
                 {
                     forest_.add(path, {"hpp", "cpp", "h", "c"});
                     roots_.insert(path);
                     auto ip = path; ip.popBasename();
-                    board.addItem(Tag("c++.include_path"), ip, tv);
+                    board.addItem("c++.include_path", ip, tv);
                 }
             }
-            else if (tv.tag == Tag("c++.utree"))
+            else if (tv.tag == "c++.utree")
             {
-                file::File path = tv.value.as_string();
+                file::File path = tv.value;
                 MSS(file::resolve(path));
                 if (roots_.count(path) == 0)
                 {
                     forest_.add(path, {"hpp", "cpp"});
                     roots_.insert(path);
                     auto ip = path;
-                    board.addItem(Tag("c++.include_path"), ip, tv);
+                    board.addItem("c++.include_path", ip, tv);
                 }
             }
         }
@@ -51,44 +51,35 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("c++.include"))
+            else if (tv.tag == "c++.include")
             {
-                L("Checking forest for " << tv.value.as_string());
+                L("Checking forest for " << tv.value);
                 file::File rf;
                 if (false) {}
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 1)))
+                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value), 1)))
                 {
-                    const Tag tag("c++.header");
-                    board.addItem(tag, rf, tv);
+                    board.addItem("c++.header", rf, tv);
                 }
-                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value.as_string()), 0)))
+                else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value), 0)))
                 {
-                    const Tag tag("c++.header");
-                    board.addItem(tag, rf, tv);
+                    board.addItem("c++.header", rf, tv);
                 }
                 else
                     L("Not found ...");
             }
-            else if (tv.tag == Tag("c++.header"))
+            else if (tv.tag == "c++.header")
             {
-                const auto header = tv.value.as_file();
+                const file::File header{tv.value};
                 file::File source = header;
                 {
                     source.setExtension("cpp");
                     if (forest_.contains(source))
-                    {
-                        const Tag tag("c++.source");
-                        board.addItem(tag, source, tv);
-
-                    }
+                        board.addItem("c++.source", source, tv);
                 }
                 {
                     source.setExtension("c");
                     if (forest_.contains(source))
-                    {
-                        const Tag tag("c.source");
-                        board.addItem(tag, source, tv);
-                    }
+                        board.addItem("c.source", source, tv);
                 }
             }
         }

@@ -1,7 +1,7 @@
 #include "fff/agents/Linker.hpp"
-#include "fff/Board.hpp"
 #include "fff/Create.hpp"
 #include "fff/Linker.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
 using namespace gubg;
@@ -11,14 +11,14 @@ using namespace std;
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
 
-    ReturnCode Linker::process(Board &board)
+    gubg::bbs::ReturnCode Linker::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         if (addHashTags_())
         {
-            board.addItem(Tag("hash.tag"), Value("c++.object"));
-            board.addItem(Tag("hash.tag"), Value("c.object"));
+            board.addItem("hash.tag", "c++.object");
+            board.addItem("hash.tag", "c.object");
             MSS_RETURN_OK();
         }
 
@@ -31,12 +31,12 @@ namespace fff { namespace agents {
         linker::OutputType exeType = linker::OutputType::Exe;
         for (auto tv: tvs)
         {
-            if (tv.tag == Tag("start"))
+            if (tv.tag == "start")
             {
                 if (false) {}
-                else if (tv.value.as_string() == "cl")
+                else if (tv.value == "cl")
                     vendor = linker::Vendor::MSC;
-                else if (tv.value.as_string() == "shared")
+                else if (tv.value == "shared")
                     exeType = linker::OutputType::Shared;
             }
         }
@@ -45,46 +45,46 @@ namespace fff { namespace agents {
         file::File executable;
         OnlyOnce setExecutable;
         CreateMgr create_mgr;
-        RecursiveDependencies rdeps;
+        gubg::bbs::RecursiveDependencies rdeps;
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("cache"))
+            else if (tv.tag == "cache")
             {
-                create_mgr.setCache(tv.value.as_file());
+                create_mgr.setCache(tv.value);
             }
-            else if (tv.tag == Tag("start"))
+            else if (tv.tag == "start")
             {
                 if (false) {}
-                else if (tv.value.as_string() == "debug")
+                else if (tv.value == "debug")
                     lnk.addOption("debug");
             }
-            else if (tv.tag == Tag("c++.source"))
+            else if (tv.tag == "c++.source")
             {
                 if (setExecutable())
-                    executable = tv.value.as_file();
+                    executable = tv.value;
             }
-            else if (tv.tag == Tag("c++.object") || tv.tag == Tag("c.object"))
+            else if (tv.tag == "c++.object" || tv.tag == "c.object")
             {
-                lnk.addObject(tv.value.as_file());
+                lnk.addObject(tv.value);
                 for (auto p: board.getRecursiveDependencies(tv))
                     rdeps[p.first] = p.second;
             }
-            else if (tv.tag == Tag("c++.include"))
+            else if (tv.tag == "c++.include")
             {
 #ifdef GUBG_API_LINUX
-                if (tv.value.as_string() == "dlfcn.h")
+                if (tv.value == "dlfcn.h")
                     lnk.addLibrary("dl");
 #endif
 #ifdef GUBG_API_POSIX
-                if (tv.value.as_string() == "thread")
+                if (tv.value == "thread")
                     lnk.addOption("thread");
 #endif
             }
-            else if (tv.tag == Tag("c++.library_path"))
-                lnk.addLibraryPath(tv.value.as_file());
-            else if (tv.tag == Tag("c++.library"))
-                lnk.addLibrary(tv.value.as_string());
+            else if (tv.tag == "c++.library_path")
+                lnk.addLibraryPath(tv.value);
+            else if (tv.tag == "c++.library")
+                lnk.addLibrary(tv.value);
         }
 
         switch (exeType)
@@ -103,7 +103,7 @@ namespace fff { namespace agents {
         lnk.link(cmd, executable);
         job.command = cmd;
         job.dependencies = rdeps;
-        MSS(create_mgr.create(job), LinkFailure);
+        MSS(create_mgr.create(job));//LinkFailure
         {
             using namespace gubg::file;
             MSS(file::chmod(executable, {All, Read, Read}));
@@ -112,16 +112,10 @@ namespace fff { namespace agents {
         switch (exeType)
         {
             case linker::OutputType::Exe:
-                {
-                    const Tag tag("c++.executable");
-                    board.addItem(tag, executable);
-                }
+                board.addItem("c++.executable", executable);
                 break;
             case linker::OutputType::Shared:
-                {
-                    const Tag tag("c++.shared_object");
-                    board.addItem(tag, executable);
-                }
+                board.addItem("c++.shared_object", executable);
                 break;
         }
 

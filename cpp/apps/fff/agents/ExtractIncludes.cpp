@@ -1,5 +1,5 @@
 #include "fff/agents/ExtractIncludes.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <list>
 #include <string>
@@ -22,9 +22,9 @@ namespace {
     };
 }
 namespace fff { namespace agents { 
-	ReturnCode ExtractIncludes::process(Board &board)
+	gubg::bbs::ReturnCode ExtractIncludes::process(gubg::bbs::Board &board)
 	{
-		MSS_BEGIN(ReturnCode);
+		MSS_BEGIN(gubg::bbs::ReturnCode);
 
 		auto tvs = board.getFrom(ix_);
 		MSS(!tvs.empty(), NoNewEntries);
@@ -32,14 +32,14 @@ namespace fff { namespace agents {
 
 		for (auto tv: tvs)
 		{
-			if (tv.tag != Tag("c++.source") && tv.tag != Tag("c++.header"))
+			if (tv.tag != "c++.source" && tv.tag != "c++.header")
 				continue;
 			IncludeParser ip;
-			if (!MSS_IS_OK(ip.process(tv.value.as_file())))
-				std::cerr << "Failed to parse include statements for " << tv.value.as_file() << std::endl;
+			if (!MSS_IS_OK(ip.process(tv.value)))
+				std::cerr << "Failed to parse include statements for " << tv.value << std::endl;
 			else
 				for (auto inc: ip.includes)
-					board.addItem(Tag("c++.include"), inc, tv);
+					board.addItem("c++.include", inc, tv);
 		}
 
 		MSS_END();

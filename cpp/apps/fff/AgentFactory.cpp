@@ -14,9 +14,9 @@ using namespace std;
 
 namespace fff { 
 
-    Agent_itf::Ptr AgentFactory::createAgent(const string &name)
+    gubg::bbs::Agent_itf::Ptr AgentFactory::createAgent(const string &name)
     {
-#define L_ELSE_IF(type) else if (name == #type) return Agent_itf::Ptr(new agents::type())
+#define L_ELSE_IF(type) else if (name == #type) return gubg::bbs::Agent_itf::Ptr(new agents::type())
         if (false) {}
         L_ELSE_IF(Starter);
         L_ELSE_IF(ExtractIncludes);
@@ -28,10 +28,10 @@ namespace fff {
         L_ELSE_IF(Linker);
         L_ELSE_IF(Runner);
         L_ELSE_IF(Search);
-        return Agent_itf::Ptr();
+        return gubg::bbs::Agent_itf::Ptr();
     }
 
-    Agent_itf::Ptr AgentFactory::createChai(const gubg::file::File &script)
+    gubg::bbs::Agent_itf::Ptr AgentFactory::createChai(const gubg::file::File &script)
     {
         auto chai = std::make_shared<agents::Chai>(script);
         if (!chai->ok())

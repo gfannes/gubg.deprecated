@@ -1,5 +1,5 @@
 #include "fff/agents/ParseInclude.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
 #include <regex>
@@ -53,9 +53,9 @@ namespace fff { namespace agents {
         if (gubg_sdks_(f))
             sfml_.reset(new file::File(f << "SFML"));
     }
-    ReturnCode ParseInclude::process(Board &board)
+    gubg::bbs::ReturnCode ParseInclude::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         auto tvs = board.getFrom(ix_);
         MSS(!tvs.empty(), NoNewEntries);
@@ -64,73 +64,73 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == Tag("start"))
+            else if (tv.tag == "start")
             {
                 if (false) {}
                 else
                 {
-                    file::File path(tv.value.as_string());
+                    file::File path(tv.value);
                     if (MSS_IS_OK(file::resolve(path)) && path.popBasename())
                     {
                         L("Adding local path to the forest (" << path << ")");
-                        board.addItem(Tag("c++.tree"), path, tv);
+                        board.addItem("c++.tree", path, tv);
                     }
                 }
             }
-            else if (tv.tag == Tag("c++.include"))
+            else if (tv.tag == "c++.include")
             {
                 if (gubg_)
                 {
                     static const regex gubg_re("gubg/.+\\.hpp");
-                    if (regex_match(tv.value.as_string(), gubg_re))
+                    if (regex_match(tv.value, gubg_re))
                     {
                         L("Adding gubg (" << *gubg_ << ")");
-                        board.addItem(Tag("c++.tree"), *gubg_, tv);
+                        board.addItem("c++.tree", *gubg_, tv);
                     }
                 }
 
                 if (imui_)
                 {
                     static const regex gubg_re("imui/.+\\.hpp");
-                    if (regex_match(tv.value.as_string(), gubg_re))
+                    if (regex_match(tv.value, gubg_re))
                     {
                         L("Adding imui (" << *imui_ << ")");
-                        board.addItem(Tag("c++.tree"), *imui_, tv);
+                        board.addItem("c++.tree", *imui_, tv);
                     }
                 }
 
                 if (catch_)
                 {
-                    if (tv.value.as_string() == "catch/catch.hpp")
+                    if (tv.value == "catch/catch.hpp")
                     {
                         L("Adding catch (" << *catch_ << ")");
-                        board.addItem(Tag("c++.tree"), *catch_, tv);
+                        board.addItem("c++.tree", *catch_, tv);
                     }
                 }
 
                 if (eigen_)
                 {
-                    if (tv.value.as_string() == "Eigen/Eigen")
+                    if (tv.value == "Eigen/Eigen")
                     {
                         L("Adding eigen (" << *eigen_ << ")");
-                        board.addItem(Tag("c++.include_path"), *eigen_, tv);
+                        board.addItem("c++.include_path", *eigen_, tv);
                     }
                 }
 
                 if (poco_)
                 {
                     static const regex poco_re("Poco/.+\\.h");
-                    if (regex_match(tv.value.as_string(), poco_re))
+                    if (regex_match(tv.value, poco_re))
                     {
                         L("Adding poco (" << *poco_ << ")");
                         {
                             file::File ip = *poco_; ip << "Foundation/include";
-                            board.addItem(Tag("c++.include_path"), ip, tv);
+                            board.addItem("c++.include_path", ip, tv);
                         }
                         {
                             file::File lp = *poco_; lp << "lib/Linux/x86_64";
-                            board.addItem(Tag("c++.library_path"), lp, tv);
-                            board.addItem(Tag("c++.library"), Value("PocoFoundation"), tv);
+                            board.addItem("c++.library_path", lp, tv);
+                            board.addItem("c++.library", "PocoFoundation", tv);
                         }
                     }
                 }
@@ -138,10 +138,10 @@ namespace fff { namespace agents {
                 if (lua_)
                 {
                     static const regex lua_re("lua.hpp");
-                    if (regex_match(tv.value.as_string(), lua_re))
+                    if (regex_match(tv.value, lua_re))
                     {
                         L("Adding lua (" << *lua_ << ")");
-                        board.addItem(Tag("c++.include_path"), *lua_, tv);
+                        board.addItem("c++.include_path", *lua_, tv);
                         vector<file::File> files;
                         MSS(file::read(files, *lua_));
                         for (auto f: files)
@@ -152,8 +152,7 @@ namespace fff { namespace agents {
                                 continue;
                             if (f.basename() == "lua.c")
                                 continue;
-                            const Tag tag("c.source");
-                            board.addItem(tag, f, tv);
+                            board.addItem("c.source", f, tv);
                         }
                     }
                 }
@@ -161,25 +160,25 @@ namespace fff { namespace agents {
                 if (sfml_)
                 {
                     static const regex sfml_re("SFML/.+\\.hpp");
-                    if (regex_match(tv.value.as_string(), sfml_re))
+                    if (regex_match(tv.value, sfml_re))
                     {
                         L("Adding sfml (" << *sfml_ << ")");
-                        board.addItem(Tag("c++.tree"), *sfml_, tv);
+                        board.addItem("c++.tree", *sfml_, tv);
                         {
                             file::File ip;
                             if (gubg_inc_(ip))
-                                board.addItem(Tag("c++.include_path"), ip, tv);
+                                board.addItem("c++.include_path", ip, tv);
                         }
                         {
                             file::File lp;
                             if (gubg_lib_(lp))
-                                board.addItem(Tag("c++.library_path"), lp, tv);
-                            board.addItem(Tag("c++.library"), Value("sfml-system"), tv);
-                            board.addItem(Tag("c++.library"), Value("sfml-graphics"), tv);
-                            board.addItem(Tag("c++.library"), Value("sfml-window"), tv);
-                            board.addItem(Tag("c++.library"), Value("sfml-audio"), tv);
-                            board.addItem(Tag("c++.library"), Value("sfml-network"), tv);
-                            //board.addItem(Tag("c++.library"), Value("GLEW"), tv);
+                                board.addItem("c++.library_path", lp, tv);
+                            board.addItem("c++.library", "sfml-system", tv);
+                            board.addItem("c++.library", "sfml-graphics", tv);
+                            board.addItem("c++.library", "sfml-window", tv);
+                            board.addItem("c++.library", "sfml-audio", tv);
+                            board.addItem("c++.library", "sfml-network", tv);
+                            //board.addItem("c++.library", "GLEW", tv);
                         }
                     }
                 }
@@ -187,19 +186,19 @@ namespace fff { namespace agents {
                 if (chai_)
                 {
                     static const regex chai_re("chaiscript/.+\\.hpp");
-                    if (regex_match(tv.value.as_string(), chai_re))
+                    if (regex_match(tv.value, chai_re))
                     {
                         L("Adding chai (" << *chai_ << ")");
-                        board.addItem(Tag("c++.utree"), *chai_, tv);
+                        board.addItem("c++.utree", *chai_, tv);
                         {
 #ifdef GUBG_API_LINUX
-                            board.addItem(Tag("c++.library"), string("dl"), tv);
+                            board.addItem("c++.library", string("dl"), tv);
 #endif
 #if 0
                             for (auto str: vector<string>{"dispatchkit", "language", "utility"})
                             {
                                 auto ip = *chai_; ip << str;
-                                board.addItem(Tag("c++.include_path"), ip, tv);
+                                board.addItem("c++.include_path", ip, tv);
                             }
 #endif
                         }

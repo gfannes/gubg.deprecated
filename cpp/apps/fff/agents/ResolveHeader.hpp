@@ -1,15 +1,15 @@
 #ifndef HEADER_fff_agents_ResolveHeader_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_ResolveHeader_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Agent.hpp"
 #include "gubg/file/Forest.hpp"
 
 namespace fff { namespace agents { 
-	class ResolveHeader: public Agent_itf
+	class ResolveHeader: public gubg::bbs::Agent_itf
 	{
 		public:
 			std::string name() const override {return "ResolveHeader";}
-			ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
 		private:
 			size_t ix_ = 0;

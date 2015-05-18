@@ -1,18 +1,18 @@
 #ifndef HEADER_fff_agents_Compiler_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_Compiler_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Agent.hpp"
 #include "fff/Compiler.hpp"
 #include "gubg/OnlyOnce.hpp"
 
 namespace fff { namespace agents { 
-    class Compiler: public Agent_itf
+    class Compiler: public gubg::bbs::Agent_itf
     {
         public:
             Compiler();
 
             std::string name() const override {return "Compiler";}
-            ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
         private:
             gubg::OnlyOnce addHashTags_;

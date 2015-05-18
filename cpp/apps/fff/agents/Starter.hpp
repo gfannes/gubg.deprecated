@@ -1,17 +1,20 @@
 #ifndef HEADER_fff_agents_Starter_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_Starter_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Agent.hpp"
 #include "gubg/OnlyOnce.hpp"
 #include "gubg/file/File.hpp"
+#include "fff/Codes.hpp"
 
 namespace fff { namespace agents { 
 
-	class Starter: public Agent_itf
+	class Starter: public gubg::bbs::Agent_itf
 	{
 		public:
+            using Board = gubg::bbs::Board;
+
 			std::string name() const override {return "Starter";}
-			ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
 		private:
 			ReturnCode processFileRef_(Board &, const gubg::file::File &);

@@ -1,7 +1,7 @@
 #ifndef HEADER_fff_agents_Chai_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_Chai_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Agent.hpp"
 #include "gubg/file/File.hpp"
 #include "gubg/chai/Engine.hpp"
 #include <functional>
@@ -9,13 +9,13 @@
 
 namespace fff { namespace agents { 
 
-    class Chai: public Agent_itf
+    class Chai: public gubg::bbs::Agent_itf
     {
         public:
             Chai(const gubg::file::File &script);
 
 			std::string name() const override;
-			ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
             bool ok() const {return (bool)engine_;}
 

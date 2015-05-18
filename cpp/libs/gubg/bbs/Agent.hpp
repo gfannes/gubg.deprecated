@@ -1,12 +1,13 @@
 #ifndef HEADER_fff_Agent_hpp_ALREADY_INCLUDED
 #define HEADER_fff_Agent_hpp_ALREADY_INCLUDED
 
-#include "fff/Codes.hpp"
+#include "gubg/bbs/Codes.hpp"
+#include "gubg/bbs/Item.hpp"
 #include <memory>
 #include <vector>
 #include <string>
 
-namespace fff { 
+namespace gubg { namespace bbs { 
 
 	class Board;
 
@@ -22,6 +23,7 @@ namespace fff {
 	};
 
 	typedef std::vector<Agent_itf::Ptr> Agents;
-} 
+
+} } 
 
 #endif

@@ -1,27 +1,36 @@
 #ifndef HEADER_fff_Board_hpp_ALREADY_INCLUDED
 #define HEADER_fff_Board_hpp_ALREADY_INCLUDED
 
-#include "fff/Codes.hpp"
-#include "fff/Types.hpp"
-#include "fff/Agent.hpp"
+#include "gubg/bbs/Codes.hpp"
+#include "gubg/bbs/Item.hpp"
+#include "gubg/bbs/Agent.hpp"
+#include "gubg/file/File.hpp"
 #include <vector>
 #include <map>
 #include <set>
 #include <thread>
 
-namespace fff { 
+namespace gubg { namespace bbs { 
+
+    using Dependencies = std::set<Item>;
+    using RecursiveDependencies = std::map<Item, Dependencies>;
 
     class Board
     {
         public:
+            using TagParts = std::vector<std::string>;
+
             ReturnCode addItem(Tag, Value);
-            ReturnCode addItem(Tag, Value, TagValue);
+            ReturnCode addItem(Tag t, file::File f){return addItem(t, f.name());}
+            ReturnCode addItem(const TagParts &, Value);
+            ReturnCode addItem(Tag, Value, Item);
+            ReturnCode addItem(Tag t, file::File f, Item p){return addItem(t, f.name(), p);}
 
             bool isDirty() const {return isDirty_;}
 
-            TagValues getFrom(size_t ix) const;
-            Dependencies getDependencies(const TagValue &) const;
-            RecursiveDependencies getRecursiveDependencies(const TagValue &, const Tags &excludes = Tags{}) const;
+            Items getFrom(size_t ix) const;
+            Dependencies getDependencies(const Item &) const;
+            RecursiveDependencies getRecursiveDependencies(const Item &, const Tags &excludes = Tags{}) const;
 
             ReturnCode addAgent(Agent_itf::Ptr);
             ReturnCode expand();
@@ -31,7 +40,7 @@ namespace fff {
             Agents agents_;
 
             //The items on the board
-            TagValues tagValues_;
+            Items items_;
 
             //If this flag is set, expand will start with the first agent again.
             bool isDirty_ = true;
@@ -41,7 +50,7 @@ namespace fff {
             typedef std::map<Value, Tags> TagsPerValue;
             TagsPerValue tagsPerValue_;
 
-            typedef std::map<TagValue, Dependencies> DependenciesPerTV;
+            typedef std::map<Item, Dependencies> DependenciesPerTV;
             DependenciesPerTV dependenciesPerTV_;
 
             typedef std::mutex Mutex;
@@ -49,6 +58,6 @@ namespace fff {
             mutable Mutex mutex_;
     };
 
-} 
+} } 
 
 #endif

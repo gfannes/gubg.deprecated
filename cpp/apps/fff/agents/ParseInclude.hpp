@@ -1,17 +1,17 @@
 #ifndef HEADER_fff_agents_ParseInclude_hpp_ALREADY_INCLUDED
 #define HEADER_fff_agents_ParseInclude_hpp_ALREADY_INCLUDED
 
-#include "fff/Agent.hpp"
+#include "gubg/bbs//Agent.hpp"
 #include "gubg/file/Forest.hpp"
 
 namespace fff { namespace agents { 
-	class ParseInclude: public Agent_itf
+	class ParseInclude: public gubg::bbs::Agent_itf
 	{
 		public:
 			ParseInclude();
 
 			std::string name() const override {return "ParseInclude";}
-			ReturnCode process(Board &) override;
+            gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
 		private:
 			std::unique_ptr<const gubg::file::File> gubg_;

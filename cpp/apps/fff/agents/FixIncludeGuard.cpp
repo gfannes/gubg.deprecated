@@ -1,5 +1,5 @@
 #include "fff/agents/FixIncludeGuard.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
 #include <string>
@@ -68,12 +68,12 @@ namespace {
     };
 }
 namespace fff { namespace agents { 
-	ReturnCode FixIncludeGuard::process(Board &board)
+	gubg::bbs::ReturnCode FixIncludeGuard::process(gubg::bbs::Board &board)
 	{
-		MSS_BEGIN(ReturnCode);
+		MSS_BEGIN(gubg::bbs::ReturnCode);
 
-        board.addItem(Tag{"ig.ext"}, string{"hpp"});
-        board.addItem(Tag{"ig.ext"}, string{"h"});
+        board.addItem("ig.ext", "hpp");
+        board.addItem("ig.ext", "h");
         if (board.isDirty())
             MSS_RETURN_OK();
 
@@ -85,13 +85,13 @@ namespace fff { namespace agents {
         bool fix_it = false;
 		for (auto tv: tvs)
 		{
-			if (tv.tag == Tag("ig.ext"))
-                extensions.insert(tv.value.as_string());
-			if (tv.tag == Tag("ig.fix"))
+			if (tv.tag == "ig.ext")
+                extensions.insert(tv.value);
+			if (tv.tag == "ig.fix")
             {
-                if (tv.value == Value{"true"})
+                if (tv.value == "true")
                     fix_it = true;
-                if (tv.value == Value{"false"})
+                if (tv.value == "false")
                     fix_it = false;
             }
 		}

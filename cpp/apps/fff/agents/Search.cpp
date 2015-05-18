@@ -1,5 +1,5 @@
 #include "fff/agents/Search.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
 #include <regex>
@@ -81,9 +81,9 @@ namespace  {
 
 namespace fff { namespace agents { 
 
-    ReturnCode Search::process(Board &board)
+    gubg::bbs::ReturnCode Search::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         auto tvs = board.getFrom(ix_);
         MSS(!tvs.empty(), NoNewEntries);
@@ -95,9 +95,9 @@ namespace fff { namespace agents {
         {
             auto &tv = *it;
             if (false) {}
-            else if (tv.tag == Tag("start"))
+            else if (tv.tag == "start")
             {
-                if (tv.value.as_string() == "search")
+                if (tv.value == "search")
                 {
                     //The search command indicates no more search options will come, all other
                     //start:* TVs will be interpreted as search keys
@@ -112,15 +112,15 @@ namespace fff { namespace agents {
         {
             auto &tv = *it;
             if (false) {}
-            else if (tv.tag == Tag("start"))
+            else if (tv.tag == "start")
             {
-                L("Looking for searchkey \"" << tv.value.as_string() << "\"");
-                needles.push_back(tv.value.as_string());
+                L("Looking for searchkey \"" << tv.value << "\"");
+                needles.push_back(tv.value);
             }
-            else if (tv.tag == Tag("search.ext"))
+            else if (tv.tag == "search.ext")
             {
-                L("Looking for extension \"" << tv.value.as_string() << "\"");
-                extensions.insert(tv.value.as_string());
+                L("Looking for extension \"" << tv.value << "\"");
+                extensions.insert(tv.value);
             }
         }
 

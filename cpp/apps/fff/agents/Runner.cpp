@@ -1,6 +1,6 @@
 #include "fff/agents/Runner.hpp"
-#include "fff/Board.hpp"
 #include "fff/Execute.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
 #include <sstream>
 #include <ostream>
@@ -9,9 +9,9 @@ using namespace std;
 #define GUBG_MODULE "Runner"
 #include "gubg/log/begin.hpp"
 namespace fff { namespace agents { 
-	ReturnCode Runner::process(Board &board)
+	gubg::bbs::ReturnCode Runner::process(gubg::bbs::Board &board)
 	{
-		MSS_BEGIN(ReturnCode);
+		MSS_BEGIN(gubg::bbs::ReturnCode);
 
 		auto tvs = board.getFrom(ix_);
 		ix_ += tvs.size();
@@ -19,20 +19,20 @@ namespace fff { namespace agents {
 		for (auto tv: tvs)
 		{
 			if (false) {}
-			else if (tv.tag == Tag("start"))
+			else if (tv.tag == "start")
 			{
-				if (tv.value.as_string() == "norun")
+				if (tv.value == "norun")
 					do_run_ = false;
 			}
-			else if (tv.tag == Tag("run.argument"))
+			else if (tv.tag == "run.argument")
 			{
-                args_.push_back(tv.value.as_string());
+                args_.push_back(tv.value);
 			}
-			else if (tv.tag == Tag("c++.executable"))
+			else if (tv.tag == "c++.executable")
 			{
 				if (do_run_)
 				{
-					ostringstream command; command << tv.value.as_file();
+					ostringstream command; command << tv.value;
                     for (auto arg: args_)
                         command << " " << arg;
 					cout << string(50, '*') << " " << command.str() << endl;

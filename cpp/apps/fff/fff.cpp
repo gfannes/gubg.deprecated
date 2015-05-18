@@ -1,7 +1,7 @@
 #include "fff/Codes.hpp"
 #include "fff/Options.hpp"
-#include "fff/Board.hpp"
 #include "fff/AgentFactory.hpp"
+#include "gubg/bbs/Board.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
@@ -51,7 +51,7 @@ namespace fff {
 
 		MSS(!options.seeds.empty(), NoSeedGiven);
 
-		Board board;
+        gubg::bbs::Board board;
 
 		auto cache = gubg::file::File("/tmp/fff");
         {
@@ -67,11 +67,11 @@ namespace fff {
 		if (!gubg::file::isDirectory(cache))
 			std::cout << "Cache directory (" << cache << ") not found, working without cache" << std::endl;
 		else
-			MSS(board.addItem(Tag("cache"), cache));
+			MSS(board.addItem("cache", cache));
 
 		for (auto seed: options.seeds)
         {
-            const auto rc = board.addItem(Tag("start"), seed);
+            const auto rc = board.addItem("start", seed);
 			MSS(rc);
         }
 

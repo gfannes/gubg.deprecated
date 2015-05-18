@@ -1,5 +1,5 @@
 #include "fff/agents/Chai.hpp"
-#include "fff/Board.hpp"
+#include "gubg/bbs/Board.hpp"
 #include <iostream>
 
 #define GUBG_MODULE_ "Chai"
@@ -45,9 +45,9 @@ namespace fff { namespace agents {
         return name_;
     }
 
-    ReturnCode Chai::process(Board &board)
+    gubg::bbs::ReturnCode Chai::process(gubg::bbs::Board &board)
     {
-        MSS_BEGIN(ReturnCode);
+        MSS_BEGIN(gubg::bbs::ReturnCode);
 
         auto tvs = board.getFrom(ix_);
         L(STREAM(cb_was_set_, ix_, tvs.size()));
@@ -59,14 +59,14 @@ namespace fff { namespace agents {
             if (cb_was_set_)
             {
                 L("Calling into the callback");
-                callback_(tv.tag.to_str(), tv.value.as_string(), --nr_left);
+                callback_(tv.tag, tv.value, --nr_left);
             }
         }
 
         while (!items_.empty())
         {
             auto p = items_.front(); items_.pop();
-            board.addItem(Tag(p.first), Value(p.second));
+            board.addItem(p.first, p.second);
         }
 
         MSS_END();
