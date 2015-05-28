@@ -72,11 +72,11 @@ namespace fff {
 		if (!gubg::file::isDirectory(cache))
 			std::cout << "Cache directory (" << cache << ") not found, working without cache" << std::endl;
 		else
-			MSS(board.addItem("cache", cache));
+			MSS(board.addItem(cache_dir, cache));
 
 		for (auto seed: options.seeds)
         {
-            const auto rc = board.addItem("start", seed);
+            const auto rc = board.addItem(start, seed);
 			MSS(rc);
         }
 

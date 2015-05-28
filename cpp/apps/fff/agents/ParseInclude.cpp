@@ -1,4 +1,5 @@
 #include "fff/agents/ParseInclude.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
@@ -64,7 +65,7 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "start")
+            else if (tv.tag == start)
             {
                 if (false) {}
                 else
@@ -73,11 +74,11 @@ namespace fff { namespace agents {
                     if (MSS_IS_OK(file::resolve(path)) && path.popBasename())
                     {
                         L("Adding local path to the forest (" << path << ")");
-                        board.addItem("c++.tree", path, tv);
+                        board.addItem(cpp_tree, path, tv);
                     }
                 }
             }
-            else if (tv.tag == "c++.include")
+            else if (tv.tag == cpp_include)
             {
                 if (gubg_)
                 {
@@ -85,7 +86,7 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value, gubg_re))
                     {
                         L("Adding gubg (" << *gubg_ << ")");
-                        board.addItem("c++.tree", *gubg_, tv);
+                        board.addItem(cpp_tree, *gubg_, tv);
                     }
                 }
 
@@ -95,7 +96,7 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value, gubg_re))
                     {
                         L("Adding imui (" << *imui_ << ")");
-                        board.addItem("c++.tree", *imui_, tv);
+                        board.addItem(cpp_tree, *imui_, tv);
                     }
                 }
 
@@ -104,7 +105,7 @@ namespace fff { namespace agents {
                     if (tv.value == "catch/catch.hpp")
                     {
                         L("Adding catch (" << *catch_ << ")");
-                        board.addItem("c++.tree", *catch_, tv);
+                        board.addItem(cpp_tree, *catch_, tv);
                     }
                 }
 
@@ -113,7 +114,7 @@ namespace fff { namespace agents {
                     if (tv.value == "Eigen/Eigen")
                     {
                         L("Adding eigen (" << *eigen_ << ")");
-                        board.addItem("c++.include_path", *eigen_, tv);
+                        board.addItem(cpp_include_path, *eigen_, tv);
                     }
                 }
 
@@ -125,12 +126,12 @@ namespace fff { namespace agents {
                         L("Adding poco (" << *poco_ << ")");
                         {
                             file::File ip = *poco_; ip << "Foundation/include";
-                            board.addItem("c++.include_path", ip, tv);
+                            board.addItem(cpp_include_path, ip, tv);
                         }
                         {
                             file::File lp = *poco_; lp << "lib/Linux/x86_64";
-                            board.addItem("c++.library_path", lp, tv);
-                            board.addItem("c++.library", "PocoFoundation", tv);
+                            board.addItem(cpp_library_path, lp, tv);
+                            board.addItem(cpp_library, "PocoFoundation", tv);
                         }
                     }
                 }
@@ -141,7 +142,7 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value, lua_re))
                     {
                         L("Adding lua (" << *lua_ << ")");
-                        board.addItem("c++.include_path", *lua_, tv);
+                        board.addItem(cpp_include_path, *lua_, tv);
                         vector<file::File> files;
                         MSS(file::read(files, *lua_));
                         for (auto f: files)
@@ -152,7 +153,7 @@ namespace fff { namespace agents {
                                 continue;
                             if (f.basename() == "lua.c")
                                 continue;
-                            board.addItem("c.source", f, tv);
+                            board.addItem(c_source, f, tv);
                         }
                     }
                 }
@@ -163,22 +164,22 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value, sfml_re))
                     {
                         L("Adding sfml (" << *sfml_ << ")");
-                        board.addItem("c++.tree", *sfml_, tv);
+                        board.addItem(cpp_tree, *sfml_, tv);
                         {
                             file::File ip;
                             if (gubg_inc_(ip))
-                                board.addItem("c++.include_path", ip, tv);
+                                board.addItem(cpp_include_path, ip, tv);
                         }
                         {
                             file::File lp;
                             if (gubg_lib_(lp))
-                                board.addItem("c++.library_path", lp, tv);
-                            board.addItem("c++.library", "sfml-system", tv);
-                            board.addItem("c++.library", "sfml-graphics", tv);
-                            board.addItem("c++.library", "sfml-window", tv);
-                            board.addItem("c++.library", "sfml-audio", tv);
-                            board.addItem("c++.library", "sfml-network", tv);
-                            //board.addItem("c++.library", "GLEW", tv);
+                                board.addItem(cpp_library_path, lp, tv);
+                            board.addItem(cpp_library, "sfml-system", tv);
+                            board.addItem(cpp_library, "sfml-graphics", tv);
+                            board.addItem(cpp_library, "sfml-window", tv);
+                            board.addItem(cpp_library, "sfml-audio", tv);
+                            board.addItem(cpp_library, "sfml-network", tv);
+                            //board.addItem(cpp_library, "GLEW", tv);
                         }
                     }
                 }
@@ -189,16 +190,16 @@ namespace fff { namespace agents {
                     if (regex_match(tv.value, chai_re))
                     {
                         L("Adding chai (" << *chai_ << ")");
-                        board.addItem("c++.utree", *chai_, tv);
+                        board.addItem(cpp_utree, *chai_, tv);
                         {
 #ifdef GUBG_API_LINUX
-                            board.addItem("c++.library", string("dl"), tv);
+                            board.addItem(cpp_library, string("dl"), tv);
 #endif
 #if 0
                             for (auto str: vector<string>{"dispatchkit", "language", "utility"})
                             {
                                 auto ip = *chai_; ip << str;
-                                board.addItem("c++.include_path", ip, tv);
+                                board.addItem(cpp_include_path, ip, tv);
                             }
 #endif
                         }

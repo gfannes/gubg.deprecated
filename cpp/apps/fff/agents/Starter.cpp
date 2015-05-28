@@ -32,7 +32,7 @@ namespace fff { namespace agents {
         {
             SS(tv.tag, tv.value);
 
-            if (tv.tag == "start")
+            if (tv.tag == start)
             {
                 {
                     file::File f;
@@ -122,7 +122,7 @@ namespace fff { namespace agents {
         else if (str == "IG")
         {
             MSS(board.addAgent(fact.createAgent("FixIncludeGuard")));
-            MSS(board.addItem("ig.fix", "true"));
+            MSS(board.addItem(ig_fix, "true"));
         }
         else
             MSS_QL(UnknownCommand);

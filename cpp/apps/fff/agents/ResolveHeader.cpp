@@ -23,7 +23,7 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "c++.tree")
+            else if (tv.tag == cpp_tree)
             {
                 file::File path = tv.value;
                 MSS(file::resolve(path));
@@ -32,10 +32,10 @@ namespace fff { namespace agents {
                     forest_.add(path, {"hpp", "cpp", "h", "c"});
                     roots_.insert(path);
                     auto ip = path; ip.popBasename();
-                    board.addItem("c++.include_path", ip, tv);
+                    board.addItem(cpp_include_path, ip, tv);
                 }
             }
-            else if (tv.tag == "c++.utree")
+            else if (tv.tag == cpp_utree)
             {
                 file::File path = tv.value;
                 MSS(file::resolve(path));
@@ -44,7 +44,7 @@ namespace fff { namespace agents {
                     forest_.add(path, {"hpp", "cpp"});
                     roots_.insert(path);
                     auto ip = path;
-                    board.addItem("c++.include_path", ip, tv);
+                    board.addItem(cpp_include_path, ip, tv);
                 }
             }
         }
@@ -52,7 +52,7 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "c++.include")
+            else if (tv.tag == cpp_include)
             {
                 L("Checking forest for " << tv.value);
                 file::File rf;

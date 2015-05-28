@@ -37,7 +37,7 @@ namespace fff { namespace agents {
                 std::string content; gubg::file::read(content, tv.value);
 				Stream md5; md5 << content;
                 const auto h = md5.hash_hex();
-                board.addItem("hash.md5sum", h, tv);
+                board.addItem(hash_md5sum, h, tv);
                 hashPerTV_[tv] = h;
 			}
 		}

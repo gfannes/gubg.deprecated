@@ -18,8 +18,8 @@ namespace fff { namespace agents {
 
         if (addHashTags_())
         {
-            board.addItem(hash_tag, "c++.object");
-            board.addItem(hash_tag, "c.object");
+            board.addItem(hash_tag, cpp_object);
+            board.addItem(hash_tag, c_object);
             MSS_RETURN_OK();
         }
 
@@ -32,7 +32,7 @@ namespace fff { namespace agents {
         linker::OutputType exeType = linker::OutputType::Exe;
         for (auto tv: tvs)
         {
-            if (tv.tag == "start")
+            if (tv.tag == start)
             {
                 if (false) {}
                 else if (tv.value == "cl")
@@ -50,11 +50,11 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "cache")
+            else if (tv.tag == cache_dir)
             {
                 create_mgr.setCache(tv.value);
             }
-            else if (tv.tag == "start")
+            else if (tv.tag == start)
             {
                 if (false) {}
                 else if (tv.value == "debug")
@@ -65,13 +65,13 @@ namespace fff { namespace agents {
                 if (setExecutable())
                     executable = tv.value;
             }
-            else if (tv.tag == "c++.object" || tv.tag == "c.object")
+            else if (tv.tag == cpp_object || tv.tag == c_object)
             {
                 lnk.addObject(tv.value);
                 for (auto p: board.getRecursiveDependencies(tv))
                     rdeps[p.first] = p.second;
             }
-            else if (tv.tag == "c++.include")
+            else if (tv.tag == cpp_include)
             {
 #ifdef GUBG_API_LINUX
                 if (tv.value == "dlfcn.h")
@@ -82,9 +82,9 @@ namespace fff { namespace agents {
                     lnk.addOption("thread");
 #endif
             }
-            else if (tv.tag == "c++.library_path")
+            else if (tv.tag == cpp_library_path)
                 lnk.addLibraryPath(tv.value);
-            else if (tv.tag == "c++.library")
+            else if (tv.tag == cpp_library)
                 lnk.addLibrary(tv.value);
         }
 
@@ -113,10 +113,10 @@ namespace fff { namespace agents {
         switch (exeType)
         {
             case linker::OutputType::Exe:
-                board.addItem("c++.executable", executable);
+                board.addItem(cpp_executable, executable);
                 break;
             case linker::OutputType::Shared:
-                board.addItem("c++.shared_object", executable);
+                board.addItem(cpp_shared_object, executable);
                 break;
         }
 

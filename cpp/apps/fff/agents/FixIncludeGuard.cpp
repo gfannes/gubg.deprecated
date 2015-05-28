@@ -1,4 +1,5 @@
 #include "fff/agents/FixIncludeGuard.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
@@ -72,8 +73,8 @@ namespace fff { namespace agents {
 	{
 		MSS_BEGIN(gubg::bbs::ReturnCode);
 
-        board.addItem("ig.ext", "hpp");
-        board.addItem("ig.ext", "h");
+        board.addItem(ig_ext, "hpp");
+        board.addItem(ig_ext, "h");
         if (board.isDirty())
             MSS_RETURN_OK();
 
@@ -85,9 +86,9 @@ namespace fff { namespace agents {
         bool fix_it = false;
 		for (auto tv: tvs)
 		{
-			if (tv.tag == "ig.ext")
+			if (tv.tag == ig_ext)
                 extensions.insert(tv.value);
-			if (tv.tag == "ig.fix")
+			if (tv.tag == ig_fix)
             {
                 if (tv.value == "true")
                     fix_it = true;

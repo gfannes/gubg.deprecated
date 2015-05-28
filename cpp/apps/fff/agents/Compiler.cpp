@@ -13,7 +13,7 @@ using namespace std;
 namespace fff { namespace agents { 
     RecursiveDependencies collectAndHashDependencies_(const Item &tv, const Board &board)
     {
-        //The include parser generates c++.include TVs, the resolves translates them into cpp_source or cpp_header
+        //The include parser generates cpp_include TVs, the resolves translates them into cpp_source or cpp_header
         //We only take the headers, the corresponding cpp_source does not influence whoever is using the header
         Tags excludes; excludes.insert(cpp_source); excludes.insert(c_source);
         return board.getRecursiveDependencies(tv, excludes);
@@ -31,7 +31,7 @@ namespace fff { namespace agents {
             board.addItem(hash_tag, cpp_source);
             board.addItem(hash_tag, c_source);
             board.addItem(hash_tag, cpp_header);
-            board.addItem(hash_tag, "c.header");
+            board.addItem(hash_tag, c_header);
             MSS_RETURN_OK();
         }
 
@@ -41,22 +41,22 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "start" && tv.value == "gcc")
+            else if (tv.tag == start && tv.value == "gcc")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::GCC);
             }
-            else if (tv.tag == "start" && tv.value == "cl")
+            else if (tv.tag == start && tv.value == "cl")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::MSC);
             }
-            else if (tv.tag == "start" && tv.value == "clang")
+            else if (tv.tag == start && tv.value == "clang")
             {
                 if (is_default_compiler_())
                     compiler_ = fff::Compiler(compiler::Vendor::CLang);
             }
-            else if (tv.tag == "c++.flag")
+            else if (tv.tag == cpp_flag)
             {
                 compiler_.addOption(tv.value);
             }
@@ -64,25 +64,25 @@ namespace fff { namespace agents {
             {
                 compiler_.addDefine(tv.value);
             }
-            else if (tv.tag == "c++.include_path")
+            else if (tv.tag == cpp_include_path)
             {
                 compiler_.addIncludePath(tv.value);
             }
-            else if (tv.tag == "c++.force_include")
+            else if (tv.tag == cpp_force_include)
             {
                 compiler_.addForceInclude(tv.value);
             }
-            else if (tv.tag == "start" && tv.value == "release")
+            else if (tv.tag == start && tv.value == "release")
             {
                 compiler_.addOption("release");
                 build_type_was_set_ = true;
             }
-            else if (tv.tag == "start" && tv.value == "debug")
+            else if (tv.tag == start && tv.value == "debug")
             {
                 compiler_.addOption("debug");
                 build_type_was_set_ = true;
             }
-            else if (tv.tag == "start" && tv.value == "shared")
+            else if (tv.tag == start && tv.value == "shared")
             {
                 compiler_.addOption("shared");
             }
@@ -99,7 +99,7 @@ namespace fff { namespace agents {
         for (auto tv: tvs)
         {
             if (false) {}
-            else if (tv.tag == "cache")
+            else if (tv.tag == cache_dir)
             {
                 create_mgr.setCache(tv.value);
             }
@@ -123,7 +123,7 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                board.addItem("c++.object", obj);
+                board.addItem(cpp_object, obj);
             }
             else if (tv.tag == c_source)
             {
@@ -145,7 +145,7 @@ namespace fff { namespace agents {
                 job.command = cmd;
                 job.dependencies = collectAndHashDependencies_(tv, board);
                 jobs.push_back(job);
-                board.addItem("c.object", obj);
+                board.addItem(c_object, obj);
             }
         }
 
