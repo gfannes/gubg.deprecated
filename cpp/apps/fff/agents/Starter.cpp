@@ -68,13 +68,13 @@ namespace fff { namespace agents {
                     MSS(board.addAgent(fact.createAgent("Runner")));
                 }
             }
-            if (tv.tag == "chai.script_ref")
+            if (tv.tag == chai_script_ref)
             {
                 file::File f;
                 MSS(resolve_(f, tv.value));
-                board.addItem("chai.script", f);
+                board.addItem(chai_script, f);
             }
-            if (tv.tag == "chai.script")
+            if (tv.tag == chai_script)
             {
                 AgentFactory fact;
                 auto chai = fact.createChai(tv.value);
@@ -99,7 +99,7 @@ namespace fff { namespace agents {
         }
         else if (ref.extension() == "chai")
         {
-            board.addItem("chai.script_ref", ref);
+            board.addItem(chai_script_ref, ref);
         }
 
         MSS_END();

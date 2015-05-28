@@ -1,4 +1,5 @@
 #include "fff/agents/Search.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
@@ -95,7 +96,7 @@ namespace fff { namespace agents {
         {
             auto &tv = *it;
             if (false) {}
-            else if (tv.tag == "start")
+            else if (tv.tag == start)
             {
                 if (tv.value == "search")
                 {
@@ -112,12 +113,12 @@ namespace fff { namespace agents {
         {
             auto &tv = *it;
             if (false) {}
-            else if (tv.tag == "start")
+            else if (tv.tag == start)
             {
                 L("Looking for searchkey \"" << tv.value << "\"");
                 needles.push_back(tv.value);
             }
-            else if (tv.tag == "search.ext")
+            else if (tv.tag == search_ext)
             {
                 L("Looking for extension \"" << tv.value << "\"");
                 extensions.insert(tv.value);

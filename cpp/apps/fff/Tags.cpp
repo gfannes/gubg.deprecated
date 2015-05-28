@@ -5,6 +5,8 @@ namespace fff {
     Tag::Tags Tag::tags_;
 
     const Tag cache_dir{"cache_dir", "Directory to store the cached object, library and executable files"};
+    const Tag chai_script{"chai.source", "Full path to a ChaiScript file"};
+    const Tag chai_script_ref{"chai.source_ref", "Partial path to a ChaiScrip file which needs to be resolved into a full path"};
     const Tag cpp_define{"c++.define", "C++ macro definition"};
     const Tag cpp_executable{"c++.executable", "Name of executable produced by the linker"};
     const Tag cpp_flag{"c++.flag", "C++ compiler flag"};
@@ -28,6 +30,8 @@ namespace fff {
     const Tag hash_md5sum{"hash.md5sum", "MD5 checksum value of the parent\'s file content"};
     const Tag ig_ext{"ig.ext", "Extension to be handled by the include guard fixer"};
     const Tag ig_fix{"ig.fix", "When set to true, the include guard fixer will actually perform the fixes"};
+    const Tag run_argument{"run.argument", "Argument to be used by the executable runner"};
     const Tag start{"start", "Startup argument given via the CLI"};
+    const Tag search_ext{"search.ext", "File extension that should be searched for content"};
 
 } 

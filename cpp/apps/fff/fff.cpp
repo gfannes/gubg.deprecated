@@ -22,7 +22,7 @@ namespace fff {
 		std::cout << g_help;
         std::cout << "Tags that can be used:" << std::endl;
         Tag::each_tag([](const Tag &tag){
-                std::cout << "\t" << tag.tag() << "\t" << tag.descr() << std::endl;
+                std::cout << "    " << tag.tag() << std::string(size_t(20-tag.tag().size()), ' ') << tag.descr() << std::endl;
                 });
 		std::cout << "Geert Fannes (" << __DATE__ << " " << __TIME__ << ")" << std::endl;
 	}

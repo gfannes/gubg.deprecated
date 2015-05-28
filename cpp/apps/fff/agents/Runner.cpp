@@ -1,5 +1,6 @@
 #include "fff/agents/Runner.hpp"
 #include "fff/Execute.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/chrono/Stopwatch.hpp"
 #include <sstream>
@@ -19,16 +20,16 @@ namespace fff { namespace agents {
 		for (auto tv: tvs)
 		{
 			if (false) {}
-			else if (tv.tag == "start")
+			else if (tv.tag == start)
 			{
 				if (tv.value == "norun")
 					do_run_ = false;
 			}
-			else if (tv.tag == "run.argument")
+			else if (tv.tag == run_argument)
 			{
                 args_.push_back(tv.value);
 			}
-			else if (tv.tag == "c++.executable")
+			else if (tv.tag == cpp_executable)
 			{
 				if (do_run_)
 				{

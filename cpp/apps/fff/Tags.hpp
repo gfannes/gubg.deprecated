@@ -38,6 +38,8 @@ namespace fff {
     inline bool operator!=(const std::string &lhs, const Tag &rhs) { return lhs != rhs.tag(); }
 
     extern const Tag cache_dir;
+    extern const Tag chai_script;
+    extern const Tag chai_script_ref;
     extern const Tag cpp_define;
     extern const Tag cpp_executable;
     extern const Tag cpp_flag;
@@ -61,7 +63,9 @@ namespace fff {
     extern const Tag hash_md5sum;
     extern const Tag ig_ext;
     extern const Tag ig_fix;
+    extern const Tag run_argument;
     extern const Tag start;
+    extern const Tag search_ext;
 
 } 
 
