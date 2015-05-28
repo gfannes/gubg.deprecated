@@ -1,5 +1,6 @@
 #include "fff/agents/Compiler.hpp"
 #include "fff/Create.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/parallel/ForEach.hpp"
 #include <list>
@@ -12,9 +13,9 @@ using namespace std;
 namespace fff { namespace agents { 
     RecursiveDependencies collectAndHashDependencies_(const Item &tv, const Board &board)
     {
-        //The include parser generates c++.include TVs, the resolves translates them into c++.source or c++.header
-        //We only take the headers, the corresponding c++.source does not influence whoever is using the header
-        Tags excludes; excludes.insert("c++.source"); excludes.insert("c.source");
+        //The include parser generates c++.include TVs, the resolves translates them into cpp_source or cpp_header
+        //We only take the headers, the corresponding cpp_source does not influence whoever is using the header
+        Tags excludes; excludes.insert(cpp_source); excludes.insert(c_source);
         return board.getRecursiveDependencies(tv, excludes);
     }
     Compiler::Compiler()
@@ -27,10 +28,10 @@ namespace fff { namespace agents {
 
         if (addHashTags_())
         {
-            board.addItem("hash.tag", "c++.source");
-            board.addItem("hash.tag", "c.source");
-            board.addItem("hash.tag", "c++.header");
-            board.addItem("hash.tag", "c.header");
+            board.addItem(hash_tag, cpp_source);
+            board.addItem(hash_tag, c_source);
+            board.addItem(hash_tag, cpp_header);
+            board.addItem(hash_tag, "c.header");
             MSS_RETURN_OK();
         }
 
@@ -59,7 +60,7 @@ namespace fff { namespace agents {
             {
                 compiler_.addOption(tv.value);
             }
-            else if (tv.tag == "c++.define")
+            else if (tv.tag == cpp_define)
             {
                 compiler_.addDefine(tv.value);
             }
@@ -102,7 +103,7 @@ namespace fff { namespace agents {
             {
                 create_mgr.setCache(tv.value);
             }
-            else if (tv.tag == "c++.source")
+            else if (tv.tag == cpp_source)
             {
                 const file::File source = tv.value;
                 SS(source);
@@ -124,7 +125,7 @@ namespace fff { namespace agents {
                 jobs.push_back(job);
                 board.addItem("c++.object", obj);
             }
-            else if (tv.tag == "c.source")
+            else if (tv.tag == c_source)
             {
                 const file::File source = tv.value;
                 SS(source);

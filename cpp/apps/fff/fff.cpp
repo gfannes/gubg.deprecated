@@ -1,6 +1,7 @@
 #include "fff/Codes.hpp"
 #include "fff/Options.hpp"
 #include "fff/AgentFactory.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/OptionParser.hpp"
 #include "gubg/file/Filesystem.hpp"
@@ -19,6 +20,10 @@ namespace fff {
 	void showHelp()
 	{
 		std::cout << g_help;
+        std::cout << "Tags that can be used:" << std::endl;
+        Tag::each_tag([](const Tag &tag){
+                std::cout << "\t" << tag.tag() << "\t" << tag.descr() << std::endl;
+                });
 		std::cout << "Geert Fannes (" << __DATE__ << " " << __TIME__ << ")" << std::endl;
 	}
 

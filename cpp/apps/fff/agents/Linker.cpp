@@ -1,6 +1,7 @@
 #include "fff/agents/Linker.hpp"
 #include "fff/Create.hpp"
 #include "fff/Linker.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/Platform.hpp"
@@ -17,8 +18,8 @@ namespace fff { namespace agents {
 
         if (addHashTags_())
         {
-            board.addItem("hash.tag", "c++.object");
-            board.addItem("hash.tag", "c.object");
+            board.addItem(hash_tag, "c++.object");
+            board.addItem(hash_tag, "c.object");
             MSS_RETURN_OK();
         }
 
@@ -59,7 +60,7 @@ namespace fff { namespace agents {
                 else if (tv.value == "debug")
                     lnk.addOption("debug");
             }
-            else if (tv.tag == "c++.source")
+            else if (tv.tag == cpp_source)
             {
                 if (setExecutable())
                     executable = tv.value;

@@ -1,4 +1,5 @@
 #include "fff/agents/ResolveHeader.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/env/Variables.hpp"
@@ -58,28 +59,28 @@ namespace fff { namespace agents {
                 if (false) {}
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value), 1)))
                 {
-                    board.addItem("c++.header", rf, tv);
+                    board.addItem(cpp_header, rf, tv);
                 }
                 else if (MSS_IS_OK(forest_.resolve(rf, file::File(tv.value), 0)))
                 {
-                    board.addItem("c++.header", rf, tv);
+                    board.addItem(cpp_header, rf, tv);
                 }
                 else
                     L("Not found ...");
             }
-            else if (tv.tag == "c++.header")
+            else if (tv.tag == cpp_header)
             {
                 const file::File header{tv.value};
                 file::File source = header;
                 {
                     source.setExtension("cpp");
                     if (forest_.contains(source))
-                        board.addItem("c++.source", source, tv);
+                        board.addItem(cpp_source, source, tv);
                 }
                 {
                     source.setExtension("c");
                     if (forest_.contains(source))
-                        board.addItem("c.source", source, tv);
+                        board.addItem(c_source, source, tv);
                 }
             }
         }

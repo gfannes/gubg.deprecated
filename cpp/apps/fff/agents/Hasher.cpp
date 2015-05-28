@@ -1,4 +1,5 @@
 #include "fff/agents/Hasher.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/hash/MD5.hpp"
@@ -18,7 +19,7 @@ namespace fff { namespace agents {
 		for (auto tv: tvs)
 		{
 			if (false) {}
-			else if (tv.tag == "hash.tag")
+			else if (tv.tag == hash_tag)
 			{
                 tags_.insert(tv.value);
 			}

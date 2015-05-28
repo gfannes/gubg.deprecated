@@ -1,5 +1,6 @@
 #include "fff/agents/Starter.hpp"
 #include "fff/AgentFactory.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/file/Filesystem.hpp"
 #include "gubg/parse/Line.hpp"
@@ -31,7 +32,7 @@ namespace fff { namespace agents {
         {
             SS(tv.tag, tv.value);
 
-            if (tv.tag == Tag("start"))
+            if (tv.tag == "start")
             {
                 {
                     file::File f;
@@ -47,13 +48,13 @@ namespace fff { namespace agents {
                 }
                 MSS(processOption_(board, tv.value));
             }
-            if (tv.tag == "c++.source_ref")
+            if (tv.tag == cpp_source_ref)
             {
                 file::File f;
                 MSS(resolve_(f, tv.value));
-                board.addItem("c++.source", f);
+                board.addItem(cpp_source, f);
             }
-            if (tv.tag == "c++.source")
+            if (tv.tag == cpp_source)
             {
                 if (addExeChain_())
                 {
@@ -94,7 +95,7 @@ namespace fff { namespace agents {
         if (false) {}
         else if (ref.extension() == "cpp")
         {
-            board.addItem("c++.source_ref", ref);
+            board.addItem(cpp_source_ref, ref);
         }
         else if (ref.extension() == "chai")
         {

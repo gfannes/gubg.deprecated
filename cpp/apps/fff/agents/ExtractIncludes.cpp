@@ -1,4 +1,5 @@
 #include "fff/agents/ExtractIncludes.hpp"
+#include "fff/Tags.hpp"
 #include "gubg/bbs/Board.hpp"
 #include "gubg/parse/cpp/Includes.hpp"
 #include <list>
@@ -32,7 +33,7 @@ namespace fff { namespace agents {
 
 		for (auto tv: tvs)
 		{
-			if (tv.tag != "c++.source" && tv.tag != "c++.header")
+			if (tv.tag != cpp_source && tv.tag != cpp_header)
 				continue;
 			IncludeParser ip;
 			if (!MSS_IS_OK(ip.process(tv.value)))
