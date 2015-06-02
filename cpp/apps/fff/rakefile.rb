@@ -2,7 +2,7 @@ require("rake/clean")
 
 def os()
     case RUBY_PLATFORM
-    when /mingw/ then :win
+    when /mingw/ then :windows
     when /linux/ then :linux
     else nil end
 end

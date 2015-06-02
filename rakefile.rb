@@ -15,7 +15,7 @@ end
 
 def os()
     case RUBY_PLATFORM
-    when /mingw/ then :win
+    when /mingw/ then :windows
     when /linux/ then :linux
     else nil end
 end
@@ -136,10 +136,10 @@ namespace :sfml do
     task :build => sfml_dir do
         mkdir sfml_build_dir unless File.exist?(sfml_build_dir)
         Dir.chdir(sfml_build_dir) do
-            generator = {win: "-G \"Visual Studio 12 2013 Win64\"", linux: ""}[os]
+            generator = {windows: "-G \"Visual Studio 12 2013 Win64\"", linux: ""}[os]
             sh "cmake .. #{generator}"
             case os
-            when :win
+            when :windows
                 fail("Could not find solution") unless File.exist?("SFML.sln")
                 sh "msbuild /p:Platform=x64 /p:Configuration=Release SFML.sln /t:Build"
             else

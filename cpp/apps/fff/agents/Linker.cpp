@@ -16,12 +16,10 @@ namespace fff { namespace agents {
     {
         MSS_BEGIN(gubg::bbs::ReturnCode);
 
-        if (addHashTags_())
-        {
-            board.addItem(hash_tag, cpp_object);
-            board.addItem(hash_tag, c_object);
+        board.addItem(hash_tag, cpp_object);
+        board.addItem(hash_tag, c_object);
+        if (board.isDirty())
             MSS_RETURN_OK();
-        }
 
         if (!run_())
             MSS_RETURN_OK();

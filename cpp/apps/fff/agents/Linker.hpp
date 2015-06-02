@@ -12,7 +12,6 @@ namespace fff { namespace agents {
             gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
         private:
-            gubg::OnlyOnce addHashTags_;
             gubg::OnlyOnce run_;
     };
 } } 

@@ -15,7 +15,6 @@ namespace fff { namespace agents {
             gubg::bbs::ReturnCode process(gubg::bbs::Board &) override;
 
         private:
-            gubg::OnlyOnce addHashTags_;
             size_t ix_ = 0;
             fff::Compiler compiler_;
             gubg::OnlyOnce is_default_compiler_;

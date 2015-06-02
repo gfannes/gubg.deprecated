@@ -26,14 +26,12 @@ namespace fff { namespace agents {
     {
         MSS_BEGIN(gubg::bbs::ReturnCode);
 
-        if (addHashTags_())
-        {
-            board.addItem(hash_tag, cpp_source);
-            board.addItem(hash_tag, c_source);
-            board.addItem(hash_tag, cpp_header);
-            board.addItem(hash_tag, c_header);
+        board.addItem(hash_tag, cpp_source);
+        board.addItem(hash_tag, c_source);
+        board.addItem(hash_tag, cpp_header);
+        board.addItem(hash_tag, c_header);
+        if (board.isDirty())
             MSS_RETURN_OK();
-        }
 
         auto tvs = board.getFrom(ix_);
         ix_ += tvs.size();
