@@ -1,5 +1,5 @@
-#ifndef HEADER_fff_Agent_hpp_ALREADY_INCLUDED
-#define HEADER_fff_Agent_hpp_ALREADY_INCLUDED
+#ifndef HEADER_fff_bbs_Agent_hpp_ALREADY_INCLUDED
+#define HEADER_fff_bbs_Agent_hpp_ALREADY_INCLUDED
 
 #include "gubg/bbs/Codes.hpp"
 #include "gubg/bbs/Item.hpp"

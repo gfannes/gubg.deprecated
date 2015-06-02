@@ -24,7 +24,7 @@ namespace {
                 needles_.insert(' ');
             }
 
-            enum class ReturnCode { OK, Skip, Stop };
+            enum class ReturnCode {MSS_DEFAULT_CODES, Skip, Stop };
             ReturnCode recursor_discoveredFile(file::File f)
             {
                 MSS_BEGIN(ReturnCode);

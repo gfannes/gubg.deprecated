@@ -1,5 +1,5 @@
-#ifndef HEADER_gubg_bbs_Agent_hpp_ALREADY_INCLUDED
-#define HEADER_gubg_bbs_Agent_hpp_ALREADY_INCLUDED
+#ifndef HEADER_gubg_bbs_Codes_hpp_ALREADY_INCLUDED
+#define HEADER_gubg_bbs_Codes_hpp_ALREADY_INCLUDED
 
 #include "gubg/mss.hpp"
 

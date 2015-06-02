@@ -10,6 +10,9 @@
 *.*~
 *.dll
 *.rlib
+*.ilk
+*.pdb
+*.suo
 cpp/apps/da/da
 all.sublime-workspace
 build/
