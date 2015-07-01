@@ -3,10 +3,17 @@
 using namespace std;
 using namespace gubg;
 
+void print_help()
+{
+    cout << "New day is started with 't' or '+'" << endl;
+    cout << "Numbers can be separated with ' ' or '/'" << endl;
+}
+
 bool popTime(double &time, Strange &strange)
 {
     Strange num;
-    if (!strange.popUntil(num, ' ') && !strange.popAll(num))
+    //Numbers can be separated by ' ' or '/'
+    if (!strange.popUntil(num, ' ') && !strange.popUntil(num, '/') &&!strange.popAll(num))
         return false;
     if (num.contains('.'))
     {
@@ -30,6 +37,7 @@ bool popTime(double &time, Strange &strange)
 
 int main()
 {
+    print_help();
     double total = 0;
     string line;
     while (true)
@@ -37,8 +45,10 @@ int main()
         if (!getline(cin, line))
             return -1;
         Strange strange(line);
-        if (strange.popCharIf('t'))
+        //New day is started with 't' or '+'
+        if (strange.popCharIf('t') || strange.popCharIf('+'))
         {
+            //New day: read the start, lunch and stop to compute the total hours worked
             strange.strip(' ');
             double start, lunch, stop;
             if (!popTime(start, strange) || !popTime(lunch, strange) || !popTime(stop, strange))
