@@ -35,6 +35,8 @@ namespace fff { namespace agents {
                 if (false) {}
                 else if (tv.value == "cl")
                     vendor = linker::Vendor::MSC;
+                else if (tv.value == "clang")
+                    vendor = linker::Vendor::CLang;
                 else if (tv.value == "shared")
                     exeType = linker::OutputType::Shared;
             }

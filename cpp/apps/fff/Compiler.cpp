@@ -52,7 +52,15 @@ namespace fff {
         class CLang: public GCC
         {
             public:
-                void stream_Command(Stream &stream, Language language) const override { stream << "clang -c"; }
+                void stream_Command(Stream &stream, Language language) const override
+                {
+                    switch (language)
+                    {
+                        case Language::Cpp: stream << "clang -std=c++0x"; break;
+                        case Language::C: stream << "clang"; break;
+                    }
+                    stream << " -c";
+                }
                 //All the rest is the same as gcc
         };
         class MSC: public Interface

@@ -121,6 +121,13 @@ task :vim do
         symlink(File.join(gubg_dir, "vim/config.linux.vim"), '.vimrc') unless File.exist?('.vimrc')
     end
 end
+#YouCompleteMe vim plugin
+task :ycm do
+    Dir.chdir('vim/bundle/YouCompleteMe') do
+        sh 'git submodule update --init --recursive'
+        sh './install.sh'
+    end
+end
 
 namespace :sfml do
     sfml_dir = "#{sdks_dir}/SFML"
