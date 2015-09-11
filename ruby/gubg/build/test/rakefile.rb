@@ -1,6 +1,6 @@
 require(File.join(ENV['GUBG'], 'ruby/gubg/build/Executable.rb'))
 prog = Build::Executable.new('test.exe')
-prog.add_sources('test.cpp')
+prog.add_sources(FileList.new('src/*'))
 
 task :clean => prog.clean_rule
 task :build => prog.build_rule

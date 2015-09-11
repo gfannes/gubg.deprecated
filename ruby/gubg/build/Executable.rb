@@ -1,4 +1,7 @@
 require('gubg/build/GCC.rb')
+require('gubg/build/FilePool.rb')
+require('gubg/build/IncludeParser.rb')
+require('set')
 
 module Build
     class Executable
@@ -35,9 +38,33 @@ module Build
 
         def create_rules
             return if @rules_are_created
-            source_fns_().each do |source|
+
+            pool = FilePool.new
+            source_fns_.each{|fn|pool.register(fn)}
+            header_fns_.each{|fn|pool.register(fn)}
+
+            include_parser = IncludeParser.new
+
+            source_fns_.each do |source|
+
+                #Determine the dependencies for source
+                dependencies = Set.new
+                dependencies_staging = [source]
+                while !dependencies_staging.empty?
+                    fn = dependencies_staging.shift
+                    #Only extract the includes and do further dependency checking if this file is not yet in the dependencies set
+                    if dependencies.add?(fn)
+                        includes = include_parser.extract_includes(fn)
+                        includes.each do |include_part|
+                            pool.find_files(include_part).each do |include_fn|
+                                dependencies_staging << include_fn 
+                            end
+                        end
+                    end
+                end
+
                 object = object_fn_(source)
-                file object do
+                file object => dependencies.to_a do
                     sh @compiler.compile_command(object, source)
                 end
             end
@@ -92,6 +119,9 @@ module Build
         end
         def source_fns_
             @filenames_per_type[:cpp]
+        end
+        def header_fns_
+            @filenames_per_type[:hpp]
         end
         def object_fn_(source)
             source.gsub(@@re_sep, '_')+@@ext_obj
